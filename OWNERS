@@ -1,0 +1,16 @@
+# The OWNERS file is used by prow to automatically merge approved PRs.
+
+approvers:
+- houshengbo
+- jcrossley3
+- k4leung4
+- trshafer
+- evankanderson  # TOC member as backup
+- mattmoor       # TOC member as backup
+
+reviewers:
+- houshengbo
+- jcrossley3
+- k4leung4
+- trshafer
+- yu2003w

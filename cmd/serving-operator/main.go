@@ -21,7 +21,7 @@ import (
 
 	"knative.dev/pkg/injection/sharedmain"
 	"knative.dev/pkg/signals"
-	"knative.dev/serving-operator/pkg/reconciler/knativeserving"
+	"knative.dev/operator/pkg/reconciler/knativeserving"
 )
 
 func main() {

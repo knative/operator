@@ -33,12 +33,12 @@ KNATIVE_CODEGEN_PKG=${KNATIVE_CODEGEN_PKG:-$(cd ${REPO_ROOT_DIR}; ls -d -1 ./ven
 #                  k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
 ${CODEGEN_PKG}/generate-groups.sh "deepcopy,client,informer,lister" \
-  knative.dev/serving-operator/pkg/client knative.dev/serving-operator/pkg/apis \
+  knative.dev/operator/pkg/client knative.dev/operator/pkg/apis \
   "serving:v1alpha1" \
   --go-header-file ${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt
 
 ${KNATIVE_CODEGEN_PKG}/hack/generate-knative.sh "injection" \
-  knative.dev/serving-operator/pkg/client knative.dev/serving-operator/pkg/apis \
+  knative.dev/operator/pkg/client knative.dev/operator/pkg/apis \
   "serving:v1alpha1" \
   --go-header-file ${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt
 
@@ -46,7 +46,7 @@ ${KNATIVE_CODEGEN_PKG}/hack/generate-knative.sh "injection" \
 ${GOPATH}/bin/deepcopy-gen \
   -O zz_generated.deepcopy \
   --go-header-file ${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt \
-  -i knative.dev/serving-operator/pkg/apis/serving/v1alpha1
+  -i knative.dev/operator/pkg/apis/serving/v1alpha1
 
 # Make sure our dependencies are up-to-date
 ${REPO_ROOT_DIR}/hack/update-deps.sh

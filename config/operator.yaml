@@ -31,7 +31,7 @@ spec:
       serviceAccountName: knative-serving-operator
       containers:
         - name: knative-serving-operator
-          image: ko://knative.dev/serving-operator/cmd/manager
+          image: ko://knative.dev/operator/cmd/serving-operator
           imagePullPolicy: IfNotPresent
           env:
             - name: POD_NAME
@@ -45,7 +45,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: METRICS_DOMAIN
-              value: knative.dev/serving-operator
+              value: knative.dev/operator
             - name: CONFIG_LOGGING_NAME
               value: config-logging
             - name: CONFIG_OBSERVABILITY_NAME

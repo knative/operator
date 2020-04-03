@@ -1,0 +1,13 @@
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: hello-display
+spec:
+  filter:
+    attributes:
+      type: greeting
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: hello-display

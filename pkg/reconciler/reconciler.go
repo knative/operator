@@ -28,15 +28,17 @@ import (
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/record"
 
+	clientset "knative.dev/operator/pkg/client/clientset/versioned"
+	eventingScheme "knative.dev/operator/pkg/client/clientset/versioned/scheme"
+	servingScheme "knative.dev/operator/pkg/client/clientset/versioned/scheme"
+	eventingclient "knative.dev/operator/pkg/client/injection/client"
+	servingclient "knative.dev/operator/pkg/client/injection/client"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/logging/logkey"
-	clientset "knative.dev/operator/pkg/client/clientset/versioned"
-	servingScheme "knative.dev/operator/pkg/client/clientset/versioned/scheme"
-	servingclient "knative.dev/operator/pkg/client/injection/client"
 )
 
 // Base implements the core controller logic, given a Reconciler.
@@ -46,6 +48,9 @@ type Base struct {
 
 	// ServingClientSet allows us to configure Serving objects
 	KnativeServingClientSet clientset.Interface
+
+	// EventingClientSet allows us to configure Eventing objects
+	KnativeEventingClientSet clientset.Interface
 
 	// DynamicClientSet allows us to configure pluggable Build objects
 	DynamicClientSet dynamic.Interface
@@ -105,13 +110,14 @@ func NewBase(ctx context.Context, controllerAgentName string, cmw configmap.Watc
 	}
 
 	base := &Base{
-		KubeClientSet:           kubeClient,
-		KnativeServingClientSet: servingclient.Get(ctx),
-		DynamicClientSet:        dynamicclient.Get(ctx),
-		ConfigMapWatcher:        cmw,
-		Recorder:                recorder,
-		StatsReporter:           statsReporter,
-		Logger:                  logger,
+		KubeClientSet:            kubeClient,
+		KnativeServingClientSet:  servingclient.Get(ctx),
+		KnativeEventingClientSet: eventingclient.Get(ctx),
+		DynamicClientSet:         dynamicclient.Get(ctx),
+		ConfigMapWatcher:         cmw,
+		Recorder:                 recorder,
+		StatsReporter:            statsReporter,
+		Logger:                   logger,
 	}
 
 	return base
@@ -121,4 +127,8 @@ func init() {
 	// Add serving types to the default Kubernetes Scheme so Events can be
 	// logged for serving types.
 	servingScheme.AddToScheme(scheme.Scheme)
+
+	// Add eventing types to the default Kubernetes Scheme so Events can be
+	// logged for eventing types.
+	eventingScheme.AddToScheme(scheme.Scheme)
 }

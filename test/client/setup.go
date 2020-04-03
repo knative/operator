@@ -22,7 +22,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	pkgTest "knative.dev/pkg/test"
-	"knative.dev/serving-operator/test"
+	"knative.dev/operator/test"
 )
 
 // Setup creates the client objects needed in the e2e tests.

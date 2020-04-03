@@ -33,9 +33,9 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"knative.dev/pkg/test/logging"
-	"knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
-	"knative.dev/serving-operator/test"
+	"knative.dev/operator/pkg/apis/serving/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
+	"knative.dev/operator/test"
 )
 
 const (

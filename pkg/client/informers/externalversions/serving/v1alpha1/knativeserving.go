@@ -25,10 +25,10 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
 	cache "k8s.io/client-go/tools/cache"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
-	versioned "knative.dev/serving-operator/pkg/client/clientset/versioned"
-	internalinterfaces "knative.dev/serving-operator/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "knative.dev/serving-operator/pkg/client/listers/serving/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/apis/serving/v1alpha1"
+	versioned "knative.dev/operator/pkg/client/clientset/versioned"
+	internalinterfaces "knative.dev/operator/pkg/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "knative.dev/operator/pkg/client/listers/serving/v1alpha1"
 )
 
 // KnativeServingInformer provides access to a shared informer and lister for

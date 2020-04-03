@@ -23,7 +23,7 @@ import (
 
 	istiov1alpha3 "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/apis/serving/v1alpha1"
 )
 
 func init() {

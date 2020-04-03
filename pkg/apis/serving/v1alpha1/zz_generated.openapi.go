@@ -29,9 +29,9 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"knative.dev/serving-operator/pkg/apis/serving/v1alpha1.KnativeServing":       schema_pkg_apis_serving_v1alpha1_KnativeServing(ref),
-		"knative.dev/serving-operator/pkg/apis/serving/v1alpha1.KnativeServingSpec":   schema_pkg_apis_serving_v1alpha1_KnativeServingSpec(ref),
-		"knative.dev/serving-operator/pkg/apis/serving/v1alpha1.KnativeServingStatus": schema_pkg_apis_serving_v1alpha1_KnativeServingStatus(ref),
+		"knative.dev/operator/pkg/apis/serving/v1alpha1.KnativeServing":       schema_pkg_apis_serving_v1alpha1_KnativeServing(ref),
+		"knative.dev/operator/pkg/apis/serving/v1alpha1.KnativeServingSpec":   schema_pkg_apis_serving_v1alpha1_KnativeServingSpec(ref),
+		"knative.dev/operator/pkg/apis/serving/v1alpha1.KnativeServingStatus": schema_pkg_apis_serving_v1alpha1_KnativeServingStatus(ref),
 	}
 }
 
@@ -62,19 +62,19 @@ func schema_pkg_apis_serving_v1alpha1_KnativeServing(ref common.ReferenceCallbac
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("knative.dev/serving-operator/pkg/apis/serving/v1alpha1.KnativeServingSpec"),
+							Ref: ref("knative.dev/operator/pkg/apis/serving/v1alpha1.KnativeServingSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("knative.dev/serving-operator/pkg/apis/serving/v1alpha1.KnativeServingStatus"),
+							Ref: ref("knative.dev/operator/pkg/apis/serving/v1alpha1.KnativeServingStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"knative.dev/serving-operator/pkg/apis/serving/v1alpha1.KnativeServingSpec", "knative.dev/serving-operator/pkg/apis/serving/v1alpha1.KnativeServingStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"knative.dev/operator/pkg/apis/serving/v1alpha1.KnativeServingSpec", "knative.dev/operator/pkg/apis/serving/v1alpha1.KnativeServingStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 

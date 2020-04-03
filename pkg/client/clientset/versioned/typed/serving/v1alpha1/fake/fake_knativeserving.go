@@ -25,7 +25,7 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
-	v1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	v1alpha1 "knative.dev/operator/pkg/apis/serving/v1alpha1"
 )
 
 // FakeKnativeServings implements KnativeServingInterface

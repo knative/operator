@@ -25,8 +25,8 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
-	v1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
-	scheme "knative.dev/serving-operator/pkg/client/clientset/versioned/scheme"
+	v1alpha1 "knative.dev/operator/pkg/apis/serving/v1alpha1"
+	scheme "knative.dev/operator/pkg/client/clientset/versioned/scheme"
 )
 
 // KnativeServingsGetter has a method to return a KnativeServingInterface.

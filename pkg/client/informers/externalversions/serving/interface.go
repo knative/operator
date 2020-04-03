@@ -19,8 +19,8 @@ limitations under the License.
 package serving
 
 import (
-	internalinterfaces "knative.dev/serving-operator/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "knative.dev/serving-operator/pkg/client/informers/externalversions/serving/v1alpha1"
+	internalinterfaces "knative.dev/operator/pkg/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "knative.dev/operator/pkg/client/informers/externalversions/serving/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

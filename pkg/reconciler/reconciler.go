@@ -34,9 +34,9 @@ import (
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/logging/logkey"
-	clientset "knative.dev/serving-operator/pkg/client/clientset/versioned"
-	servingScheme "knative.dev/serving-operator/pkg/client/clientset/versioned/scheme"
-	servingclient "knative.dev/serving-operator/pkg/client/injection/client"
+	clientset "knative.dev/operator/pkg/client/clientset/versioned"
+	servingScheme "knative.dev/operator/pkg/client/clientset/versioned/scheme"
+	servingclient "knative.dev/operator/pkg/client/injection/client"
 )
 
 // Base implements the core controller logic, given a Reconciler.

@@ -19,9 +19,9 @@ import (
 	"testing"
 
 	"knative.dev/pkg/test/logstream"
-	"knative.dev/serving-operator/test"
-	"knative.dev/serving-operator/test/client"
-	"knative.dev/serving-operator/test/resources"
+	"knative.dev/operator/test"
+	"knative.dev/operator/test/client"
+	"knative.dev/operator/test/resources"
 )
 
 // TestKnativeServingDeployment verifies the KnativeServing creation, deployment recreation, and KnativeServing deletion.

@@ -21,7 +21,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
-	servingv1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/apis/serving/v1alpha1"
 )
 
 var log = zap.NewExample().Sugar()

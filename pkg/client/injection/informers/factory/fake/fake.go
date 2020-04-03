@@ -23,9 +23,9 @@ import (
 
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
-	externalversions "knative.dev/serving-operator/pkg/client/informers/externalversions"
-	fake "knative.dev/serving-operator/pkg/client/injection/client/fake"
-	factory "knative.dev/serving-operator/pkg/client/injection/informers/factory"
+	externalversions "knative.dev/operator/pkg/client/informers/externalversions"
+	fake "knative.dev/operator/pkg/client/injection/client/fake"
+	factory "knative.dev/operator/pkg/client/injection/informers/factory"
 )
 
 var Get = factory.Get

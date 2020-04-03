@@ -21,7 +21,7 @@ package fake
 import (
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
-	v1alpha1 "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
+	v1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
 )
 
 type FakeOperatorV1alpha1 struct {

@@ -27,9 +27,9 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
-	versioned "knative.dev/serving-operator/pkg/client/clientset/versioned"
-	internalinterfaces "knative.dev/serving-operator/pkg/client/informers/externalversions/internalinterfaces"
-	serving "knative.dev/serving-operator/pkg/client/informers/externalversions/serving"
+	versioned "knative.dev/operator/pkg/client/clientset/versioned"
+	internalinterfaces "knative.dev/operator/pkg/client/informers/externalversions/internalinterfaces"
+	serving "knative.dev/operator/pkg/client/informers/externalversions/serving"
 )
 
 // SharedInformerOption defines the functional option type for SharedInformerFactory.

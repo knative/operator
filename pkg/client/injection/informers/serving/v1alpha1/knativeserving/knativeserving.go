@@ -24,8 +24,8 @@ import (
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 	logging "knative.dev/pkg/logging"
-	v1alpha1 "knative.dev/serving-operator/pkg/client/informers/externalversions/serving/v1alpha1"
-	factory "knative.dev/serving-operator/pkg/client/injection/informers/factory"
+	v1alpha1 "knative.dev/operator/pkg/client/informers/externalversions/serving/v1alpha1"
+	factory "knative.dev/operator/pkg/client/injection/informers/factory"
 )
 
 func init() {
@@ -46,7 +46,7 @@ func Get(ctx context.Context) v1alpha1.KnativeServingInformer {
 	untyped := ctx.Value(Key{})
 	if untyped == nil {
 		logging.FromContext(ctx).Panic(
-			"Unable to fetch knative.dev/serving-operator/pkg/client/informers/externalversions/serving/v1alpha1.KnativeServingInformer from context.")
+			"Unable to fetch knative.dev/operator/pkg/client/informers/externalversions/serving/v1alpha1.KnativeServingInformer from context.")
 	}
 	return untyped.(v1alpha1.KnativeServingInformer)
 }

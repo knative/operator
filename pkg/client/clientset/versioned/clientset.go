@@ -24,7 +24,7 @@ import (
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
-	operatorv1alpha1 "knative.dev/serving-operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
 )
 
 type Interface interface {

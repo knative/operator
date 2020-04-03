@@ -20,8 +20,8 @@ package v1alpha1
 
 import (
 	rest "k8s.io/client-go/rest"
-	v1alpha1 "knative.dev/serving-operator/pkg/apis/serving/v1alpha1"
-	"knative.dev/serving-operator/pkg/client/clientset/versioned/scheme"
+	v1alpha1 "knative.dev/operator/pkg/apis/serving/v1alpha1"
+	"knative.dev/operator/pkg/client/clientset/versioned/scheme"
 )
 
 type OperatorV1alpha1Interface interface {

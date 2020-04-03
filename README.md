@@ -20,4 +20,3 @@ Contact the WG leads:
 - Vincent Hou
 
 For details.
-

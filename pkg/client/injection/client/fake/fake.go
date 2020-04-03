@@ -23,10 +23,10 @@ import (
 
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	rest "k8s.io/client-go/rest"
-	injection "knative.dev/pkg/injection"
-	logging "knative.dev/pkg/logging"
 	fake "knative.dev/operator/pkg/client/clientset/versioned/fake"
 	client "knative.dev/operator/pkg/client/injection/client"
+	injection "knative.dev/pkg/injection"
+	logging "knative.dev/pkg/logging"
 )
 
 func init() {

@@ -21,11 +21,11 @@ package knativeserving
 import (
 	context "context"
 
+	v1alpha1 "knative.dev/operator/pkg/client/informers/externalversions/serving/v1alpha1"
+	factory "knative.dev/operator/pkg/client/injection/informers/factory"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 	logging "knative.dev/pkg/logging"
-	v1alpha1 "knative.dev/operator/pkg/client/informers/externalversions/serving/v1alpha1"
-	factory "knative.dev/operator/pkg/client/injection/informers/factory"
 )
 
 func init() {

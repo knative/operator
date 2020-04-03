@@ -25,7 +25,7 @@ import (
 
 func TestManifestVersionSame(t *testing.T) {
 	_, b, _, _ := runtime.Caller(0)
-	manifest, err := mf.NewManifest(filepath.Join(filepath.Dir(b)+"/..", "cmd/manager/kodata/knative-serving/"))
+	manifest, err := mf.NewManifest(filepath.Join(filepath.Dir(b)+"/..", "cmd/serving-operator/kodata/knative-serving/"))
 	if err != nil {
 		t.Fatal("Failed to load manifest", err)
 	}

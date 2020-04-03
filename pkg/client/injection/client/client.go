@@ -22,9 +22,9 @@ import (
 	context "context"
 
 	rest "k8s.io/client-go/rest"
+	versioned "knative.dev/operator/pkg/client/clientset/versioned"
 	injection "knative.dev/pkg/injection"
 	logging "knative.dev/pkg/logging"
-	versioned "knative.dev/operator/pkg/client/clientset/versioned"
 )
 
 func init() {

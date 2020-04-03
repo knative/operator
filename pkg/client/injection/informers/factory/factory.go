@@ -21,11 +21,11 @@ package factory
 import (
 	context "context"
 
+	externalversions "knative.dev/operator/pkg/client/informers/externalversions"
+	client "knative.dev/operator/pkg/client/injection/client"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 	logging "knative.dev/pkg/logging"
-	externalversions "knative.dev/operator/pkg/client/informers/externalversions"
-	client "knative.dev/operator/pkg/client/injection/client"
 )
 
 func init() {

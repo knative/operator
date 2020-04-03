@@ -21,11 +21,11 @@ package fake
 import (
 	context "context"
 
-	controller "knative.dev/pkg/controller"
-	injection "knative.dev/pkg/injection"
 	externalversions "knative.dev/operator/pkg/client/informers/externalversions"
 	fake "knative.dev/operator/pkg/client/injection/client/fake"
 	factory "knative.dev/operator/pkg/client/injection/informers/factory"
+	controller "knative.dev/pkg/controller"
+	injection "knative.dev/pkg/injection"
 )
 
 var Get = factory.Get

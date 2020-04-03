@@ -31,5 +31,6 @@ func main() {
 	if err != nil {
 		log.Fatal("Error building kubeconfig", err)
 	}
+
 	sharedmain.MainWithConfig(signals.NewContext(), "serving-operator", cfg, knativeserving.NewController)
 }

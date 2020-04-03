@@ -20,7 +20,7 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 
-	eventingv1alpha1 "knative.dev/operator/pkg/apis/eventing/v1alpha1"
+	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 var log = zap.NewExample().Sugar()

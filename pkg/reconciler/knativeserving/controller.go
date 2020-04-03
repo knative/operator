@@ -28,8 +28,8 @@ import (
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
-	"knative.dev/operator/pkg/apis/serving/v1alpha1"
-	knativeServinginformer "knative.dev/operator/pkg/client/injection/informers/serving/v1alpha1/knativeserving"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	knativeServinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeserving"
 	rbase "knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/knativeserving/common"
 )

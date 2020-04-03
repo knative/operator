@@ -33,8 +33,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"knative.dev/pkg/controller"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/serving/v1alpha1"
-	listers "knative.dev/operator/pkg/client/listers/serving/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	listers "knative.dev/operator/pkg/client/listers/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"knative.dev/operator/version"

@@ -18,7 +18,7 @@ package common
 import (
 	"testing"
 
-	servingv1alpha1 "knative.dev/operator/pkg/apis/serving/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"

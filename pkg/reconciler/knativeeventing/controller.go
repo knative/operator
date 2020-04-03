@@ -25,8 +25,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/tools/cache"
 
-	"knative.dev/operator/pkg/apis/eventing/v1alpha1"
-	knativeEventinginformer "knative.dev/operator/pkg/client/injection/informers/eventing/v1alpha1/knativeeventing"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	knativeEventinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeeventing"
 	rbase "knative.dev/operator/pkg/reconciler"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"

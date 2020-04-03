@@ -28,7 +28,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	"knative.dev/operator/pkg/apis/eventing/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	_ "knative.dev/pkg/client/injection/kube/client/fake"
 	"knative.dev/pkg/injection"

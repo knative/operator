@@ -32,8 +32,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/tools/cache"
 
-	eventingv1alpha1 "knative.dev/operator/pkg/apis/eventing/v1alpha1"
-	listers "knative.dev/operator/pkg/client/listers/eventing/v1alpha1"
+	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	listers "knative.dev/operator/pkg/client/listers/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/knativeeventing/common"
 	"knative.dev/operator/version"

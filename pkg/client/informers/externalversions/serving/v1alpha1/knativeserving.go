@@ -61,13 +61,13 @@ func NewFilteredKnativeServingInformer(client versioned.Interface, namespace str
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OperatorV1alpha1().KnativeServings(namespace).List(options)
+				return client.ServingV1alpha1().KnativeServings(namespace).List(options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OperatorV1alpha1().KnativeServings(namespace).Watch(options)
+				return client.ServingV1alpha1().KnativeServings(namespace).Watch(options)
 			},
 		},
 		&servingv1alpha1.KnativeServing{},

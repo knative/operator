@@ -35,6 +35,6 @@ func init() {
 
 func withInformer(ctx context.Context) (context.Context, controller.Informer) {
 	f := fake.Get(ctx)
-	inf := f.Operator().V1alpha1().KnativeServings()
+	inf := f.Serving().V1alpha1().KnativeServings()
 	return context.WithValue(ctx, knativeserving.Key{}, inf), inf.Informer()
 }

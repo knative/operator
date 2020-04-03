@@ -30,13 +30,13 @@ import (
 
 // FakeKnativeServings implements KnativeServingInterface
 type FakeKnativeServings struct {
-	Fake *FakeOperatorV1alpha1
+	Fake *FakeServingV1alpha1
 	ns   string
 }
 
-var knativeservingsResource = schema.GroupVersionResource{Group: "operator.knative.dev", Version: "v1alpha1", Resource: "knativeservings"}
+var knativeservingsResource = schema.GroupVersionResource{Group: "serving.operator.knative.dev", Version: "v1alpha1", Resource: "knativeservings"}
 
-var knativeservingsKind = schema.GroupVersionKind{Group: "operator.knative.dev", Version: "v1alpha1", Kind: "KnativeServing"}
+var knativeservingsKind = schema.GroupVersionKind{Group: "serving.operator.knative.dev", Version: "v1alpha1", Kind: "KnativeServing"}
 
 // Get takes name of the knativeServing, and returns the corresponding knativeServing object, and an error if there is any.
 func (c *FakeKnativeServings) Get(name string, options v1.GetOptions) (result *v1alpha1.KnativeServing, err error) {

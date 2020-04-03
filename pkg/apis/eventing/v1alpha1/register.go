@@ -24,7 +24,7 @@ import (
 
 const (
 	// The group name. This is used for CRDs.
-	GroupName = "operator.knative.dev"
+	GroupName = "eventing.operator.knative.dev"
 
 	// The Version of the schema. This is used for CRDs.
 	SchemaVersion = "v1alpha1"

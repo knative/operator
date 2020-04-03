@@ -20,26 +20,26 @@ package v1alpha1
 
 import (
 	rest "k8s.io/client-go/rest"
-	v1alpha1 "knative.dev/operator/pkg/apis/serving/v1alpha1"
+	v1alpha1 "knative.dev/operator/pkg/apis/eventing/v1alpha1"
 	"knative.dev/operator/pkg/client/clientset/versioned/scheme"
 )
 
-type OperatorV1alpha1Interface interface {
+type EventingV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	KnativeServingsGetter
+	KnativeEventingsGetter
 }
 
-// OperatorV1alpha1Client is used to interact with features provided by the operator.knative.dev group.
-type OperatorV1alpha1Client struct {
+// EventingV1alpha1Client is used to interact with features provided by the eventing.operator.knative.dev group.
+type EventingV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *OperatorV1alpha1Client) KnativeServings(namespace string) KnativeServingInterface {
-	return newKnativeServings(c, namespace)
+func (c *EventingV1alpha1Client) KnativeEventings(namespace string) KnativeEventingInterface {
+	return newKnativeEventings(c, namespace)
 }
 
-// NewForConfig creates a new OperatorV1alpha1Client for the given config.
-func NewForConfig(c *rest.Config) (*OperatorV1alpha1Client, error) {
+// NewForConfig creates a new EventingV1alpha1Client for the given config.
+func NewForConfig(c *rest.Config) (*EventingV1alpha1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
@@ -48,12 +48,12 @@ func NewForConfig(c *rest.Config) (*OperatorV1alpha1Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &OperatorV1alpha1Client{client}, nil
+	return &EventingV1alpha1Client{client}, nil
 }
 
-// NewForConfigOrDie creates a new OperatorV1alpha1Client for the given config and
+// NewForConfigOrDie creates a new EventingV1alpha1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *rest.Config) *OperatorV1alpha1Client {
+func NewForConfigOrDie(c *rest.Config) *EventingV1alpha1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -61,9 +61,9 @@ func NewForConfigOrDie(c *rest.Config) *OperatorV1alpha1Client {
 	return client
 }
 
-// New creates a new OperatorV1alpha1Client for the given RESTClient.
-func New(c rest.Interface) *OperatorV1alpha1Client {
-	return &OperatorV1alpha1Client{c}
+// New creates a new EventingV1alpha1Client for the given RESTClient.
+func New(c rest.Interface) *EventingV1alpha1Client {
+	return &EventingV1alpha1Client{c}
 }
 
 func setConfigDefaults(config *rest.Config) error {
@@ -81,7 +81,7 @@ func setConfigDefaults(config *rest.Config) error {
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *OperatorV1alpha1Client) RESTClient() rest.Interface {
+func (c *EventingV1alpha1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

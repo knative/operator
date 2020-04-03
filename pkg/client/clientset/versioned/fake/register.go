@@ -24,15 +24,16 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/serving/v1alpha1"
+	eventingv1alpha1 "knative.dev/operator/pkg/apis/eventing/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/apis/serving/v1alpha1"
 )
 
 var scheme = runtime.NewScheme()
 var codecs = serializer.NewCodecFactory(scheme)
 var parameterCodec = runtime.NewParameterCodec(scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
-	operatorv1alpha1.AddToScheme,
-	operatorv1alpha1.AddToScheme,
+	eventingv1alpha1.AddToScheme,
+	servingv1alpha1.AddToScheme,
 }
 
 // AddToScheme adds all types of this clientset into the given scheme. This allows composition

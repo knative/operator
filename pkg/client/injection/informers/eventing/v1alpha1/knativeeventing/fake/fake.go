@@ -35,6 +35,6 @@ func init() {
 
 func withInformer(ctx context.Context) (context.Context, controller.Informer) {
 	f := fake.Get(ctx)
-	inf := f.Operator().V1alpha1().KnativeEventings()
+	inf := f.Eventing().V1alpha1().KnativeEventings()
 	return context.WithValue(ctx, knativeeventing.Key{}, inf), inf.Informer()
 }

@@ -61,13 +61,13 @@ func NewFilteredKnativeEventingInformer(client versioned.Interface, namespace st
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OperatorV1alpha1().KnativeEventings(namespace).List(options)
+				return client.EventingV1alpha1().KnativeEventings(namespace).List(options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OperatorV1alpha1().KnativeEventings(namespace).Watch(options)
+				return client.EventingV1alpha1().KnativeEventings(namespace).Watch(options)
 			},
 		},
 		&eventingv1alpha1.KnativeEventing{},

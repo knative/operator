@@ -24,22 +24,22 @@ import (
 	"knative.dev/operator/pkg/client/clientset/versioned/scheme"
 )
 
-type OperatorV1alpha1Interface interface {
+type ServingV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	KnativeServingsGetter
 }
 
-// OperatorV1alpha1Client is used to interact with features provided by the operator.knative.dev group.
-type OperatorV1alpha1Client struct {
+// ServingV1alpha1Client is used to interact with features provided by the serving.operator.knative.dev group.
+type ServingV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *OperatorV1alpha1Client) KnativeServings(namespace string) KnativeServingInterface {
+func (c *ServingV1alpha1Client) KnativeServings(namespace string) KnativeServingInterface {
 	return newKnativeServings(c, namespace)
 }
 
-// NewForConfig creates a new OperatorV1alpha1Client for the given config.
-func NewForConfig(c *rest.Config) (*OperatorV1alpha1Client, error) {
+// NewForConfig creates a new ServingV1alpha1Client for the given config.
+func NewForConfig(c *rest.Config) (*ServingV1alpha1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
@@ -48,12 +48,12 @@ func NewForConfig(c *rest.Config) (*OperatorV1alpha1Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &OperatorV1alpha1Client{client}, nil
+	return &ServingV1alpha1Client{client}, nil
 }
 
-// NewForConfigOrDie creates a new OperatorV1alpha1Client for the given config and
+// NewForConfigOrDie creates a new ServingV1alpha1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *rest.Config) *OperatorV1alpha1Client {
+func NewForConfigOrDie(c *rest.Config) *ServingV1alpha1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -61,9 +61,9 @@ func NewForConfigOrDie(c *rest.Config) *OperatorV1alpha1Client {
 	return client
 }
 
-// New creates a new OperatorV1alpha1Client for the given RESTClient.
-func New(c rest.Interface) *OperatorV1alpha1Client {
-	return &OperatorV1alpha1Client{c}
+// New creates a new ServingV1alpha1Client for the given RESTClient.
+func New(c rest.Interface) *ServingV1alpha1Client {
+	return &ServingV1alpha1Client{c}
 }
 
 func setConfigDefaults(config *rest.Config) error {
@@ -81,7 +81,7 @@ func setConfigDefaults(config *rest.Config) error {
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *OperatorV1alpha1Client) RESTClient() rest.Interface {
+func (c *ServingV1alpha1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

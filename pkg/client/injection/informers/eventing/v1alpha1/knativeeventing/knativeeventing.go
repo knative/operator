@@ -37,7 +37,7 @@ type Key struct{}
 
 func withInformer(ctx context.Context) (context.Context, controller.Informer) {
 	f := factory.Get(ctx)
-	inf := f.Operator().V1alpha1().KnativeEventings()
+	inf := f.Eventing().V1alpha1().KnativeEventings()
 	return context.WithValue(ctx, Key{}, inf), inf.Informer()
 }
 

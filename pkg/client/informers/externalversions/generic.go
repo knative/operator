@@ -24,6 +24,7 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 	v1alpha1 "knative.dev/operator/pkg/apis/eventing/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/apis/serving/v1alpha1"
 )
 
 // GenericInformer is type of SharedIndexInformer which will locate and delegate to other
@@ -52,17 +53,13 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=operator.knative.dev, Version=v1alpha1
+	// Group=eventing.operator.knative.dev, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("knativeeventings"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Operator().V1alpha1().KnativeEventings().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("knativeservings"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Operator().V1alpha1().KnativeServings().Informer()}, nil
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Eventing().V1alpha1().KnativeEventings().Informer()}, nil
 
-		// Group=operator.knative.dev, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("knativeeventings"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Operator().V1alpha1().KnativeEventings().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("knativeservings"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Operator().V1alpha1().KnativeServings().Informer()}, nil
+		// Group=serving.operator.knative.dev, Version=v1alpha1
+	case servingv1alpha1.SchemeGroupVersion.WithResource("knativeservings"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Serving().V1alpha1().KnativeServings().Informer()}, nil
 
 	}
 

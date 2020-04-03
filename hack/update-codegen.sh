@@ -34,19 +34,20 @@ KNATIVE_CODEGEN_PKG=${KNATIVE_CODEGEN_PKG:-$(cd ${REPO_ROOT_DIR}; ls -d -1 ./ven
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
 ${CODEGEN_PKG}/generate-groups.sh "deepcopy,client,informer,lister" \
   knative.dev/operator/pkg/client knative.dev/operator/pkg/apis \
-  "serving:v1alpha1" \
+  "serving:v1alpha1 eventing:v1alpha1" \
   --go-header-file ${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt
 
 ${KNATIVE_CODEGEN_PKG}/hack/generate-knative.sh "injection" \
   knative.dev/operator/pkg/client knative.dev/operator/pkg/apis \
-  "serving:v1alpha1" \
+  "serving:v1alpha1 eventing:v1alpha1" \
   --go-header-file ${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt
 
 # Depends on generate-groups.sh to install bin/deepcopy-gen
 ${GOPATH}/bin/deepcopy-gen \
   -O zz_generated.deepcopy \
   --go-header-file ${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt \
-  -i knative.dev/operator/pkg/apis/serving/v1alpha1
+  -i knative.dev/operator/pkg/apis/serving/v1alpha1 \
+  -i knative.dev/operator/pkg/apis/eventing/v1alpha1
 
 # Make sure our dependencies are up-to-date
 ${REPO_ROOT_DIR}/hack/update-deps.sh

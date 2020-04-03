@@ -260,10 +260,11 @@
   version = "v1.3.2"
 
 [[projects]]
-  digest = "1:0aeda02073125667ac6c9df50c7921cb22c08a4accdc54589c697a7e76be65c2"
+  digest = "1:f0ae868d945753df81e797524bb7f3c577bcf751ce515c18162d259ca3ff8de7"
   name = "github.com/google/go-cmp"
   packages = [
     "cmp",
+    "cmp/cmpopts",
     "cmp/internal/diff",
     "cmp/internal/flags",
     "cmp/internal/function",
@@ -711,6 +712,25 @@
   revision = "593de606220b6283bd14765aab1e244ea650cd84"
 
 [[projects]]
+  branch = "master"
+  digest = "1:325a1b73817aa79fc85f10376ed41ea607f7dd7f6c6bfa46df6a28ef2857941f"
+  name = "golang.org/x/xerrors"
+  packages = [
+    ".",
+    "internal",
+  ]
+  pruneopts = "NUT"
+  revision = "9bdfabe68543c54f90421aeb9a60ef8061b5b544"
+
+[[projects]]
+  digest = "1:79c5b7c79609e7e2d0c5a6509cc5894bb8ee9c2ca6e741214f8aa4317beeea59"
+  name = "gomodules.xyz/jsonpatch"
+  packages = ["v2"]
+  pruneopts = "NUT"
+  revision = "1c2a0262323edc27502942d9727c95646b1c3cbe"
+  version = "v2.1.0"
+
+[[projects]]
   digest = "1:658567ee8cf9149bcb84fbc019f4577be73aae97903e9bdcffc9a0abfa339ef5"
   name = "google.golang.org/api"
   packages = [
@@ -961,7 +981,7 @@
   version = "kubernetes-1.16.4"
 
 [[projects]]
-  digest = "1:8b6b6e5e908be9312cad8a22372f7b1aae88853a3c2541eefa25f6209eb367c6"
+  digest = "1:0407022f459190d942714903691fddc2f1a27a1827d8e99afaadf34fdac7c342"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/equality",
@@ -1001,6 +1021,7 @@
     "pkg/util/net",
     "pkg/util/runtime",
     "pkg/util/sets",
+    "pkg/util/sets/types",
     "pkg/util/strategicpatch",
     "pkg/util/uuid",
     "pkg/util/validation",
@@ -1326,6 +1347,10 @@
   name = "knative.dev/pkg"
   packages = [
     "apis",
+    "apis/duck",
+    "apis/duck/v1",
+    "apis/duck/v1beta1",
+    "apis/testing",
     "changeset",
     "client/injection/kube/client",
     "client/injection/kube/client/fake",
@@ -1362,6 +1387,7 @@
     "test/monitoring",
     "test/spoof",
     "test/zipkin",
+    "tracker",
     "version",
     "webhook",
     "webhook/certificates/resources",
@@ -1378,7 +1404,7 @@
     "tools/dep-collector",
   ]
   pruneopts = "UT"
-  revision = "01c151837ed80fcf977e2adb50aeebeecab0d75e"
+  revision = "e84f0d1a364732918a6635cb07d895ff77ecba76"
 
 [[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"
@@ -1394,6 +1420,8 @@
   input-imports = [
     "github.com/go-logr/zapr",
     "github.com/go-openapi/spec",
+    "github.com/google/go-cmp/cmp",
+    "github.com/google/go-cmp/cmp/cmpopts",
     "github.com/manifestival/client-go-client",
     "github.com/manifestival/manifestival",
     "github.com/pkg/errors",
@@ -1416,6 +1444,7 @@
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/sets",
+    "k8s.io/apimachinery/pkg/util/sets/types",
     "k8s.io/apimachinery/pkg/util/wait",
     "k8s.io/apimachinery/pkg/watch",
     "k8s.io/client-go/discovery",
@@ -1440,6 +1469,8 @@
     "k8s.io/kube-openapi/pkg/common",
     "knative.dev/caching/pkg/apis/caching/v1alpha1",
     "knative.dev/pkg/apis",
+    "knative.dev/pkg/apis/duck/v1beta1",
+    "knative.dev/pkg/apis/testing",
     "knative.dev/pkg/client/injection/kube/client",
     "knative.dev/pkg/client/injection/kube/client/fake",
     "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment",

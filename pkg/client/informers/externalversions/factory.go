@@ -28,6 +28,7 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 	versioned "knative.dev/operator/pkg/client/clientset/versioned"
+	eventing "knative.dev/operator/pkg/client/informers/externalversions/eventing"
 	internalinterfaces "knative.dev/operator/pkg/client/informers/externalversions/internalinterfaces"
 	serving "knative.dev/operator/pkg/client/informers/externalversions/serving"
 )
@@ -172,7 +173,12 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
+	Operator() eventing.Interface
 	Operator() serving.Interface
+}
+
+func (f *sharedInformerFactory) Operator() eventing.Interface {
+	return eventing.New(f, f.namespace, f.tweakListOptions)
 }
 
 func (f *sharedInformerFactory) Operator() serving.Interface {

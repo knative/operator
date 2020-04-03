@@ -24,11 +24,13 @@ import (
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
+	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/eventing/v1alpha1"
 	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
 )
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
+	OperatorV1alpha1() operatorv1alpha1.OperatorV1alpha1Interface
 	OperatorV1alpha1() operatorv1alpha1.OperatorV1alpha1Interface
 }
 
@@ -37,6 +39,12 @@ type Interface interface {
 type Clientset struct {
 	*discovery.DiscoveryClient
 	operatorV1alpha1 *operatorv1alpha1.OperatorV1alpha1Client
+	operatorV1alpha1 *operatorv1alpha1.OperatorV1alpha1Client
+}
+
+// OperatorV1alpha1 retrieves the OperatorV1alpha1Client
+func (c *Clientset) OperatorV1alpha1() operatorv1alpha1.OperatorV1alpha1Interface {
+	return c.operatorV1alpha1
 }
 
 // OperatorV1alpha1 retrieves the OperatorV1alpha1Client
@@ -69,6 +77,10 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
+	cs.operatorV1alpha1, err = operatorv1alpha1.NewForConfig(&configShallowCopy)
+	if err != nil {
+		return nil, err
+	}
 
 	cs.DiscoveryClient, err = discovery.NewDiscoveryClientForConfig(&configShallowCopy)
 	if err != nil {
@@ -82,6 +94,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
 	cs.operatorV1alpha1 = operatorv1alpha1.NewForConfigOrDie(c)
+	cs.operatorV1alpha1 = operatorv1alpha1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -90,6 +103,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
+	cs.operatorV1alpha1 = operatorv1alpha1.New(c)
 	cs.operatorV1alpha1 = operatorv1alpha1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)

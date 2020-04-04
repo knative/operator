@@ -180,7 +180,7 @@ func (r *Reconciler) install(manifest *mf.Manifest, ke *eventingv1alpha1.Knative
 		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
 		return err
 	}
-	ke.Status.Version = version.Version
+	ke.Status.Version = version.EventingVersion
 	ke.Status.MarkInstallationReady()
 	return nil
 }

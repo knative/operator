@@ -32,10 +32,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
-	"knative.dev/pkg/test/logging"
-	"knative.dev/operator/pkg/apis/serving/v1alpha1"
-	servingv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
 	"knative.dev/operator/test"
+	"knative.dev/pkg/test/logging"
 )
 
 const (

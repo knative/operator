@@ -65,7 +65,7 @@ build your own image.
 
 The installation of Knative Eventing is triggered by the creation of a
 `KnativeEventing` custom resource (CR) as defined by
-[this CRD](config/300-eventing-v1alpha1-knativeeventing-crd.yaml). The operator
+[this CRD](config/300-operator-v1alpha1-knative-crd.yaml). The operator
 will deploy Knative Eventing in the same namespace containing the
 `KnativeEventing` CR, and this CR will trigger the installation,
 reconfiguration, or removal of the knative eventing resources.

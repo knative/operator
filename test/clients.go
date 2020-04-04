@@ -21,9 +21,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/pkg/test"
 	"knative.dev/operator/pkg/client/clientset/versioned"
-	servingv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
+	"knative.dev/pkg/test"
 )
 
 // Clients holds instances of interfaces for making requests to Knative Serving.

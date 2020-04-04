@@ -28,11 +28,25 @@
 
 source $(dirname $0)/e2e-common.sh
 
+function install_eventing_operator() {
+  header "Installing Knative Eventing operator"
+
+  # Deploy the operator
+  ko apply -f config/
+  wait_until_pods_running default || fail_test "Eventing Operator did not come up"
+}
+
+function knative_setup() {
+  echo ">> Creating test namespaces"
+  kubectl create namespace $TEST_NAMESPACE
+  install_eventing_operator
+}
+
 function knative_setup() {
   donwload_knative_serving
   install_istio || fail_test "Istio installation failed"
   create_namespace
-  install_serving_operator
+  install_operator
 }
 
 # Skip installing istio as an add-on

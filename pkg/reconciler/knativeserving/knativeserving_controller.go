@@ -212,7 +212,7 @@ func (r *Reconciler) install(manifest *mf.Manifest, instance *servingv1alpha1.Kn
 		return err
 	}
 	instance.Status.MarkInstallSucceeded()
-	instance.Status.Version = version.Version
+	instance.Status.Version = version.ServingVersion
 	return nil
 }
 

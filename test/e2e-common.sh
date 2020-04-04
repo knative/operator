@@ -105,12 +105,12 @@ function create_namespace() {
   kubectl create namespace $TEST_NAMESPACE
 }
 
-function install_serving_operator() {
+function install_operator() {
   cd ${OPERATOR_DIR}
-  header "Installing Knative Serving operator"
+  header "Installing Knative operator"
   # Deploy the operator
   ko apply -f config/
-  wait_until_pods_running default || fail_test "Serving Operator did not come up"
+  wait_until_pods_running default || fail_test "Operator did not come up"
 }
 
 # Uninstalls Knative Serving from the current cluster.
@@ -122,7 +122,7 @@ function knative_teardown() {
   echo ">> Bringing down Istio"
   kubectl delete --ignore-not-found=true -f "${INSTALL_ISTIO_YAML}" || return 1
   kubectl delete --ignore-not-found=true clusterrolebinding cluster-admin-binding
-  echo ">> Bringing down Serving Operator"
+  echo ">> Bringing down Operator"
   ko delete --ignore-not-found=true -f config/ || return 1
   echo ">> Removing test namespaces"
   kubectl delete all --all --ignore-not-found --now --timeout 60s -n $TEST_NAMESPACE

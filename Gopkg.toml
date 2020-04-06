@@ -10,6 +10,7 @@ required = [
   "knative.dev/caching/pkg/apis/caching/v1alpha1",
   "knative.dev/test-infra/scripts",
   "knative.dev/test-infra/tools/dep-collector",
+  "k8s.io/apimachinery/pkg/util/sets/types",
 ]
 
 [[override]]

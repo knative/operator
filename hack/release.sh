@@ -23,7 +23,7 @@ function build_release() {
   # Run `generate-yamls.sh`, which should be versioned with the
   # branch since the detail of building may change over time.
   echo "call build release ....................."
-  local YAML_LIST="${REPO_ROOT_DIR}/.serving-operator-temp.yaml"
+  local YAML_LIST="${REPO_ROOT_DIR}/.operator-temp.yaml"
   export TAG
   $(dirname $0)/generate-yamls.sh "${REPO_ROOT_DIR}" "${YAML_LIST}"
   ARTIFACTS_TO_PUBLISH=$(cat "${YAML_LIST}" | tr '\n' ' ')

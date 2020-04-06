@@ -31,7 +31,7 @@ func TestKnativeServingDeployment(t *testing.T) {
 	clients := client.Setup(t)
 
 	names := test.ResourceNames{
-		KnativeServing: test.ServingOperatorName,
+		KnativeServing: test.OperatorName,
 		Namespace:      test.ServingOperatorNamespace,
 	}
 

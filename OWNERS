@@ -6,6 +6,10 @@ approvers:
 - trshafer
 - evankanderson  # TOC member as backup
 - mattmoor       # TOC member as backup
+- Cynocracy
+- matzew
+- n3wscott
+- aliok
 
 reviewers:
 - Cynocracy
@@ -13,3 +17,6 @@ reviewers:
 - jcrossley3
 - trshafer
 - yu2003w
+- matzew
+- n3wscott
+- aliok

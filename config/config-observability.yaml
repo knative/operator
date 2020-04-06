@@ -17,7 +17,7 @@ kind: ConfigMap
 metadata:
   name: config-observability
   labels:
-    serving.knative.dev/release: devel
+    operator.knative.dev/release: devel
 
 data:
   _example: |

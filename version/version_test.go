@@ -23,7 +23,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 )
 
-func TestManifestVersionSame(t *testing.T) {
+func TestManifestVersionServingSame(t *testing.T) {
 	_, b, _, _ := runtime.Caller(0)
 	manifest, err := mf.NewManifest(filepath.Join(filepath.Dir(b)+"/..", "cmd/serving-operator/kodata/knative-serving/"))
 	if err != nil {
@@ -31,8 +31,28 @@ func TestManifestVersionSame(t *testing.T) {
 	}
 
 	// example: v0.10.1
-	expectedLabelValue := "v" + Version
+	expectedLabelValue := "v" + ServingVersion
 	label := "serving.knative.dev/release"
+
+	for _, resource := range manifest.Filter(mf.ByLabel(label, "")).Resources() {
+		v := resource.GetLabels()[label]
+		if v != expectedLabelValue {
+			t.Errorf("Version info in manifest and operator don't match. got: %v, want: %v. Resource GVK: %v, Resource name: %v", v, expectedLabelValue,
+				resource.GroupVersionKind(), resource.GetName())
+		}
+	}
+}
+
+func TestManifestVersionEventingSame(t *testing.T) {
+	_, b, _, _ := runtime.Caller(0)
+	manifest, err := mf.NewManifest(filepath.Join(filepath.Dir(b)+"/..", "cmd/eventing-operator/kodata/knative-eventing/"))
+	if err != nil {
+		t.Fatal("Failed to load manifest", err)
+	}
+
+	// example: v0.10.1
+	expectedLabelValue := "v" + EventingVersion
+	label := "eventing.knative.dev/release"
 
 	for _, resource := range manifest.Filter(mf.ByLabel(label, "")).Resources() {
 		v := resource.GetLabels()[label]

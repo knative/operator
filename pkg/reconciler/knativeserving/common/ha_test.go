@@ -25,7 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	servingv1alpha1 "knative.dev/operator/pkg/apis/serving/v1alpha1"
+	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 func TestHighAvailabilityTransform(t *testing.T) {

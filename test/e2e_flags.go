@@ -24,8 +24,10 @@ import "os"
 var (
 	// ServingOperatorNamespace is the default namespace for serving operator e2e tests
 	ServingOperatorNamespace = getenv("TEST_NAMESPACE", "knative-serving")
-	// ServingOperatorName is the default operator name for serving operator e2e tests
-	ServingOperatorName = getenv("TEST_RESOURCE", "knative-serving")
+	// EventingOperatorNamespace is the default namespace for serving operator e2e tests
+	EventingOperatorNamespace = getenv("TEST_NAMESPACE", "knative-eventing")
+	// OperatorName is the default operator name for serving operator e2e tests
+	OperatorName = getenv("TEST_RESOURCE", "knative")
 )
 
 func getenv(name, defaultValue string) string {

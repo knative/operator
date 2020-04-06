@@ -21,16 +21,16 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/pkg/test"
 	"knative.dev/operator/pkg/client/clientset/versioned"
-	servingv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/serving/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
+	"knative.dev/pkg/test"
 )
 
 // Clients holds instances of interfaces for making requests to Knative Serving.
 type Clients struct {
 	KubeClient *test.KubeClient
 	Dynamic    dynamic.Interface
-	Serving    servingv1alpha1.OperatorV1alpha1Interface
+	Operator   operatorv1alpha1.OperatorV1alpha1Interface
 	Config     *rest.Config
 }
 
@@ -57,7 +57,7 @@ func NewClients(configPath string, clusterName string) (*Clients, error) {
 		return nil, err
 	}
 
-	clients.Serving, err = newKnativeServingAlphaClients(cfg)
+	clients.Operator, err = newKnativeOperatorAlphaClients(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func buildClientConfig(kubeConfigPath string, clusterName string) (*rest.Config,
 		&overrides).ClientConfig()
 }
 
-func newKnativeServingAlphaClients(cfg *rest.Config) (servingv1alpha1.OperatorV1alpha1Interface, error) {
+func newKnativeOperatorAlphaClients(cfg *rest.Config) (operatorv1alpha1.OperatorV1alpha1Interface, error) {
 	cs, err := versioned.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
@@ -85,10 +85,18 @@ func newKnativeServingAlphaClients(cfg *rest.Config) (servingv1alpha1.OperatorV1
 	return cs.OperatorV1alpha1(), nil
 }
 
-func (c *Clients) KnativeServing() servingv1alpha1.KnativeServingInterface {
-	return c.Serving.KnativeServings(ServingOperatorNamespace)
+func (c *Clients) KnativeServing() operatorv1alpha1.KnativeServingInterface {
+	return c.Operator.KnativeServings(ServingOperatorNamespace)
 }
 
-func (c *Clients) KnativeServingAll() servingv1alpha1.KnativeServingInterface {
-	return c.Serving.KnativeServings(metav1.NamespaceAll)
+func (c *Clients) KnativeServingAll() operatorv1alpha1.KnativeServingInterface {
+	return c.Operator.KnativeServings(metav1.NamespaceAll)
+}
+
+func (c *Clients) KnativeEventing() operatorv1alpha1.KnativeEventingInterface {
+	return c.Operator.KnativeEventings(EventingOperatorNamespace)
+}
+
+func (c *Clients) KnativeEventingAll() operatorv1alpha1.KnativeEventingInterface {
+	return c.Operator.KnativeEventings(metav1.NamespaceAll)
 }

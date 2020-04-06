@@ -29,7 +29,7 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 	versioned "knative.dev/operator/pkg/client/clientset/versioned"
 	internalinterfaces "knative.dev/operator/pkg/client/informers/externalversions/internalinterfaces"
-	serving "knative.dev/operator/pkg/client/informers/externalversions/serving"
+	operator "knative.dev/operator/pkg/client/informers/externalversions/operator"
 )
 
 // SharedInformerOption defines the functional option type for SharedInformerFactory.
@@ -172,9 +172,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Operator() serving.Interface
+	Operator() operator.Interface
 }
 
-func (f *sharedInformerFactory) Operator() serving.Interface {
-	return serving.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Operator() operator.Interface {
+	return operator.New(f, f.namespace, f.tweakListOptions)
 }

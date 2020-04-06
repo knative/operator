@@ -31,9 +31,12 @@
 # project $PROJECT_ID, start knative in it, run the tests and delete the
 # cluster.
 
+readonly LATEST_EVENTING_OPERATOR_RELEASE_VERSION="v0.13.2"
+readonly LATEST_EVENTING_RELEASE_VERSION="v0.13.4"
+
 source $(dirname $0)/e2e-common.sh
 
-function install_previous_operator_release() {
+function install_previous_serving_operator_release() {
   local full_url="https://github.com/knative/serving-operator/releases/download/${LATEST_SERVING_OPERATOR_RELEASE_VERSION}/serving-operator.yaml"
 
   wget "${full_url}" -O "${release_yaml}" \
@@ -69,13 +72,38 @@ spec:
     logging:
       loglevel.controller: "debug"
 EOF
+  echo ">> Creating the custom resource of Knative Eventing:"
+  cat <<-EOF | kubectl apply -f -
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+  namespace: ${TEST_EVENTING_NAMESPACE}
+EOF
+}
+
+function install_previous_eventing_operator_release() {
+  local full_url="https://github.com/knative/eventing-operator/releases/download/${LATEST_EVENTING_OPERATOR_RELEASE_VERSION}/eventing-operator.yaml"
+
+  wget "${full_url}" -O "${release_eventing_yaml}" \
+      || fail_test "Unable to download latest Knative Eventing Operator release."
+
+  install_previous_eventing_release
+}
+
+function install_previous_eventing_release() {
+  header "Installing Knative Eventing operator previous public release"
+  kubectl apply -f "${release_eventing_yaml}" || fail_test "Knative Eventing Operator latest release installation failed"
+  wait_until_pods_running default || fail_test "Eventing Operator did not come up"
 }
 
 function knative_setup() {
   create_namespace
-  install_previous_operator_release
+  install_previous_serving_operator_release
+  install_previous_eventing_operator_release
   create_custom_resource
   wait_until_pods_running ${TEST_NAMESPACE}
+  wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 }
 
 # Create test resources and images
@@ -123,8 +151,8 @@ function generate_latest_serving_manifest() {
 
   if [[ -f "${SERVING_YAML}" ]]; then
     echo ">> Replacing the current manifest in operator with the generated manifest"
-    rm -rf ${OPERATOR_DIR}/cmd/manager/kodata/knative-serving/*
-    cp ${SERVING_YAML} ${OPERATOR_DIR}/cmd/manager/kodata/knative-serving/serving.yaml
+    rm -rf ${OPERATOR_DIR}/cmd/serving-operator/kodata/knative-serving/*
+    cp ${SERVING_YAML} ${OPERATOR_DIR}/cmd/serving-operator/kodata/knative-serving/serving.yaml
   else
     echo ">> The serving.yaml was not generated, so keep the current manifest"
   fi
@@ -137,6 +165,13 @@ function generate_latest_serving_manifest() {
 initialize $@ --skip-istio-addon
 
 TIMEOUT=20m
+
+header "Running preupgrade tests"
+go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
+
+header "Listing all the pods of the previous release"
+wait_until_pods_running ${TEST_NAMESPACE}
+wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running preupgrade tests"
 
@@ -152,7 +187,7 @@ go_test_e2e -tags=probe -timeout=${TIMEOUT} ./test/upgrade \
 PROBER_PID=$!
 echo "Prober PID is ${PROBER_PID}"
 
-install_serving_operator
+install_operator
 
 # If we got this far, the operator installed Knative Serving of the latest source code.
 header "Running tests for Knative Serving Operator"
@@ -164,6 +199,7 @@ failed=0
 cd ${OPERATOR_DIR}
 go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
 wait_until_pods_running ${TEST_NAMESPACE}
+wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running tests under Knative Serving"
 # Run the postupgrade tests under serving
@@ -177,13 +213,27 @@ result="$(kubectl get ${list_resources} -l serving.knative.dev/release=${LATEST_
 
 # If the ${result} is not empty, we fail the tests, because the resources from the previous release still exist.
 if [[ ! -z ${result} ]] ; then
-  header "The following obsolete resources still exist:"
+  header "The following obsolete resources still exist for serving operator:"
+  echo "${result}"
+  fail_test "The resources with the label of previous release have not been removed."
+fi
+
+# Verify with the bash script to make sure there is no resource with the label of the previous release.
+list_resources="deployment,pod,service,cm,crd,sa,ClusterRole,ClusterRoleBinding,ValidatingWebhookConfiguration,\
+MutatingWebhookConfiguration,Secret,RoleBinding"
+result="$(kubectl get ${list_resources} -l eventing.knative.dev/release=${LATEST_EVENTING_RELEASE_VERSION} --all-namespaces 2>/dev/null)"
+
+# If the ${result} is not empty, we fail the tests, because the resources from the previous release still exist.
+if [[ ! -z ${result} ]] ; then
+  header "The following obsolete resources still exist for eventing operator:"
   echo "${result}"
   fail_test "The resources with the label of previous release have not been removed."
 fi
 
 install_previous_serving_release
+install_previous_eventing_release
 wait_until_pods_running ${TEST_NAMESPACE}
+wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running postdowngrade tests"
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \

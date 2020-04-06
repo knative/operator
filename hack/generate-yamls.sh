@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script builds all the YAMLs that Knative serving operator publishes.
+# This script builds all the YAMLs that Knative operator publishes.
 # It may be varied between different branches, of what it does, but the
 # following usage must be observed:
 #
@@ -50,7 +50,7 @@ fi
 rm -fr ${YAML_OUTPUT_DIR}/*.yaml
 
 # Generated Knative Operator component YAML files
-readonly SERVING_OPERATOR_YAML=${YAML_OUTPUT_DIR}/serving-operator.yaml
+readonly OPERATOR_YAML=${YAML_OUTPUT_DIR}/operator.yaml
 
 # Flags for all ko commands
 KO_YAML_FLAGS="-P"
@@ -62,11 +62,11 @@ export KO_DOCKER_REPO
 
 cd "${YAML_REPO_ROOT}"
 
-echo "Building Knative Serving Operator"
-ko resolve ${KO_YAML_FLAGS} -f config/ > "${SERVING_OPERATOR_YAML}"
+echo "Building Knative Operator"
+ko resolve ${KO_YAML_FLAGS} -f config/ > "${OPERATOR_YAML}"
 
-# List generated YAML files. We have only one serving-operator.yaml so far.
+# List generated YAML files. We have only one operator.yaml so far.
 
-ls -1 ${SERVING_OPERATOR_YAML} > ${YAML_LIST_FILE}
+ls -1 ${OPERATOR_YAML} > ${YAML_LIST_FILE}
 # TODO(adrcunha): Uncomment once there's more than one YAML generated.
-# ls -1 ${YAML_OUTPUT_DIR}/*.yaml | grep -v ${SERVING_OPERATOR_YAML} >> ${YAML_LIST_FILE}
+# ls -1 ${YAML_OUTPUT_DIR}/*.yaml | grep -v ${OPERATOR_YAML} >> ${YAML_LIST_FILE}

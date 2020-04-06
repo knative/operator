@@ -18,50 +18,45 @@ package e2e
 import (
 	"testing"
 
-	"knative.dev/pkg/test/logstream"
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
+	"knative.dev/pkg/test/logstream"
 )
 
-// TestKnativeServingDeployment verifies the KnativeServing creation, deployment recreation, and KnativeServing deletion.
-func TestKnativeServingDeployment(t *testing.T) {
+// TestKnativeEventingDeployment verifies the KnativeEventing creation, deployment recreation, and KnativeEventing deletion.
+func TestKnativeEventingDeployment(t *testing.T) {
 	cancel := logstream.Start(t)
 	defer cancel()
 	clients := client.Setup(t)
 
 	names := test.ResourceNames{
-		KnativeServing: test.OperatorName,
-		Namespace:      test.OperatorNamespace,
+		KnativeEventing: test.OperatorName,
+		Namespace:       test.OperatorNamespace,
 	}
 
 	test.CleanupOnInterrupt(func() { test.TearDown(clients, names) })
 	defer test.TearDown(clients, names)
 
-	// Create a KnativeServing
-	if _, err := resources.EnsureKnativeServingExists(clients.KnativeServing(), names); err != nil {
-		t.Fatalf("KnativeService %q failed to create: %v", names.KnativeServing, err)
+	// Create a KnativeEventing
+	if _, err := resources.EnsureKnativeEventingExists(clients.KnativeEventing(), names); err != nil {
+		t.Fatalf("KnativeService %q failed to create: %v", names.KnativeEventing, err)
 	}
 
-	// Test if KnativeServing can reach the READY status
+	// Test if KnativeEventing can reach the READY status
 	t.Run("create", func(t *testing.T) {
-		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
-	})
-
-	t.Run("configure", func(t *testing.T) {
-		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
-		resources.KSOperatorCRVerifyConfiguration(t, clients, names)
+		resources.AssertKEOperatorCRReadyStatus(t, clients, names)
 	})
 
 	// Delete the deployments one by one to see if they will be recreated.
 	t.Run("restore", func(t *testing.T) {
-		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
-		resources.DeleteAndVerifyDeployments(t, clients, names)
+		resources.AssertKEOperatorCRReadyStatus(t, clients, names)
+		resources.DeleteAndVerifyEventingDeployments(t, clients, names)
 	})
 
-	// Delete the KnativeServing to see if all resources will be removed
+	// Delete the KnativeEventing to see if all resources will be removed
 	t.Run("delete", func(t *testing.T) {
-		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
-		resources.KSOperatorCRDelete(t, clients, names)
+		resources.AssertKEOperatorCRReadyStatus(t, clients, names)
+		resources.KEOperatorCRDelete(t, clients, names)
 	})
 }

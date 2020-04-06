@@ -150,11 +150,11 @@ func DeleteAndVerifyDeployments(t *testing.T, clients *test.Clients, names test.
 	dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(names.Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("Failed to get any deployment under the namespace %q: %v",
-			test.ServingOperatorNamespace, err)
+			test.OperatorNamespace, err)
 	}
 	if len(dpList.Items) == 0 {
 		t.Fatalf("No deployment under the namespace %q was found",
-			test.ServingOperatorNamespace)
+			test.OperatorNamespace)
 	}
 	// Delete the first deployment and verify the operator recreates it
 	deployment := dpList.Items[0]
@@ -179,9 +179,9 @@ func DeleteAndVerifyDeployments(t *testing.T, clients *test.Clients, names test.
 		t.Fatalf("The deployment %s/%s failed to reach the desired state: %v", deployment.Namespace, deployment.Name, err)
 	}
 
-	if _, err := WaitForKnativeServingState(clients.KnativeServing(), test.ServingOperatorName,
+	if _, err := WaitForKnativeServingState(clients.KnativeServing(), test.OperatorName,
 		IsKnativeServingReady); err != nil {
-		t.Fatalf("KnativeService %q failed to reach the desired state: %v", test.ServingOperatorName, err)
+		t.Fatalf("KnativeService %q failed to reach the desired state: %v", test.OperatorName, err)
 	}
 	t.Logf("The deployment %s/%s reached the desired state.", deployment.Namespace, deployment.Name)
 }
@@ -240,5 +240,110 @@ func AssertKSOperatorDeploymentStatus(t *testing.T, clients *test.Clients, names
 	if _, err := WaitForKnativeServingDeploymentState(clients, namespace, expectedDeployments,
 		IsKnativeServingDeploymentReady); err != nil {
 		t.Fatalf("Knative Serving deployments failed to meet the expected deployments: %v", err)
+	}
+}
+
+// AssertKEOperatorCRReadyStatus verifies if the KnativeEventing can reach the READY status.
+func AssertKEOperatorCRReadyStatus(t *testing.T, clients *test.Clients, names test.ResourceNames) {
+	if _, err := WaitForKnativeEventingState(clients.KnativeEventing(), names.KnativeEventing,
+		IsKnativeEventingReady); err != nil {
+		t.Fatalf("KnativeService %q failed to get to the READY status: %v", names.KnativeEventing, err)
+	}
+}
+
+// DeleteAndVerifyEventingDeployments verify whether all the deployments for knative eventing are able to recreate, when they are deleted.
+func DeleteAndVerifyEventingDeployments(t *testing.T, clients *test.Clients, names test.ResourceNames) {
+	dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(names.Namespace).List(metav1.ListOptions{})
+	if err != nil {
+		t.Fatalf("Failed to get any deployment under the namespace %q: %v",
+			test.OperatorNamespace, err)
+	}
+	if len(dpList.Items) == 0 {
+		t.Fatalf("No deployment under the namespace %q was found",
+			test.OperatorNamespace)
+	}
+	// Delete the first deployment and verify the operator recreates it
+	deployment := dpList.Items[0]
+	if err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Delete(deployment.Name,
+		&metav1.DeleteOptions{}); err != nil {
+		t.Fatalf("Failed to delete deployment %s/%s: %v", deployment.Namespace, deployment.Name, err)
+	}
+
+	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+		dep, err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Get(deployment.Name, metav1.GetOptions{})
+		if err != nil {
+			// If the deployment is not found, we continue to wait for the availability.
+			if apierrs.IsNotFound(err) {
+				return false, nil
+			}
+			return false, err
+		}
+		return IsDeploymentAvailable(dep)
+	})
+
+	if waitErr != nil {
+		t.Fatalf("The deployment %s/%s failed to reach the desired state: %v", deployment.Namespace, deployment.Name, err)
+	}
+
+	if _, err := WaitForKnativeEventingState(clients.KnativeEventing(), test.OperatorName,
+		IsKnativeEventingReady); err != nil {
+		t.Fatalf("KnativeService %q failed to reach the desired state: %v", test.OperatorName, err)
+	}
+	t.Logf("The deployment %s/%s reached the desired state.", deployment.Namespace, deployment.Name)
+}
+
+// KEOperatorCRDelete deletes tha KnativeEventing to see if all resources will be deleted
+func KEOperatorCRDelete(t *testing.T, clients *test.Clients, names test.ResourceNames) {
+	if err := clients.KnativeEventing().Delete(names.KnativeEventing, &metav1.DeleteOptions{}); err != nil {
+		t.Fatalf("KnativeEventing %q failed to delete: %v", names.KnativeEventing, err)
+	}
+	err := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+		_, err := clients.KnativeEventing().Get(names.KnativeEventing, metav1.GetOptions{})
+		if apierrs.IsNotFound(err) {
+			return true, nil
+		}
+		return false, err
+	})
+	if err != nil {
+		t.Fatal("Timed out waiting on KnativeServing to delete", err)
+	}
+	_, b, _, _ := runtime.Caller(0)
+	m, err := mfc.NewManifest(filepath.Join((filepath.Dir(b)+"/.."), "config/"), clients.Config)
+	if err != nil {
+		t.Fatal("Failed to load manifest", err)
+	}
+	if err := verifyNoKnativeEventings(clients); err != nil {
+		t.Fatal(err)
+	}
+	// verify all but the CRD's and the Namespace are gone
+	for _, u := range m.Filter(mf.NoCRDs, mf.None(mf.ByKind("Namespace"))).Resources() {
+		if _, err := m.Client.Get(&u); !apierrs.IsNotFound(err) {
+			t.Fatalf("The %s %s failed to be deleted: %v", u.GetKind(), u.GetName(), err)
+		}
+	}
+	// verify all the CRD's remain
+	for _, u := range m.Filter(mf.CRDs).Resources() {
+		if _, err := m.Client.Get(&u); apierrs.IsNotFound(err) {
+			t.Fatalf("The %s CRD was deleted", u.GetName())
+		}
+	}
+}
+
+func verifyNoKnativeEventings(clients *test.Clients) error {
+	eventings, err := clients.KnativeEventingAll().List(metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+	if len(eventings.Items) > 0 {
+		return errors.New("Unable to verify cluster-scoped resources are deleted if any KnativeEventing exists")
+	}
+	return nil
+}
+
+// AssertKEOperatorDeploymentStatus verifies if the Knative deployments reach the READY status.
+func AssertKEOperatorDeploymentStatus(t *testing.T, clients *test.Clients, namespace string, expectedDeployments []string) {
+	if err := WaitForKnativeEventingDeploymentState(clients, namespace, expectedDeployments, t.Logf,
+		IsKnativeEventingDeploymentReady); err != nil {
+		t.Fatalf("Knative Eventing deployments failed to meet the expected deployments: %v", err)
 	}
 }

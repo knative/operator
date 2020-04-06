@@ -98,17 +98,3 @@ func (is *KnativeServingStatus) MarkDeploymentsNotReady() {
 func (is *KnativeServingStatus) MarkDependenciesInstalled() {
 	conditions.Manage(is).MarkTrue(DependenciesInstalled)
 }
-
-func (is *KnativeServingStatus) MarkDependencyInstalling(msg string) {
-	conditions.Manage(is).MarkFalse(
-		DependenciesInstalled,
-		"Installing",
-		"Dependency installing: %s", msg)
-}
-
-func (is *KnativeServingStatus) MarkDependencyMissing(msg string) {
-	conditions.Manage(is).MarkFalse(
-		DependenciesInstalled,
-		"Error",
-		"Dependency missing: %s", msg)
-}

@@ -16,8 +16,12 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"knative.dev/pkg/apis"
 	"testing"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -50,4 +54,110 @@ func assertEqual(t *testing.T, actual, expected interface{}) {
 		return
 	}
 	t.Fatalf("Expected: %v\nActual: %v", expected, actual)
+}
+
+func TestKnativeServingStatusGetCondition(t *testing.T) {
+	ks := &KnativeServingStatus{}
+	if a := ks.GetCondition(InstallSucceeded); a != nil {
+		t.Errorf("empty ServingStatus returned %v when expected nil", a)
+	}
+	mc := &apis.Condition{
+		Type:   InstallSucceeded,
+		Status: corev1.ConditionTrue,
+	}
+	ks.MarkInstallSucceeded()
+	if diff := cmp.Diff(mc, ks.GetCondition(InstallSucceeded), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
+		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
+	}
+}
+
+func TestKnativeServingInstallFailed(t *testing.T) {
+	reason := "Error"
+	message := "Waiting on deployments"
+	ks := &KnativeServingStatus{}
+	mc := &apis.Condition{
+		Type:    EventingConditionReady,
+		Status:  corev1.ConditionFalse,
+		Reason:  reason,
+		Message: "Install failed with message: " + message,
+	}
+	ks.MarkInstallFailed(message)
+	if diff := cmp.Diff(mc, ks.GetCondition(EventingConditionReady), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
+		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
+	}
+}
+
+func TestKnativeServingDeploymentNotReady(t *testing.T) {
+	reason := "NotReady"
+	message := "Waiting on deployments"
+	ks := &KnativeServingStatus{}
+	mc := &apis.Condition{
+		Type:    DeploymentsAvailable,
+		Status:  corev1.ConditionFalse,
+		Reason:  reason,
+		Message: message,
+	}
+	ks.MarkDeploymentsNotReady()
+	if diff := cmp.Diff(mc, ks.GetCondition(DeploymentsAvailable), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
+		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
+	}
+}
+
+func TestKnativeServingDeploymentsAvailable(t *testing.T) {
+	ks := &KnativeServingStatus{}
+	mc := &apis.Condition{
+		Type:    DeploymentsAvailable,
+		Status:  corev1.ConditionTrue,
+	}
+	ks.MarkDeploymentsAvailable()
+	if diff := cmp.Diff(mc, ks.GetCondition(DeploymentsAvailable), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
+		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
+	}
+}
+
+func TestKnativeServingDependenciesInstalled(t *testing.T) {
+	ks := &KnativeServingStatus{}
+	mc := &apis.Condition{
+		Type:    DependenciesInstalled,
+		Status:  corev1.ConditionTrue,
+	}
+	ks.MarkDependenciesInstalled()
+	if diff := cmp.Diff(mc, ks.GetCondition(DependenciesInstalled), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
+		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
+	}
+}
+
+func TestKnativeServingInitializeConditions(t *testing.T) {
+	tests := []struct {
+		name string
+		ke   *KnativeServingStatus
+		want *KnativeServingStatus
+	}{{
+		name: "empty",
+		ke:   &KnativeServingStatus{},
+		want: &KnativeServingStatus{
+			Conditions: []apis.Condition{{
+				Type:   DependenciesInstalled,
+				Status: corev1.ConditionUnknown,
+			}, {
+				Type:   DeploymentsAvailable,
+				Status: corev1.ConditionUnknown,
+			}, {
+				Type:   InstallSucceeded,
+				Status: corev1.ConditionUnknown,
+			}, {
+				Type:   "Ready",
+				Status: corev1.ConditionUnknown,
+			}},
+		},
+	}}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			test.ke.InitializeConditions()
+			if diff := cmp.Diff(test.want, test.ke, ignoreAllButTypeAndStatus); diff != "" {
+				t.Errorf("unexpected conditions (-want, +got) = %v", diff)
+			}
+		})
+	}
 }

@@ -36,6 +36,7 @@ GENERATE_SERVING_YAML=1
 OPERATOR_DIR=$(dirname $0)/..
 KNATIVE_SERVING_DIR=${OPERATOR_DIR}/..
 release_yaml="$(mktemp)"
+release_eventing_yaml="$(mktemp)"
 
 # Choose a correct istio-crds.yaml file.
 # - $1 specifies Istio version.

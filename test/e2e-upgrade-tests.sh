@@ -31,7 +31,7 @@
 # project $PROJECT_ID, start knative in it, run the tests and delete the
 # cluster.
 
-readonly LATEST_EVENTING_OPERATOR_RELEASE_VERSION=$(git tag | sort -V | tail -1)
+readonly LATEST_EVENTING_OPERATOR_RELEASE_VERSION="v0.13.2"
 readonly LATEST_EVENTING_RELEASE_VERSION="v0.13.4"
 
 source $(dirname $0)/e2e-common.sh
@@ -78,15 +78,15 @@ apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
 metadata:
   name: knative-eventing
-  namespace: ${TEST_NAMESPACE}
+  namespace: ${TEST_EVENTING_NAMESPACE}
 EOF
 }
 
 function install_previous_eventing_operator_release() {
-  local full_url="https://github.com/knative/serving-operator/releases/download/${LATEST_SERVING_OPERATOR_RELEASE_VERSION}/serving-operator.yaml"
+  local full_url="https://github.com/knative/eventing-operator/releases/download/${LATEST_EVENTING_OPERATOR_RELEASE_VERSION}/eventing-operator.yaml"
 
   wget "${full_url}" -O "${release_eventing_yaml}" \
-      || fail_test "Unable to download latest Knative Serving Operator release."
+      || fail_test "Unable to download latest Knative Eventing Operator release."
 
   install_previous_eventing_release
 }
@@ -99,10 +99,11 @@ function install_previous_eventing_release() {
 
 function knative_setup() {
   create_namespace
-  install_previous_operator_release
+  install_previous_serving_operator_release
   install_previous_eventing_operator_release
   create_custom_resource
   wait_until_pods_running ${TEST_NAMESPACE}
+  wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 }
 
 # Create test resources and images
@@ -150,8 +151,8 @@ function generate_latest_serving_manifest() {
 
   if [[ -f "${SERVING_YAML}" ]]; then
     echo ">> Replacing the current manifest in operator with the generated manifest"
-    rm -rf ${OPERATOR_DIR}/cmd/manager/kodata/knative-serving/*
-    cp ${SERVING_YAML} ${OPERATOR_DIR}/cmd/manager/kodata/knative-serving/serving.yaml
+    rm -rf ${OPERATOR_DIR}/cmd/serving-operator/kodata/knative-serving/*
+    cp ${SERVING_YAML} ${OPERATOR_DIR}/cmd/serving-operator/kodata/knative-serving/serving.yaml
   else
     echo ">> The serving.yaml was not generated, so keep the current manifest"
   fi
@@ -170,6 +171,7 @@ go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
 
 header "Listing all the pods of the previous release"
 wait_until_pods_running ${TEST_NAMESPACE}
+wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running preupgrade tests"
 
@@ -197,6 +199,7 @@ failed=0
 cd ${OPERATOR_DIR}
 go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
 wait_until_pods_running ${TEST_NAMESPACE}
+wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running tests under Knative Serving"
 # Run the postupgrade tests under serving
@@ -230,6 +233,7 @@ fi
 install_previous_serving_release
 install_previous_eventing_release
 wait_until_pods_running ${TEST_NAMESPACE}
+wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running postdowngrade tests"
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \

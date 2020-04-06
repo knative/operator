@@ -33,7 +33,7 @@ func TestKnativeServingPostUpgrade(t *testing.T) {
 
 	names := test.ResourceNames{
 		KnativeServing: test.OperatorName,
-		Namespace:      test.OperatorNamespace,
+		Namespace:      test.ServingOperatorNamespace,
 	}
 
 	// Create a KnativeServing custom resource, if it does not exist

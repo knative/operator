@@ -33,7 +33,7 @@ func TestKnativeEventingUpgrade(t *testing.T) {
 
 	names := test.ResourceNames{
 		KnativeEventing: test.OperatorName,
-		Namespace:       test.OperatorNamespace,
+		Namespace:       test.EventingOperatorNamespace,
 	}
 
 	// Create a KnativeEventing

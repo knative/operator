@@ -86,7 +86,7 @@ func newKnativeOperatorAlphaClients(cfg *rest.Config) (operatorv1alpha1.Operator
 }
 
 func (c *Clients) KnativeServing() operatorv1alpha1.KnativeServingInterface {
-	return c.Operator.KnativeServings(OperatorNamespace)
+	return c.Operator.KnativeServings(ServingOperatorNamespace)
 }
 
 func (c *Clients) KnativeServingAll() operatorv1alpha1.KnativeServingInterface {
@@ -94,7 +94,7 @@ func (c *Clients) KnativeServingAll() operatorv1alpha1.KnativeServingInterface {
 }
 
 func (c *Clients) KnativeEventing() operatorv1alpha1.KnativeEventingInterface {
-	return c.Operator.KnativeEventings(OperatorNamespace)
+	return c.Operator.KnativeEventings(EventingOperatorNamespace)
 }
 
 func (c *Clients) KnativeEventingAll() operatorv1alpha1.KnativeEventingInterface {

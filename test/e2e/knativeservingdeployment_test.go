@@ -32,7 +32,7 @@ func TestKnativeServingDeployment(t *testing.T) {
 
 	names := test.ResourceNames{
 		KnativeServing: test.OperatorName,
-		Namespace:      test.OperatorNamespace,
+		Namespace:      test.ServingOperatorNamespace,
 	}
 
 	test.CleanupOnInterrupt(func() { test.TearDown(clients, names) })

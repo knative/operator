@@ -18,10 +18,10 @@
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
 # Latest serving operator release.
-readonly LATEST_SERVING_OPERATOR_RELEASE_VERSION=$(git tag | sort -V | tail -1)
+readonly LATEST_SERVING_OPERATOR_RELEASE_VERSION="v0.13.2"
 # Latest serving release, installed by the operator at LATEST_SERVING_OPERATOR_RELEASE_VERSION. This can be
 # different from LATEST_SERVING_OPERATOR_RELEASE_VERSION.
-LATEST_SERVING_RELEASE_VERSION="v0.13.0"
+LATEST_SERVING_RELEASE_VERSION="v0.13.2"
 # This is the branch name of serving repo, where we run the upgrade tests.
 SERVING_REPO_BRANCH=${PULL_BASE_REF}
 # Istio version we test with
@@ -30,8 +30,10 @@ readonly ISTIO_VERSION="1.4-latest"
 readonly ISTIO_MESH=0
 # Namespace used for tests
 readonly TEST_NAMESPACE="knative-serving"
+# Namespace used for tests
+readonly TEST_EVENTING_NAMESPACE="knative-eventing"
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch SERVING_REPO_BRANCH.
-GENERATE_SERVING_YAML=1
+GENERATE_SERVING_YAML=0
 
 OPERATOR_DIR=$(dirname $0)/..
 KNATIVE_SERVING_DIR=${OPERATOR_DIR}/..
@@ -104,6 +106,7 @@ function create_namespace() {
   echo ">> Creating test namespaces"
   # All the custom resources and Knative Serving resources are created under this TEST_NAMESPACE.
   kubectl create namespace $TEST_NAMESPACE
+  kubectl create namespace $TEST_EVENTING_NAMESPACE
 }
 
 function install_operator() {
@@ -120,6 +123,8 @@ function knative_teardown() {
   echo "Istio YAML: ${INSTALL_ISTIO_YAML}"
   echo ">> Bringing down Serving"
   kubectl delete -n $TEST_NAMESPACE KnativeServing --all
+  echo ">> Bringing down Eventing"
+  kubectl delete -n $TEST_EVENTING_NAMESPACE KnativeEventing --all
   echo ">> Bringing down Istio"
   kubectl delete --ignore-not-found=true -f "${INSTALL_ISTIO_YAML}" || return 1
   kubectl delete --ignore-not-found=true clusterrolebinding cluster-admin-binding
@@ -128,4 +133,7 @@ function knative_teardown() {
   echo ">> Removing test namespaces"
   kubectl delete all --all --ignore-not-found --now --timeout 60s -n $TEST_NAMESPACE
   kubectl delete --ignore-not-found --now --timeout 300s namespace $TEST_NAMESPACE
+  echo ">> Removing test eventing namespaces"
+  kubectl delete all --all --ignore-not-found --now --timeout 60s -n $TEST_EVENTING_NAMESPACE
+  kubectl delete --ignore-not-found --now --timeout 300s namespace $TEST_EVENTING_NAMESPACE
 }

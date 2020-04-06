@@ -37,12 +37,6 @@ function install_eventing_operator() {
 }
 
 function knative_setup() {
-  echo ">> Creating test namespaces"
-  kubectl create namespace $TEST_NAMESPACE
-  install_eventing_operator
-}
-
-function knative_setup() {
   donwload_knative_serving
   install_istio || fail_test "Istio installation failed"
   create_namespace

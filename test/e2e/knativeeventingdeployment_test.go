@@ -32,7 +32,7 @@ func TestKnativeEventingDeployment(t *testing.T) {
 
 	names := test.ResourceNames{
 		KnativeEventing: test.OperatorName,
-		Namespace:       test.OperatorNamespace,
+		Namespace:       test.EventingOperatorNamespace,
 	}
 
 	test.CleanupOnInterrupt(func() { test.TearDown(clients, names) })

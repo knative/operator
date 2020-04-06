@@ -150,11 +150,11 @@ func DeleteAndVerifyDeployments(t *testing.T, clients *test.Clients, names test.
 	dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(names.Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("Failed to get any deployment under the namespace %q: %v",
-			test.OperatorNamespace, err)
+			test.ServingOperatorNamespace, err)
 	}
 	if len(dpList.Items) == 0 {
 		t.Fatalf("No deployment under the namespace %q was found",
-			test.OperatorNamespace)
+			test.ServingOperatorNamespace)
 	}
 	// Delete the first deployment and verify the operator recreates it
 	deployment := dpList.Items[0]
@@ -256,11 +256,11 @@ func DeleteAndVerifyEventingDeployments(t *testing.T, clients *test.Clients, nam
 	dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(names.Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("Failed to get any deployment under the namespace %q: %v",
-			test.OperatorNamespace, err)
+			test.EventingOperatorNamespace, err)
 	}
 	if len(dpList.Items) == 0 {
 		t.Fatalf("No deployment under the namespace %q was found",
-			test.OperatorNamespace)
+			test.EventingOperatorNamespace)
 	}
 	// Delete the first deployment and verify the operator recreates it
 	deployment := dpList.Items[0]

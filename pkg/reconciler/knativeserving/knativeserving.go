@@ -21,12 +21,15 @@ import (
 	"fmt"
 
 	mf "github.com/manifestival/manifestival"
+	clientset "knative.dev/operator/pkg/client/clientset/versioned"
+
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
@@ -34,6 +37,8 @@ import (
 	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"knative.dev/operator/version"
+	"knative.dev/pkg/logging"
+
 	pkgreconciler "knative.dev/pkg/reconciler"
 )
 
@@ -51,7 +56,13 @@ var (
 
 // Reconciler implements controller.Reconciler for Knativeserving resources.
 type Reconciler struct {
-	*reconciler.Base
+	// kubeClientSet allows us to talk to the k8s for core APIs
+	kubeClientSet kubernetes.Interface
+	// knativeServingClientSet allows us to configure Serving objects
+	knativeServingClientSet clientset.Interface
+	// statsReporter reports reconciler's metrics.
+	statsReporter reconciler.StatsReporter
+
 	// Listers index properties about resources
 	knativeServingLister listers.KnativeServingLister
 	config               mf.Manifest
@@ -66,24 +77,28 @@ var _ knsreconciler.Finalizer = (*Reconciler)(nil)
 
 // FinalizeKind removes all resources after deletion of a KnativeServing.
 func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1.KnativeServing) pkgreconciler.Event {
+	logger := logging.FromContext(ctx)
+
 	key, err := cache.MetaNamespaceKeyFunc(original)
 	if err != nil {
-		r.Logger.Errorf("invalid resource key: %s", key)
+		logger.Errorf("invalid resource key: %s", key)
 		return nil
 	}
 	if _, ok := r.servings[key]; ok {
 		delete(r.servings, key)
 	}
-	return r.delete(original)
+	return r.delete(ctx, original)
 }
 
 // ReconcileKind compares the actual state with the desired, and attempts to
 // converge the two.
 func (r *Reconciler) ReconcileKind(ctx context.Context, original *servingv1alpha1.KnativeServing) pkgreconciler.Event {
+	logger := logging.FromContext(ctx)
+
 	// Convert the namespace/name string into a distinct namespace and name
 	key, err := cache.MetaNamespaceKeyFunc(original)
 	if err != nil {
-		r.Logger.Errorf("invalid resource key: %s", key)
+		logger.Errorf("invalid resource key: %s", key)
 		return nil
 	}
 
@@ -91,7 +106,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, original *servingv1alpha
 	newGen := original.Generation
 	if oldGen, ok := r.servings[key]; ok {
 		if newGen > oldGen {
-			r.StatsReporter.ReportKnativeservingChange(key, editChange)
+			r.statsReporter.ReportKnativeservingChange(key, editChange)
 		} else if newGen < oldGen {
 			return fmt.Errorf("reconciling obsolete generation of KnativeServing %s: newGen = %d and oldGen = %d", key, newGen, oldGen)
 		}
@@ -99,7 +114,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, original *servingv1alpha
 		// No metrics are emitted when newGen > 1: the first reconciling of
 		// a new operator on an existing KnativeServing resource.
 		if newGen == 1 {
-			r.StatsReporter.ReportKnativeservingChange(key, creationChange)
+			r.statsReporter.ReportKnativeservingChange(key, creationChange)
 		}
 	}
 	r.servings[key] = original.Generation
@@ -114,10 +129,12 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, original *servingv1alpha
 }
 
 func (r *Reconciler) reconcile(ctx context.Context, ks *servingv1alpha1.KnativeServing) error {
-	reqLogger := r.Logger.With(zap.String("Request.Namespace", ks.Namespace)).With("Request.Name", ks.Name)
+	logger := logging.FromContext(ctx)
+
+	reqLogger := logger.With(zap.String("Request.Namespace", ks.Namespace)).With("Request.Name", ks.Name)
 	reqLogger.Infow("Reconciling KnativeServing", "status", ks.Status)
 
-	stages := []func(*mf.Manifest, *servingv1alpha1.KnativeServing) error{
+	stages := []func(context.Context, *mf.Manifest, *servingv1alpha1.KnativeServing) error{
 		r.ensureFinalizer,
 		r.initStatus,
 		r.install,
@@ -125,14 +142,14 @@ func (r *Reconciler) reconcile(ctx context.Context, ks *servingv1alpha1.KnativeS
 		r.deleteObsoleteResources,
 	}
 
-	manifest, err := r.transform(ks)
+	manifest, err := r.transform(ctx, ks)
 	if err != nil {
 		ks.Status.MarkInstallFailed(err.Error())
 		return err
 	}
 
 	for _, stage := range stages {
-		if err := stage(&manifest, ks); err != nil {
+		if err := stage(ctx, &manifest, ks); err != nil {
 			return err
 		}
 	}
@@ -141,9 +158,11 @@ func (r *Reconciler) reconcile(ctx context.Context, ks *servingv1alpha1.KnativeS
 }
 
 // Transform the resources
-func (r *Reconciler) transform(instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
-	r.Logger.Debug("Transforming manifest")
-	transforms, err := r.platform.Transformers(r.KubeClientSet, instance, r.Logger)
+func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
+	logger := logging.FromContext(ctx)
+
+	logger.Debug("Transforming manifest")
+	transforms, err := r.platform.Transformers(r.kubeClientSet, instance, logger)
 	if err != nil {
 		return mf.Manifest{}, err
 	}
@@ -152,7 +171,7 @@ func (r *Reconciler) transform(instance *servingv1alpha1.KnativeServing) (mf.Man
 
 // Update the status subresource
 func (r *Reconciler) updateStatus(instance *servingv1alpha1.KnativeServing) error {
-	afterUpdate, err := r.KnativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace).UpdateStatus(instance)
+	afterUpdate, err := r.knativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace).UpdateStatus(instance)
 
 	if err != nil {
 		return err
@@ -163,8 +182,10 @@ func (r *Reconciler) updateStatus(instance *servingv1alpha1.KnativeServing) erro
 }
 
 // Initialize status conditions
-func (r *Reconciler) initStatus(_ *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
-	r.Logger.Debug("Initializing status")
+func (r *Reconciler) initStatus(ctx context.Context, _ *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
+	logger := logging.FromContext(ctx)
+
+	logger.Debug("Initializing status")
 	if len(instance.Status.Conditions) == 0 {
 		instance.Status.InitializeConditions()
 		if err := r.updateStatus(instance); err != nil {
@@ -175,8 +196,10 @@ func (r *Reconciler) initStatus(_ *mf.Manifest, instance *servingv1alpha1.Knativ
 }
 
 // Apply the manifest resources
-func (r *Reconciler) install(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
-	r.Logger.Debug("Installing manifest")
+func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
+	logger := logging.FromContext(ctx)
+
+	logger.Debug("Installing manifest")
 	// The Operator needs a higher level of permissions if it 'bind's non-existent roles.
 	// To avoid this, we strictly order the manifest application as (Cluster)Roles, then
 	// (Cluster)RoleBindings, then the rest of the manifest.
@@ -198,8 +221,10 @@ func (r *Reconciler) install(manifest *mf.Manifest, instance *servingv1alpha1.Kn
 }
 
 // Check for all deployments available
-func (r *Reconciler) checkDeployments(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
-	r.Logger.Debug("Checking deployments")
+func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
+	logger := logging.FromContext(ctx)
+
+	logger.Debug("Checking deployments")
 	available := func(d *appsv1.Deployment) bool {
 		for _, c := range d.Status.Conditions {
 			if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
@@ -209,7 +234,7 @@ func (r *Reconciler) checkDeployments(manifest *mf.Manifest, instance *servingv1
 		return false
 	}
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
-		deployment, err := r.KubeClientSet.AppsV1().Deployments(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
+		deployment, err := r.kubeClientSet.AppsV1().Deployments(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
 		if err != nil {
 			instance.Status.MarkDeploymentsNotReady()
 			if errors.IsNotFound(err) {
@@ -227,23 +252,25 @@ func (r *Reconciler) checkDeployments(manifest *mf.Manifest, instance *servingv1
 }
 
 // ensureFinalizer attaches a "delete manifest" finalizer to the instance
-func (r *Reconciler) ensureFinalizer(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
+func (r *Reconciler) ensureFinalizer(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	for _, finalizer := range instance.GetFinalizers() {
 		if finalizer == finalizerName {
 			return nil
 		}
 	}
 	instance.SetFinalizers(append(instance.GetFinalizers(), finalizerName))
-	instance, err := r.KnativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace).Update(instance)
+	instance, err := r.knativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace).Update(instance)
 	return err
 }
 
 // delete all the resources in the release manifest
-func (r *Reconciler) delete(instance *servingv1alpha1.KnativeServing) error {
+func (r *Reconciler) delete(ctx context.Context, instance *servingv1alpha1.KnativeServing) error {
+	logger := logging.FromContext(ctx)
+
 	if len(instance.GetFinalizers()) == 0 || instance.GetFinalizers()[0] != finalizerName {
 		return nil
 	}
-	r.Logger.Info("Deleting resources")
+	logger.Info("Deleting resources")
 	var RBAC = mf.Any(mf.ByKind("Role"), mf.ByKind("ClusterRole"), mf.ByKind("RoleBinding"), mf.ByKind("ClusterRoleBinding"))
 	if len(r.servings) == 0 {
 		if err := r.config.Filter(mf.ByKind("Deployment")).Delete(); err != nil {
@@ -263,12 +290,12 @@ func (r *Reconciler) delete(instance *servingv1alpha1.KnativeServing) error {
 		return err
 	}
 	refetched.SetFinalizers(refetched.GetFinalizers()[1:])
-	_, err = r.KnativeServingClientSet.OperatorV1alpha1().KnativeServings(refetched.Namespace).Update(refetched)
+	_, err = r.knativeServingClientSet.OperatorV1alpha1().KnativeServings(refetched.Namespace).Update(refetched)
 	return err
 }
 
 // Delete obsolete resources from previous versions
-func (r *Reconciler) deleteObsoleteResources(manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
+func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	// istio-system resources from 0.3
 	resource := &unstructured.Unstructured{}
 	resource.SetNamespace("istio-system")

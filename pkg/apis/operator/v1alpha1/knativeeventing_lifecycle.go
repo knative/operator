@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/apis"
-	duckv1beta1 "knative.dev/pkg/apis/duck/v1beta1"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 var eventingCondSet = apis.NewLivingConditionSet(
@@ -78,6 +78,6 @@ func (es *KnativeEventingStatus) MarkEventingFailed(reason, message string) {
 	eventingCondSet.Manage(es).MarkFalse(EventingConditionReady, reason, message)
 }
 
-func (es *KnativeEventingStatus) duck() *duckv1beta1.Status {
+func (es *KnativeEventingStatus) duck() *duckv1.Status {
 	return &es.Status
 }

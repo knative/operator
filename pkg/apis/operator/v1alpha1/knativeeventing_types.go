@@ -18,10 +18,11 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
-	duckv1beta1 "knative.dev/pkg/apis/duck/v1beta1"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 // +genclient
+// +genreconciler
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // KnativeEventing is the Schema for the eventings API
@@ -46,7 +47,7 @@ type KnativeEventingSpec struct {
 // KnativeEventingStatus defines the observed state of KnativeEventing
 // +k8s:openapi-gen=true
 type KnativeEventingStatus struct {
-	duckv1beta1.Status `json:",inline"`
+	duckv1.Status `json:",inline"`
 
 	// The version of the installed release
 	// +optional

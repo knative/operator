@@ -16,10 +16,12 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"testing"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"knative.dev/pkg/apis"
-	"testing"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -106,8 +108,8 @@ func TestKnativeServingDeploymentNotReady(t *testing.T) {
 func TestKnativeServingDeploymentsAvailable(t *testing.T) {
 	ks := &KnativeServingStatus{}
 	mc := &apis.Condition{
-		Type:    DeploymentsAvailable,
-		Status:  corev1.ConditionTrue,
+		Type:   DeploymentsAvailable,
+		Status: corev1.ConditionTrue,
 	}
 	ks.MarkDeploymentsAvailable()
 	if diff := cmp.Diff(mc, ks.GetCondition(DeploymentsAvailable), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
@@ -118,8 +120,8 @@ func TestKnativeServingDeploymentsAvailable(t *testing.T) {
 func TestKnativeServingDependenciesInstalled(t *testing.T) {
 	ks := &KnativeServingStatus{}
 	mc := &apis.Condition{
-		Type:    DependenciesInstalled,
-		Status:  corev1.ConditionTrue,
+		Type:   DependenciesInstalled,
+		Status: corev1.ConditionTrue,
 	}
 	ks.MarkDependenciesInstalled()
 	if diff := cmp.Diff(mc, ks.GetCondition(DependenciesInstalled), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
@@ -136,19 +138,21 @@ func TestKnativeServingInitializeConditions(t *testing.T) {
 		name: "empty",
 		ke:   &KnativeServingStatus{},
 		want: &KnativeServingStatus{
-			Conditions: []apis.Condition{{
-				Type:   DependenciesInstalled,
-				Status: corev1.ConditionUnknown,
-			}, {
-				Type:   DeploymentsAvailable,
-				Status: corev1.ConditionUnknown,
-			}, {
-				Type:   InstallSucceeded,
-				Status: corev1.ConditionUnknown,
-			}, {
-				Type:   "Ready",
-				Status: corev1.ConditionUnknown,
-			}},
+			Status: duckv1.Status{
+				Conditions: []apis.Condition{{
+					Type:   DependenciesInstalled,
+					Status: corev1.ConditionUnknown,
+				}, {
+					Type:   DeploymentsAvailable,
+					Status: corev1.ConditionUnknown,
+				}, {
+					Type:   InstallSucceeded,
+					Status: corev1.ConditionUnknown,
+				}, {
+					Type:   "Ready",
+					Status: corev1.ConditionUnknown,
+				}},
+			},
 		},
 	}}
 

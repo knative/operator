@@ -56,12 +56,12 @@ var (
 
 // Reconciler implements controller.Reconciler for Knativeserving resources.
 type Reconciler struct {
-	// KubeClientSet allows us to talk to the k8s for core APIs
-	KubeClientSet kubernetes.Interface
-	// ServingClientSet allows us to configure Serving objects
-	KnativeServingClientSet clientset.Interface
-	// StatsReporter reports reconciler's metrics.
-	StatsReporter reconciler.StatsReporter
+	// kubeClientSet allows us to talk to the k8s for core APIs
+	kubeClientSet kubernetes.Interface
+	// knativeServingClientSet allows us to configure Serving objects
+	knativeServingClientSet clientset.Interface
+	// statsReporter reports reconciler's metrics.
+	statsReporter reconciler.StatsReporter
 
 	// Listers index properties about resources
 	knativeServingLister listers.KnativeServingLister
@@ -106,7 +106,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, original *servingv1alpha
 	newGen := original.Generation
 	if oldGen, ok := r.servings[key]; ok {
 		if newGen > oldGen {
-			r.StatsReporter.ReportKnativeservingChange(key, editChange)
+			r.statsReporter.ReportKnativeservingChange(key, editChange)
 		} else if newGen < oldGen {
 			return fmt.Errorf("reconciling obsolete generation of KnativeServing %s: newGen = %d and oldGen = %d", key, newGen, oldGen)
 		}
@@ -114,7 +114,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, original *servingv1alpha
 		// No metrics are emitted when newGen > 1: the first reconciling of
 		// a new operator on an existing KnativeServing resource.
 		if newGen == 1 {
-			r.StatsReporter.ReportKnativeservingChange(key, creationChange)
+			r.statsReporter.ReportKnativeservingChange(key, creationChange)
 		}
 	}
 	r.servings[key] = original.Generation
@@ -162,7 +162,7 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 	logger := logging.FromContext(ctx)
 
 	logger.Debug("Transforming manifest")
-	transforms, err := r.platform.Transformers(r.KubeClientSet, instance, logger)
+	transforms, err := r.platform.Transformers(r.kubeClientSet, instance, logger)
 	if err != nil {
 		return mf.Manifest{}, err
 	}
@@ -171,7 +171,7 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 
 // Update the status subresource
 func (r *Reconciler) updateStatus(instance *servingv1alpha1.KnativeServing) error {
-	afterUpdate, err := r.KnativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace).UpdateStatus(instance)
+	afterUpdate, err := r.knativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace).UpdateStatus(instance)
 
 	if err != nil {
 		return err
@@ -234,7 +234,7 @@ func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest
 		return false
 	}
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
-		deployment, err := r.KubeClientSet.AppsV1().Deployments(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
+		deployment, err := r.kubeClientSet.AppsV1().Deployments(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
 		if err != nil {
 			instance.Status.MarkDeploymentsNotReady()
 			if errors.IsNotFound(err) {
@@ -259,7 +259,7 @@ func (r *Reconciler) ensureFinalizer(ctx context.Context, manifest *mf.Manifest,
 		}
 	}
 	instance.SetFinalizers(append(instance.GetFinalizers(), finalizerName))
-	instance, err := r.KnativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace).Update(instance)
+	instance, err := r.knativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace).Update(instance)
 	return err
 }
 
@@ -290,7 +290,7 @@ func (r *Reconciler) delete(ctx context.Context, instance *servingv1alpha1.Knati
 		return err
 	}
 	refetched.SetFinalizers(refetched.GetFinalizers()[1:])
-	_, err = r.KnativeServingClientSet.OperatorV1alpha1().KnativeServings(refetched.Namespace).Update(refetched)
+	_, err = r.knativeServingClientSet.OperatorV1alpha1().KnativeServings(refetched.Namespace).Update(refetched)
 	return err
 }
 

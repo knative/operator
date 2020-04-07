@@ -40,7 +40,6 @@ import (
 
 const (
 	controllerAgentName = "knativeserving-controller"
-	reconcilerName      = "KnativeServing"
 )
 
 var (
@@ -64,9 +63,9 @@ func NewController(
 	}
 
 	c := &Reconciler{
-		KubeClientSet:           kubeclient.Get(ctx),
-		KnativeServingClientSet: servingclient.Get(ctx),
-		StatsReporter:           statsReporter,
+		kubeClientSet:           kubeclient.Get(ctx),
+		knativeServingClientSet: servingclient.Get(ctx),
+		statsReporter:           statsReporter,
 		knativeServingLister:    knativeServingInformer.Lister(),
 		servings:                map[string]int64{},
 		platform:                common.GetPlatforms(ctx),

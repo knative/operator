@@ -19,6 +19,8 @@ import (
 	"os"
 	"path/filepath"
 
+	servingclient "knative.dev/operator/pkg/client/injection/client"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/injection/sharedmain"
 	"knative.dev/pkg/logging"
 
@@ -29,7 +31,7 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	knativeServinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeserving"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
-	rbase "knative.dev/operator/pkg/reconciler"
+	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/knativeserving/common"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
@@ -56,11 +58,18 @@ func NewController(
 	deploymentInformer := deploymentinformer.Get(ctx)
 	logger := logging.FromContext(ctx)
 
+	statsReporter, err := reconciler.NewStatsReporter(controllerAgentName)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	c := &Reconciler{
-		Base:                 rbase.NewBase(ctx, controllerAgentName, cmw),
-		knativeServingLister: knativeServingInformer.Lister(),
-		servings:             map[string]int64{},
-		platform:             common.GetPlatforms(ctx),
+		KubeClientSet:           kubeclient.Get(ctx),
+		KnativeServingClientSet: servingclient.Get(ctx),
+		StatsReporter:           statsReporter,
+		knativeServingLister:    knativeServingInformer.Lister(),
+		servings:                map[string]int64{},
+		platform:                common.GetPlatforms(ctx),
 	}
 
 	koDataDir := os.Getenv("KO_DATA_PATH")

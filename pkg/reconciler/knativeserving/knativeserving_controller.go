@@ -24,20 +24,17 @@ import (
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
-	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
 	"k8s.io/client-go/tools/cache"
-
-	"knative.dev/pkg/controller"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
 	listers "knative.dev/operator/pkg/client/listers/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"knative.dev/operator/version"
+	pkgreconciler "knative.dev/pkg/reconciler"
 )
 
 const (
@@ -64,33 +61,32 @@ type Reconciler struct {
 }
 
 // Check that our Reconciler implements controller.Reconciler
-var _ controller.Reconciler = (*Reconciler)(nil)
+var _ knsreconciler.Interface = (*Reconciler)(nil)
+var _ knsreconciler.Finalizer = (*Reconciler)(nil)
 
-// Reconcile compares the actual state with the desired, and attempts to
-// converge the two. It then updates the Status block of the Knativeserving resource
-// with the current status of the resource.
-func (r *Reconciler) Reconcile(ctx context.Context, key string) error {
-	// Convert the namespace/name string into a distinct namespace and name
-	namespace, name, err := cache.SplitMetaNamespaceKey(key)
+// FinalizeKind removes all resources after deletion of a KnativeServing.
+func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1.KnativeServing) pkgreconciler.Event {
+	key, err := cache.MetaNamespaceKeyFunc(original)
 	if err != nil {
 		r.Logger.Errorf("invalid resource key: %s", key)
 		return nil
 	}
-	// Get the KnativeServing resource with this namespace/name.
-	original, err := r.knativeServingLister.KnativeServings(namespace).Get(name)
-	if apierrs.IsNotFound(err) {
+	if _, ok := r.servings[key]; ok {
+		delete(r.servings, key)
+	}
+	return r.delete(original)
+}
+
+// ReconcileKind compares the actual state with the desired, and attempts to
+// converge the two.
+func (r *Reconciler) ReconcileKind(ctx context.Context, original *servingv1alpha1.KnativeServing) pkgreconciler.Event {
+	// Convert the namespace/name string into a distinct namespace and name
+	key, err := cache.MetaNamespaceKeyFunc(original)
+	if err != nil {
+		r.Logger.Errorf("invalid resource key: %s", key)
 		return nil
-	} else if err != nil {
-		r.Logger.Error(err, "Error getting KnativeServing")
-		return err
 	}
-	if original.GetDeletionTimestamp() != nil {
-		if _, ok := r.servings[key]; ok {
-			delete(r.servings, key)
-			r.StatsReporter.ReportKnativeservingChange(key, deletionChange)
-		}
-		return r.delete(original)
-	}
+
 	// Keep track of the number and generation of KnativeServings in the cluster.
 	newGen := original.Generation
 	if oldGen, ok := r.servings[key]; ok {
@@ -106,28 +102,13 @@ func (r *Reconciler) Reconcile(ctx context.Context, key string) error {
 			r.StatsReporter.ReportKnativeservingChange(key, creationChange)
 		}
 	}
-	r.servings[key] = newGen
-
-	// Don't modify the informers copy.
-	knativeServing := original.DeepCopy()
+	r.servings[key] = original.Generation
 
 	// Reconcile this copy of the KnativeServing resource and then write back any status
 	// updates regardless of whether the reconciliation errored out.
-	reconcileErr := r.reconcile(ctx, knativeServing)
-	if equality.Semantic.DeepEqual(original.Status, knativeServing.Status) {
-		// If we didn't change anything then don't call updateStatus.
-		// This is important because the copy we loaded from the informer's
-		// cache may be stale and we don't want to overwrite a prior update
-		// to status with this stale state.
-	} else if err = r.updateStatus(knativeServing); err != nil {
-		r.Logger.Warnw("Failed to update knativeServing status", zap.Error(err))
-		r.Recorder.Eventf(knativeServing, corev1.EventTypeWarning, "UpdateFailed",
-			"Failed to update status for KnativeServing %q: %v", knativeServing.Name, err)
+	err = r.reconcile(ctx, original)
+	if err != nil {
 		return err
-	}
-	if reconcileErr != nil {
-		r.Recorder.Event(knativeServing, corev1.EventTypeWarning, "InternalError", reconcileErr.Error())
-		return reconcileErr
 	}
 	return nil
 }

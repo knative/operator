@@ -20,18 +20,20 @@ import (
 	"path/filepath"
 
 	"knative.dev/pkg/injection/sharedmain"
+	"knative.dev/pkg/logging"
 
 	"github.com/go-logr/zapr"
 	mfc "github.com/manifestival/client-go-client"
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/client-go/tools/cache"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	knativeServinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeserving"
+	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
+	rbase "knative.dev/operator/pkg/reconciler"
+	"knative.dev/operator/pkg/reconciler/knativeserving/common"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
-	knativeServinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeserving"
-	rbase "knative.dev/operator/pkg/reconciler"
-	"knative.dev/operator/pkg/reconciler/knativeserving/common"
 )
 
 const (
@@ -52,6 +54,7 @@ func NewController(
 ) *controller.Impl {
 	knativeServingInformer := knativeServinginformer.Get(ctx)
 	deploymentInformer := deploymentinformer.Get(ctx)
+	logger := logging.FromContext(ctx)
 
 	c := &Reconciler{
 		Base:                 rbase.NewBase(ctx, controllerAgentName, cmw),
@@ -64,21 +67,21 @@ func NewController(
 
 	cfg, err := sharedmain.GetConfig(*MasterURL, *Kubeconfig)
 	if err != nil {
-		c.Logger.Error(err, "Error building kubeconfig")
+		logger.Error(err, "Error building kubeconfig")
 	}
 
 	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-serving/"),
 		cfg,
-		mf.UseLogger(zapr.NewLogger(c.Logger.Desugar()).WithName("manifestival")))
+		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
 	if err != nil {
-		c.Logger.Error(err, "Error creating the Manifest for knative-serving")
+		logger.Error(err, "Error creating the Manifest for knative-serving")
 		os.Exit(1)
 	}
 
 	c.config = config
-	impl := controller.NewImpl(c, c.Logger, reconcilerName)
+	impl := knsreconciler.NewImpl(ctx, c)
 
-	c.Logger.Info("Setting up event handlers for %s", reconcilerName)
+	logger.Info("Setting up event handlers")
 
 	knativeServingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 

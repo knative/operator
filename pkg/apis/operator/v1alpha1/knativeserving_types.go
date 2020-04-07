@@ -19,6 +19,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -123,6 +124,8 @@ type KnativeServingSpec struct {
 // KnativeServingStatus defines the observed state of KnativeServing
 // +k8s:openapi-gen=true
 type KnativeServingStatus struct {
+	duckv1.Status `json:",inline"`
+
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags:
@@ -131,14 +134,10 @@ type KnativeServingStatus struct {
 	// The version of the installed release
 	// +optional
 	Version string `json:"version,omitempty"`
-	// The latest available observations of a resource's current state.
-	// +optional
-	// +patchMergeKey=type
-	// +patchStrategy=merge
-	Conditions apis.Conditions `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 }
 
 // +genclient
+// +genreconciler
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // KnativeServing is the Schema for the knativeservings API

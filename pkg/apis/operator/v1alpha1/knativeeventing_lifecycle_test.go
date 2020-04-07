@@ -24,7 +24,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/apis"
-	duckv1beta1 "knative.dev/pkg/apis/duck/v1beta1"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 	apistest "knative.dev/pkg/apis/testing"
 )
 
@@ -162,7 +162,7 @@ func TestKnativeEventingInitializeConditions(t *testing.T) {
 		name: "empty",
 		ke:   &KnativeEventingStatus{},
 		want: &KnativeEventingStatus{
-			Status: duckv1beta1.Status{
+			Status: duckv1.Status{
 				Conditions: []apis.Condition{{
 					Type:   InstallSucceeded,
 					Status: corev1.ConditionUnknown,
@@ -175,7 +175,7 @@ func TestKnativeEventingInitializeConditions(t *testing.T) {
 	}, {
 		name: "eventingConditionNotReady",
 		ke: &KnativeEventingStatus{
-			Status: duckv1beta1.Status{
+			Status: duckv1.Status{
 				Conditions: []apis.Condition{{
 					Type:   EventingConditionReady,
 					Status: corev1.ConditionFalse,
@@ -183,7 +183,7 @@ func TestKnativeEventingInitializeConditions(t *testing.T) {
 			},
 		},
 		want: &KnativeEventingStatus{
-			Status: duckv1beta1.Status{
+			Status: duckv1.Status{
 				Conditions: []apis.Condition{{
 					Type:   InstallSucceeded,
 					Status: corev1.ConditionUnknown,
@@ -196,7 +196,7 @@ func TestKnativeEventingInitializeConditions(t *testing.T) {
 	}, {
 		name: "eventingConditionReady",
 		ke: &KnativeEventingStatus{
-			Status: duckv1beta1.Status{
+			Status: duckv1.Status{
 				Conditions: []apis.Condition{{
 					Type:   EventingConditionReady,
 					Status: corev1.ConditionTrue,
@@ -204,7 +204,7 @@ func TestKnativeEventingInitializeConditions(t *testing.T) {
 			},
 		},
 		want: &KnativeEventingStatus{
-			Status: duckv1beta1.Status{
+			Status: duckv1.Status{
 				Conditions: []apis.Condition{{
 					Type:   InstallSucceeded,
 					Status: corev1.ConditionTrue,
@@ -217,7 +217,7 @@ func TestKnativeEventingInitializeConditions(t *testing.T) {
 	}, {
 		name: "installSucceeded",
 		ke: &KnativeEventingStatus{
-			Status: duckv1beta1.Status{
+			Status: duckv1.Status{
 				Conditions: []apis.Condition{{
 					Type:   InstallSucceeded,
 					Status: corev1.ConditionTrue,
@@ -225,7 +225,7 @@ func TestKnativeEventingInitializeConditions(t *testing.T) {
 			},
 		},
 		want: &KnativeEventingStatus{
-			Status: duckv1beta1.Status{
+			Status: duckv1.Status{
 				Conditions: []apis.Condition{{
 					Type:   InstallSucceeded,
 					Status: corev1.ConditionTrue,
@@ -238,7 +238,7 @@ func TestKnativeEventingInitializeConditions(t *testing.T) {
 	}, {
 		name: "installNotSucceeded",
 		ke: &KnativeEventingStatus{
-			Status: duckv1beta1.Status{
+			Status: duckv1.Status{
 				Conditions: []apis.Condition{{
 					Type:   InstallSucceeded,
 					Status: corev1.ConditionFalse,
@@ -246,7 +246,7 @@ func TestKnativeEventingInitializeConditions(t *testing.T) {
 			},
 		},
 		want: &KnativeEventingStatus{
-			Status: duckv1beta1.Status{
+			Status: duckv1.Status{
 				Conditions: []apis.Condition{{
 					Type:   InstallSucceeded,
 					Status: corev1.ConditionFalse,

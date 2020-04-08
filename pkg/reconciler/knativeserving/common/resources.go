@@ -43,6 +43,7 @@ func ResourceRequirementsTransform(instance *servingv1alpha1.KnativeServing, log
 					merge(&override.Requests, &containers[i].Resources.Requests)
 				}
 			}
+
 			if err := scheme.Scheme.Convert(deployment, u, nil); err != nil {
 				return err
 			}

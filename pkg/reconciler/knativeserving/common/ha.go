@@ -62,9 +62,26 @@ func HighAvailabilityTransform(instance *servingv1alpha1.KnativeServing, log *za
 			}
 		}
 
+		replicas := int64(instance.Spec.HighAvailability.Replicas)
+
 		// Transform deployments that support HA.
 		if u.GetKind() == "Deployment" && deploymentNames.Has(u.GetName()) {
-			if err := unstructured.SetNestedField(u.Object, int64(instance.Spec.HighAvailability.Replicas), "spec", "replicas"); err != nil {
+			if err := unstructured.SetNestedField(u.Object, replicas, "spec", "replicas"); err != nil {
+				return err
+			}
+		}
+
+		if u.GetKind() == "HorizontalPodAutoscaler" {
+			min, _, err := unstructured.NestedInt64(u.Object, "spec", "minReplicas")
+			if err != nil {
+				return err
+			}
+			// Do nothing if the HPA ships with even more replicas out of the box.
+			if min > replicas {
+				return nil
+			}
+
+			if err := unstructured.SetNestedField(u.Object, replicas, "spec", "minReplicas"); err != nil {
 				return err
 			}
 		}

@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -86,6 +87,18 @@ func TestHighAvailabilityTransform(t *testing.T) {
 			in:       makeUnstructuredDeployment(t, "some-unsupported-controller"),
 			expected: makeUnstructuredDeployment(t, "some-unsupported-controller"),
 		},
+		{
+			name:     "HA; adjust hpa",
+			config:   makeHa(2),
+			in:       makeUnstructuredHPA(t, "activator", 1),
+			expected: makeUnstructuredHPA(t, "activator", 2),
+		},
+		{
+			name:     "HA; keep higher hpa value",
+			config:   makeHa(2),
+			in:       makeUnstructuredHPA(t, "activator", 3),
+			expected: makeUnstructuredHPA(t, "activator", 3),
+		},
 	}
 
 	for i := range cases {
@@ -121,7 +134,7 @@ func makeUnstructuredConfigMap(t *testing.T, data map[string]string) *unstructur
 	result := &unstructured.Unstructured{}
 	err := scheme.Scheme.Convert(cm, result, nil)
 	if err != nil {
-		t.Fatalf("Could not creat unstructured ConfigMap: %v, err: %v", cm, err)
+		t.Fatalf("Could not create unstructured ConfigMap: %v, err: %v", cm, err)
 	}
 
 	return result
@@ -143,7 +156,26 @@ func makeUnstructuredDeploymentReplicas(t *testing.T, name string, replicas int3
 	result := &unstructured.Unstructured{}
 	err := scheme.Scheme.Convert(d, result, nil)
 	if err != nil {
-		t.Fatalf("Could not creat unstructured Deployment: %v, err: %v", d, err)
+		t.Fatalf("Could not create unstructured Deployment: %v, err: %v", d, err)
+	}
+
+	return result
+}
+
+func makeUnstructuredHPA(t *testing.T, name string, minReplicas int32) *unstructured.Unstructured {
+	hpa := &autoscalingv2beta1.HorizontalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: autoscalingv2beta1.HorizontalPodAutoscalerSpec{
+			MinReplicas: &minReplicas,
+		},
+	}
+
+	result := &unstructured.Unstructured{}
+	err := scheme.Scheme.Convert(hpa, result, nil)
+	if err != nil {
+		t.Fatalf("Could not create unstructured HPA: %v, err: %v", hpa, err)
 	}
 
 	return result

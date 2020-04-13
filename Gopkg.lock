@@ -392,16 +392,17 @@
   version = "v0.2.0"
 
 [[projects]]
-  digest = "1:f0a1e0d10140e36b250ba2c897d0729512ddb2407117c322569728092a67115f"
+  digest = "1:da23b74834c2eb31b3d27cfdf799877bb2d6cd875f0465cbc47cd871c8ed5e74"
   name = "github.com/manifestival/manifestival"
   packages = [
     ".",
+    "overlay",
     "patch",
     "sources",
   ]
   pruneopts = "NUT"
-  revision = "e9d39ec5979318ff82b1047fedafee339575c1b2"
-  version = "v0.4.0"
+  revision = "1922f5c7b1398ce037fb80405e4ecee9f6fe6bd0"
+  version = "v0.5.0"
 
 [[projects]]
   digest = "1:5985ef4caf91ece5d54817c11ea25f182697534f8ae6521eadcd628c142ac4b6"
@@ -1431,6 +1432,7 @@
     "istio.io/api/networking/v1alpha3",
     "istio.io/client-go/pkg/apis/networking/v1alpha3",
     "k8s.io/api/apps/v1",
+    "k8s.io/api/autoscaling/v2beta1",
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/api/equality",
     "k8s.io/apimachinery/pkg/api/errors",

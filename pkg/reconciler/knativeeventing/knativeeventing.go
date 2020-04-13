@@ -176,7 +176,7 @@ func (r *Reconciler) install(manifest *mf.Manifest, ke *eventingv1alpha1.Knative
 		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
 		return err
 	}
-	if err := manifest.Filter(mf.None(mf.Any(role, rolebinding))).Apply(); err != nil {
+	if err := manifest.Filter(mf.None(role, rolebinding)).Apply(); err != nil {
 		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
 		return err
 	}

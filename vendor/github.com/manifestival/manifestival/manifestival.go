@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testing"
+	"github.com/manifestival/manifestival/overlay"
 	"github.com/manifestival/manifestival/patch"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -103,29 +104,33 @@ func (m Manifest) apply(spec *unstructured.Unstructured, opts ...ApplyOption) er
 		annotate(current, "manifestival", resourceCreated)
 		return m.Client.Create(current, opts...)
 	} else {
-		if ApplyWith(opts).Replace {
-			return m.update(spec.DeepCopy(), lastApplied(spec), opts...)
-		}
 		diff, err := patch.New(current, spec)
 		if err != nil {
 			return err
 		}
-		if diff != nil {
-			m.log.Info("Merging", "diff", diff)
-			if err := diff.Merge(current); err != nil {
-				return err
-			}
-			return m.update(current, lastApplied(spec), opts...)
+		if diff == nil {
+			return nil
 		}
+		m.log.Info("Merging", "diff", diff)
+		if err := diff.Merge(current); err != nil {
+			return err
+		}
+		return m.update(current, spec, opts...)
 	}
 	return nil
 }
 
 // update a single resource
-func (m Manifest) update(obj *unstructured.Unstructured, config string, opts ...ApplyOption) error {
-	m.logResource("Updating", obj)
-	annotate(obj, v1.LastAppliedConfigAnnotation, config)
-	return m.Client.Update(obj, opts...)
+func (m Manifest) update(live, spec *unstructured.Unstructured, opts ...ApplyOption) error {
+	m.logResource("Updating", live)
+	annotate(live, v1.LastAppliedConfigAnnotation, lastApplied(spec))
+	err := m.Client.Update(live, opts...)
+	if errors.IsInvalid(err) && ApplyWith(opts).Overwrite {
+		m.log.Error(err, "Failed to update merged resource, trying overwrite")
+		overlay.Copy(spec.Object, live.Object)
+		return m.Client.Update(live, opts...)
+	}
+	return err
 }
 
 // delete removes the specified object

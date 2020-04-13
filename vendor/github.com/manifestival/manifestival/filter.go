@@ -47,8 +47,9 @@ func Any(preds ...Predicate) Predicate {
 	}
 }
 
-// None returns a Predicate's complement
-func None(p Predicate) Predicate {
+// None returns true iff none of the preds are true
+func None(preds ...Predicate) Predicate {
+	p := Any(preds...)
 	return func(u *unstructured.Unstructured) bool {
 		return !p(u)
 	}

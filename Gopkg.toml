@@ -61,6 +61,10 @@ required = [
   name = "knative.dev/test-infra"
   branch = "master"
 
+[[override]]
+  name = "knative.dev/eventing"
+  branch = "master"
+
 [prune]
   go-tests = true
   non-go = true

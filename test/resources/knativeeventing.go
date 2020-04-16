@@ -45,7 +45,8 @@ func WaitForKnativeEventingState(clients eventingv1alpha1.KnativeEventingInterfa
 
 	var lastState *v1alpha1.KnativeEventing
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		lastState, err := clients.Get(name, metav1.GetOptions{})
+		state, err := clients.Get(name, metav1.GetOptions{})
+		lastState = state
 		return inState(lastState, err)
 	})
 

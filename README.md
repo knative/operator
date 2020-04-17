@@ -1,22 +1,14 @@
-# Knative Combined Operator
+# Knative Operator
 
+The Knative Operator defines custom resources for the
+[Knative](https://knative.dev/) components,
+[serving](config/300-serving.yaml) and
+[eventing](config/300-eventing.yaml), enabling users to configure,
+install, upgrade and maintain these components over their lifecycle
+through a simple API.
 
-Knative Operator is a project aiming to manage all
-[Knative](https://knative.dev/) installation and upgrade in a consistent way
-from a single codebase.
+Details:
 
-## Origins
-
-This is a merger of the Knative
-[serving-operator](https://github.com/knative/serving-operator) and the
-[eventing-operator](https://github.com/knative/eventing-operator).
-
-## Status
-
-This project is currently in sandbox (incubating) state.
-
-Contact the WG leads:
-
-- Vincent Hou
-
-For details.
+- [Installation](docs/installation.md)
+- [Configuration](docs/configuration.md)
+- [Development](docs/development.md)

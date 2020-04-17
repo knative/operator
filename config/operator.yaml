@@ -15,31 +15,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: knative-serving-operator
+  name: knative-operator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: knative-serving-operator
+      name: knative-operator
   template:
     metadata:
       annotations:
         sidecar.istio.io/inject: "false"
       labels:
-        name: knative-serving-operator
+        name: knative-operator
     spec:
-      serviceAccountName: knative-serving-operator
+      serviceAccountName: knative-operator
       containers:
-        - name: knative-serving-operator
-          image: ko://knative.dev/operator/cmd/serving-operator
+        - name: knative-operator
+          image: ko://knative.dev/operator/cmd/operator
           imagePullPolicy: IfNotPresent
           env:
             - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            - name: OPERATOR_NAME
-              value: "knative-serving-operator"
             - name: SYSTEM_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -50,49 +48,6 @@ spec:
               value: config-logging
             - name: CONFIG_OBSERVABILITY_NAME
               value: config-observability
-          ports:
-            - name: metrics
-              containerPort: 9090
----
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: knative-eventing-operator
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      name: knative-eventing-operator
-  template:
-    metadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
-      labels:
-        name: knative-eventing-operator
-    spec:
-      serviceAccountName: knative-eventing-operator
-      containers:
-        - name: knative-eventing-operator
-          image: ko://knative.dev/operator/cmd/eventing-operator
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: OPERATOR_NAME
-              value: "knative-eventing-operator"
-            - name: SYSTEM_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: CONFIG_LOGGING_NAME
-              value: config-logging
-            - name: CONFIG_OBSERVABILITY_NAME
-              value: config-observability
-            - name: METRICS_DOMAIN
-              value: knative.dev/eventing-operator
           ports:
             - name: metrics
               containerPort: 9090

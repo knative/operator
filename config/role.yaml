@@ -343,3 +343,14 @@ rules:
       - customresourcedefinitions
     verbs:
       - '*'
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+    verbs:
+      - create
+      - delete
+      - update
+      - get
+      - list
+      - watch

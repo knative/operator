@@ -282,6 +282,10 @@ spec:
                       name:
                         description: The name of the secret.
                         type: string
+            defaultBrokerClass:
+              description: The default broker type to use for the brokers Knative creates.
+                If no value is provided, ChannelBasedBroker will be used.
+              type: string
           type: object
         status:
           properties:

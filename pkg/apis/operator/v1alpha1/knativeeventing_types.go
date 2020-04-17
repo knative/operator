@@ -42,6 +42,11 @@ type KnativeEventingSpec struct {
 	// If no registry is provided, the knative release images will be used.
 	// +optional
 	Registry Registry `json:"registry,omitempty"`
+
+	// The default broker type to use for the brokers Knative creates.
+	// If no value is provided, ChannelBasedBroker will be used.
+	// +optional
+	DefaultBrokerClass string `json:"defaultBrokerClass,omitempty"`
 }
 
 // KnativeEventingStatus defines the observed state of KnativeEventing

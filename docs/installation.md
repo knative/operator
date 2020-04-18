@@ -1,13 +1,17 @@
 # Installation
 
+* [Operator](#knative-operator)
+* [Knative Serving](#knative-serving)
+* [Knative Eventing](#knative-eventing)
+* [Upgrades](#upgrades)
+
 ## Knative Operator
 
 Before any Knative component can be installed, you must first install
 the Knative Operator:
 
 ```
-VERSION=<latest>
-kubectl apply -f https://github.com/knative-sandbox/operator/releases/download/$VERSION/operator.yaml
+kubectl apply -f https://github.com/knative-sandbox/operator/releases/latest/download/operator.yaml
 ```
 
 Once running, the operator will continuously watch for the following
@@ -33,8 +37,9 @@ Unfortunately, the serving component currently requires Istio. If you
 don't have it in your cluster, [follow these instructions](https://knative.dev/development/install/installing-istio/)
 before continuing.
 
-To install the serving component in the default namespace, create an
-instance of `KnativeServing`
+The Knative Serving resources will be installed in whichever namespace
+you create the `KnativeServing` instance. For the sake of simplicity,
+we'll use the `default` namespace:
 
 ```sh
 cat <<-EOF | kubectl apply -f -
@@ -45,14 +50,17 @@ metadata:
 EOF
 ```
 
-Once created, the operator will update the `KnativeServing` instance's
-`status` field with the progress of the installation:
+Once created, you should then see the Knative Serving pods coming up,
+and the operator will update the `KnativeServing` instance's `status`
+field with the progress of the installation:
 
 ```
 kubectl get knativeserving ks -oyaml
 ```
 
-To uninstall Knative Serving, simply delete the `KnativeServing` instance.
+To uninstall Knative Serving, simply delete the `KnativeServing`
+instance. This will then trigger the operator to terminate all the
+serving pods and remove all the serving resources.
 
 ```
 kubectl delete knativeserving ks

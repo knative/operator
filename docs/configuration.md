@@ -1,266 +1,202 @@
----
-title: "Configuring the Serving Operator Custom Resource"
-weight: 20
-type: "docs"
-aliases:
-- /docs/operator/configuring-serving-cr/
----
+# Configuration
 
-The Knative Serving operator can be configured with these options:
+This document describes the `spec` sub-fields of the
+[KnativeServing](../config/300-serving.yaml) and
+[KnativeEventing](../config/300-eventing.yaml) custom resources. A
+Knative installation is configured using these sub-fields.
 
-- [Service Configuration by ConfigMap](#service-configuration-by-configMap)
-- [Private repository and private secret](#private-repository-and-private-secrets)
-- [SSL certificate for controller](#ssl-certificate-for-controller)
-- [Knative ingress gateway](#configuration-of-knative-ingress-gateway)
-- [Cluster local gateway](#configuration-of-cluster-local-gateway)
-- [High availability](#high-availability)
-- [System Resource Settings](#system-resource-settings)
-
-## Service Configuration by ConfigMap
-
-Because the operator manages the Knative Serving installation, it will overwrite any updates to the `ConfigMaps` which are used to configure Knative Serving.
-The `KnativeServing` custom resource allows you to set values for these ConfigMaps via the operator. Knative Serving has multiple ConfigMaps named with the prefix
-`config-`. The `spec.config` in `KnativeServing` has one entry `<name>` for each ConfigMap named `config-<name>`, with a value which will be used for the ConfigMap's `data`.
-
-In the [setup a custom domain example](https://knative.dev/development/serving/using-a-custom-domain/), you can see the content of the ConfigMap
-`config-domain` is:
+The `kubectl explain` command shows short descriptions of the custom
+resource fields installed on your cluster:
 
 ```
-apiVersion: v1
-kind: ConfigMap
+kubectl explain KnativeServing.spec
+kubectl explain KnativeEventing.spec
+```
+
+If the output of those commands differs from this doc, you may need to
+[upgrade](installation.md#upgrades) your operator.
+
+These are the configurable fields in each resource:
+
+* **KnativeServing**
+  * `spec`
+    * [config](#specconfig)
+    * [registry](#specregistry)
+      * [default](#specregistrydefault)
+      * [override](#specregistryoverride)
+      * [imagePullSecrets](#specregistryimagepullsecrets)
+    * [controller-custom-certs](#speccontroller-custom-certs)
+    * [knative-ingress-gateway](#specknative-ingress-gateway)
+    * [cluster-local-gateway](#speccluster-local-gateway)
+    * [high-availability](#spechigh-availability)
+    * [resources](#specresources)
+* **KnativeEventing**
+  * `spec`
+    * [registry](#specregistry)
+      * [default](#specregistrydefault)
+      * [override](#specregistryoverride)
+      * [imagePullSecrets](#specregistryimagepullsecrets)
+    * [defaultBrokerClass](#specdefaultbrokerclass)
+
+
+## spec.config
+
+This is a "map of maps". The top-level keys correspond to the names of
+the Knative `ConfigMaps`, sans their "config-" prefix, e.g. the
+"config-domain" `ConfigMap` corresponds to the "domain" top-level
+key. And the map values correspond to the `data` field of each
+`ConfigMap`. 
+
+The operator will replicate this field's entries to the corresponding
+Knative `ConfigMaps`. This provides a central place to manage all your
+Knative configuration, without having to update multiple `ConfigMaps`.
+
+An example should help clarify. The following spec will cause the
+operator to update the `config-defaults`, `config-observability` and
+`config-autoscaler` `ConfigMaps` in the `knative` namespace with the
+values you see below:
+
+```
 metadata:
-  name: config-domain
-  namespace: knative-serving
-data:
-  example.org: |
-    selector:
-      app: prod
-  example.com: ""
-```
-
-Using the operator, specify the ConfigMap `config-domain` using the operator CR:
-
-```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: knative-serving
+  namespace: knative
 spec:
   config:
-    domain:
-      example.org: |
-        selector:
-          app: prod
-      example.com: ""
-```
-
-You can apply values to multiple ConfigMaps. This example sets `stable-window` to 60s in `config-autoscaler` as well as specifying `config-domain`:
-
-```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: knative-serving
-spec:
-  config:
-    domain:
-      example.org: |
-        selector:
-          app: prod
-      example.com: ""
+    defaults:
+      revision-timeout-seconds: "300"  # 5 minutes
+    observability:
+      metrics.backend-destination: prometheus
     autoscaler:
       stable-window: "60s"
-```
-
-All the ConfigMaps are created in the same namespace as the operator CR. You can use the operator CR as the
-unique entry point to edit all of them.
-
-## Private repository and private secrets
-
-
-You can use the `spec.registry` section of the operator CR to change the image references to point to a private registry or [specify imagePullSecrets](https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod):
-
-- `default`: this field defines a image reference template for all Knative images. The format
-is `example-registry.io/custom/path/${NAME}:{CUSTOM-TAG}`. If you use the same tag for all your images, the only difference is the image name. `${NAME}` is
-a pre-defined variable in the operator corresponding to the container name. If you name the images in your private repo to align with the container names (
-`activator`, `autoscaler`, `controller`, `webhook`, `autoscaler-hpa`, `networking-istio`, and `queue-proxy`), the `default` argument should be sufficient.
-
-- `override`: a map from container name to the full registry
-location. This section is only needed when the registry images do not match the common naming format. For containers whose name matches a key, the value is used in preference to the image name calculated by `default`. If a container's name does not match a key in `override`, the template in `default` is used.
-
-- `imagePullSecrets`: a list of Secret names used when pulling Knative container images. The Secrets
-must be created in the same namespace as the Knative Serving Deployments. See [deploying images
-from a private container registry](https://knative.dev/development/serving/deploying/private-registry/) for configuration details.
-
-
-### Download images in a predefined format without secrets:
-
-This example shows how you can define custom image links that can be defined in the CR using the simplified format
-`docker.io/knative-images/${NAME}:{CUSTOM-TAG}`.
-
-In the example below:
-
-- the custom tag `v0.13.0` is used for all images
-- all image links are accessible without using secrets
-- images are pushed as `docker.io/knative-images/${NAME}:{CUSTOM-TAG}`
-
-First, you need to make sure your images pushed to the following image tags:
-
-| Container | Docker Image |
-|----|----|
-|`activator` | `docker.io/knative-images/activator:v0.13.0` |
-| `autoscaler` | `docker.io/knative-images/autoscaler:v0.13.0` |
-| `controller` | `docker.io/knative-images/controller:v0.13.0` |
-| `webhook` | `docker.io/knative-images/webhook:v0.13.0` |
-| `autoscaler-hpa` | `docker.io/knative-images/autoscaler-hpa:v0.13.0` |
-| `networking-istio` | `docker.io/knative-images/networking-istio:v0.13.0` |
-| `queue-proxy` | `docker.io/knative-images/queue-proxy:v0.13.0` |
-
-Then, you need to define your operator CR with following content:
-
-```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: knative-serving
-spec:
-  registry:
-    default: docker.io/knative-images/${NAME}:v0.13.0
+      container-concurrency-target-default: '100'
 ```
 
 
-### Download images individually without secrets:
+## spec.registry
 
-If your custom image links are not defined in a uniform format by default, you will need to individually include each
-link in the CR.
+This field provides the ability to replace the images in the knative
+deployment container specs via three optional sub-fields: `override`,
+`default`, and `imagePullSecrets`.
 
-For example, to given the following images:
 
-| Container | Docker Image |
-|----|----|
-| `activator` | `docker.io/knative-images-repo1/activator:v0.13.0` |
-| `autoscaler` | `docker.io/knative-images-repo2/autoscaler:v0.13.0` |
-| `controller` | `docker.io/knative-images-repo3/controller:v0.13.0` |
-| `webhook` | `docker.io/knative-images-repo4/webhook:v0.13.0` |
-| `autoscaler-hpa` | `docker.io/knative-images-repo5/autoscaler-hpa:v0.13.0` |
-| `networking-istio` | `docker.io/knative-images-repo6/prefix-networking-istio:v0.13.0` |
-| `queue-proxy` | `docker.io/knative-images-repo7/queue-proxy-suffix:v0.13.0` |
+### spec.registry.override
 
-The operator CR should be modified to include the full list:
+The optional `override` field is a mapping of deployment container
+names to docker image names.
+
+If the container names are not unique across all of your deployments,
+you can prefix the container name with the deployment name and a
+slash, e.g. `deployment/container`.
+
+Because some container specs map environment variables to image names,
+those are permitted as keys in the `override` map as well.
+
+The following example overrides only the `autoscaler` container,
+the `controller` container in the `broker` deployment spec, and the
+value of the `DISPATCHER_IMAGE` env var.
 
 ```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: knative-serving
 spec:
   registry:
     override:
-      activator: docker.io/knative-images-repo1/activator:v0.13.0
-      autoscaler: docker.io/knative-images-repo2/autoscaler:v0.13.0
-      controller: docker.io/knative-images-repo3/controller:v0.13.0
-      webhook: docker.io/knative-images-repo4/webhook:v0.13.0
-      autoscaler-hpa: docker.io/knative-images-repo5/autoscaler-hpa:v0.13.0
-      networking-istio: docker.io/knative-images-repo6/prefix-networking-istio:v0.13.0
-      queue-proxy: docker.io/knative-images-repo7/queue-proxy-suffix:v0.13.0
+      autoscaler: docker.io/my-org/autoscaler:v0.13.0
+      broker/controller: docker.io/my-org/broker-controller:v0.13.0
+      DISPATCHER_IMAGE: docker.io/my-org/dispatcher:v0.13.0
 ```
 
-### Download images with secrets:
 
-If your image repository requires private secrets for
-access, include the `imagePullSecrets` attribute.
+### spec.registry.default
 
-This example uses a secret named `regcred`. You must create your own private secrets if these are required:
+The `default` field enables you to override _all_ the knative
+container images with minimal configuration. Its value is essentially
+a pattern, matching all (or most) of the image names, with the
+placeholder `${NAME}` representing the container's name. For example,
+
+```
+spec:
+  registry:
+    default: docker.io/my-org/knative-${NAME}:v1.0.0
+```
+
+The operator will replace _all_ image names with this value, after
+replacing `${NAME}` with the container's actual name. 
+
+Of course, for any images that don't match the pattern, you'll need to
+provide entries in the [`override` field](#specregistryoverride). 
+
+For example, if the name of the `autoscaler-hpa` image is different
+than all the others, for whatever reason, you might have this:
+
+```
+spec:
+  registry:
+    default: docker.io/my-org/knative-serving-${NAME}:v1.0.0
+    override:
+      autoscaler-hpa: docker.io/my-org/ks-hpa:v1.0.1
+```
+
+
+### spec.registry.imagePullSecrets
+
+This field is a list of `Secret` names required when pulling your
+container images. You must create the secrets in the same namespace as
+the knative resources.
 
 - [From existing docker credentials](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials)
 - [From command line for docker credentials](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-secret-by-providing-credentials-on-the-command-line)
 - [Create your own secret](https://kubernetes.io/docs/concepts/configuration/secret/#creating-your-own-secrets)
 
-After you create this secret, edit your operator CR by appending the content below:
+Once created, simply refer to them in your spec:
 
 ```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: knative-serving
 spec:
   registry:
-    ...
+    default: docker.io/my-org/knative-${NAME}:v1.0.0
     imagePullSecrets:
-      - name: regcred
+    - name: my-org-secret
 ```
 
-The field `imagePullSecrets` expects a list of secrets. You can add multiple secrets to access the images as below:
 
-```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: knative-serving
-spec:
-  registry:
-    ...
-    imagePullSecrets:
-      - name: regcred
-      - name: regcred-2
-      ...
-```
+## spec.controller-custom-certs
 
-## SSL certificate for controller
+To enable tag-to-digest resolution, the Knative Serving controller
+needs to access the container registry, and if your registry uses a
+self-signed cert, you'll need to convince the controller to trust it.
 
-To [enable tag to digest resolution](https://knative.dev/development/serving/tag-resolution/), the Knative Serving controller needs to access the container registry.
-To allow the controller to trust a self-signed registry cert, you can use the Operator to specify the certificate using a ConfigMap or Secret.
+The operator encapsulates [these steps to enable tag-to-digest
+resolution](https://knative.dev/development/serving/tag-resolution/).
+All you have to do is create the `ConfigMap` or `Secret` and the
+operator configures the serving controller for you.
 
-Specify the following fields in `spec.controller-custom-certs` to select a custom registry certificate:
+These sub-fields are required:
 
 - `name`: the name of the ConfigMap or Secret.
 - `type`: either the string "ConfigMap" or "Secret".
 
+Your `ConfigMap` or `Secret` must reside in the same namespace as your
+knative resources.
 
-If you create a ConfigMap named `testCert` containing the certificate, change your CR:
+For example, this spec will trigger the operator to create and mount a
+volume containing the certificate in the controller and set the
+required environment variable properly, assuming that certificate is
+in a `ConfigMap` named `certs` in the `knative-serving` namespace.
 
 ```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
 metadata:
   name: knative-serving
   namespace: knative-serving
 spec:
   controller-custom-certs:
-    name: testCert
+    name: certs
     type: ConfigMap
 ```
 
 
-## Configuration of Knative ingress gateway
+## spec.knative-ingress-gateway
 
-To set up custom ingress gateway, follow [**Step 1: Create Gateway Service and Deployment Instance**](https://knative.dev/development/serving/setting-up-custom-ingress-gateway/).
-
-### Step 2: Update the Knative gateway
-
-Update `spec.knative-ingress-gateway` to select the labels of the new ingress gateway:
-
-```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: knative-serving
-spec:
-  knative-ingress-gateway:
-    selector:
-      custom: ingressgateway
-```
-
-### Step 3: Update Gateway ConfigMap
-
-Additionally, you will need to update the Istio ConfigMap:
+If you desire to [set up a custom ingress
+gateway](https://knative.dev/development/serving/setting-up-custom-ingress-gateway/),
+you can accomplish steps 2 and 3 in that doc with the following config
+of the `KnativeServing` instance:
 
 ```
 apiVersion: operator.knative.dev/v1alpha1
@@ -277,24 +213,14 @@ spec:
       gateway.knative-serving.knative-ingress-gateway: "custom-ingressgateway.istio-system.svc.cluster.local"
 ```
 
-The key in `spec.config.istio` is in the format of `gateway.{{gateway_namespace}}.{{gateway_name}}`.
 
-## Configuration of cluster local gateway
+## spec.cluster-local-gateway
 
-Update `spec.cluster-local-gateway` to select the labels of the new cluster-local ingress gateway:
+This field enables you to use a custom local gateway with a name other
+than `cluster-local-gateway`
 
-### Default local gateway name:
-
-Go through the guide [here](https://knative.dev/development/install/installing-istio/#updating-your-install-to-use-cluster-local-gateway) to use local cluster gateway,
-if you use the default gateway called `cluster-local-gateway`.
-
-### Non-default local gateway name:
-
-If you create custom local gateway with a name other than `cluster-local-gateway`, update `config.istio` and the
-`cluster-local-gateway` selector:
-
-This example shows a service and deployment `custom-local-gateway` in the namespace `istio-system`, with the
-label `custom: custom-local-gw`:
+This example shows a service and deployment `custom-local-gateway` in
+the namespace `istio-system`, with the label `custom: custom-local-gw`:
 
 ```
 apiVersion: operator.knative.dev/v1alpha1
@@ -311,11 +237,18 @@ spec:
       local-gateway.knative-serving.cluster-local-gateway: "custom-local-gateway.istio-system.svc.cluster.local"
 ```
 
-## High availability
 
-By default, Knative Serving runs a single instance of each controller. The `spec.high-availability` field allows you to configure the number of replicas for the following master-elected controllers: `controller`, `autoscaler-hpa`, `networking-istio`. This field also configures the `HorizontalPodAutoscaler` resources for the data plane (`activator`):
+## spec.high-availability
 
-The following configuration specifies a replica count of 3 for the controllers and a minimum of 3 activators (which may scale higher if needed):
+By default, Knative Serving runs a single instance of each controller.
+This field allows you to configure the number of replicas for the
+following master-elected controllers: `controller`, `autoscaler-hpa`,
+and `networking-istio`, as well as the `HorizontalPodAutoscaler`
+resources for the data plane (`activator`):
+
+The following configuration specifies a replica count of 3 for the
+controllers and a minimum of 3 activators (which may scale higher if
+needed):
 
 ```
 apiVersion: operator.knative.dev/v1alpha1
@@ -328,42 +261,19 @@ spec:
     replicas: 3
 ```
 
-## System Resource Settings
 
-The operator custom resource allows you allows you to configure system resources for the Knative system containers.
-Requests and limits can be configured for the following containers: `activator`, `autoscaler`, `controller`, `webhook`, `autoscaler-hpa`,
-`networking-istio` and `queue-proxy`.
+## spec.resources
 
-To override resource settings for a specific container, create an entry in the `spec.resources` list with the container name and the [Kubernetes resource settings](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#resource-requests-and-limits-of-pod-and-container).
+This field enables you to override the default resource settings for
+the knative containers. It essentially maps container names to
+[Kubernetes resource
+settings](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#resource-requests-and-limits-of-pod-and-container).
 
-For example, the following KnativeServing resource configures the `activator` to request 0.3 CPU and 100MB of RAM, and sets hard limits of 1 CPU, 250MB RAM, and 4GB of local storage:
-
-```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: knative-serving
-spec:
-  resources:
-  - container: activator
-    requests:
-      cpu: 300m
-      memory: 100Mi
-    limits:
-      cpu: 1000m
-      memory: 250Mi
-      ephemeral-storage: 4Gi
-```
-
-If you would like to add another container `autoscaler` with the same configuration, you need to change your CR as below:
+The following example configures both the `activator` and `autoscaler`
+to request 0.3 CPU and 100MB of RAM, and sets hard limits of 1 CPU,
+250MB RAM, and 4GB of local storage:
 
 ```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: knative-serving
 spec:
   resources:
   - container: activator
@@ -383,182 +293,14 @@ spec:
       memory: 250Mi
       ephemeral-storage: 4Gi
 ```
----
-title: "Configuring the Eventing Operator Custom Resource"
-weight: 60
-type: "docs"
-aliases:
-- /docs/operator/configuring-eventing-cr/
----
-
-The Knative Eventing operator can be configured with these options:
-
-- [Private repository and private secret](#private-repository-and-private-secrets)
-- [Configuring default broker class](#configuring-default-broker-class)
-
-__NOTE:__ Kubernetes spec level policies cannot be configured using the Knative operators.
-
-## Private repository and private secrets
-
-The Knative Eventing operator CR is configured the same way as the Knative Serving operator CR. For more information,
-see the documentation on “[Private repository and private secret](configuring-serving-cr.md#private-repository-and-private-secrets)” in Serving operator for detailed instruction.
-
-Knative Eventing also specifies only one container within one `Deployment` resource. However, the container does not use
-the same name as its parent `Deployment`, which means the container name in Knative Eventing is not the unique identifier
-as in Knative Serving. Here is the list of containers within each `Deployment` resource:
-
-| Component | Deployment name | Container name |
-|-----------|-----------------|----------------|
-| Core eventing | `eventing-controller` | `eventing-controller` |
-| Core eventing | `eventing-webhook` | `eventing-webhook` |
-| Eventing Broker | `broker-controller` | `eventing-controller` |
-| In-Memory Channel | `imc-controller` | `controller` |
-| In-Memory Channel | `imc-dispatcher` | `dispatcher` |
-
-The `default` field can still be used to replace the images in a predefined format. However, if the container name is not
-a unique identifier, e.g. `eventing-controller`, you need to use the `override` field to replace it, by specifying
-`deployment/container` as the unique key.
-
-Some images are defined via environment variable in Knative Eventing. They can be replaced by taking advantage of the
-`override` field. As Knative does not have a consistent way to specify container images, we have a known issue [here](https://github.com/knative-sandbox/operator/issues/22).
-
-### Download images in predefined format without secrets:
-
-This example shows how you can define custom image links that can be defined in the CR using the simplified format
-`docker.io/knative-images/${NAME}:{CUSTOM-TAG}`.
-
-In the example below:
-
-- the custom tag `v0.13.0` is used for all images
-- all image links are accessible without using secrets
-- images are defined in the accepted format `docker.io/knative-images/${NAME}:{CUSTOM-TAG}`
-
-First, you need to make sure your images are pushed to the following image tags:
-
-| Deployment | Container | Docker image |
-|----|----|----|
-| `eventing-controller` | `eventing-controller` | `docker.io/knative-images/eventing-controller:v0.13.0` |
-|  | `eventing-webhook` | `docker.io/knative-images/eventing-webhook:v0.13.0` |
-| `broker-controller` | `eventing-controller` | `docker.io/knative-images/broker-eventing-controller:v0.13.0` |
-|  | `controller` | `docker.io/knative-images/controller:v0.13.0` |
-|  | `dispatcher` | `docker.io/knative-images/dispatcher:v0.13.0` |
-
-Then, you need to define your operator CR with following content:
-
-```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeEventing
-metadata:
-  name: knative-eventing
-  namespace: knative-eventing
-spec:
-  registry:
-    default: docker.io/knative-images/${NAME}:v0.13.0
-    override:
-      broker-controller/eventing-controller: docker.io/knative-images-repo1/broker-eventing-controller:v0.13.0
-```
-
-As indicated, you replace `{CUSTOM-TAG}` with the custom tag `v0.13.0`. `${NAME}` maps to the container name in each `Deployment` resource.
-The field `default` is used to define the image format for all containers, except the container `eventing-controller` in
-the deployment `broker-controller`. To replace the image for this container, you need to take advatage of the `override`
-field to specify individually, by using `broker-controller/eventing-controller` as the key`.
-
-### Download images from different repositories without secrets:
-
-If your custom image links are not defined in a uniform format by default, you will need to individually include each
-link in the CR.
-
-For example, to define the list of images:
-
-| Deployment | Container | Docker Image |
-|----|----|----|
-| `eventing-controller` | `eventing-controller` | `docker.io/knative-images/eventing-controller:v0.13.0` |
-|  | `eventing-webhook` | `docker.io/knative-images/eventing-webhook:v0.13.0` |
-|  | `controller` | `docker.io/knative-images/controller:v0.13.0` |
-|  | `dispatcher` | `docker.io/knative-images/dispatcher:v0.13.0` |
-| `broker-controller` | `eventing-controller` | `docker.io/knative-images/broker-eventing-controller:v0.13.0` |
 
 
-The operator CR should be modified to include the full list:
+## spec.defaultBrokerClass
 
-```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: knative-serving
-spec:
-  registry:
-    override:
-      eventing-controller/eventing-controller: docker.io/knative-images-repo1/eventing-controller:v0.13.0
-      eventing-webhook/eventing-webhook: docker.io/knative-images-repo2/eventing-webhook:v0.13.0
-      imc-controller/controller: docker.io/knative-images-repo3/imc-controller:v0.13.0
-      imc-dispatcher/dispatcher: docker.io/knative-images-repo4/imc-dispatcher:v0.13.0
-      broker-controller/eventing-controller: docker.io/knative-images-repo5/broker-eventing-controller:v0.13.0
-```
-
-If you would like to replace the image defined by environment variable, e.g. the envorinment variable `DISPATCHER_IMAGE`
-in the container `controller` of the deployment `imc-controller`, you need to adjust your CR into the following, if the
-target image is `docker.io/knative-images-repo5/DISPATCHER_IMAGE:v0.13.0`:
-
-```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: knative-serving
-spec:
-  registry:
-    override:
-      eventing-controller/eventing-controller: docker.io/knative-images-repo1/eventing-controller:v0.13.0
-      eventing-webhook/eventing-webhook: docker.io/knative-images-repo2/eventing-webhook:v0.13.0
-      imc-controller/controller: docker.io/knative-images-repo3/imc-controller:v0.13.0
-      imc-dispatcher/dispatcher: docker.io/knative-images-repo4/imc-dispatcher:v0.13.0
-      broker-controller/eventing-controller: docker.io/knative-images-repo5/broker-eventing-controller:v0.13.0
-      DISPATCHER_IMAGE: docker.io/knative-images-repo5/DISPATCHER_IMAGE:v0.13.0
-```
-
-### Download images with secrets:
-
-If your image repository requires private secrets for access, you must append the `imagePullSecrets` attribute.
-
-This example uses a secret named `regcred`. Refer to [this guide](https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod) to create your own private secrets.
-After you create the secret, edit your operator CR by appending the content below:
-
-```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeEventing
-metadata:
-  name: knative-eventing
-  namespace: knative-eventing
-spec:
-  registry:
-    ...
-    imagePullSecrets:
-      - name: regcred
-```
-
-The field `imagePullSecrets` expects a list of secrets. You can add multiple secrets to access the images as below:
-
-```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeEventing
-metadata:
-  name: knative-eventing
-  namespace: knative-eventing
-spec:
-  registry:
-    ...
-    imagePullSecrets:
-      - name: regcred
-      - name: regcred-2
-      ...
-```
-
-## Configuring default broker class
-
-Knative Eventing allows you to define a default broker class when the user does not specify one. The operator ships with two broker classes: `ChannelBasedBroker` and `MTChannelBasedBroker`. The field `defaultBrokerClass` indicates which class to use; if empty, the `ChannelBasedBroker` will be used.
-Here is an example specifying `MTChannelBasedBroker` as the default:
+Knative Eventing allows you to define a default broker class when the
+user does not specify one. The operator ships with two broker classes:
+`ChannelBasedBroker` and `MTChannelBasedBroker`. This field indicates
+which one to use, defaulting to `ChannelBasedBroker` if not set.
 
 ```
 apiVersion: operator.knative.dev/v1alpha1

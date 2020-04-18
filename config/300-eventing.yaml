@@ -33,11 +33,14 @@ spec:
     listKind: KnativeEventingList
     plural: knativeeventings
     singular: knativeeventing
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
+      type: object
+      description: Schema for the knativeeventings API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation

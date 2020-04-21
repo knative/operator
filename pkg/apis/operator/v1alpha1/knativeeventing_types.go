@@ -38,10 +38,6 @@ type KnativeEventing struct {
 // KnativeEventingSpec defines the desired state of KnativeEventing
 // +k8s:openapi-gen=true
 type KnativeEventingSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
-
 	// A means to override the corresponding entries in the upstream configmaps
 	// +optional
 	Config map[string]map[string]string `json:"config,omitempty"`

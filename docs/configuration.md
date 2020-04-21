@@ -32,6 +32,7 @@ These are the configurable fields in each resource:
     * [resources](#specresources)
 * **KnativeEventing**
   * `spec`
+    * [config](#specconfig)
     * [registry](#specregistry)
       * [default](#specregistrydefault)
       * [override](#specregistryoverride)

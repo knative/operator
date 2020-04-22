@@ -18,12 +18,12 @@ package common
 import (
 	"testing"
 
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
-
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
+	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
 type customCertsTest struct {
@@ -84,7 +84,7 @@ var customCertsTests = []customCertsTest{
 }
 
 func TestOnlyTransformCustomCertsForController(t *testing.T) {
-	before := makeDeployment("not-controller", v1.PodSpec{
+	before := util.MakeDeployment("not-controller", v1.PodSpec{
 		Containers: []v1.Container{{
 			Name: "definitely-not-controller",
 		}},
@@ -98,13 +98,13 @@ func TestOnlyTransformCustomCertsForController(t *testing.T) {
 		},
 	}
 	customCertsTransform := CustomCertsTransform(instance, log)
-	unstructured := makeUnstructured(t, before)
+	unstructured := util.MakeUnstructured(t, before)
 	err := customCertsTransform(&unstructured)
-	assertEqual(t, err, nil)
+	util.AssertEqual(t, err, nil)
 	after := &appsv1.Deployment{}
 	err = scheme.Scheme.Convert(&unstructured, after, nil)
-	assertEqual(t, err, nil)
-	assertDeepEqual(t, after.Spec, before.Spec)
+	util.AssertEqual(t, err, nil)
+	util.AssertDeepEqual(t, after.Spec, before.Spec)
 }
 
 func TestCustomCertsTransform(t *testing.T) {
@@ -116,7 +116,7 @@ func TestCustomCertsTransform(t *testing.T) {
 }
 
 func runCustomCertsTransformTest(t *testing.T, tt *customCertsTest) {
-	unstructured := makeUnstructured(t, makeDeployment("controller", v1.PodSpec{
+	unstructured := util.MakeUnstructured(t, util.MakeDeployment("controller", v1.PodSpec{
 		Containers: []v1.Container{{
 			Name: "controller",
 		}},
@@ -137,22 +137,22 @@ func runCustomCertsTransformTest(t *testing.T, tt *customCertsTest) {
 func validateCustomCertsTransform(t *testing.T, tt *customCertsTest, u *unstructured.Unstructured) {
 	deployment := &appsv1.Deployment{}
 	err := scheme.Scheme.Convert(u, deployment, nil)
-	assertEqual(t, err, nil)
+	util.AssertEqual(t, err, nil)
 	spec := deployment.Spec.Template.Spec
 	if tt.expectSource != nil {
-		assertEqual(t, spec.Volumes[0].Name, customCertsNamePrefix+tt.input.Name)
-		assertDeepEqual(t, &spec.Volumes[0].VolumeSource, tt.expectSource)
-		assertDeepEqual(t, spec.Containers[0].Env[0], v1.EnvVar{
+		util.AssertEqual(t, spec.Volumes[0].Name, customCertsNamePrefix+tt.input.Name)
+		util.AssertDeepEqual(t, &spec.Volumes[0].VolumeSource, tt.expectSource)
+		util.AssertDeepEqual(t, spec.Containers[0].Env[0], v1.EnvVar{
 			Name:  customCertsEnvName,
 			Value: customCertsMountPath,
 		})
-		assertDeepEqual(t, spec.Containers[0].VolumeMounts[0], v1.VolumeMount{
+		util.AssertDeepEqual(t, spec.Containers[0].VolumeMounts[0], v1.VolumeMount{
 			Name:      customCertsNamePrefix + tt.input.Name,
 			MountPath: customCertsMountPath,
 		})
 	} else {
-		assertEqual(t, len(spec.Volumes), 0)
-		assertEqual(t, len(spec.Containers[0].Env), 0)
-		assertEqual(t, len(spec.Containers[0].VolumeMounts), 0)
+		util.AssertEqual(t, len(spec.Volumes), 0)
+		util.AssertEqual(t, len(spec.Containers[0].Env), 0)
+		util.AssertEqual(t, len(spec.Containers[0].VolumeMounts), 0)
 	}
 }

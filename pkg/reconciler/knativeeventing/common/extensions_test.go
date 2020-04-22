@@ -29,6 +29,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	util "knative.dev/operator/pkg/reconciler/common/testing"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	_ "knative.dev/pkg/client/injection/kube/client/fake"
 	"knative.dev/pkg/injection"
@@ -60,21 +61,21 @@ func TestTransformers(t *testing.T) {
 		With(zap.String(logkey.ControllerType, "test-controller"))
 
 	results, err := platform.Transformers(kubeclient.Get(ctx), ke, logger)
-	assertEqual(t, err, nil)
+	util.AssertEqual(t, err, nil)
 	// By default, there are 5 functions.
-	assertEqual(t, len(results), 5)
+	util.AssertEqual(t, len(results), 5)
 
 	platform = append(platform, fakePlatform)
 	results, err = platform.Transformers(kubeclient.Get(ctx), ke, logger)
-	assertEqual(t, err, nil)
+	util.AssertEqual(t, err, nil)
 	// There is one function in existing platform, so there will be 6 functions in total.
-	assertEqual(t, len(results), 6)
+	util.AssertEqual(t, len(results), 6)
 
 	platformErr = append(platformErr, fakePlatformErr)
 	results, err = platformErr.Transformers(kubeclient.Get(ctx), ke, logger)
-	assertEqual(t, err.Error(), "Test Error")
+	util.AssertEqual(t, err.Error(), "Test Error")
 	// By default, there are 5 functions.
-	assertEqual(t, len(results), 5)
+	util.AssertEqual(t, len(results), 5)
 }
 
 func fakePlatformErr(kubeClient kubernetes.Interface, logger *zap.SugaredLogger) (mf.Transformer, error) {

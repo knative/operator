@@ -22,6 +22,7 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/reconciler/common"
 )
 
 var log = zap.NewExample().Sugar()
@@ -36,8 +37,8 @@ func (platforms Platforms) Transformers(kubeClientSet kubernetes.Interface, inst
 	result := []mf.Transformer{
 		mf.InjectOwner(instance),
 		mf.InjectNamespace(instance.GetNamespace()),
-		ConfigMapTransform(instance, log),
-		ImageTransform(instance, log),
+		common.ConfigMapTransform(instance.Spec.Config, log),
+		common.ImageTransform(&instance.Spec.Registry, log),
 		GatewayTransform(instance, log),
 		CustomCertsTransform(instance, log),
 		HighAvailabilityTransform(instance, log),

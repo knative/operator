@@ -28,6 +28,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
 type updateDefaultBrokerTest struct {
@@ -120,7 +121,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 }
 
 func runDefaultImageBrokerTransformTest(t *testing.T, tt *updateDefaultBrokerTest) {
-	unstructuredConfigMap := makeUnstructured(t, &tt.configMap)
+	unstructuredConfigMap := util.MakeUnstructured(t, &tt.configMap)
 	instance := &eventingv1alpha1.KnativeEventing{
 		Spec: eventingv1alpha1.KnativeEventingSpec{
 			DefaultBrokerClass: tt.defaultBrokerClass,
@@ -134,8 +135,8 @@ func runDefaultImageBrokerTransformTest(t *testing.T, tt *updateDefaultBrokerTes
 func validateUnstructedConfigMapChanged(t *testing.T, tt *updateDefaultBrokerTest, u *unstructured.Unstructured) {
 	var configMap = &corev1.ConfigMap{}
 	err := scheme.Scheme.Convert(u, configMap, nil)
-	assertEqual(t, err, nil)
-	assertDeepEqual(t, configMap.Data, tt.expected.Data)
+	util.AssertEqual(t, err, nil)
+	util.AssertDeepEqual(t, configMap.Data, tt.expected.Data)
 }
 
 func makeConfigMap(t *testing.T, name string, data map[string]map[string]string) corev1.ConfigMap {

@@ -21,6 +21,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/reconciler/common"
 )
 
 var log = zap.NewExample().Sugar()
@@ -32,9 +33,9 @@ func (platforms Platforms) Transformers(kubeClientSet kubernetes.Interface, inst
 	result := []mf.Transformer{
 		mf.InjectOwner(instance),
 		mf.InjectNamespace(instance.GetNamespace()),
-		DeploymentTransform(instance, log),
+		common.ImageTransform(&instance.Spec.Registry, log),
 		DefaultBrokerConfigMapTransform(instance, log),
-		ConfigMapTransform(instance, log),
+		common.ConfigMapTransform(instance.Spec.Config, log),
 	}
 	for _, fn := range platforms {
 		transformer, err := fn(kubeClientSet, log)

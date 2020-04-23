@@ -18,6 +18,7 @@ package common
 import (
 	"testing"
 
+	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -25,6 +26,8 @@ import (
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
+
+var log = zap.NewNop().Sugar()
 
 type customCertsTest struct {
 	name         string

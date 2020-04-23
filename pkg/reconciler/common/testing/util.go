@@ -61,6 +61,7 @@ func MakeDaemonSet(name string, podSpec corev1.PodSpec) *appsv1.DaemonSet {
 }
 
 func MakeUnstructured(t *testing.T, obj interface{}) unstructured.Unstructured {
+	t.Helper()
 	var result = unstructured.Unstructured{}
 	err := scheme.Scheme.Convert(obj, &result, nil)
 	if err != nil {
@@ -70,6 +71,7 @@ func MakeUnstructured(t *testing.T, obj interface{}) unstructured.Unstructured {
 }
 
 func AssertEqual(t *testing.T, actual, expected interface{}) {
+	t.Helper()
 	if actual == expected {
 		return
 	}
@@ -77,6 +79,7 @@ func AssertEqual(t *testing.T, actual, expected interface{}) {
 }
 
 func AssertDeepEqual(t *testing.T, actual, expected interface{}) {
+	t.Helper()
 	if reflect.DeepEqual(actual, expected) {
 		return
 	}

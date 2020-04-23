@@ -74,7 +74,7 @@ func DefaultBrokerConfigMapTransform(instance *eventingv1alpha1.KnativeEventing,
 	}
 }
 
-func writeDefaultsToConfigMap(defaults *eventingconfig.Defaults, configMap *corev1.ConfigMap, logger *zap.SugaredLogger) error {
+func writeDefaultsToConfigMap(defaults *eventingconfig.Defaults, configMap *corev1.ConfigMap, log *zap.SugaredLogger) error {
 	jsonBytes, err := json.Marshal(defaults)
 	if err != nil {
 		log.Error("Defaults could not be converted to JSON", "defaults", defaults)

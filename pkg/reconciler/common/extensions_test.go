@@ -23,12 +23,10 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	_ "knative.dev/pkg/client/injection/kube/client/fake"
@@ -49,33 +47,23 @@ func TestTransformers(t *testing.T) {
 	cfg := &rest.Config{}
 	ctx, _ = injection.Fake.SetupInformers(ctx, cfg)
 
-	ke := &v1alpha1.KnativeEventing{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "knative-eventing",
-			Namespace: "knative-eventing",
-		},
-	}
-
 	logger := logging.FromContext(ctx).
 		Named("test-controller").
 		With(zap.String(logkey.ControllerType, "test-controller"))
 
-	results, err := platform.Transformers(kubeclient.Get(ctx), ke, logger)
+	results, err := platform.Transformers(kubeclient.Get(ctx), logger)
 	util.AssertEqual(t, err, nil)
-	// By default, there are 5 functions.
-	util.AssertEqual(t, len(results), 5)
+	util.AssertEqual(t, len(results), 0)
 
 	platform = append(platform, fakePlatform)
-	results, err = platform.Transformers(kubeclient.Get(ctx), ke, logger)
+	results, err = platform.Transformers(kubeclient.Get(ctx), logger)
 	util.AssertEqual(t, err, nil)
-	// There is one function in existing platform, so there will be 6 functions in total.
-	util.AssertEqual(t, len(results), 6)
+	util.AssertEqual(t, len(results), 1)
 
 	platformErr = append(platformErr, fakePlatformErr)
-	results, err = platformErr.Transformers(kubeclient.Get(ctx), ke, logger)
+	results, err = platformErr.Transformers(kubeclient.Get(ctx), logger)
 	util.AssertEqual(t, err.Error(), "Test Error")
-	// By default, there are 5 functions.
-	util.AssertEqual(t, len(results), 5)
+	util.AssertEqual(t, len(results), 0)
 }
 
 func fakePlatformErr(kubeClient kubernetes.Interface, logger *zap.SugaredLogger) (mf.Transformer, error) {

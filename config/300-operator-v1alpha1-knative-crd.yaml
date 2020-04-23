@@ -258,6 +258,14 @@ spec:
         spec:
           description: Spec defines the desired state of KnativeEventing
           properties:
+            config:
+              additionalProperties:
+                additionalProperties:
+                  type: string
+                type: object
+              description: A means to override the corresponding entries in the upstream
+                configmaps
+              type: object
             registry:
               description: A means to override the corresponding deployment images in the upstream.
                 This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.

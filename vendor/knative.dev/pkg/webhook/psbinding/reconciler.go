@@ -321,6 +321,10 @@ func (r *BaseReconciler) ReconcileSubject(ctx context.Context, fb Bindable, muta
 		if err != nil {
 			return err
 		}
+		err = r.labelNamespace(ctx, subject)
+		if err != nil {
+			return err
+		}
 		referents = append(referents, psObj.(*duckv1.WithPod))
 	} else {
 		// Otherwise, the subject is referenced by selector, so compile
@@ -332,6 +336,10 @@ func (r *BaseReconciler) ReconcileSubject(ctx context.Context, fb Bindable, muta
 		psObjs, err := lister.ByNamespace(subject.Namespace).List(selector)
 		if err != nil {
 			return fmt.Errorf("error fetching Pod Speccable %v: %w", subject, err)
+		}
+		err = r.labelNamespace(ctx, subject)
+		if err != nil {
+			return err
 		}
 		err = r.labelNamespace(ctx, subject)
 		if err != nil {

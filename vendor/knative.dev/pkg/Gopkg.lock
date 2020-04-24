@@ -192,6 +192,7 @@
   version = "v0.1.1"
 
 [[projects]]
+<<<<<<< HEAD
   digest = "1:3758c86e787dfe5792a23430f34636106a16da914446724399c9c12f121a225d"
   name = "github.com/go-openapi/jsonpointer"
   packages = ["."]
@@ -224,6 +225,8 @@
   version = "v0.19.9"
 
 [[projects]]
+=======
+>>>>>>> 4538b6f... Update the dependencies
   digest = "1:416b666cb79f02526f115d16aba8b318b854f3c964107081311e9df6a08b39a9"
   name = "github.com/gobuffalo/envy"
   packages = ["."]
@@ -1485,14 +1488,22 @@
 
 [[projects]]
   branch = "master"
+<<<<<<< HEAD
   digest = "1:4d8d06fc8e0f7dbfad243aa377651234d422d523c2a3297366343b9ff5165922"
+=======
+  digest = "1:8a965ebe2d83033f6a07e926357f7341b6c7f42e165a3e13c7c8113b953a265b"
+>>>>>>> 4538b6f... Update the dependencies
   name = "knative.dev/test-infra"
   packages = [
     "scripts",
     "tools/dep-collector",
   ]
   pruneopts = "UT"
+<<<<<<< HEAD
   revision = "e6e89d29e93a3f4dba44c4a694d704e3e8921c64"
+=======
+  revision = "1be83cfc7702b712d4dcec6209105b012e930308"
+>>>>>>> 4538b6f... Update the dependencies
 
 [[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"

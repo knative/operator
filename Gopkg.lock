@@ -1351,19 +1351,19 @@
   revision = "853d6022845c703a59b5c26b125f2928219d10e5"
 
 [[projects]]
-  branch = "release-0.14"
-  digest = "1:e31254a054f9b731185446d8a91445c2b969d24577df0d578f7c770ee5308928"
+  branch = "master"
+  digest = "1:3f8fa52bc1e4a6dcea135d0daf452582e4431ed7b316589bdef7a6b7a7da549b"
   name = "knative.dev/eventing"
   packages = [
     "pkg/apis/config",
     "pkg/apis/eventing",
   ]
   pruneopts = "NUT"
-  revision = "02bc51668a0c7d2d8cbb56823c5aecbeec46253d"
+  revision = "b0da8720bf169ff4100f824e27af4c0d25496b11"
 
 [[projects]]
-  branch = "release-0.14"
-  digest = "1:f806eb7e5629d594362dc18905d092888b1d56fbfe026a597d25b86e846f2d53"
+  branch = "master"
+  digest = "1:bcff22fa5a7779335e4812c47866681e266cdd83a10356b6e967eefac4563de1"
   name = "knative.dev/pkg"
   packages = [
     "apis",
@@ -1412,18 +1412,18 @@
     "webhook/certificates/resources",
   ]
   pruneopts = "T"
-  revision = "2a1db869228ceaca9df34790b49cdf4893a5d39d"
+  revision = "4945766b290cbd486c9e3fdaded78985875e516b"
 
 [[projects]]
-  branch = "release-0.14"
-  digest = "1:50482e6fd500cf50c4a29d640cda026206145c6716dff72e4368a5e57fdb7095"
+  branch = "master"
+  digest = "1:dc9ba2b25034dbe099b604ce1e243b42502d4ea7b096f844abd1f1617e1151ac"
   name = "knative.dev/test-infra"
   packages = [
     "scripts",
     "tools/dep-collector",
   ]
   pruneopts = "UT"
-  revision = "9fa5882b65c5fe7e177bb74874e9a5ac87b84e98"
+  revision = "f645de8d9a500a3fd00149f1b4e693029d678132"
 
 [[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"

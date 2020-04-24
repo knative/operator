@@ -90,7 +90,7 @@ func (in *Inspector) Preorder(types []ast.Node, f func(ast.Node)) {
 // The types argument, if non-empty, enables type-based filtering of
 // events. The function f if is called only for nodes whose type
 // matches an element of the types slice.
-func (in *Inspector) Nodes(types []ast.Node, f func(n ast.Node, push bool) (proceed bool)) {
+func (in *Inspector) Nodes(types []ast.Node, f func(n ast.Node, push bool) (prune bool)) {
 	mask := maskOf(types)
 	for i := 0; i < len(in.events); {
 		ev := in.events[i]
@@ -114,7 +114,7 @@ func (in *Inspector) Nodes(types []ast.Node, f func(n ast.Node, push bool) (proc
 // supplies each call to f an additional argument, the current
 // traversal stack. The stack's first element is the outermost node,
 // an *ast.File; its last is the innermost, n.
-func (in *Inspector) WithStack(types []ast.Node, f func(n ast.Node, push bool, stack []ast.Node) (proceed bool)) {
+func (in *Inspector) WithStack(types []ast.Node, f func(n ast.Node, push bool, stack []ast.Node) (prune bool)) {
 	mask := maskOf(types)
 	var stack []ast.Node
 	for i := 0; i < len(in.events); {

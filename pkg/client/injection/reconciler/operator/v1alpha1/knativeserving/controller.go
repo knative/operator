@@ -20,6 +20,9 @@ package knativeserving
 
 import (
 	context "context"
+	fmt "fmt"
+	reflect "reflect"
+	strings "strings"
 
 	corev1 "k8s.io/api/core/v1"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -37,7 +40,6 @@ import (
 const (
 	defaultControllerAgentName = "knativeserving-controller"
 	defaultFinalizerName       = "knativeservings.operator.knative.dev"
-	defaultQueueName           = "knativeservings"
 )
 
 // NewImpl returns a controller.Impl that handles queuing and feeding work from
@@ -74,18 +76,26 @@ func NewImpl(ctx context.Context, r Interface, optionsFns ...controller.OptionsF
 	}
 
 	rec := &reconcilerImpl{
-		Client:     injectionclient.Get(ctx),
-		Lister:     knativeservingInformer.Lister(),
-		Recorder:   recorder,
-		reconciler: r,
+		Client:        injectionclient.Get(ctx),
+		Lister:        knativeservingInformer.Lister(),
+		Recorder:      recorder,
+		reconciler:    r,
+		finalizerName: defaultFinalizerName,
 	}
-	impl := controller.NewImpl(rec, logger, defaultQueueName)
+
+	t := reflect.TypeOf(r).Elem()
+	queueName := fmt.Sprintf("%s.%s", strings.ReplaceAll(t.PkgPath(), "/", "-"), t.Name())
+
+	impl := controller.NewImpl(rec, logger, queueName)
 
 	// Pass impl to the options. Save any optional results.
 	for _, fn := range optionsFns {
 		opts := fn(impl)
 		if opts.ConfigStore != nil {
 			rec.configStore = opts.ConfigStore
+		}
+		if opts.FinalizerName != "" {
+			rec.finalizerName = opts.FinalizerName
 		}
 	}
 

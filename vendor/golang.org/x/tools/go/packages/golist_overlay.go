@@ -1,6 +1,7 @@
 package packages
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"go/parser"
@@ -15,7 +16,7 @@ import (
 // sometimes incorrect.
 // TODO(matloob): Handle unsupported cases, including the following:
 // - determining the correct package to add given a new import path
-func (state *golistState) processGolistOverlay(response *responseDeduper) (modifiedPkgs, needPkgs []string, err error) {
+func processGolistOverlay(cfg *Config, response *responseDeduper, rootDirs func() *goInfo) (modifiedPkgs, needPkgs []string, err error) {
 	havePkgs := make(map[string]string) // importPath -> non-test package ID
 	needPkgsSet := make(map[string]bool)
 	modifiedPkgsSet := make(map[string]bool)
@@ -33,7 +34,7 @@ func (state *golistState) processGolistOverlay(response *responseDeduper) (modif
 	// potentially modifying the transitive set of dependencies).
 	var overlayAddsImports bool
 
-	for opath, contents := range state.cfg.Overlay {
+	for opath, contents := range cfg.Overlay {
 		base := filepath.Base(opath)
 		dir := filepath.Dir(opath)
 		var pkg *Package           // if opath belongs to both a package and its test variant, this will be the test variant
@@ -85,10 +86,7 @@ func (state *golistState) processGolistOverlay(response *responseDeduper) (modif
 		if pkg == nil {
 			// Try to find the module or gopath dir the file is contained in.
 			// Then for modules, add the module opath to the beginning.
-			pkgPath, ok, err := state.getPkgPath(dir)
-			if err != nil {
-				return nil, nil, err
-			}
+			pkgPath, ok := getPkgPath(cfg, dir, rootDirs)
 			if !ok {
 				break
 			}
@@ -116,11 +114,6 @@ func (state *golistState) processGolistOverlay(response *responseDeduper) (modif
 				if isTestFile && !isXTest && testVariantOf != nil {
 					pkg.GoFiles = append(pkg.GoFiles, testVariantOf.GoFiles...)
 					pkg.CompiledGoFiles = append(pkg.CompiledGoFiles, testVariantOf.CompiledGoFiles...)
-					// Add the package under test and its imports to the test variant.
-					pkg.forTest = testVariantOf.PkgPath
-					for k, v := range testVariantOf.Imports {
-						pkg.Imports[k] = &Package{ID: v.ID}
-					}
 				}
 			}
 		}
@@ -137,23 +130,23 @@ func (state *golistState) processGolistOverlay(response *responseDeduper) (modif
 			continue
 		}
 		for _, imp := range imports {
-			if _, found := pkg.Imports[imp]; found {
-				continue
-			}
-
-			// TODO(matloob): Handle cases when the following block isn't correct.
-			// These include imports of vendored packages, etc.
-			overlayAddsImports = true
-			id, ok := havePkgs[imp]
-			if !ok {
-				id = imp
-			}
-			pkg.Imports[imp] = &Package{ID: id}
-			// Add dependencies to the non-test variant version of this package as well.
-			if testVariantOf != nil {
-				testVariantOf.Imports[imp] = &Package{ID: id}
+			_, found := pkg.Imports[imp]
+			if !found {
+				overlayAddsImports = true
+				// TODO(matloob): Handle cases when the following block isn't correct.
+				// These include imports of vendored packages, etc.
+				id, ok := havePkgs[imp]
+				if !ok {
+					id = imp
+				}
+				pkg.Imports[imp] = &Package{ID: id}
+				// Add dependencies to the non-test variant version of this package as wel.
+				if testVariantOf != nil {
+					testVariantOf.Imports[imp] = &Package{ID: id}
+				}
 			}
 		}
+		continue
 	}
 
 	// toPkgPath tries to guess the package path given the id.
@@ -168,8 +161,8 @@ func (state *golistState) processGolistOverlay(response *responseDeduper) (modif
 		return id
 	}
 
-	// Now that new packages have been created, do another pass to determine
-	// the new set of missing packages.
+	// Do another pass now that new packages have been created to determine the
+	// set of missing packages.
 	for _, pkg := range response.dr.Packages {
 		for _, imp := range pkg.Imports {
 			pkgPath := toPkgPath(imp.ID)
@@ -201,59 +194,44 @@ func hasTestFiles(p *Package) bool {
 	return false
 }
 
-// determineRootDirs returns a mapping from absolute directories that could
-// contain code to their corresponding import path prefixes.
-func (state *golistState) determineRootDirs() (map[string]string, error) {
-	env, err := state.getEnv()
+// determineRootDirs returns a mapping from directories code can be contained in to the
+// corresponding import path prefixes of those directories.
+// Its result is used to try to determine the import path for a package containing
+// an overlay file.
+func determineRootDirs(cfg *Config) map[string]string {
+	// Assume modules first:
+	out, err := invokeGo(cfg, "list", "-m", "-json", "all")
 	if err != nil {
-		return nil, err
-	}
-	if env["GOMOD"] != "" {
-		state.rootsOnce.Do(func() {
-			state.rootDirs, state.rootDirsError = state.determineRootDirsModules()
-		})
-	} else {
-		state.rootsOnce.Do(func() {
-			state.rootDirs, state.rootDirsError = state.determineRootDirsGOPATH()
-		})
-	}
-	return state.rootDirs, state.rootDirsError
-}
-
-func (state *golistState) determineRootDirsModules() (map[string]string, error) {
-	out, err := state.invokeGo("list", "-m", "-json", "all")
-	if err != nil {
-		return nil, err
+		return determineRootDirsGOPATH(cfg)
 	}
 	m := map[string]string{}
 	type jsonMod struct{ Path, Dir string }
 	for dec := json.NewDecoder(out); dec.More(); {
 		mod := new(jsonMod)
 		if err := dec.Decode(mod); err != nil {
-			return nil, err
+			return m // Give up and return an empty map. Package won't be found for overlay.
 		}
 		if mod.Dir != "" && mod.Path != "" {
 			// This is a valid module; add it to the map.
-			absDir, err := filepath.Abs(mod.Dir)
-			if err != nil {
-				return nil, err
-			}
-			m[absDir] = mod.Path
+			m[mod.Dir] = mod.Path
 		}
 	}
-	return m, nil
+	return m
 }
 
-func (state *golistState) determineRootDirsGOPATH() (map[string]string, error) {
+func determineRootDirsGOPATH(cfg *Config) map[string]string {
 	m := map[string]string{}
-	for _, dir := range filepath.SplitList(state.mustGetEnv()["GOPATH"]) {
-		absDir, err := filepath.Abs(dir)
-		if err != nil {
-			return nil, err
-		}
-		m[filepath.Join(absDir, "src")] = ""
+	out, err := invokeGo(cfg, "env", "GOPATH")
+	if err != nil {
+		// Could not determine root dir mapping. Everything is best-effort, so just return an empty map.
+		// When we try to find the import path for a directory, there will be no root-dir match and
+		// we'll give up.
+		return m
 	}
-	return m, nil
+	for _, p := range filepath.SplitList(string(bytes.TrimSpace(out.Bytes()))) {
+		m[filepath.Join(p, "src")] = ""
+	}
+	return m
 }
 
 func extractImports(filename string, contents []byte) ([]string, error) {

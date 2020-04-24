@@ -95,13 +95,28 @@ func verifyLoggingConfig(t *testing.T, ks *v1alpha1.KnativeServing, loggingConfi
 
 func verifySingleKeyDeletion(t *testing.T, ks *v1alpha1.KnativeServing, loggingConfigKey string,
 	loggingConfigMapName string, clients *test.Clients, names test.ResourceNames) *v1alpha1.KnativeServing {
-	delete(ks.Spec.Config[loggingConfigKey], "loglevel.autoscaler")
-	ks, err := clients.KnativeServing().Update(ks)
-	if err != nil {
-		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
+	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+		kServing, err := clients.KnativeServing().Get(names.KnativeServing, metav1.GetOptions{})
+		if apierrs.IsNotFound(err) {
+			return false, err
+		} else if err != nil {
+			return false, nil
+		}
+		delete(kServing.Spec.Config[loggingConfigKey], "loglevel.autoscaler")
+		kServing, err = clients.KnativeServing().Update(kServing)
+		if err != nil {
+			return false, nil
+		}
+		ks = kServing
+		return true, nil
+	})
+
+	if waitErr != nil {
+		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, waitErr)
 	}
+
 	// Verify the relevant configmap has been updated
-	err = WaitForConfigMap(loggingConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
+	err := WaitForConfigMap(loggingConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
 		_, autoscalerKeyExists := m["loglevel.autoscaler"]
 		// deleted key/value pair should be removed from the target config map
 		return m["loglevel.controller"] == "debug" && !autoscalerKeyExists
@@ -114,13 +129,27 @@ func verifySingleKeyDeletion(t *testing.T, ks *v1alpha1.KnativeServing, loggingC
 
 func verifyEmptyKey(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConfigKey string,
 	defaultsConfigMapName string, clients *test.Clients, names test.ResourceNames) *v1alpha1.KnativeServing {
-	ks.Spec.Config[defaultsConfigKey] = map[string]string{}
-	ks, err := clients.KnativeServing().Update(ks)
-	if err != nil {
-		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
+	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+		kServing, err := clients.KnativeServing().Get(names.KnativeServing, metav1.GetOptions{})
+		if apierrs.IsNotFound(err) {
+			return false, err
+		} else if err != nil {
+			return false, nil
+		}
+		kServing.Spec.Config[defaultsConfigKey] = map[string]string{}
+		kServing, err = clients.KnativeServing().Update(kServing)
+		if err != nil {
+			return false, nil
+		}
+		ks = kServing
+		return true, nil
+	})
+
+	if waitErr != nil {
+		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, waitErr)
 	}
 	// Verify the relevant configmap has been updated and does not contain any keys except "_example"
-	err = WaitForConfigMap(defaultsConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
+	err := WaitForConfigMap(defaultsConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
 		_, exampleExists := m["_example"]
 		return len(m) == 1 && exampleExists
 	})
@@ -132,9 +161,23 @@ func verifyEmptyKey(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConfigKey
 
 func verifyEmptySpec(t *testing.T, ks *v1alpha1.KnativeServing, loggingConfigMapName string, clients *test.Clients,
 	names test.ResourceNames) {
-	ks.Spec = v1alpha1.KnativeServingSpec{}
-	if _, err := clients.KnativeServing().Update(ks); err != nil {
-		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
+	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+		kServing, err := clients.KnativeServing().Get(names.KnativeServing, metav1.GetOptions{})
+		if apierrs.IsNotFound(err) {
+			return false, err
+		} else if err != nil {
+			return false, nil
+		}
+		kServing.Spec = v1alpha1.KnativeServingSpec{}
+		kServing, err = clients.KnativeServing().Update(kServing)
+		if err != nil {
+			return false, nil
+		}
+		return true, nil
+	})
+
+	if waitErr != nil {
+		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, waitErr)
 	}
 	err := WaitForConfigMap(loggingConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
 		_, exists := m["loglevel.controller"]

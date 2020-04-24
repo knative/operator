@@ -22,6 +22,8 @@ if [ -z "${GOPATH:-}" ]; then
   export GOPATH=$(go env GOPATH)
 fi
 
+export GO111MODULE=on
+
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/library.sh
 
 CODEGEN_PKG=${CODEGEN_PKG:-$(cd ${REPO_ROOT_DIR}; ls -d -1 ./vendor/k8s.io/code-generator 2>/dev/null || echo ../code-generator)}
@@ -32,11 +34,13 @@ KNATIVE_CODEGEN_PKG=${KNATIVE_CODEGEN_PKG:-$(cd ${REPO_ROOT_DIR}; ls -d -1 ./ven
 # --output-base    because this script should also be able to run inside the vendor dir of
 #                  k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
+chmod +x ${CODEGEN_PKG}/generate-groups.sh
 ${CODEGEN_PKG}/generate-groups.sh "deepcopy,client,informer,lister" \
   knative.dev/operator/pkg/client knative.dev/operator/pkg/apis \
   "operator:v1alpha1" \
   --go-header-file ${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt
 
+chmod +x ${KNATIVE_CODEGEN_PKG}/hack/generate-knative.sh
 ${KNATIVE_CODEGEN_PKG}/hack/generate-knative.sh "injection" \
   knative.dev/operator/pkg/client knative.dev/operator/pkg/apis \
   "operator:v1alpha1" \
@@ -49,4 +53,4 @@ ${GOPATH}/bin/deepcopy-gen \
   -i knative.dev/operator/pkg/apis/operator/v1alpha1
 
 # Make sure our dependencies are up-to-date
-${REPO_ROOT_DIR}/hack/update-deps.sh
+#${REPO_ROOT_DIR}/hack/update-deps.sh

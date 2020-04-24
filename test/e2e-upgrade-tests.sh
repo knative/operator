@@ -34,6 +34,8 @@
 readonly LATEST_EVENTING_OPERATOR_RELEASE_VERSION="v0.13.2"
 readonly LATEST_EVENTING_RELEASE_VERSION="v0.13.4"
 
+export GO111MODULE=auto
+
 source $(dirname $0)/e2e-common.sh
 
 function install_previous_serving_operator_release() {

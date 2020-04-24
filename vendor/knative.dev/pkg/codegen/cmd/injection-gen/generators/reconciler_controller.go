@@ -198,7 +198,6 @@ func NewImpl(ctx {{.contextContext|raw}}, r Interface{{if .hasClass}}, classValu
 		Lister:  {{.type|lowercaseSingular}}Informer.Lister(),
 		Recorder: recorder,
 		reconciler:    r,
-		finalizerName: defaultFinalizerName,
 		{{if .hasClass}}classValue: classValue,{{end}}
 	}
 	impl := {{.controllerNewImpl|raw}}(rec, logger, defaultQueueName)
@@ -208,9 +207,6 @@ func NewImpl(ctx {{.contextContext|raw}}, r Interface{{if .hasClass}}, classValu
 		opts := fn(impl)
 		if opts.ConfigStore != nil {
 			rec.configStore = opts.ConfigStore
-		}
-		if opts.FinalizerName != "" {
-			rec.finalizerName = opts.FinalizerName
 		}
 	}
 

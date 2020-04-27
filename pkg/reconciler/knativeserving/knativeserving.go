@@ -90,7 +90,22 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 	if _, ok := r.servings[key]; ok {
 		delete(r.servings, key)
 	}
-	return r.delete(ctx, original)
+
+	logger.Info("Deleting resources")
+	var RBAC = mf.Any(mf.ByKind("Role"), mf.ByKind("ClusterRole"), mf.ByKind("RoleBinding"), mf.ByKind("ClusterRoleBinding"))
+	if len(r.servings) == 0 {
+		if err := r.config.Filter(mf.ByKind("Deployment")).Delete(); err != nil {
+			return err
+		}
+		if err := r.config.Filter(mf.NoCRDs, mf.None(RBAC)).Delete(); err != nil {
+			return err
+		}
+		// Delete Roles last, as they may be useful for human operators to clean up.
+		if err := r.config.Filter(RBAC).Delete(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // ReconcileKind compares the actual state with the desired, and attempts to
@@ -281,27 +296,6 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 	patcher := r.knativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace)
 	if _, err := patcher.Patch(instance.Name, types.MergePatchType, patch); err != nil {
 		return fmt.Errorf("failed to patch finalizer away: %w", err)
-	}
-	return nil
-}
-
-// delete all the resources in the release manifest
-func (r *Reconciler) delete(ctx context.Context, instance *servingv1alpha1.KnativeServing) error {
-	logger := logging.FromContext(ctx)
-
-	logger.Info("Deleting resources")
-	var RBAC = mf.Any(mf.ByKind("Role"), mf.ByKind("ClusterRole"), mf.ByKind("RoleBinding"), mf.ByKind("ClusterRoleBinding"))
-	if len(r.servings) == 0 {
-		if err := r.config.Filter(mf.ByKind("Deployment")).Delete(); err != nil {
-			return err
-		}
-		if err := r.config.Filter(mf.NoCRDs, mf.None(RBAC)).Delete(); err != nil {
-			return err
-		}
-		// Delete Roles last, as they may be useful for human operators to clean up.
-		if err := r.config.Filter(RBAC).Delete(); err != nil {
-			return err
-		}
 	}
 	return nil
 }

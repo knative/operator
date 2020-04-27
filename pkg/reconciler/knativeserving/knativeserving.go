@@ -18,6 +18,7 @@ package knativeserving
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	mf "github.com/manifestival/manifestival"
@@ -29,6 +30,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -43,10 +46,10 @@ import (
 )
 
 const (
-	finalizerName  = "delete-knative-serving-manifest"
-	creationChange = "creation"
-	editChange     = "edit"
-	deletionChange = "deletion"
+	oldFinalizerName = "delete-knative-serving-manifest"
+	creationChange   = "creation"
+	editChange       = "edit"
+	deletionChange   = "deletion"
 )
 
 var (
@@ -135,7 +138,7 @@ func (r *Reconciler) reconcile(ctx context.Context, ks *servingv1alpha1.KnativeS
 	reqLogger.Infow("Reconciling KnativeServing", "status", ks.Status)
 
 	stages := []func(context.Context, *mf.Manifest, *servingv1alpha1.KnativeServing) error{
-		r.ensureFinalizer,
+		r.ensureFinalizerRemoval,
 		r.initStatus,
 		r.install,
 		r.checkDeployments,
@@ -252,24 +255,40 @@ func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest
 }
 
 // ensureFinalizer attaches a "delete manifest" finalizer to the instance
-func (r *Reconciler) ensureFinalizer(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
-	for _, finalizer := range instance.GetFinalizers() {
-		if finalizer == finalizerName {
-			return nil
-		}
+func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
+	finalizers := sets.NewString(instance.Finalizers...)
+
+	if !finalizers.Has(oldFinalizerName) {
+		// Nothing to do.
+		return nil
 	}
-	instance.SetFinalizers(append(instance.GetFinalizers(), finalizerName))
-	instance, err := r.knativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace).Update(instance)
-	return err
+
+	// Remove the finalizer
+	finalizers.Delete(oldFinalizerName)
+
+	mergePatch := map[string]interface{}{
+		"metadata": map[string]interface{}{
+			"finalizers":      finalizers.List(),
+			"resourceVersion": instance.ResourceVersion,
+		},
+	}
+
+	patch, err := json.Marshal(mergePatch)
+	if err != nil {
+		return fmt.Errorf("failed to construct finalizer patch: %w", err)
+	}
+
+	patcher := r.knativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace)
+	if _, err := patcher.Patch(instance.Name, types.MergePatchType, patch); err != nil {
+		return fmt.Errorf("failed to patch finalizer away: %w", err)
+	}
+	return nil
 }
 
 // delete all the resources in the release manifest
 func (r *Reconciler) delete(ctx context.Context, instance *servingv1alpha1.KnativeServing) error {
 	logger := logging.FromContext(ctx)
 
-	if len(instance.GetFinalizers()) == 0 || instance.GetFinalizers()[0] != finalizerName {
-		return nil
-	}
 	logger.Info("Deleting resources")
 	var RBAC = mf.Any(mf.ByKind("Role"), mf.ByKind("ClusterRole"), mf.ByKind("RoleBinding"), mf.ByKind("ClusterRoleBinding"))
 	if len(r.servings) == 0 {
@@ -284,14 +303,7 @@ func (r *Reconciler) delete(ctx context.Context, instance *servingv1alpha1.Knati
 			return err
 		}
 	}
-	// The deletionTimestamp might've changed. Fetch the resource again.
-	refetched, err := r.knativeServingLister.KnativeServings(instance.Namespace).Get(instance.Name)
-	if err != nil {
-		return err
-	}
-	refetched.SetFinalizers(refetched.GetFinalizers()[1:])
-	_, err = r.knativeServingClientSet.OperatorV1alpha1().KnativeServings(refetched.Namespace).Update(refetched)
-	return err
+	return nil
 }
 
 // Delete obsolete resources from previous versions

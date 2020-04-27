@@ -18,6 +18,7 @@ package knativeeventing
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	mf "github.com/manifestival/manifestival"
@@ -26,8 +27,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
+	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeeventing"
@@ -38,7 +41,7 @@ import (
 )
 
 const (
-	finalizerName = "delete-knative-eventing-manifest"
+	oldFinalizerName = "delete-knative-eventing-manifest"
 )
 
 var (
@@ -51,8 +54,10 @@ var (
 type Reconciler struct {
 	// kubeClientSet allows us to talk to the k8s for core APIs
 	kubeClientSet kubernetes.Interface
-	config        mf.Manifest
-	eventings     sets.String
+	// kubeClientSet allows us to talk to the k8s for operator APIs
+	operatorClientSet clientset.Interface
+	config            mf.Manifest
+	eventings         sets.String
 }
 
 // Check that our Reconciler implements controller.Reconciler
@@ -97,6 +102,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *eventingv1alpha1.Kna
 
 	logger.Infow("Reconciling KnativeEventing", "status", ke.Status)
 	stages := []func(context.Context, *mf.Manifest, *eventingv1alpha1.KnativeEventing) error{
+		r.ensureFinalizerRemoval,
 		r.install,
 		r.checkDeployments,
 		r.deleteObsoleteResources,
@@ -126,6 +132,37 @@ func (r *Reconciler) transform(ctx context.Context, instance *eventingv1alpha1.K
 		return mf.Manifest{}, err
 	}
 	return r.config.Transform(transforms...)
+}
+
+// ensureFinalizerRemoval ensures that the obsolete "delete-knative-eventing-manifest" is removed from the resource.
+func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, instance *eventingv1alpha1.KnativeEventing) error {
+	finalizers := sets.NewString(instance.Finalizers...)
+
+	if !finalizers.Has(oldFinalizerName) {
+		// Nothing to do.
+		return nil
+	}
+
+	// Remove the finalizer
+	finalizers.Delete(oldFinalizerName)
+
+	mergePatch := map[string]interface{}{
+		"metadata": map[string]interface{}{
+			"finalizers":      finalizers.List(),
+			"resourceVersion": instance.ResourceVersion,
+		},
+	}
+
+	patch, err := json.Marshal(mergePatch)
+	if err != nil {
+		return fmt.Errorf("failed to construct finalizer patch: %w", err)
+	}
+
+	patcher := r.operatorClientSet.OperatorV1alpha1().KnativeEventings(instance.Namespace)
+	if _, err := patcher.Patch(instance.Name, types.MergePatchType, patch); err != nil {
+		return fmt.Errorf("failed to patch finalizer away: %w", err)
+	}
+	return nil
 }
 
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {

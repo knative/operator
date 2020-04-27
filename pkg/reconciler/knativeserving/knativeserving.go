@@ -254,7 +254,7 @@ func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest
 	return nil
 }
 
-// ensureFinalizer attaches a "delete manifest" finalizer to the instance
+// ensureFinalizerRemoval ensures that the obsolete "delete-knative-serving-manifest" is removed from the resource.
 func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	finalizers := sets.NewString(instance.Finalizers...)
 

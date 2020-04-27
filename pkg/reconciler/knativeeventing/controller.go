@@ -27,20 +27,16 @@ import (
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	knativeEventinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeeventing"
-	rbase "knative.dev/operator/pkg/reconciler"
+	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeeventing"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/injection/sharedmain"
-)
-
-const (
-	controllerAgentName = "knativeeventing-controller"
-	reconcilerName      = "KnativeEventing"
+	"knative.dev/pkg/logging"
 )
 
 var (
-	recursive  = flag.Bool("recursive", false, "If filename is a directory, process all manifests recursively")
 	MasterURL  = flag.String("master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 	Kubeconfig = flag.String("kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
 )
@@ -53,31 +49,31 @@ func NewController(
 ) *controller.Impl {
 	knativeEventingInformer := knativeEventinginformer.Get(ctx)
 	deploymentInformer := deploymentinformer.Get(ctx)
-
-	c := &Reconciler{
-		Base:                  rbase.NewBase(ctx, controllerAgentName, cmw),
-		knativeEventingLister: knativeEventingInformer.Lister(),
-		eventings:             sets.String{},
-	}
+	logger := logging.FromContext(ctx)
 
 	koDataDir := os.Getenv("KO_DATA_PATH")
 
 	cfg, err := sharedmain.GetConfig(*MasterURL, *Kubeconfig)
 	if err != nil {
-		c.Logger.Error(err, "Error building kubeconfig")
+		logger.Error(err, "Error building kubeconfig")
 	}
 
-	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-eventing/"), cfg,
-		mf.UseLogger(zapr.NewLogger(c.Logger.Desugar()).WithName("manifestival")))
+	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-eventing/"),
+		cfg,
+		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
 	if err != nil {
-		c.Logger.Error(err, "Error creating the Manifest for knative-eventing")
+		logger.Error(err, "Error creating the Manifest for knative-eventing")
 		os.Exit(1)
 	}
 
-	c.config = config
-	impl := controller.NewImpl(c, c.Logger, reconcilerName)
+	c := &Reconciler{
+		kubeClientSet: kubeclient.Get(ctx),
+		config:        config,
+		eventings:     sets.NewString(),
+	}
+	impl := knereconciler.NewImpl(ctx, c)
 
-	c.Logger.Info("Setting up event handlers for %s", reconcilerName)
+	logger.Info("Setting up event handlers")
 
 	knativeEventingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 

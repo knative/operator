@@ -18,26 +18,23 @@ package knativeeventing
 
 import (
 	"context"
-	"reflect"
+	"fmt"
 
 	mf "github.com/manifestival/manifestival"
-	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
-	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/kubernetes"
 
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
-	listers "knative.dev/operator/pkg/client/listers/operator/v1alpha1"
-	"knative.dev/operator/pkg/reconciler"
+	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeeventing"
 	"knative.dev/operator/pkg/reconciler/knativeeventing/common"
 	"knative.dev/operator/version"
-	"knative.dev/pkg/controller"
+	"knative.dev/pkg/logging"
+	pkgreconciler "knative.dev/pkg/reconciler"
 )
 
 const (
@@ -50,121 +47,90 @@ var (
 	rolebinding mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 )
 
-// Reconciler implements controller.Reconciler for Knativeeventing resources.
+// Reconciler implements controller.Reconciler for Knativeserving resources.
 type Reconciler struct {
-	*reconciler.Base
-	// Listers index properties about resources
-	knativeEventingLister listers.KnativeEventingLister
-	config                mf.Manifest
-	eventings             sets.String
+	// kubeClientSet allows us to talk to the k8s for core APIs
+	kubeClientSet kubernetes.Interface
+	config        mf.Manifest
+	eventings     sets.String
 }
 
 // Check that our Reconciler implements controller.Reconciler
-var _ controller.Reconciler = (*Reconciler)(nil)
+var _ knereconciler.Interface = (*Reconciler)(nil)
+var _ knereconciler.Finalizer = (*Reconciler)(nil)
 
-// Reconcile compares the actual state with the desired, and attempts to
-// converge the two. It then updates the Status block of the Knativeeventing resource
-// with the current status of the resource.
-func (r *Reconciler) Reconcile(ctx context.Context, key string) error {
-	// Convert the namespace/name string into a distinct namespace and name
-	namespace, name, err := cache.SplitMetaNamespaceKey(key)
-	if err != nil {
-		r.Logger.Errorf("invalid resource key: %s", key)
-		return nil
-	}
-	// Get the KnativeEventing resource with this namespace/name.
-	original, err := r.knativeEventingLister.KnativeEventings(namespace).Get(name)
-	if apierrs.IsNotFound(err) {
-		return nil
-	} else if err != nil {
-		r.Logger.Error(err, "Error getting KnativeEventings")
-		return err
-	}
+// FinalizeKind removes all resources after deletion of a KnativeServing.
+func (r *Reconciler) FinalizeKind(ctx context.Context, original *eventingv1alpha1.KnativeEventing) pkgreconciler.Event {
+	logger := logging.FromContext(ctx)
+	r.eventings.Delete(key(original))
 
-	if original.GetDeletionTimestamp() != nil {
-		if _, ok := r.eventings[key]; ok {
-			delete(r.eventings, key)
+	if len(r.eventings) == 0 {
+		logger.Info("Deleting resources")
+		RBAC := mf.Any(role, rolebinding)
+
+		// delete the deployments first
+		if err := r.config.Filter(mf.ByKind("Deployment")).Delete(); err != nil {
+			return err
 		}
-		return r.delete(original)
+		if err := r.config.Filter(mf.NoCRDs, mf.None(RBAC)).Delete(); err != nil {
+			return err
+		}
+		// Delete Roles last, as they may be useful for human operators to clean up.
+		if err := r.config.Filter(RBAC).Delete(); err != nil {
+			return err
+		}
+
+		logger.Info("Resources are deleted")
 	}
 
-	// Keep track of the number of Eventings in the cluster
-	r.eventings.Insert(key)
-
-	// Don't modify the informers copy.
-	knativeEventing := original.DeepCopy()
-
-	// Reconcile this copy of the KnativeEventing resource and then write back any status
-	// updates regardless of whether the reconciliation errored out.
-	reconcileErr := r.reconcile(ctx, knativeEventing)
-	if equality.Semantic.DeepEqual(original.Status, knativeEventing.Status) {
-		// If we didn't change anything then don't call updateStatus.
-		// This is important because the copy we loaded from the informer's
-		// cache may be stale and we don't want to overwrite a prior update
-		// to status with this stale state.
-	} else if _, err = r.updateStatus(knativeEventing); err != nil {
-		r.Logger.Warnw("Failed to update KnativeEventing status", zap.Error(err))
-		r.Recorder.Eventf(knativeEventing, corev1.EventTypeWarning, "UpdateFailed",
-			"Failed to update status for KnativeEventing %q: %v", knativeEventing.Name, err)
-		return err
-	}
-	if reconcileErr != nil {
-		r.Recorder.Event(knativeEventing, corev1.EventTypeWarning, "InternalError", reconcileErr.Error())
-		return reconcileErr
-	}
 	return nil
 }
 
-func (r *Reconciler) reconcile(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) error {
-	reqLogger := r.Logger.With(zap.String("Request.Namespace", ke.Namespace)).With("Request.Name", ke.Name)
-	reqLogger.Infow("Reconciling KnativeEventing", "status", ke.Status)
+// ReconcileKind compares the actual state with the desired, and attempts to
+// converge the two.
+func (r *Reconciler) ReconcileKind(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) pkgreconciler.Event {
+	logger := logging.FromContext(ctx)
+	ke.Status.InitializeConditions()
 
-	stages := []func(*mf.Manifest, *eventingv1alpha1.KnativeEventing) error{
-		r.ensureFinalizer,
-		r.initStatus,
+	// Keep track of the number of Eventings in the cluster
+	r.eventings.Insert(key(ke))
+
+	logger.Infow("Reconciling KnativeEventing", "status", ke.Status)
+	stages := []func(context.Context, *mf.Manifest, *eventingv1alpha1.KnativeEventing) error{
 		r.install,
 		r.checkDeployments,
 		r.deleteObsoleteResources,
 	}
 
-	manifest, err := r.transform(ke)
+	manifest, err := r.transform(ctx, ke)
 	if err != nil {
 		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
 		return err
 	}
 
 	for _, stage := range stages {
-		if err := stage(&manifest, ke); err != nil {
+		if err := stage(ctx, &manifest, ke); err != nil {
 			return err
 		}
 	}
-	reqLogger.Infow("Reconcile stages complete", "status", ke.Status)
+	logger.Infow("Reconcile stages complete", "status", ke.Status)
 	return nil
 }
 
-func (r *Reconciler) initStatus(_ *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
-	r.Logger.Debug("Initializing status")
-	if len(ke.Status.Conditions) == 0 {
-		ke.Status.InitializeConditions()
-		if _, err := r.updateStatus(ke); err != nil {
-			return err
-		}
-	}
-	return nil
-}
+func (r *Reconciler) transform(ctx context.Context, instance *eventingv1alpha1.KnativeEventing) (mf.Manifest, error) {
+	logger := logging.FromContext(ctx)
+	logger.Debug("Transforming manifest")
 
-func (r *Reconciler) transform(instance *eventingv1alpha1.KnativeEventing) (mf.Manifest, error) {
-	r.Logger.Debug("Transforming manifest")
-	transforms, err := platform.Transformers(r.KubeClientSet, instance, r.Logger)
+	transforms, err := platform.Transformers(r.kubeClientSet, instance, logger)
 	if err != nil {
 		return mf.Manifest{}, err
 	}
 	return r.config.Transform(transforms...)
 }
 
-func (r *Reconciler) install(manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
-	r.Logger.Debug("Installing manifest")
-	defer r.updateStatus(ke)
+func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
+	logger := logging.FromContext(ctx)
+	logger.Debug("Installing manifest")
 	// The Operator needs a higher level of permissions if it 'bind's non-existent roles.
 	// To avoid this, we strictly order the manifest application as (Cluster)Roles, then
 	// (Cluster)RoleBindings, then the rest of the manifest.
@@ -185,9 +151,9 @@ func (r *Reconciler) install(manifest *mf.Manifest, ke *eventingv1alpha1.Knative
 	return nil
 }
 
-func (r *Reconciler) checkDeployments(manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
-	r.Logger.Debug("Checking deployments")
-	defer r.updateStatus(ke)
+func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
+	logger := logging.FromContext(ctx)
+	logger.Debug("Checking deployments")
 	available := func(d *appsv1.Deployment) bool {
 		for _, c := range d.Status.Conditions {
 			if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
@@ -197,7 +163,7 @@ func (r *Reconciler) checkDeployments(manifest *mf.Manifest, ke *eventingv1alpha
 		return false
 	}
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
-		deployment, err := r.KubeClientSet.AppsV1().Deployments(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
+		deployment, err := r.kubeClientSet.AppsV1().Deployments(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
 		if err != nil {
 			ke.Status.MarkEventingNotReady("Deployment check", err.Error())
 			if errors.IsNotFound(err) {
@@ -214,70 +180,8 @@ func (r *Reconciler) checkDeployments(manifest *mf.Manifest, ke *eventingv1alpha
 	return nil
 }
 
-func (r *Reconciler) updateStatus(desired *eventingv1alpha1.KnativeEventing) (*eventingv1alpha1.KnativeEventing, error) {
-	ke, err := r.KnativeEventingClientSet.OperatorV1alpha1().KnativeEventings(desired.Namespace).Get(desired.Name, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-	// If there's nothing to update, just return.
-	if reflect.DeepEqual(ke.Status, desired.Status) {
-		return ke, nil
-	}
-	// Don't modify the informers copy
-	existing := ke.DeepCopy()
-	existing.Status = desired.Status
-	return r.KnativeEventingClientSet.OperatorV1alpha1().KnativeEventings(desired.Namespace).UpdateStatus(existing)
-}
-
-// ensureFinalizer attaches a "delete manifest" finalizer to the instance
-func (r *Reconciler) ensureFinalizer(manifest *mf.Manifest, instance *eventingv1alpha1.KnativeEventing) error {
-	for _, finalizer := range instance.GetFinalizers() {
-		if finalizer == finalizerName {
-			return nil
-		}
-	}
-	instance.SetFinalizers(append(instance.GetFinalizers(), finalizerName))
-	instance, err := r.KnativeEventingClientSet.OperatorV1alpha1().KnativeEventings(instance.Namespace).Update(instance)
-	return err
-}
-
-// delete all the resources in the release manifest
-func (r *Reconciler) delete(instance *eventingv1alpha1.KnativeEventing) error {
-	if len(instance.GetFinalizers()) == 0 || instance.GetFinalizers()[0] != finalizerName {
-		return nil
-	}
-	r.Logger.Info("Deleting resources")
-	var RBAC = mf.Any(role, rolebinding)
-	if len(r.eventings) == 0 {
-		// delete the deployments first
-		if err := r.config.Filter(mf.ByKind("Deployment")).Delete(); err != nil {
-			r.Logger.Warn(err, "Error deleting deployments")
-			return err
-		}
-		if err := r.config.Filter(mf.NoCRDs, mf.None(RBAC)).Delete(); err != nil {
-			r.Logger.Warn(err, "Error deleting resources")
-			return err
-		}
-		// Delete Roles last, as they may be useful for human operators to clean up.
-		if err := r.config.Filter(RBAC).Delete(); err != nil {
-			r.Logger.Warn(err, "Error deleting RBAC resources")
-			return err
-		}
-
-		r.Logger.Info("Resources are deleted")
-	}
-	// The deletionTimestamp might've changed. Fetch the resource again.
-	refetched, err := r.knativeEventingLister.KnativeEventings(instance.Namespace).Get(instance.Name)
-	if err != nil {
-		return err
-	}
-	refetched.SetFinalizers(refetched.GetFinalizers()[1:])
-	_, err = r.KnativeEventingClientSet.OperatorV1alpha1().KnativeEventings(refetched.Namespace).Update(refetched)
-	return err
-}
-
 // Delete obsolete resources from previous versions
-func (r *Reconciler) deleteObsoleteResources(manifest *mf.Manifest, instance *eventingv1alpha1.KnativeEventing) error {
+func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.Manifest, instance *eventingv1alpha1.KnativeEventing) error {
 	resource := &unstructured.Unstructured{}
 	resource.SetNamespace(instance.GetNamespace())
 
@@ -369,4 +273,8 @@ func (r *Reconciler) deleteObsoleteResources(manifest *mf.Manifest, instance *ev
 		return err
 	}
 	return nil
+}
+
+func key(kne *eventingv1alpha1.KnativeEventing) string {
+	return fmt.Sprintf("%s/%s", kne.Namespace, kne.Name)
 }

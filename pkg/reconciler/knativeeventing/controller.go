@@ -36,11 +36,6 @@ import (
 	"knative.dev/pkg/logging"
 )
 
-const (
-	controllerAgentName = "knativeeventing-controller"
-	reconcilerName      = "KnativeEventing"
-)
-
 var (
 	MasterURL  = flag.String("master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 	Kubeconfig = flag.String("kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
@@ -67,7 +62,7 @@ func NewController(
 		cfg,
 		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
 	if err != nil {
-		logger.Error(err, "Error creating the Manifest for knative-serving")
+		logger.Error(err, "Error creating the Manifest for knative-eventing")
 		os.Exit(1)
 	}
 

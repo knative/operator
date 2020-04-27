@@ -50,7 +50,7 @@ var (
 	rolebinding mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 )
 
-// Reconciler implements controller.Reconciler for Knativeserving resources.
+// Reconciler implements controller.Reconciler for KnativeEventing resources.
 type Reconciler struct {
 	// kubeClientSet allows us to talk to the k8s for core APIs
 	kubeClientSet kubernetes.Interface
@@ -64,7 +64,7 @@ type Reconciler struct {
 var _ knereconciler.Interface = (*Reconciler)(nil)
 var _ knereconciler.Finalizer = (*Reconciler)(nil)
 
-// FinalizeKind removes all resources after deletion of a KnativeServing.
+// FinalizeKind removes all resources after deletion of a KnativeEventing.
 func (r *Reconciler) FinalizeKind(ctx context.Context, original *eventingv1alpha1.KnativeEventing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
 	r.eventings.Delete(key(original))

@@ -18,6 +18,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+export GO111MODULE=on
+export GOFLAGS=-mod=vendor
+
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/library.sh
 
 cd "${REPO_ROOT_DIR}"
@@ -30,23 +33,28 @@ FLOATING_DEPS=(
 )
 
 # Parse flags to determine any we should pass to dep.
-DEP_FLAGS=()
+GO_GET=0
 while [[ $# -ne 0 ]]; do
   parameter=$1
   case ${parameter} in
-    --upgrade) DEP_FLAGS=( -update ${FLOATING_DEPS[@]} ) ;;
+    --upgrade) GO_GET=1 ;;
     *) abort "unknown option ${parameter}" ;;
   esac
   shift
 done
-readonly DEP_FLAGS
+readonly GO_GET
 
-# Ensure we have everything we need under vendor/
-dep ensure ${DEP_FLAGS[@]}
+if (( GO_GET )); then
+  go get -d "${FLOATING_DEPS[@]}"
+fi
+
+go mod tidy
+go mod vendor
 
 find vendor/ -name 'OWNERS' -delete
 find vendor/ -name '*_test.go' -delete
 
-update_licenses third_party/VENDOR-LICENSE "./cmd/*"
+update_licenses third_party/VENDOR-LICENSE \
+  $(find . -name "*.go" | grep -v vendor | xargs grep "package main" | cut -d: -f1 | xargs -n1 dirname | uniq)
 
 remove_broken_symlinks ./vendor

@@ -57,7 +57,6 @@ type Reconciler struct {
 	// kubeClientSet allows us to talk to the k8s for operator APIs
 	operatorClientSet clientset.Interface
 	config            mf.Manifest
-	eventings         sets.String
 	// Platform-specific behavior to affect the transform
 	platform common.Platforms
 }
@@ -69,25 +68,39 @@ var _ knereconciler.Finalizer = (*Reconciler)(nil)
 // FinalizeKind removes all resources after deletion of a KnativeEventing.
 func (r *Reconciler) FinalizeKind(ctx context.Context, original *eventingv1alpha1.KnativeEventing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
-	r.eventings.Delete(key(original))
 
-	if len(r.eventings) == 0 {
-		logger.Info("Deleting resources")
-		RBAC := mf.Any(role, rolebinding)
+	// List all KnativeEventings to determine if cluster-scoped resources should be deleted.
+	kes, err := r.operatorClientSet.OperatorV1alpha1().KnativeEventings("").List(metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to list all KnativeEventings: %w", err)
+	}
 
-		// delete the deployments first
-		if err := r.config.Filter(mf.ByKind("Deployment")).Delete(); err != nil {
-			return err
+	// Only delete cluster-scoped resources if all KnativeEventings are being deleted.
+	allBeingDeleted := true
+	for _, ke := range kes.Items {
+		if ke.GetDeletionTimestamp().IsZero() {
+			allBeingDeleted = false
+			break
 		}
-		if err := r.config.Filter(mf.NoCRDs, mf.None(RBAC)).Delete(); err != nil {
-			return err
+	}
+
+	if allBeingDeleted {
+		manifest, err := r.transform(ctx, original)
+		if err != nil {
+			return fmt.Errorf("failed to transform manifest: %w", err)
+		}
+
+		logger.Info("Deleting cluster-scoped resources")
+		rbac := mf.Any(role, rolebinding)
+		if err := manifest.Filter(mf.NoCRDs, mf.None(rbac)).Delete(); err != nil {
+			return fmt.Errorf("failed to remove non-crd/non-rbac resources: %w", err)
 		}
 		// Delete Roles last, as they may be useful for human operators to clean up.
-		if err := r.config.Filter(RBAC).Delete(); err != nil {
-			return err
+		if err := manifest.Filter(rbac).Delete(); err != nil {
+			return fmt.Errorf("failed to remove rbac: %w", err)
 		}
 
-		logger.Info("Resources are deleted")
+		logger.Info("Cluster-scoped resources deleted")
 	}
 
 	return nil
@@ -98,9 +111,6 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *eventingv1alpha
 func (r *Reconciler) ReconcileKind(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
 	ke.Status.InitializeConditions()
-
-	// Keep track of the number of Eventings in the cluster
-	r.eventings.Insert(key(ke))
 
 	logger.Infow("Reconciling KnativeEventing", "status", ke.Status)
 	stages := []func(context.Context, *mf.Manifest, *eventingv1alpha1.KnativeEventing) error{
@@ -320,8 +330,4 @@ func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.M
 		return err
 	}
 	return nil
-}
-
-func key(kne *eventingv1alpha1.KnativeEventing) string {
-	return fmt.Sprintf("%s/%s", kne.Namespace, kne.Name)
 }

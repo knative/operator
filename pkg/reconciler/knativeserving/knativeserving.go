@@ -92,19 +92,38 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 		delete(r.servings, key)
 	}
 
-	logger.Info("Deleting resources")
-	var RBAC = mf.Any(mf.ByKind("Role"), mf.ByKind("ClusterRole"), mf.ByKind("RoleBinding"), mf.ByKind("ClusterRoleBinding"))
-	if len(r.servings) == 0 {
-		if err := r.config.Filter(mf.ByKind("Deployment")).Delete(); err != nil {
-			return err
+	// List all KnativeServings to determine if cluster-scoped resources should be deleted.
+	kss, err := r.knativeServingClientSet.OperatorV1alpha1().KnativeServings("").List(metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to list all KnativeServings: %w", err)
+	}
+
+	// Only delete cluster-scoped resources if all KnativeServings are being deleted.
+	allBeingDeleted := true
+	for _, ks := range kss.Items {
+		if ks.GetDeletionTimestamp().IsZero() {
+			allBeingDeleted = false
+			break
 		}
-		if err := r.config.Filter(mf.NoCRDs, mf.None(RBAC)).Delete(); err != nil {
-			return err
+	}
+
+	if allBeingDeleted {
+		manifest, err := r.transform(ctx, original)
+		if err != nil {
+			return fmt.Errorf("failed to transform manifest: %w", err)
+		}
+
+		logger.Info("Deleting cluster-scoped resources")
+		var rbac = mf.Any(mf.ByKind("Role"), mf.ByKind("ClusterRole"), mf.ByKind("RoleBinding"), mf.ByKind("ClusterRoleBinding"))
+		if err := manifest.Filter(mf.NoCRDs, mf.None(rbac)).Delete(); err != nil {
+			return fmt.Errorf("failed to remove non-crd/non-rbac resources: %w", err)
 		}
 		// Delete Roles last, as they may be useful for human operators to clean up.
-		if err := r.config.Filter(RBAC).Delete(); err != nil {
-			return err
+		if err := manifest.Filter(rbac).Delete(); err != nil {
+			return fmt.Errorf("failed to remove rbac: %w", err)
 		}
+
+		logger.Info("Cluster-scoped resources deleted")
 	}
 	return nil
 }

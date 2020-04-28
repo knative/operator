@@ -22,10 +22,10 @@ import (
 	mfc "github.com/manifestival/client-go-client"
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/tools/cache"
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorclient "knative.dev/operator/pkg/client/injection/client"
 	knativeEventinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeeventing"
 	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeeventing"
 	"knative.dev/operator/pkg/reconciler"
@@ -60,9 +60,9 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 	}
 
 	c := &Reconciler{
-		kubeClientSet: kubeClient,
-		config:        config,
-		eventings:     sets.NewString(),
+		kubeClientSet:     kubeClient,
+		operatorClientSet: operatorclient.Get(ctx),
+		config:            config,
 	}
 	impl := knereconciler.NewImpl(ctx, c)
 

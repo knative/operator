@@ -1047,13 +1047,12 @@
   version = "kubernetes-1.16.4"
 
 [[projects]]
-  digest = "1:26e80f4304d08660126f77728697d68ef73bf6694d56683676c280a8f4b1f385"
+  digest = "1:e3e1cafcc1ca71d247765e645aa26083501e5ada9c5380afb2037492cbd21244"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
     "discovery/fake",
     "dynamic",
-    "dynamic/fake",
     "informers",
     "informers/admissionregistration",
     "informers/admissionregistration/v1",
@@ -1362,8 +1361,8 @@
   revision = "02bc51668a0c7d2d8cbb56823c5aecbeec46253d"
 
 [[projects]]
-  branch = "release-0.14"
-  digest = "1:f806eb7e5629d594362dc18905d092888b1d56fbfe026a597d25b86e846f2d53"
+  branch = "master"
+  digest = "1:da86dc44e4f58bae55f0800acbfb9f6e745645c71429909413deaaa5de2b0c5d"
   name = "knative.dev/pkg"
   packages = [
     "apis",
@@ -1381,8 +1380,6 @@
     "configmap",
     "controller",
     "injection",
-    "injection/clients/dynamicclient",
-    "injection/clients/dynamicclient/fake",
     "injection/clients/namespacedkube/informers/factory",
     "injection/sharedmain",
     "kmeta",
@@ -1412,7 +1409,7 @@
     "webhook/certificates/resources",
   ]
   pruneopts = "T"
-  revision = "2a1db869228ceaca9df34790b49cdf4893a5d39d"
+  revision = "22b9613719340036137e8e666390d9bc17733c1f"
 
 [[projects]]
   branch = "release-0.14"
@@ -1473,6 +1470,7 @@
     "k8s.io/client-go/discovery/fake",
     "k8s.io/client-go/dynamic",
     "k8s.io/client-go/kubernetes",
+    "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/kubernetes/typed/core/v1",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
@@ -1502,8 +1500,6 @@
     "knative.dev/pkg/configmap",
     "knative.dev/pkg/controller",
     "knative.dev/pkg/injection",
-    "knative.dev/pkg/injection/clients/dynamicclient",
-    "knative.dev/pkg/injection/clients/dynamicclient/fake",
     "knative.dev/pkg/injection/sharedmain",
     "knative.dev/pkg/logging",
     "knative.dev/pkg/logging/logkey",
@@ -1511,6 +1507,7 @@
     "knative.dev/pkg/metrics/metricstest",
     "knative.dev/pkg/reconciler",
     "knative.dev/pkg/signals",
+    "knative.dev/pkg/system",
     "knative.dev/pkg/test",
     "knative.dev/pkg/test/logging",
     "knative.dev/pkg/test/logstream",

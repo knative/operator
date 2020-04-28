@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2020 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,17 +19,26 @@ import (
 	"flag"
 	"log"
 
+	"knative.dev/operator/pkg/reconciler/knativeeventing"
 	"knative.dev/operator/pkg/reconciler/knativeserving"
 	"knative.dev/pkg/injection/sharedmain"
 	"knative.dev/pkg/signals"
 )
 
+var (
+	masterURL  = flag.String("master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
+	kubeconfig = flag.String("kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
+)
+
 func main() {
 	flag.Parse()
 
-	cfg, err := sharedmain.GetConfig(*knativeserving.MasterURL, *knativeserving.Kubeconfig)
+	cfg, err := sharedmain.GetConfig(*masterURL, *kubeconfig)
 	if err != nil {
 		log.Fatal("Error building kubeconfig", err)
 	}
-	sharedmain.MainWithConfig(signals.NewContext(), "serving-operator", cfg, knativeserving.NewController)
+	sharedmain.MainWithConfig(signals.NewContext(), "knative-operator", cfg,
+		knativeserving.NewControllerWithConfig(cfg),
+		knativeeventing.NewControllerWithConfig(cfg),
+	)
 }

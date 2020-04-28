@@ -195,6 +195,14 @@ rules:
   - config-controller
   verbs:
   - delete
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  resourceNames:
+  - knative-serving-operator
+  verbs:
+  - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -354,3 +362,13 @@ rules:
       - get
       - list
       - watch
+# Old resources that need cleaning up that are not in the knative-eventing
+# namespace.
+  - apiGroups:
+    - ""
+    resources:
+    - serviceaccounts
+    resourceNames:
+    - knative-eventing-operator
+    verbs:
+    - delete

@@ -22,7 +22,7 @@ roleRef:
   name: knative-serving-operator
 subjects:
 - kind: ServiceAccount
-  name: knative-serving-operator
+  name: knative-operator
   namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -35,7 +35,7 @@ roleRef:
   name: knative-serving-operator-aggregated
 subjects:
 - kind: ServiceAccount
-  name: knative-serving-operator
+  name: knative-operator
   namespace: default
 ---
 # TODO: Consider restriction of non-aggregated role to knativeeventing namespaces.
@@ -49,7 +49,7 @@ roleRef:
   name: knative-eventing-operator
 subjects:
   - kind: ServiceAccount
-    name: knative-eventing-operator
+    name: knative-operator
     namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -62,5 +62,5 @@ roleRef:
   name: knative-eventing-operator-aggregated
 subjects:
   - kind: ServiceAccount
-    name: knative-eventing-operator
+    name: knative-operator
     namespace: default

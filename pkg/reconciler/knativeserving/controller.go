@@ -21,7 +21,7 @@ import (
 
 	"go.uber.org/zap"
 
-	servingclient "knative.dev/operator/pkg/client/injection/client"
+	operatorclient "knative.dev/operator/pkg/client/injection/client"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/injection"
 	"knative.dev/pkg/logging"
@@ -64,14 +64,6 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		logger.Fatal(err)
 	}
 
-	c := &Reconciler{
-		kubeClientSet:           kubeClient,
-		knativeServingClientSet: servingclient.Get(ctx),
-		knativeServingLister:    knativeServingInformer.Lister(),
-		servings:                map[string]int64{},
-		platform:                common.GetPlatforms(ctx),
-	}
-
 	koDataDir := os.Getenv("KO_DATA_PATH")
 	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-serving/"),
 		injection.GetConfig(ctx),
@@ -81,7 +73,12 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		os.Exit(1)
 	}
 
-	c.config = config
+	c := &Reconciler{
+		kubeClientSet:     kubeClient,
+		operatorClientSet: operatorclient.Get(ctx),
+		platform:          common.GetPlatforms(ctx),
+		config:            config,
+	}
 	impl := knsreconciler.NewImpl(ctx, c)
 
 	logger.Info("Setting up event handlers")

@@ -24,7 +24,6 @@ import (
 	mf "github.com/manifestival/manifestival"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 
-	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -33,10 +32,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/cache"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
-	listers "knative.dev/operator/pkg/client/listers/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler/common"
 	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"knative.dev/operator/version"
@@ -58,13 +55,10 @@ var (
 type Reconciler struct {
 	// kubeClientSet allows us to talk to the k8s for core APIs
 	kubeClientSet kubernetes.Interface
-	// knativeServingClientSet allows us to configure Serving objects
-	knativeServingClientSet clientset.Interface
+	// operatorClientSet allows us to configure operator objects
+	operatorClientSet clientset.Interface
 
-	// Listers index properties about resources
-	knativeServingLister listers.KnativeServingLister
-	config               mf.Manifest
-	servings             map[string]int64
+	config mf.Manifest
 	// Platform-specific behavior to affect the transform
 	platform common.Platforms
 }
@@ -77,17 +71,8 @@ var _ knsreconciler.Finalizer = (*Reconciler)(nil)
 func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1.KnativeServing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
 
-	key, err := cache.MetaNamespaceKeyFunc(original)
-	if err != nil {
-		logger.Errorf("invalid resource key: %s", key)
-		return nil
-	}
-	if _, ok := r.servings[key]; ok {
-		delete(r.servings, key)
-	}
-
 	// List all KnativeServings to determine if cluster-scoped resources should be deleted.
-	kss, err := r.knativeServingClientSet.OperatorV1alpha1().KnativeServings("").List(metav1.ListOptions{})
+	kss, err := r.operatorClientSet.OperatorV1alpha1().KnativeServings("").List(metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to list all KnativeServings: %w", err)
 	}
@@ -124,35 +109,13 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 
 // ReconcileKind compares the actual state with the desired, and attempts to
 // converge the two.
-func (r *Reconciler) ReconcileKind(ctx context.Context, original *servingv1alpha1.KnativeServing) pkgreconciler.Event {
+func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.KnativeServing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
+	ks.Status.InitializeConditions()
 
-	// Convert the namespace/name string into a distinct namespace and name
-	key, err := cache.MetaNamespaceKeyFunc(original)
-	if err != nil {
-		logger.Errorf("invalid resource key: %s", key)
-		return nil
-	}
-	r.servings[key] = original.Generation
-
-	// Reconcile this copy of the KnativeServing resource and then write back any status
-	// updates regardless of whether the reconciliation errored out.
-	err = r.reconcile(ctx, original)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r *Reconciler) reconcile(ctx context.Context, ks *servingv1alpha1.KnativeServing) error {
-	logger := logging.FromContext(ctx)
-
-	reqLogger := logger.With(zap.String("Request.Namespace", ks.Namespace)).With("Request.Name", ks.Name)
-	reqLogger.Infow("Reconciling KnativeServing", "status", ks.Status)
-
+	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 	stages := []func(context.Context, *mf.Manifest, *servingv1alpha1.KnativeServing) error{
 		r.ensureFinalizerRemoval,
-		r.initStatus,
 		r.install,
 		r.checkDeployments,
 		r.deleteObsoleteResources,
@@ -169,7 +132,7 @@ func (r *Reconciler) reconcile(ctx context.Context, ks *servingv1alpha1.KnativeS
 			return err
 		}
 	}
-	reqLogger.Infow("Reconcile stages complete", "status", ks.Status)
+	logger.Infow("Reconcile stages complete", "status", ks.Status)
 	return nil
 }
 
@@ -195,32 +158,6 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 	}
 	transforms := append(standard, platform...)
 	return r.config.Transform(transforms...)
-}
-
-// Update the status subresource
-func (r *Reconciler) updateStatus(instance *servingv1alpha1.KnativeServing) error {
-	afterUpdate, err := r.knativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace).UpdateStatus(instance)
-
-	if err != nil {
-		return err
-	}
-	// TODO: We shouldn't rely on mutability and return the updated entities from functions instead.
-	afterUpdate.DeepCopyInto(instance)
-	return nil
-}
-
-// Initialize status conditions
-func (r *Reconciler) initStatus(ctx context.Context, _ *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
-	logger := logging.FromContext(ctx)
-
-	logger.Debug("Initializing status")
-	if len(instance.Status.Conditions) == 0 {
-		instance.Status.InitializeConditions()
-		if err := r.updateStatus(instance); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 // Apply the manifest resources
@@ -303,7 +240,7 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 		return fmt.Errorf("failed to construct finalizer patch: %w", err)
 	}
 
-	patcher := r.knativeServingClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace)
+	patcher := r.operatorClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace)
 	if _, err := patcher.Patch(instance.Name, types.MergePatchType, patch); err != nil {
 		return fmt.Errorf("failed to patch finalizer away: %w", err)
 	}

@@ -57,7 +57,7 @@ type Reconciler struct {
 	kubeClientSet kubernetes.Interface
 	// operatorClientSet allows us to configure operator objects
 	operatorClientSet clientset.Interface
-
+	// config is the manifest of KnativeServing
 	config mf.Manifest
 	// Platform-specific behavior to affect the transform
 	platform common.Platforms

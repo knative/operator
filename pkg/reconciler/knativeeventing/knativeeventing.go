@@ -56,7 +56,8 @@ type Reconciler struct {
 	kubeClientSet kubernetes.Interface
 	// kubeClientSet allows us to talk to the k8s for operator APIs
 	operatorClientSet clientset.Interface
-	config            mf.Manifest
+	// config is the manifest of KnativeEventing
+	config mf.Manifest
 	// Platform-specific behavior to affect the transform
 	platform common.Platforms
 }

@@ -37,7 +37,6 @@ import (
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
 	listers "knative.dev/operator/pkg/client/listers/operator/v1alpha1"
-	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/common"
 	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"knative.dev/operator/version"
@@ -48,9 +47,6 @@ import (
 
 const (
 	oldFinalizerName = "delete-knative-serving-manifest"
-	creationChange   = "creation"
-	editChange       = "edit"
-	deletionChange   = "deletion"
 )
 
 var (
@@ -64,8 +60,6 @@ type Reconciler struct {
 	kubeClientSet kubernetes.Interface
 	// knativeServingClientSet allows us to configure Serving objects
 	knativeServingClientSet clientset.Interface
-	// statsReporter reports reconciler's metrics.
-	statsReporter reconciler.StatsReporter
 
 	// Listers index properties about resources
 	knativeServingLister listers.KnativeServingLister
@@ -138,22 +132,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, original *servingv1alpha
 	if err != nil {
 		logger.Errorf("invalid resource key: %s", key)
 		return nil
-	}
-
-	// Keep track of the number and generation of KnativeServings in the cluster.
-	newGen := original.Generation
-	if oldGen, ok := r.servings[key]; ok {
-		if newGen > oldGen {
-			r.statsReporter.ReportKnativeservingChange(key, editChange)
-		} else if newGen < oldGen {
-			return fmt.Errorf("reconciling obsolete generation of KnativeServing %s: newGen = %d and oldGen = %d", key, newGen, oldGen)
-		}
-	} else {
-		// No metrics are emitted when newGen > 1: the first reconciling of
-		// a new operator on an existing KnativeServing resource.
-		if newGen == 1 {
-			r.statsReporter.ReportKnativeservingChange(key, creationChange)
-		}
 	}
 	r.servings[key] = original.Generation
 

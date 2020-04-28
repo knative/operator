@@ -65,7 +65,11 @@ require (
 	k8s.io/kube-openapi v0.0.0-20190816220812-743ec37842bf
 	k8s.io/test-infra v0.0.0-20191212060232-70b0b49fe247
 	k8s.io/utils v0.0.0-20190907131718-3d4f5b7dea0b // indirect
+<<<<<<< HEAD
 	knative.dev/test-infra v0.0.0-20200429132042-cb2fc4ae428f
+=======
+	knative.dev/test-infra v0.0.0-20200407185800-1b88cb3b45a5
+>>>>>>> e5edea5... Update the dependencies based on the latest changes to go dep
 )
 
 replace (

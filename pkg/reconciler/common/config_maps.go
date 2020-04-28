@@ -27,8 +27,12 @@ func ConfigMapTransform(config map[string]map[string]string, log *zap.SugaredLog
 	return func(u *unstructured.Unstructured) error {
 		// Let any config in instance override everything else
 		if u.GetKind() == "ConfigMap" {
+			if data, ok := config[u.GetName()]; ok {
+				return UpdateConfigMap(u, data, log)
+			}
+			// The "config-" prefix is optional
 			if data, ok := config[u.GetName()[len(`config-`):]]; ok {
-				UpdateConfigMap(u, data, log)
+				return UpdateConfigMap(u, data, log)
 			}
 		}
 		return nil
@@ -36,16 +40,23 @@ func ConfigMapTransform(config map[string]map[string]string, log *zap.SugaredLog
 }
 
 // UpdateConfigMap set some data in a configmap, only overwriting common keys if they differ
-func UpdateConfigMap(cm *unstructured.Unstructured, data map[string]string, log *zap.SugaredLogger) {
+func UpdateConfigMap(cm *unstructured.Unstructured, data map[string]string, log *zap.SugaredLogger) error {
 	for k, v := range data {
 		message := []interface{}{"map", cm.GetName(), k, v}
-		if x, found, _ := unstructured.NestedFieldNoCopy(cm.Object, "data", k); found {
+		x, found, err := unstructured.NestedFieldNoCopy(cm.Object, "data", k)
+		if err != nil {
+			return err
+		}
+		if found {
 			if v == x {
 				continue
 			}
 			message = append(message, "previous", x)
 		}
 		log.Infow("Setting", message...)
-		unstructured.SetNestedField(cm.Object, v, "data", k)
+		if err := unstructured.SetNestedField(cm.Object, v, "data", k); err != nil {
+			return err
+		}
 	}
+	return nil
 }

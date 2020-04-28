@@ -75,6 +75,20 @@ func createConfigMapTests(t *testing.T) []updateConfigMapTest {
 				"loglevel.webhook":    "debug",
 			}),
 		},
+		{
+			name: "change-using-real-configmap-name",
+			config: makeconfigMapData("config-logging", map[string]string{
+				"loglevel.controller": "debug",
+			}),
+			configMap: createConfigMap("config-logging", map[string]string{
+				"loglevel.controller": "info",
+				"loglevel.webhook":    "info",
+			}),
+			expected: createConfigMap("config-logging", map[string]string{
+				"loglevel.controller": "debug",
+				"loglevel.webhook":    "info",
+			}),
+		},
 	}
 }
 
@@ -113,4 +127,19 @@ func validateConfigMapChanged(t *testing.T, tt *updateConfigMapTest, u *unstruct
 	err := scheme.Scheme.Convert(u, configMap, nil)
 	util.AssertEqual(t, err, nil)
 	util.AssertDeepEqual(t, configMap.Data, tt.expected.Data)
+}
+
+func TestInvalidConfigMap(t *testing.T) {
+	cm := createConfigMap("name", nil)
+	ucm := util.MakeUnstructured(t, &cm)
+	// Break the ConfigMap
+	unstructured.SetNestedField(ucm.Object, "not-a-map", "data")
+	config := map[string]map[string]string{
+		"name": map[string]string{"k": "v"},
+	}
+	configMapTransform := ConfigMapTransform(config, log)
+	err := configMapTransform(&ucm)
+	if err == nil {
+		t.Fatal("Should've returned an error")
+	}
 }

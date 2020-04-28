@@ -27,6 +27,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
 func TestHighAvailabilityTransform(t *testing.T) {
@@ -113,8 +114,8 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		haTransform := HighAvailabilityTransform(instance, log)
 		err := haTransform(tc.in)
 
-		assertDeepEqual(t, err, tc.err)
-		assertDeepEqual(t, tc.in, tc.expected)
+		util.AssertDeepEqual(t, err, tc.err)
+		util.AssertDeepEqual(t, tc.in, tc.expected)
 	}
 }
 

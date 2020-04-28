@@ -38,7 +38,8 @@ import (
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
 	listers "knative.dev/operator/pkg/client/listers/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler"
-	"knative.dev/operator/pkg/reconciler/knativeserving/common"
+	"knative.dev/operator/pkg/reconciler/common"
+	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"knative.dev/operator/version"
 	"knative.dev/pkg/logging"
 
@@ -180,10 +181,22 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 	logger := logging.FromContext(ctx)
 
 	logger.Debug("Transforming manifest")
-	transforms, err := r.platform.Transformers(r.kubeClientSet, instance, logger)
+
+	platform, err := r.platform.Transformers(r.kubeClientSet, logger)
 	if err != nil {
 		return mf.Manifest{}, err
 	}
+	standard := []mf.Transformer{
+		mf.InjectOwner(instance),
+		mf.InjectNamespace(instance.GetNamespace()),
+		common.ConfigMapTransform(instance.Spec.Config, logger),
+		common.ImageTransform(&instance.Spec.Registry, logger),
+		ksc.GatewayTransform(instance, logger),
+		ksc.CustomCertsTransform(instance, logger),
+		ksc.HighAvailabilityTransform(instance, logger),
+		ksc.ResourceRequirementsTransform(instance, logger),
+	}
+	transforms := append(standard, platform...)
 	return r.config.Transform(transforms...)
 }
 

@@ -28,17 +28,17 @@ func GatewayTransform(instance *servingv1alpha1.KnativeServing, log *zap.Sugared
 		// Update the deployment with the new registry and tag
 		if u.GetAPIVersion() == "networking.istio.io/v1alpha3" && u.GetKind() == "Gateway" {
 			if u.GetName() == "knative-ingress-gateway" {
-				return updateKnativeIngressGateway(instance.Spec.KnativeIngressGateway, u)
+				return updateKnativeIngressGateway(instance.Spec.KnativeIngressGateway, u, log)
 			}
 			if u.GetName() == "cluster-local-gateway" {
-				return updateKnativeIngressGateway(instance.Spec.ClusterLocalGateway, u)
+				return updateKnativeIngressGateway(instance.Spec.ClusterLocalGateway, u, log)
 			}
 		}
 		return nil
 	}
 }
 
-func updateKnativeIngressGateway(gatewayOverrides servingv1alpha1.IstioGatewayOverride, u *unstructured.Unstructured) error {
+func updateKnativeIngressGateway(gatewayOverrides servingv1alpha1.IstioGatewayOverride, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
 	if len(gatewayOverrides.Selector) > 0 {
 		log.Debugw("Updating Gateway", "name", u.GetName(), "gatewayOverrides", gatewayOverrides)
 		unstructured.SetNestedStringMap(u.Object, gatewayOverrides.Selector, "spec", "selector")

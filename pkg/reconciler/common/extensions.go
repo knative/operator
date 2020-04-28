@@ -21,28 +21,16 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
-
-var log = zap.NewExample().Sugar()
 
 type Platforms []func(kubernetes.Interface, *zap.SugaredLogger) (mf.Transformer, error)
 
 // pfKey is used as the key for associating Platforms with the context.
 type pfKey struct{}
 
-func (platforms Platforms) Transformers(kubeClientSet kubernetes.Interface, instance *servingv1alpha1.KnativeServing, slog *zap.SugaredLogger) ([]mf.Transformer, error) {
-	log = slog.Named("extensions")
-	result := []mf.Transformer{
-		mf.InjectOwner(instance),
-		mf.InjectNamespace(instance.GetNamespace()),
-		ConfigMapTransform(instance, log),
-		ImageTransform(instance, log),
-		GatewayTransform(instance, log),
-		CustomCertsTransform(instance, log),
-		HighAvailabilityTransform(instance, log),
-		ResourceRequirementsTransform(instance, log),
-	}
+func (platforms Platforms) Transformers(kubeClientSet kubernetes.Interface, slog *zap.SugaredLogger) ([]mf.Transformer, error) {
+	log := slog.Named("extensions")
+	result := make([]mf.Transformer, 0, len(platforms))
 	for _, fn := range platforms {
 		transformer, err := fn(kubeClientSet, log)
 		if err != nil {

@@ -24,7 +24,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
 type configMapData struct {
@@ -99,16 +99,11 @@ func TestConfigMapTransform(t *testing.T) {
 }
 
 func runConfigMapTransformTest(t *testing.T, tt *updateConfigMapTest) {
-	unstructuredConfigMap := makeUnstructured(t, &tt.configMap)
-	instance := &eventingv1alpha1.KnativeEventing{
-		Spec: eventingv1alpha1.KnativeEventingSpec{
-			Config: map[string]map[string]string{
-				tt.config.name: tt.config.data,
-			},
-		},
+	unstructuredConfigMap := util.MakeUnstructured(t, &tt.configMap)
+	config := map[string]map[string]string{
+		tt.config.name: tt.config.data,
 	}
-
-	configMapTransform := ConfigMapTransform(instance, log)
+	configMapTransform := ConfigMapTransform(config, log)
 	configMapTransform(&unstructuredConfigMap)
 	validateConfigMapChanged(t, tt, &unstructuredConfigMap)
 }
@@ -116,6 +111,6 @@ func runConfigMapTransformTest(t *testing.T, tt *updateConfigMapTest) {
 func validateConfigMapChanged(t *testing.T, tt *updateConfigMapTest, u *unstructured.Unstructured) {
 	var configMap = &corev1.ConfigMap{}
 	err := scheme.Scheme.Convert(u, configMap, nil)
-	assertEqual(t, err, nil)
-	assertDeepEqual(t, configMap.Data, tt.expected.Data)
+	util.AssertEqual(t, err, nil)
+	util.AssertDeepEqual(t, configMap.Data, tt.expected.Data)
 }

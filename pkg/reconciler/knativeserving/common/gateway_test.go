@@ -24,6 +24,7 @@ import (
 	istiov1alpha3 "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
 func init() {
@@ -125,9 +126,9 @@ func runGatewayTransformTest(t *testing.T, tt *updateGatewayTest) {
 func validateUnstructedGatewayChanged(t *testing.T, tt *updateGatewayTest, u *unstructured.Unstructured) {
 	var gateway = &v1alpha3.Gateway{}
 	err := scheme.Scheme.Convert(u, gateway, nil)
-	assertEqual(t, err, nil)
+	util.AssertEqual(t, err, nil)
 	for expectedKey, expectedValue := range tt.expected {
-		assertEqual(t, gateway.Spec.Selector[expectedKey], expectedValue)
+		util.AssertEqual(t, gateway.Spec.Selector[expectedKey], expectedValue)
 	}
 }
 

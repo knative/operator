@@ -34,7 +34,8 @@ import (
 
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeeventing"
-	"knative.dev/operator/pkg/reconciler/knativeeventing/common"
+	"knative.dev/operator/pkg/reconciler/common"
+	kec "knative.dev/operator/pkg/reconciler/knativeeventing/common"
 	"knative.dev/operator/version"
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
@@ -45,7 +46,6 @@ const (
 )
 
 var (
-	platform    common.Platforms
 	role        mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
 	rolebinding mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 )
@@ -58,6 +58,8 @@ type Reconciler struct {
 	operatorClientSet clientset.Interface
 	config            mf.Manifest
 	eventings         sets.String
+	// Platform-specific behavior to affect the transform
+	platform common.Platforms
 }
 
 // Check that our Reconciler implements controller.Reconciler
@@ -127,10 +129,18 @@ func (r *Reconciler) transform(ctx context.Context, instance *eventingv1alpha1.K
 	logger := logging.FromContext(ctx)
 	logger.Debug("Transforming manifest")
 
-	transforms, err := platform.Transformers(r.kubeClientSet, instance, logger)
+	platform, err := r.platform.Transformers(r.kubeClientSet, logger)
 	if err != nil {
 		return mf.Manifest{}, err
 	}
+	standard := []mf.Transformer{
+		mf.InjectOwner(instance),
+		mf.InjectNamespace(instance.GetNamespace()),
+		common.ImageTransform(&instance.Spec.Registry, logger),
+		common.ConfigMapTransform(instance.Spec.Config, logger),
+		kec.DefaultBrokerConfigMapTransform(instance, logger),
+	}
+	transforms := append(standard, platform...)
 	return r.config.Transform(transforms...)
 }
 

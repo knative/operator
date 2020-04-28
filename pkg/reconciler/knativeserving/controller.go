@@ -69,8 +69,7 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		injection.GetConfig(ctx),
 		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
 	if err != nil {
-		logger.Error(err, "Error creating the Manifest for knative-serving")
-		os.Exit(1)
+		logger.Fatalw("Error creating the Manifest for knative-serving", zap.Error(err))
 	}
 
 	c := &Reconciler{

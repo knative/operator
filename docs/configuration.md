@@ -43,14 +43,14 @@ These are the configurable fields in each resource:
 ## spec.config
 
 This is a "map of maps". The top-level keys correspond to the names of
-the Knative `ConfigMaps`, sans their "config-" prefix, e.g. the
-"config-domain" `ConfigMap` corresponds to the "domain" top-level
-key. And the map values correspond to the `data` field of each
-`ConfigMap`. 
+the Knative `ConfigMaps`, and the operator will ensure their values
+replace the entries in the `data` field of the actual `ConfigMap`.
+This provides a central place to manage all your Knative
+configuration, without having to update multiple `ConfigMaps`.
 
-The operator will replicate this field's entries to the corresponding
-Knative `ConfigMaps`. This provides a central place to manage all your
-Knative configuration, without having to update multiple `ConfigMaps`.
+If the name of the `ConfigMap` you wish to override begins with
+`config-` (the Knative convention), that prefix may be omitted in the
+top-level key name.
 
 An example should help clarify. The following spec will cause the
 operator to update the `config-defaults`, `config-observability` and

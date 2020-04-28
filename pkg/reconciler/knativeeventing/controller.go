@@ -23,7 +23,6 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -34,48 +33,47 @@ import (
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/injection"
 	"knative.dev/pkg/logging"
 )
 
-// NewControllerWithConfig initializes the controller and is called by the generated code
+// NewController initializes the controller and is called by the generated code
 // Registers eventhandlers to enqueue events
-func NewControllerWithConfig(cfg *rest.Config) func(context.Context, configmap.Watcher) *controller.Impl {
-	return func(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
-		knativeEventingInformer := knativeEventinginformer.Get(ctx)
-		deploymentInformer := deploymentinformer.Get(ctx)
-		kubeClient := kubeclient.Get(ctx)
-		logger := logging.FromContext(ctx)
+func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
+	knativeEventingInformer := knativeEventinginformer.Get(ctx)
+	deploymentInformer := deploymentinformer.Get(ctx)
+	kubeClient := kubeclient.Get(ctx)
+	logger := logging.FromContext(ctx)
 
-		// Clean up old non-unified operator resources before even starting the controller.
-		if err := reconciler.RemovePreUnifiedResources(kubeClient, "knative-eventing-operator"); err != nil {
-			logger.Fatalw("Failed to remove old resources", zap.Error(err))
-		}
-
-		koDataDir := os.Getenv("KO_DATA_PATH")
-		config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-eventing/"),
-			cfg,
-			mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
-		if err != nil {
-			logger.Error(err, "Error creating the Manifest for knative-eventing")
-			os.Exit(1)
-		}
-
-		c := &Reconciler{
-			kubeClientSet: kubeClient,
-			config:        config,
-			eventings:     sets.NewString(),
-		}
-		impl := knereconciler.NewImpl(ctx, c)
-
-		logger.Info("Setting up event handlers")
-
-		knativeEventingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
-
-		deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-			FilterFunc: controller.Filter(v1alpha1.SchemeGroupVersion.WithKind("KnativeEventing")),
-			Handler:    controller.HandleAll(impl.EnqueueControllerOf),
-		})
-
-		return impl
+	// Clean up old non-unified operator resources before even starting the controller.
+	if err := reconciler.RemovePreUnifiedResources(kubeClient, "knative-eventing-operator"); err != nil {
+		logger.Fatalw("Failed to remove old resources", zap.Error(err))
 	}
+
+	koDataDir := os.Getenv("KO_DATA_PATH")
+	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-eventing/"),
+		injection.GetConfig(ctx),
+		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+	if err != nil {
+		logger.Error(err, "Error creating the Manifest for knative-eventing")
+		os.Exit(1)
+	}
+
+	c := &Reconciler{
+		kubeClientSet: kubeClient,
+		config:        config,
+		eventings:     sets.NewString(),
+	}
+	impl := knereconciler.NewImpl(ctx, c)
+
+	logger.Info("Setting up event handlers")
+
+	knativeEventingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
+
+	deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: controller.Filter(v1alpha1.SchemeGroupVersion.WithKind("KnativeEventing")),
+		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
+	})
+
+	return impl
 }

@@ -1506,7 +1506,6 @@
     "knative.dev/pkg/metrics",
     "knative.dev/pkg/metrics/metricstest",
     "knative.dev/pkg/reconciler",
-    "knative.dev/pkg/signals",
     "knative.dev/pkg/system",
     "knative.dev/pkg/test",
     "knative.dev/pkg/test/logging",

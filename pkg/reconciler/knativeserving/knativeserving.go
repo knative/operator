@@ -155,6 +155,7 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 		ksc.CustomCertsTransform(instance, logger),
 		ksc.HighAvailabilityTransform(instance, logger),
 		ksc.ResourceRequirementsTransform(instance, logger),
+		ksc.AggregationRuleTransform(r.config.Client),
 	}
 	transforms := append(standard, platform...)
 	return r.config.Transform(transforms...)

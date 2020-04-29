@@ -31,17 +31,15 @@ func init() {
 	v1alpha3.AddToScheme(scheme.Scheme)
 }
 
-type updateGatewayTest struct {
-	name                  string
-	gatewayName           string
-	in                    map[string]string
-	knativeIngressGateway servingv1alpha1.IstioGatewayOverride
-	clusterLocalGateway   servingv1alpha1.IstioGatewayOverride
-	expected              map[string]string
-}
-
-var updateGatewayTests = []updateGatewayTest{
-	{
+func TestGatewayTransform(t *testing.T) {
+	tests := []struct {
+		name                  string
+		gatewayName           string
+		in                    map[string]string
+		knativeIngressGateway servingv1alpha1.IstioGatewayOverride
+		clusterLocalGateway   servingv1alpha1.IstioGatewayOverride
+		expected              map[string]string
+	}{{
 		name:        "UpdatesKnativeIngressGateway",
 		gatewayName: "knative-ingress-gateway",
 		in: map[string]string{
@@ -60,8 +58,7 @@ var updateGatewayTests = []updateGatewayTest{
 		expected: map[string]string{
 			"istio": "knative-ingress",
 		},
-	},
-	{
+	}, {
 		name:        "UpdatesClusterLocalGateway",
 		gatewayName: "cluster-local-gateway",
 		in: map[string]string{
@@ -80,8 +77,7 @@ var updateGatewayTests = []updateGatewayTest{
 		expected: map[string]string{
 			"istio": "cluster-local",
 		},
-	},
-	{
+	}, {
 		name:        "DoesNothingToOtherGateway",
 		gatewayName: "not-knative-ingress-gateway",
 		in: map[string]string{
@@ -100,47 +96,39 @@ var updateGatewayTests = []updateGatewayTest{
 		expected: map[string]string{
 			"istio": "old-istio",
 		},
-	},
-}
+	}}
 
-func TestGatewayTransform(t *testing.T) {
-	for _, tt := range updateGatewayTests {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			runGatewayTransformTest(t, &tt)
+			unstructedGateway := makeUnstructuredGateway(t, tt.gatewayName, tt.in)
+			instance := &servingv1alpha1.KnativeServing{
+				Spec: servingv1alpha1.KnativeServingSpec{
+					KnativeIngressGateway: tt.knativeIngressGateway,
+					ClusterLocalGateway:   tt.clusterLocalGateway,
+				},
+			}
+			gatewayTransform := GatewayTransform(instance, log)
+			gatewayTransform(&unstructedGateway)
+
+			var gateway = &v1alpha3.Gateway{}
+			err := scheme.Scheme.Convert(&unstructedGateway, gateway, nil)
+			util.AssertEqual(t, err, nil)
+			for expectedKey, expectedValue := range tt.expected {
+				util.AssertEqual(t, gateway.Spec.Selector[expectedKey], expectedValue)
+			}
 		})
 	}
 }
-func runGatewayTransformTest(t *testing.T, tt *updateGatewayTest) {
-	unstructedGateway := makeUnstructuredGateway(t, tt)
-	instance := &servingv1alpha1.KnativeServing{
-		Spec: servingv1alpha1.KnativeServingSpec{
-			KnativeIngressGateway: tt.knativeIngressGateway,
-			ClusterLocalGateway:   tt.clusterLocalGateway,
-		},
-	}
-	gatewayTransform := GatewayTransform(instance, log)
-	gatewayTransform(&unstructedGateway)
-	validateUnstructedGatewayChanged(t, tt, &unstructedGateway)
-}
 
-func validateUnstructedGatewayChanged(t *testing.T, tt *updateGatewayTest, u *unstructured.Unstructured) {
-	var gateway = &v1alpha3.Gateway{}
-	err := scheme.Scheme.Convert(u, gateway, nil)
-	util.AssertEqual(t, err, nil)
-	for expectedKey, expectedValue := range tt.expected {
-		util.AssertEqual(t, gateway.Spec.Selector[expectedKey], expectedValue)
-	}
-}
-
-func makeUnstructuredGateway(t *testing.T, tt *updateGatewayTest) unstructured.Unstructured {
+func makeUnstructuredGateway(t *testing.T, name string, selector map[string]string) unstructured.Unstructured {
 	gateway := v1alpha3.Gateway{
 		Spec: istiov1alpha3.Gateway{
-			Selector: tt.in,
+			Selector: selector,
 		},
 	}
 	gateway.APIVersion = "networking.istio.io/v1alpha3"
 	gateway.Kind = "Gateway"
-	gateway.Name = tt.gatewayName
+	gateway.Name = name
 	result := unstructured.Unstructured{}
 	err := scheme.Scheme.Convert(&gateway, &result, nil)
 	if err != nil {

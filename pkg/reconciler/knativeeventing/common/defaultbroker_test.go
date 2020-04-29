@@ -24,8 +24,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
 	"k8s.io/client-go/kubernetes/scheme"
 
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -34,111 +32,94 @@ import (
 
 var log = zap.NewNop().Sugar()
 
-type updateDefaultBrokerTest struct {
-	name               string
-	configMap          corev1.ConfigMap
-	defaultBrokerClass string
-	expected           corev1.ConfigMap
-}
-
-func createupdateDefaultBrokerTests(t *testing.T) []updateDefaultBrokerTest {
-	return []updateDefaultBrokerTest{
-		{
-			name: "UsesDefaultWhenNotSpecified",
-			configMap: makeConfigMap(t, "config-br-defaults", map[string]map[string]string{
-				"clusterDefault": {
-					"brokerClass": "Foo",
-					"apiVersion":  "v1",
-					"kind":        "ConfigMap",
-					"name":        "config-br-default-channel",
-					"namespace":   "knative-eventing",
-				},
-			}),
-			defaultBrokerClass: "",
-			expected: makeConfigMap(t, "config-br-defaults", map[string]map[string]string{
-				"clusterDefault": {
-					"brokerClass": "ChannelBasedBroker",
-					"apiVersion":  "v1",
-					"kind":        "ConfigMap",
-					"name":        "config-br-default-channel",
-					"namespace":   "knative-eventing",
-				},
-			}),
-		},
-		{
-			name: "UsesTheSpecifiedValueWhenSpecified",
-			configMap: makeConfigMap(t, "config-br-defaults", map[string]map[string]string{
-				"clusterDefault": {
-					"brokerClass": "Foo",
-					"apiVersion":  "v1",
-					"kind":        "ConfigMap",
-					"name":        "config-br-default-channel",
-					"namespace":   "knative-eventing",
-				},
-			}),
-			defaultBrokerClass: "MyCustomerBroker",
-			expected: makeConfigMap(t, "config-br-defaults", map[string]map[string]string{
-				"clusterDefault": {
-					"brokerClass": "MyCustomerBroker",
-					"apiVersion":  "v1",
-					"kind":        "ConfigMap",
-					"name":        "config-br-default-channel",
-					"namespace":   "knative-eventing",
-				},
-			}),
-		},
-		{
-			name: "DoesNotTouchOtherConfigMaps",
-			configMap: makeConfigMap(t, "some-other-config-map-foo-bar-baz", map[string]map[string]string{
-				"clusterDefault": {
-					"brokerClass": "Foo",
-					"apiVersion":  "v1",
-					"kind":        "ConfigMap",
-					"name":        "config-br-default-channel",
-					"namespace":   "knative-eventing",
-				},
-			}),
-			defaultBrokerClass: "MyCustomerBroker",
-			expected: makeConfigMap(t, "config-br-defaults", map[string]map[string]string{
-				"clusterDefault": {
-					"brokerClass": "Foo",
-					"apiVersion":  "v1",
-					"kind":        "ConfigMap",
-					"name":        "config-br-default-channel",
-					"namespace":   "knative-eventing",
-				},
-			}),
-		},
-	}
-}
-
 func TestDefaultBrokerTransform(t *testing.T) {
-	updateDefaultBrokerTests := createupdateDefaultBrokerTests(t)
+	tests := []struct {
+		name               string
+		configMap          corev1.ConfigMap
+		defaultBrokerClass string
+		expected           corev1.ConfigMap
+	}{{
+		name: "UsesDefaultWhenNotSpecified",
+		configMap: makeConfigMap(t, "config-br-defaults", map[string]map[string]string{
+			"clusterDefault": {
+				"brokerClass": "Foo",
+				"apiVersion":  "v1",
+				"kind":        "ConfigMap",
+				"name":        "config-br-default-channel",
+				"namespace":   "knative-eventing",
+			},
+		}),
+		defaultBrokerClass: "",
+		expected: makeConfigMap(t, "config-br-defaults", map[string]map[string]string{
+			"clusterDefault": {
+				"brokerClass": "ChannelBasedBroker",
+				"apiVersion":  "v1",
+				"kind":        "ConfigMap",
+				"name":        "config-br-default-channel",
+				"namespace":   "knative-eventing",
+			},
+		}),
+	}, {
+		name: "UsesTheSpecifiedValueWhenSpecified",
+		configMap: makeConfigMap(t, "config-br-defaults", map[string]map[string]string{
+			"clusterDefault": {
+				"brokerClass": "Foo",
+				"apiVersion":  "v1",
+				"kind":        "ConfigMap",
+				"name":        "config-br-default-channel",
+				"namespace":   "knative-eventing",
+			},
+		}),
+		defaultBrokerClass: "MyCustomerBroker",
+		expected: makeConfigMap(t, "config-br-defaults", map[string]map[string]string{
+			"clusterDefault": {
+				"brokerClass": "MyCustomerBroker",
+				"apiVersion":  "v1",
+				"kind":        "ConfigMap",
+				"name":        "config-br-default-channel",
+				"namespace":   "knative-eventing",
+			},
+		}),
+	}, {
+		name: "DoesNotTouchOtherConfigMaps",
+		configMap: makeConfigMap(t, "some-other-config-map-foo-bar-baz", map[string]map[string]string{
+			"clusterDefault": {
+				"brokerClass": "Foo",
+				"apiVersion":  "v1",
+				"kind":        "ConfigMap",
+				"name":        "config-br-default-channel",
+				"namespace":   "knative-eventing",
+			},
+		}),
+		defaultBrokerClass: "MyCustomerBroker",
+		expected: makeConfigMap(t, "config-br-defaults", map[string]map[string]string{
+			"clusterDefault": {
+				"brokerClass": "Foo",
+				"apiVersion":  "v1",
+				"kind":        "ConfigMap",
+				"name":        "config-br-default-channel",
+				"namespace":   "knative-eventing",
+			},
+		}),
+	}}
 
-	for _, tt := range updateDefaultBrokerTests {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			runDefaultImageBrokerTransformTest(t, &tt)
+			unstructuredConfigMap := util.MakeUnstructured(t, &tt.configMap)
+			instance := &eventingv1alpha1.KnativeEventing{
+				Spec: eventingv1alpha1.KnativeEventingSpec{
+					DefaultBrokerClass: tt.defaultBrokerClass,
+				},
+			}
+			transform := DefaultBrokerConfigMapTransform(instance, log)
+			transform(&unstructuredConfigMap)
+
+			var configMap = &corev1.ConfigMap{}
+			err := scheme.Scheme.Convert(&unstructuredConfigMap, configMap, nil)
+			util.AssertEqual(t, err, nil)
+			util.AssertDeepEqual(t, configMap.Data, tt.expected.Data)
 		})
 	}
-}
-
-func runDefaultImageBrokerTransformTest(t *testing.T, tt *updateDefaultBrokerTest) {
-	unstructuredConfigMap := util.MakeUnstructured(t, &tt.configMap)
-	instance := &eventingv1alpha1.KnativeEventing{
-		Spec: eventingv1alpha1.KnativeEventingSpec{
-			DefaultBrokerClass: tt.defaultBrokerClass,
-		},
-	}
-	transform := DefaultBrokerConfigMapTransform(instance, log)
-	transform(&unstructuredConfigMap)
-	validateUnstructedConfigMapChanged(t, tt, &unstructuredConfigMap)
-}
-
-func validateUnstructedConfigMapChanged(t *testing.T, tt *updateDefaultBrokerTest, u *unstructured.Unstructured) {
-	var configMap = &corev1.ConfigMap{}
-	err := scheme.Scheme.Convert(u, configMap, nil)
-	util.AssertEqual(t, err, nil)
-	util.AssertDeepEqual(t, configMap.Data, tt.expected.Data)
 }
 
 func makeConfigMap(t *testing.T, name string, data map[string]map[string]string) corev1.ConfigMap {

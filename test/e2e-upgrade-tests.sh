@@ -120,18 +120,7 @@ function test_setup() {
   ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_SERVING_DIR}/serving "test/test_images/pizzaplanetv1"
   ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_SERVING_DIR}/serving "test/test_images/pizzaplanetv2"
 
-  echo ">> Setting up logging..."
-
-  # Install kail if needed.
-  if ! which kail > /dev/null; then
-    bash <( curl -sfL https://raw.githubusercontent.com/boz/kail/master/godownloader.sh) -b "$GOPATH/bin"
-  fi
-
-  # Capture all logs.
-  kail > ${ARTIFACTS}/k8s.log-$(basename ${E2E_SCRIPT}).txt &
-  local kail_pid=$!
-  # Clean up kail so it doesn't interfere with job shutting down
-  add_trap "kill $kail_pid || true" EXIT
+  test_setup_logging
 
   echo ">> Waiting for Ingress provider to be running..."
   if [[ -n "${ISTIO_VERSION}" ]]; then

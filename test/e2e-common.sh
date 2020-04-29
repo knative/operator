@@ -54,7 +54,9 @@ function add_trap() {
   done
 }
 
-function test_setup() {
+# Setup and run kail in the background to collect logs
+# from all pods.
+function test_setup_logging() {
   echo ">> Setting up logging..."
 
   # Install kail if needed.
@@ -67,6 +69,11 @@ function test_setup() {
   local kail_pid=$!
   # Clean up kail so it doesn't interfere with job shutting down
   add_trap "kill $kail_pid || true" EXIT
+}
+
+# Generic test setup. Used by the common test scripts.
+function test_setup() {
+  test_setup_logging
 }
 
 # Choose a correct istio-crds.yaml file.

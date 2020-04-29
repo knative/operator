@@ -117,13 +117,6 @@ github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
 # github.com/google/gofuzz v1.1.0
 github.com/google/gofuzz
-# github.com/google/licenseclassifier v0.0.0-20200402202327-879cb1424de0
-github.com/google/licenseclassifier
-github.com/google/licenseclassifier/internal/sets
-github.com/google/licenseclassifier/stringclassifier
-github.com/google/licenseclassifier/stringclassifier/internal/pq
-github.com/google/licenseclassifier/stringclassifier/searchset
-github.com/google/licenseclassifier/stringclassifier/searchset/tokenizer
 # github.com/google/uuid v1.1.1
 github.com/google/uuid
 # github.com/googleapis/gax-go/v2 v2.0.5
@@ -182,8 +175,6 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/sergi/go-diff v1.1.0
-github.com/sergi/go-diff/diffmatchpatch
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
 # go.opencensus.io v0.22.3
@@ -742,7 +733,7 @@ knative.dev/caching/pkg/apis/caching/v1alpha1
 # knative.dev/eventing v0.14.1-0.20200428210242-f355830c4d70
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/eventing
-# knative.dev/pkg v0.0.0-20200428194351-90fc61bae7f7
+# knative.dev/pkg v0.0.0-20200429171842-47137cdc301d
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
 knative.dev/pkg/apis/duck/v1
@@ -786,7 +777,7 @@ knative.dev/pkg/tracker
 knative.dev/pkg/version
 knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
-# knative.dev/test-infra v0.0.0-20200428202451-bfb9a417f464
+# knative.dev/test-infra v0.0.0-20200429194242-c1fe00ea21f9
 knative.dev/test-infra/scripts
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml

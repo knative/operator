@@ -502,20 +502,16 @@ function run_go_tool() {
 # Parameters: $1 - output file, relative to repo root dir.
 #             $2...$n - directories and files to inspect.
 function update_licenses() {
-  cd ${REPO_ROOT_DIR} || return 1
+  cd "${REPO_ROOT_DIR}" || return 1
   local dst=$1
   shift
   run_go_tool knative.dev/test-infra/tools/dep-collector dep-collector $@ > ./${dst}
 }
 
-# Run dep-collector to check for forbidden liceses.
-# Parameters: $1...$n - directories and files to inspect.
+# Run go-licenses to check for forbidden liceses.
 function check_licenses() {
-  # Fetch the google/licenseclassifier for its license db
-  rm -fr ${GOPATH}/src/github.com/google/licenseclassifier
-  GOFLAGS="" go get -u github.com/google/licenseclassifier
-  # Check that we don't have any forbidden licenses in our images.
-  run_go_tool knative.dev/test-infra/tools/dep-collector dep-collector -check $@
+  # Check that we don't have any forbidden licenses.
+  go-licenses check "${REPO_ROOT_DIR}/..." || return 1
 }
 
 # Run the given linter on the given files, checking it exists first.

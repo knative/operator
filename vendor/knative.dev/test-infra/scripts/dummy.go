@@ -1,7 +1,5 @@
-// +build tools
-
 /*
-Copyright 2020 The Knative Authors
+Copyright 2018 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,5 +17,10 @@ limitations under the License.
 package scripts
 
 import (
-	_ "github.com/google/licenseclassifier"
+	"fmt"
 )
+
+func main() {
+	fmt.Println("This is a dummy go file so `go dep` can be used with knative/test-infra/scripts")
+	fmt.Println("This file can be safely removed if one day this directory contains real, useful go code")
+}

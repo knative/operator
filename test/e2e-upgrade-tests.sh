@@ -120,6 +120,8 @@ function test_setup() {
   ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_SERVING_DIR}/serving "test/test_images/pizzaplanetv1"
   ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_SERVING_DIR}/serving "test/test_images/pizzaplanetv2"
 
+  test_setup_logging
+
   echo ">> Waiting for Ingress provider to be running..."
   if [[ -n "${ISTIO_VERSION}" ]]; then
     wait_until_pods_running istio-system || return 1

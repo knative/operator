@@ -479,22 +479,20 @@ function start_latest_knative_eventing() {
 #             $3..$n - parameters passed to the tool.
 function run_go_tool() {
   local tool=$2
-  if [[ -z "$(which ${tool})" ]]; then
-    local action=get
-    [[ $1 =~ ^[\./].* ]] && action=install
-    # Avoid running `go get` from root dir of the repository, as it can change go.sum and go.mod files.
-    # See discussions in https://github.com/golang/go/issues/27643.
-    if [[ ${action} == "get" && $(pwd) == "${REPO_ROOT_DIR}" ]]; then
-      local temp_dir="$(mktemp -d)"
-      local install_failed=0
-      # Swallow the output as we are returning the stdout in the end.
-      pushd "${temp_dir}" > /dev/null 2>&1
-      go ${action} $1 || install_failed=1
-      popd > /dev/null 2>&1
-      (( install_failed )) && return ${install_failed}
-    else
-      go ${action} $1
-    fi
+  local action=get
+  [[ $1 =~ ^[\./].* ]] && action=install
+  # Avoid running `go get` from root dir of the repository, as it can change go.sum and go.mod files.
+  # See discussions in https://github.com/golang/go/issues/27643.
+  if [[ ${action} == "get" && $(pwd) == "${REPO_ROOT_DIR}" ]]; then
+    local temp_dir="$(mktemp -d)"
+    local install_failed=0
+    # Swallow the output as we are returning the stdout in the end.
+    pushd "${temp_dir}" > /dev/null 2>&1
+    GOFLAGS="" go ${action} $1 || install_failed=1
+    popd > /dev/null 2>&1
+    (( install_failed )) && return ${install_failed}
+  else
+    GOFLAGS="" go ${action} $1
   fi
   shift 2
   ${tool} "$@"
@@ -504,20 +502,16 @@ function run_go_tool() {
 # Parameters: $1 - output file, relative to repo root dir.
 #             $2...$n - directories and files to inspect.
 function update_licenses() {
-  cd ${REPO_ROOT_DIR} || return 1
+  cd "${REPO_ROOT_DIR}" || return 1
   local dst=$1
   shift
   run_go_tool knative.dev/test-infra/tools/dep-collector dep-collector $@ > ./${dst}
 }
 
-# Run dep-collector to check for forbidden liceses.
-# Parameters: $1...$n - directories and files to inspect.
+# Run go-licenses to check for forbidden liceses.
 function check_licenses() {
-  # Fetch the google/licenseclassifier for its license db
-  rm -fr ${GOPATH}/src/github.com/google/licenseclassifier
-  go get -u github.com/google/licenseclassifier
-  # Check that we don't have any forbidden licenses in our images.
-  run_go_tool knative.dev/test-infra/tools/dep-collector dep-collector -check $@
+  # Check that we don't have any forbidden licenses.
+  go-licenses check "${REPO_ROOT_DIR}/..." || return 1
 }
 
 # Run the given linter on the given files, checking it exists first.

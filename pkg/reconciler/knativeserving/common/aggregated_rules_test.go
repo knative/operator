@@ -26,14 +26,14 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-type ruleAggregationFixture struct {
-	Name              string
-	Input             *unstructured.Unstructured
-	Database          *unstructured.Unstructured
-	OverwriteExpected bool
-}
-
-var ruleAggregationData = []byte(`
+func TestAggregationRuleTransform(t *testing.T) {
+	tests := []struct {
+		Name              string
+		Input             *unstructured.Unstructured
+		Existing          *unstructured.Unstructured
+		OverwriteExpected bool
+	}{}
+	var testData = []byte(`
 - name: "existing role has rules"
   input:
     kind: ClusterRole
@@ -45,7 +45,7 @@ var ruleAggregationData = []byte(`
       - matchLabels:
           serving.knative.dev/controller: "true"
     rules: []
-  database:
+  existing:
     kind: ClusterRole
     apiVersion: rbac.authorization.k8s.io/v1
     metadata:
@@ -75,30 +75,25 @@ var ruleAggregationData = []byte(`
     rules: []
   overwriteExpected: false
 `)
-
-func TestAggregationRuleTransform(t *testing.T) {
-	tests := []ruleAggregationFixture{}
-	err := yaml.Unmarshal(ruleAggregationData, &tests)
+	err := yaml.Unmarshal(testData, &tests)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			runRuleAggregationTest(t, &test)
+			mock := mockGetter{test.Existing}
+			original := test.Input.DeepCopy()
+			transformer := AggregationRuleTransform(&mock)
+			if err := transformer(test.Input); err != nil {
+				t.Error(err)
+			}
+			if test.OverwriteExpected {
+				util.AssertDeepEqual(t, test.Input, test.Existing)
+			} else {
+				util.AssertDeepEqual(t, test.Input, original)
+			}
 		})
-	}
-}
-
-func runRuleAggregationTest(t *testing.T, test *ruleAggregationFixture) {
-	mock := mockGetter{test.Database}
-	original := test.Input.DeepCopy()
-	transformer := AggregationRuleTransform(&mock)
-	transformer(test.Input)
-	if test.OverwriteExpected {
-		util.AssertDeepEqual(t, test.Input, test.Database)
-	} else {
-		util.AssertDeepEqual(t, test.Input, original)
 	}
 }
 

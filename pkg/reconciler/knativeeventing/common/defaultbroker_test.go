@@ -35,7 +35,6 @@ import (
 var log = zap.NewNop().Sugar()
 
 type updateDefaultBrokerTest struct {
-	t                  *testing.T
 	name               string
 	configMap          corev1.ConfigMap
 	defaultBrokerClass string

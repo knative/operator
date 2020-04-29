@@ -28,11 +28,6 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-type resourceOverrideTest struct {
-	Input    servingv1alpha1.KnativeServing
-	Expected map[string]v1.ResourceRequirements
-}
-
 var testdata = []byte(`
 - input:
     apiVersion: operator.knative.dev/v1alpha1
@@ -274,39 +269,36 @@ var testdata = []byte(`
 `)
 
 func TestResourceRequirementsTransform(t *testing.T) {
-	tests := []resourceOverrideTest{}
-	err := yaml.Unmarshal(testdata, &tests)
-	if err != nil {
-		t.Error(err)
-		return
+	tests := []struct {
+		Input    servingv1alpha1.KnativeServing
+		Expected map[string]v1.ResourceRequirements
+	}{}
+	if err := yaml.Unmarshal(testdata, &tests); err != nil {
+		t.Fatalf("Failed to unmarshal tests: %v", err)
 	}
 	for _, test := range tests {
 		t.Run(test.Input.Name, func(t *testing.T) {
-			runResourceRequirementsTransformTest(t, &test)
-		})
-	}
-}
-
-func runResourceRequirementsTransformTest(t *testing.T, test *resourceOverrideTest) {
-	manifest, err := mf.NewManifest("testdata/manifest.yaml")
-	if err != nil {
-		t.Error(err)
-	}
-	actual, err := manifest.Transform(ResourceRequirementsTransform(&test.Input, log))
-	if err != nil {
-		t.Error(err)
-	}
-	for _, u := range actual.Filter(mf.ByKind("Deployment")).Resources() {
-		deployment := &appsv1.Deployment{}
-		if err := scheme.Scheme.Convert(&u, deployment, nil); err != nil {
-			t.Error(err)
-		}
-		containers := deployment.Spec.Template.Spec.Containers
-		for i := range containers {
-			expected := test.Expected[containers[i].Name]
-			if !reflect.DeepEqual(containers[i].Resources, expected) {
-				t.Errorf("\n    Name: %s\n  Expect: %v\n  Actual: %v", containers[i].Name, expected, containers[i].Resources)
+			manifest, err := mf.NewManifest("testdata/manifest.yaml")
+			if err != nil {
+				t.Fatalf("Failed to create manifest: %v", err)
 			}
-		}
+			actual, err := manifest.Transform(ResourceRequirementsTransform(&test.Input, log))
+			if err != nil {
+				t.Fatalf("Failed to transform manifest: %v", err)
+			}
+			for _, u := range actual.Filter(mf.ByKind("Deployment")).Resources() {
+				deployment := &appsv1.Deployment{}
+				if err := scheme.Scheme.Convert(&u, deployment, nil); err != nil {
+					t.Fatalf("Failed to convert unstructed to deployment: %v", err)
+				}
+				containers := deployment.Spec.Template.Spec.Containers
+				for i := range containers {
+					expected := test.Expected[containers[i].Name]
+					if !reflect.DeepEqual(containers[i].Resources, expected) {
+						t.Errorf("\n    Name: %s\n  Expect: %v\n  Actual: %v", containers[i].Name, expected, containers[i].Resources)
+					}
+				}
+			}
+		})
 	}
 }

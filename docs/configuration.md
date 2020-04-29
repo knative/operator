@@ -37,6 +37,7 @@ These are the configurable fields in each resource:
       * [default](#specregistrydefault)
       * [override](#specregistryoverride)
       * [imagePullSecrets](#specregistryimagepullsecrets)
+    * [resources](#specresources)
     * [defaultBrokerClass](#specdefaultbrokerclass)
 
 

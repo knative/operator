@@ -47,6 +47,10 @@ type KnativeEventingSpec struct {
 	// +optional
 	Registry Registry `json:"registry,omitempty"`
 
+	// Override containers' resource requirements
+	// +optional
+	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+
 	// The default broker type to use for the brokers Knative creates.
 	// If no value is provided, ChannelBasedBroker will be used.
 	// +optional

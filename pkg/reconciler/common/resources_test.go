@@ -282,7 +282,7 @@ func TestResourceRequirementsTransform(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create manifest: %v", err)
 			}
-			actual, err := manifest.Transform(ResourceRequirementsTransform(&test.Input, log))
+			actual, err := manifest.Transform(ResourceRequirementsTransform(test.Input.Spec.Resources, log))
 			if err != nil {
 				t.Fatalf("Failed to transform manifest: %v", err)
 			}

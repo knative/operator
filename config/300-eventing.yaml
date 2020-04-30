@@ -93,6 +93,45 @@ spec:
               description: The default broker type to use for the brokers Knative creates.
                 If no value is provided, ChannelBasedBroker will be used.
               type: string
+            resources:
+              description: A mapping of deployment name to resource requirements
+              type: array
+              items:
+                type: object
+                properties:
+                  container:
+                    description: The name of the container
+                    type: string
+                  requests:
+                    type: object
+                    properties:
+                      memory:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      cpu:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      storage:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      ephemeral-storage:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                  limits:
+                    type: object
+                    properties:
+                      memory:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      cpu:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      storage:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                      ephemeral-storage:
+                        type: string
+                        pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
           type: object
         status:
           properties:

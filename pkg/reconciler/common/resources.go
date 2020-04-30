@@ -24,12 +24,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 // ResourceRequirementsTransform configures the resource requests for
 // all containers within all deployments in the manifest
-func ResourceRequirementsTransform(instance *servingv1alpha1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
+func ResourceRequirementsTransform(resources []v1alpha1.ResourceRequirementsOverride, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" {
 			deployment := &appsv1.Deployment{}
@@ -38,7 +38,7 @@ func ResourceRequirementsTransform(instance *servingv1alpha1.KnativeServing, log
 			}
 			containers := deployment.Spec.Template.Spec.Containers
 			for i := range containers {
-				if override := find(instance, containers[i].Name); override != nil {
+				if override := find(resources, containers[i].Name); override != nil {
 					merge(&override.Limits, &containers[i].Resources.Limits)
 					merge(&override.Requests, &containers[i].Resources.Requests)
 				}
@@ -63,8 +63,8 @@ func merge(src, tgt *v1.ResourceList) {
 	}
 }
 
-func find(instance *servingv1alpha1.KnativeServing, name string) *servingv1alpha1.ResourceRequirementsOverride {
-	for _, override := range instance.Spec.Resources {
+func find(resources []v1alpha1.ResourceRequirementsOverride, name string) *v1alpha1.ResourceRequirementsOverride {
+	for _, override := range resources {
 		if override.Container == name {
 			return &override
 		}

@@ -151,10 +151,10 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 		mf.InjectNamespace(instance.GetNamespace()),
 		common.ConfigMapTransform(instance.Spec.Config, logger),
 		common.ImageTransform(&instance.Spec.Registry, logger),
+		common.ResourceRequirementsTransform(instance.Spec.Resources, logger),
 		ksc.GatewayTransform(instance, logger),
 		ksc.CustomCertsTransform(instance, logger),
 		ksc.HighAvailabilityTransform(instance, logger),
-		ksc.ResourceRequirementsTransform(instance, logger),
 	}
 	transforms := append(standard, platform...)
 	return r.config.Transform(transforms...)

@@ -149,6 +149,7 @@ func (r *Reconciler) transform(ctx context.Context, instance *eventingv1alpha1.K
 		mf.InjectNamespace(instance.GetNamespace()),
 		common.ImageTransform(&instance.Spec.Registry, logger),
 		common.ConfigMapTransform(instance.Spec.Config, logger),
+		common.ResourceRequirementsTransform(instance.Spec.Resources, logger),
 		kec.DefaultBrokerConfigMapTransform(instance, logger),
 	}
 	transforms := append(standard, platform...)

@@ -162,6 +162,13 @@ func (in *KnativeEventingSpec) DeepCopyInto(out *KnativeEventingSpec) {
 		}
 	}
 	in.Registry.DeepCopyInto(&out.Registry)
+	if in.Resources != nil {
+		in, out := &in.Resources, &out.Resources
+		*out = make([]ResourceRequirementsOverride, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	return
 }
 

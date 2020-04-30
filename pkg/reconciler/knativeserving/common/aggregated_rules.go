@@ -39,7 +39,13 @@ func AggregationRuleTransform(client unstructuredGetter) mf.Transformer {
 			if err != nil {
 				return err
 			}
-			*u = *current
+			rules, found, err := unstructured.NestedSlice(current.Object, "rules")
+			if err != nil {
+				return err
+			}
+			if found {
+				return unstructured.SetNestedSlice(u.Object, rules, "rules")
+			}
 		}
 		return nil
 	}

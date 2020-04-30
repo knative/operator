@@ -240,95 +240,35 @@ func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest
 
 // Delete obsolete resources from previous versions
 func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.Manifest, instance *eventingv1alpha1.KnativeEventing) error {
-	resource := &unstructured.Unstructured{}
-	resource.SetNamespace(instance.GetNamespace())
-
-	// Remove old resources from 0.12
-	// https://github.com/knative/eventing-operator/issues/90
-	// sources and controller are merged.
-	// delete removed or renamed resources.
-	resource.SetAPIVersion("v1")
-	resource.SetKind("ServiceAccount")
-	resource.SetName("eventing-source-controller")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
+	resources := []*unstructured.Unstructured{
+		// Remove old resources from 0.12
+		// https://github.com/knative/eventing-operator/issues/90
+		// sources and controller are merged.
+		// delete removed or renamed resources.
+		common.NamespacedResource("v1", "ServiceAccount", instance.GetNamespace(), "eventing-source-controller"),
+		common.ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRole", "knative-eventing-source-controller"),
+		common.ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRoleBinding", "knative-eventing-source-controller"),
+		common.ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRoleBinding", "eventing-source-controller"),
+		common.ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRoleBinding", "eventing-source-controller-resolver"),
+		// Remove the legacysinkbindings webhook at 0.13
+		common.ClusterScopedResource("admissionregistration.k8s.io/v1beta1", "MutatingWebhookConfiguration", "legacysinkbindings.webhook.sources.knative.dev"),
+		// Remove the knative-eventing-sources-namespaced-admin ClusterRole at 0.13
+		common.ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRole", "knative-eventing-sources-namespaced-admin"),
+		// Remove the apiserversources.sources.eventing.knative.dev CRD at 0.13
+		common.ClusterScopedResource("apiextensions.k8s.io/v1beta1", "CustomResourceDefinition", "apiserversources.sources.eventing.knative.dev"),
+		// Remove the containersources.sources.eventing.knative.dev CRD at 0.13
+		common.ClusterScopedResource("apiextensions.k8s.io/v1beta1", "CustomResourceDefinition", "containersources.sources.eventing.knative.dev"),
+		// Remove the cronjobsources.sources.eventing.knative.dev CRD at 0.13
+		common.ClusterScopedResource("apiextensions.k8s.io/v1beta1", "CustomResourceDefinition", "cronjobsources.sources.eventing.knative.dev"),
+		// Remove the sinkbindings.sources.eventing.knative.dev CRD at 0.13
+		common.ClusterScopedResource("apiextensions.k8s.io/v1beta1", "CustomResourceDefinition", "sinkbindings.sources.eventing.knative.dev"),
+		// Remove the deployment sources-controller at 0.13
+		common.NamespacedResource("apps/v1", "Deployment", instance.GetNamespace(), "sources-controller"),
 	}
-
-	resource.SetAPIVersion("rbac.authorization.k8s.io/v1")
-	resource.SetKind("ClusterRole")
-	resource.SetName("knative-eventing-source-controller")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
-	}
-
-	resource.SetAPIVersion("rbac.authorization.k8s.io/v1")
-	resource.SetKind("ClusterRoleBinding")
-	resource.SetName("eventing-source-controller")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
-	}
-
-	resource.SetAPIVersion("rbac.authorization.k8s.io/v1")
-	resource.SetKind("ClusterRoleBinding")
-	resource.SetName("eventing-source-controller-resolver")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
-	}
-
-	// Remove the legacysinkbindings webhook at 0.13
-	resource.SetAPIVersion("admissionregistration.k8s.io/v1beta1")
-	resource.SetKind("MutatingWebhookConfiguration")
-	resource.SetName("legacysinkbindings.webhook.sources.knative.dev")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
-	}
-
-	// Remove the knative-eventing-sources-namespaced-admin ClusterRole at 0.13
-	resource.SetAPIVersion("rbac.authorization.k8s.io/v1")
-	resource.SetKind("ClusterRole")
-	resource.SetName("knative-eventing-sources-namespaced-admin")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
-	}
-
-	// Remove the apiserversources.sources.eventing.knative.dev CRD at 0.13
-	resource.SetAPIVersion("apiextensions.k8s.io/v1beta1")
-	resource.SetKind("CustomResourceDefinition")
-	resource.SetName("apiserversources.sources.eventing.knative.dev")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
-	}
-
-	// Remove the containersources.sources.eventing.knative.dev CRD at 0.13
-	resource.SetAPIVersion("apiextensions.k8s.io/v1beta1")
-	resource.SetKind("CustomResourceDefinition")
-	resource.SetName("containersources.sources.eventing.knative.dev")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
-	}
-
-	// Remove the cronjobsources.sources.eventing.knative.dev CRD at 0.13
-	resource.SetAPIVersion("apiextensions.k8s.io/v1beta1")
-	resource.SetKind("CustomResourceDefinition")
-	resource.SetName("cronjobsources.sources.eventing.knative.dev")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
-	}
-
-	// Remove the sinkbindings.sources.eventing.knative.dev CRD at 0.13
-	resource.SetAPIVersion("apiextensions.k8s.io/v1beta1")
-	resource.SetKind("CustomResourceDefinition")
-	resource.SetName("sinkbindings.sources.eventing.knative.dev")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
-	}
-
-	// Remove the deployment sources-controller at 0.13
-	resource.SetAPIVersion("apps/v1")
-	resource.SetKind("deployment")
-	resource.SetName("sources-controller")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
+	for _, r := range resources {
+		if err := manifest.Client.Delete(r); err != nil {
+			return err
+		}
 	}
 	return nil
 }

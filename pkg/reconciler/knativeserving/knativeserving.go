@@ -249,32 +249,18 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 
 // Delete obsolete resources from previous versions
 func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
-	// istio-system resources from 0.3
-	resource := &unstructured.Unstructured{}
-	resource.SetNamespace("istio-system")
-	resource.SetName("knative-ingressgateway")
-	resource.SetAPIVersion("v1")
-	resource.SetKind("Service")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
+	resources := []*unstructured.Unstructured{
+		// istio-system resources from 0.3.
+		common.NamespacedResource("v1", "Service", "istio-system", "knative-ingressgateway"),
+		common.NamespacedResource("apps/v1", "Deployment", "istio-system", "knative-ingressgateway"),
+		common.NamespacedResource("autoscaling/v1", "HorizontalPodAutoscaler", "istio-system", "knative-ingressgateway"),
+		// config-controller from 0.5
+		common.NamespacedResource("v1", "ConfigMap", instance.GetNamespace(), "config-controller"),
 	}
-	resource.SetAPIVersion("apps/v1")
-	resource.SetKind("Deployment")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
-	}
-	resource.SetAPIVersion("autoscaling/v1")
-	resource.SetKind("HorizontalPodAutoscaler")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
-	}
-	// config-controller from 0.5
-	resource.SetNamespace(instance.GetNamespace())
-	resource.SetName("config-controller")
-	resource.SetAPIVersion("v1")
-	resource.SetKind("ConfigMap")
-	if err := manifest.Client.Delete(resource); err != nil {
-		return err
+	for _, r := range resources {
+		if err := manifest.Client.Delete(r); err != nil {
+			return err
+		}
 	}
 	return nil
 }

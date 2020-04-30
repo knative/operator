@@ -18,17 +18,12 @@ package knativeeventing
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	mf "github.com/manifestival/manifestival"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 
@@ -43,11 +38,6 @@ import (
 
 const (
 	oldFinalizerName = "delete-knative-eventing-manifest"
-)
-
-var (
-	role        mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
-	rolebinding mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 )
 
 // Reconciler implements controller.Reconciler for KnativeEventing resources.
@@ -68,8 +58,6 @@ var _ knereconciler.Finalizer = (*Reconciler)(nil)
 
 // FinalizeKind removes all resources after deletion of a KnativeEventing.
 func (r *Reconciler) FinalizeKind(ctx context.Context, original *eventingv1alpha1.KnativeEventing) pkgreconciler.Event {
-	logger := logging.FromContext(ctx)
-
 	// List all KnativeEventings to determine if cluster-scoped resources should be deleted.
 	kes, err := r.operatorClientSet.OperatorV1alpha1().KnativeEventings("").List(metav1.ListOptions{})
 	if err != nil {
@@ -90,18 +78,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *eventingv1alpha
 		if err != nil {
 			return fmt.Errorf("failed to transform manifest: %w", err)
 		}
-
-		logger.Info("Deleting cluster-scoped resources")
-		rbac := mf.Any(role, rolebinding)
-		if err := manifest.Filter(mf.NoCRDs, mf.None(rbac)).Delete(); err != nil {
-			return fmt.Errorf("failed to remove non-crd/non-rbac resources: %w", err)
-		}
-		// Delete Roles last, as they may be useful for human operators to clean up.
-		if err := manifest.Filter(rbac).Delete(); err != nil {
-			return fmt.Errorf("failed to remove rbac: %w", err)
-		}
-
-		logger.Info("Cluster-scoped resources deleted")
+		return common.RemoveClusterScoped(ctx, &manifest)
 	}
 
 	return nil
@@ -116,14 +93,18 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *eventingv1alpha1.Kna
 	logger.Infow("Reconciling KnativeEventing", "status", ke.Status)
 	stages := []func(context.Context, *mf.Manifest, *eventingv1alpha1.KnativeEventing) error{
 		r.ensureFinalizerRemoval,
-		r.install,
-		r.checkDeployments,
+		func(ctx context.Context, mf *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
+			return common.Install(ctx, version.EventingVersion, mf, &ke.Status)
+		},
+		func(ctx context.Context, mf *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
+			return common.CheckDeployments(ctx, r.kubeClientSet, mf, &ke.Status)
+		},
 		r.deleteObsoleteResources,
 	}
 
 	manifest, err := r.transform(ctx, ke)
 	if err != nil {
-		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
+		ke.Status.MarkInstallFailed(err.Error())
 		return err
 	}
 
@@ -144,98 +125,28 @@ func (r *Reconciler) transform(ctx context.Context, instance *eventingv1alpha1.K
 	if err != nil {
 		return mf.Manifest{}, err
 	}
-	standard := []mf.Transformer{
-		mf.InjectOwner(instance),
-		mf.InjectNamespace(instance.GetNamespace()),
-		common.ImageTransform(&instance.Spec.Registry, logger),
-		common.ConfigMapTransform(instance.Spec.Config, logger),
-		common.ResourceRequirementsTransform(instance.Spec.Resources, logger),
-		kec.DefaultBrokerConfigMapTransform(instance, logger),
-	}
-	transforms := append(standard, platform...)
+
+	transforms := common.Transforms(ctx, instance)
+	transforms = append(transforms, kec.DefaultBrokerConfigMapTransform(instance, logger))
+	transforms = append(transforms, platform...)
 	return r.config.Transform(transforms...)
 }
 
 // ensureFinalizerRemoval ensures that the obsolete "delete-knative-eventing-manifest" is removed from the resource.
 func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, instance *eventingv1alpha1.KnativeEventing) error {
-	finalizers := sets.NewString(instance.Finalizers...)
-
-	if !finalizers.Has(oldFinalizerName) {
-		// Nothing to do.
-		return nil
-	}
-
-	// Remove the finalizer
-	finalizers.Delete(oldFinalizerName)
-
-	mergePatch := map[string]interface{}{
-		"metadata": map[string]interface{}{
-			"finalizers":      finalizers.List(),
-			"resourceVersion": instance.ResourceVersion,
-		},
-	}
-
-	patch, err := json.Marshal(mergePatch)
+	patch, err := common.FinalizerRemovalPatch(instance, oldFinalizerName)
 	if err != nil {
-		return fmt.Errorf("failed to construct finalizer patch: %w", err)
+		return fmt.Errorf("failed to generate finalizer patch: %w", err)
+	}
+	if patch == nil {
+		// Nothing to do
+		return nil
 	}
 
 	patcher := r.operatorClientSet.OperatorV1alpha1().KnativeEventings(instance.Namespace)
 	if _, err := patcher.Patch(instance.Name, types.MergePatchType, patch); err != nil {
 		return fmt.Errorf("failed to patch finalizer away: %w", err)
 	}
-	return nil
-}
-
-func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
-	logger := logging.FromContext(ctx)
-	logger.Debug("Installing manifest")
-	// The Operator needs a higher level of permissions if it 'bind's non-existent roles.
-	// To avoid this, we strictly order the manifest application as (Cluster)Roles, then
-	// (Cluster)RoleBindings, then the rest of the manifest.
-	if err := manifest.Filter(role).Apply(); err != nil {
-		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
-		return err
-	}
-	if err := manifest.Filter(rolebinding).Apply(); err != nil {
-		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
-		return err
-	}
-	if err := manifest.Filter(mf.None(role, rolebinding)).Apply(); err != nil {
-		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
-		return err
-	}
-	ke.Status.Version = version.EventingVersion
-	ke.Status.MarkInstallationReady()
-	return nil
-}
-
-func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
-	logger := logging.FromContext(ctx)
-	logger.Debug("Checking deployments")
-	available := func(d *appsv1.Deployment) bool {
-		for _, c := range d.Status.Conditions {
-			if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
-				return true
-			}
-		}
-		return false
-	}
-	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
-		deployment, err := r.kubeClientSet.AppsV1().Deployments(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
-		if err != nil {
-			ke.Status.MarkEventingNotReady("Deployment check", err.Error())
-			if errors.IsNotFound(err) {
-				return nil
-			}
-			return err
-		}
-		if !available(deployment) {
-			ke.Status.MarkEventingNotReady("Deployment check", "The deployment is not available.")
-			return nil
-		}
-	}
-	ke.Status.MarkEventingReady()
 	return nil
 }
 

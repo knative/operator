@@ -18,19 +18,14 @@ package knativeserving
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	mf "github.com/manifestival/manifestival"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
@@ -44,11 +39,6 @@ import (
 
 const (
 	oldFinalizerName = "delete-knative-serving-manifest"
-)
-
-var (
-	role        mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
-	rolebinding mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 )
 
 // Reconciler implements controller.Reconciler for Knativeserving resources.
@@ -69,8 +59,6 @@ var _ knsreconciler.Finalizer = (*Reconciler)(nil)
 
 // FinalizeKind removes all resources after deletion of a KnativeServing.
 func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1.KnativeServing) pkgreconciler.Event {
-	logger := logging.FromContext(ctx)
-
 	// List all KnativeServings to determine if cluster-scoped resources should be deleted.
 	kss, err := r.operatorClientSet.OperatorV1alpha1().KnativeServings("").List(metav1.ListOptions{})
 	if err != nil {
@@ -91,18 +79,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 		if err != nil {
 			return fmt.Errorf("failed to transform manifest: %w", err)
 		}
-
-		logger.Info("Deleting cluster-scoped resources")
-		var rbac = mf.Any(mf.ByKind("Role"), mf.ByKind("ClusterRole"), mf.ByKind("RoleBinding"), mf.ByKind("ClusterRoleBinding"))
-		if err := manifest.Filter(mf.NoCRDs, mf.None(rbac)).Delete(); err != nil {
-			return fmt.Errorf("failed to remove non-crd/non-rbac resources: %w", err)
-		}
-		// Delete Roles last, as they may be useful for human operators to clean up.
-		if err := manifest.Filter(rbac).Delete(); err != nil {
-			return fmt.Errorf("failed to remove rbac: %w", err)
-		}
-
-		logger.Info("Cluster-scoped resources deleted")
+		return common.RemoveClusterScoped(ctx, &manifest)
 	}
 	return nil
 }
@@ -116,8 +93,12 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 	stages := []func(context.Context, *mf.Manifest, *servingv1alpha1.KnativeServing) error{
 		r.ensureFinalizerRemoval,
-		r.install,
-		r.checkDeployments,
+		func(ctx context.Context, mf *mf.Manifest, ks *servingv1alpha1.KnativeServing) error {
+			return common.Install(ctx, version.ServingVersion, mf, &ks.Status)
+		},
+		func(ctx context.Context, mf *mf.Manifest, ks *servingv1alpha1.KnativeServing) error {
+			return common.CheckDeployments(ctx, r.kubeClientSet, mf, &ks.Status)
+		},
 		r.deleteObsoleteResources,
 	}
 
@@ -146,99 +127,26 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 	if err != nil {
 		return mf.Manifest{}, err
 	}
-	standard := []mf.Transformer{
-		mf.InjectOwner(instance),
-		mf.InjectNamespace(instance.GetNamespace()),
-		common.ConfigMapTransform(instance.Spec.Config, logger),
-		common.ImageTransform(&instance.Spec.Registry, logger),
-		common.ResourceRequirementsTransform(instance.Spec.Resources, logger),
+
+	transforms := common.Transforms(ctx, instance)
+	transforms = append(transforms,
 		ksc.GatewayTransform(instance, logger),
 		ksc.CustomCertsTransform(instance, logger),
 		ksc.HighAvailabilityTransform(instance, logger),
-		ksc.AggregationRuleTransform(r.config.Client),
-	}
-	transforms := append(standard, platform...)
+		ksc.AggregationRuleTransform(r.config.Client))
+	transforms = append(transforms, platform...)
 	return r.config.Transform(transforms...)
-}
-
-// Apply the manifest resources
-func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
-	logger := logging.FromContext(ctx)
-
-	logger.Debug("Installing manifest")
-	// The Operator needs a higher level of permissions if it 'bind's non-existent roles.
-	// To avoid this, we strictly order the manifest application as (Cluster)Roles, then
-	// (Cluster)RoleBindings, then the rest of the manifest.
-	if err := manifest.Filter(role).Apply(); err != nil {
-		instance.Status.MarkInstallFailed(err.Error())
-		return err
-	}
-	if err := manifest.Filter(rolebinding).Apply(); err != nil {
-		instance.Status.MarkInstallFailed(err.Error())
-		return err
-	}
-	if err := manifest.Apply(); err != nil {
-		instance.Status.MarkInstallFailed(err.Error())
-		return err
-	}
-	instance.Status.MarkInstallSucceeded()
-	instance.Status.Version = version.ServingVersion
-	return nil
-}
-
-// Check for all deployments available
-func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
-	logger := logging.FromContext(ctx)
-
-	logger.Debug("Checking deployments")
-	available := func(d *appsv1.Deployment) bool {
-		for _, c := range d.Status.Conditions {
-			if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
-				return true
-			}
-		}
-		return false
-	}
-	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
-		deployment, err := r.kubeClientSet.AppsV1().Deployments(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
-		if err != nil {
-			instance.Status.MarkDeploymentsNotReady()
-			if errors.IsNotFound(err) {
-				return nil
-			}
-			return err
-		}
-		if !available(deployment) {
-			instance.Status.MarkDeploymentsNotReady()
-			return nil
-		}
-	}
-	instance.Status.MarkDeploymentsAvailable()
-	return nil
 }
 
 // ensureFinalizerRemoval ensures that the obsolete "delete-knative-serving-manifest" is removed from the resource.
 func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
-	finalizers := sets.NewString(instance.Finalizers...)
-
-	if !finalizers.Has(oldFinalizerName) {
-		// Nothing to do.
-		return nil
-	}
-
-	// Remove the finalizer
-	finalizers.Delete(oldFinalizerName)
-
-	mergePatch := map[string]interface{}{
-		"metadata": map[string]interface{}{
-			"finalizers":      finalizers.List(),
-			"resourceVersion": instance.ResourceVersion,
-		},
-	}
-
-	patch, err := json.Marshal(mergePatch)
+	patch, err := common.FinalizerRemovalPatch(instance, oldFinalizerName)
 	if err != nil {
-		return fmt.Errorf("failed to construct finalizer patch: %w", err)
+		return fmt.Errorf("failed to generate finalizer patch: %w", err)
+	}
+	if patch == nil {
+		// Nothing to do
+		return nil
 	}
 
 	patcher := r.operatorClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace)

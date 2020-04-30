@@ -366,7 +366,9 @@ func runImageTransformTest(t *testing.T, tt *updateImageSpecTest) {
 	unstructuredImage := util.MakeUnstructured(t, makeImage(t, tt))
 	instance := &v1alpha1.KnativeServing{
 		Spec: v1alpha1.KnativeServingSpec{
-			Registry: tt.registry,
+			CommonSpec: v1alpha1.CommonSpec{
+				Registry: tt.registry,
+			},
 		},
 	}
 	imageTransform := ImageTransform(&instance.Spec.Registry, log)

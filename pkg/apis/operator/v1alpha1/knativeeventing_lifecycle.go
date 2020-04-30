@@ -22,7 +22,7 @@ import (
 )
 
 var eventingCondSet = apis.NewLivingConditionSet(
-	EventingConditionReady,
+	DeploymentsAvailable,
 	InstallSucceeded,
 )
 
@@ -47,32 +47,24 @@ func (es *KnativeEventingStatus) IsReady() bool {
 	return eventingCondSet.Manage(es).IsHappy()
 }
 
-// MarkInstallationReady marks the InstallationSucceeded status as ready
-func (es *KnativeEventingStatus) MarkInstallationReady() {
+func (es *KnativeEventingStatus) MarkInstallFailed(msg string) {
+	eventingCondSet.Manage(es).MarkFalse(
+		InstallSucceeded,
+		"Error",
+		"Install failed with message: %s", msg)
+}
+
+func (es *KnativeEventingStatus) MarkInstallSucceeded() {
 	eventingCondSet.Manage(es).MarkTrue(InstallSucceeded)
 }
 
-// MarkInstallationNotReady marks the InstallationSucceeded status as ready == Unknown
-func (es *KnativeEventingStatus) MarkInstallationNotReady(reason, message string) {
-	eventingCondSet.Manage(es).MarkUnknown(InstallSucceeded, reason, message)
+func (es *KnativeEventingStatus) MarkDeploymentsAvailable() {
+	eventingCondSet.Manage(es).MarkTrue(DeploymentsAvailable)
 }
 
-// MarkInstallationFailed marks the InstallationSucceeded status as failed
-func (es *KnativeEventingStatus) MarkInstallationFailed(reason, message string) {
-	eventingCondSet.Manage(es).MarkFalse(InstallSucceeded, reason, message)
-}
-
-// MarkEventingReady marks the KnativeEventing status as ready
-func (es *KnativeEventingStatus) MarkEventingReady() {
-	eventingCondSet.Manage(es).MarkTrue(EventingConditionReady)
-}
-
-// MarkEventingNotReady marks the KnativeEventing status as ready == Unknown
-func (es *KnativeEventingStatus) MarkEventingNotReady(reason, message string) {
-	eventingCondSet.Manage(es).MarkUnknown(EventingConditionReady, reason, message)
-}
-
-// MarkEventingFailed marks the KnativeEventing status as failed
-func (es *KnativeEventingStatus) MarkEventingFailed(reason, message string) {
-	eventingCondSet.Manage(es).MarkFalse(EventingConditionReady, reason, message)
+func (es *KnativeEventingStatus) MarkDeploymentsNotReady() {
+	eventingCondSet.Manage(es).MarkFalse(
+		DeploymentsAvailable,
+		"NotReady",
+		"Waiting on deployments")
 }

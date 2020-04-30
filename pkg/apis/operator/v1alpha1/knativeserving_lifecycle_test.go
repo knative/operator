@@ -27,6 +27,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+var ignoreAllButTypeAndStatus = cmpopts.IgnoreFields(
+	apis.Condition{},
+	"LastTransitionTime", "Message", "Reason", "Severity")
+
 func TestKnativeServingGroupVersionKind(t *testing.T) {
 	r := &KnativeServing{}
 	want := schema.GroupVersionKind{
@@ -69,22 +73,6 @@ func TestKnativeServingStatusGetCondition(t *testing.T) {
 	}
 	ks.MarkInstallSucceeded()
 	if diff := cmp.Diff(mc, ks.GetCondition(InstallSucceeded), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
-		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
-	}
-}
-
-func TestKnativeServingInstallFailed(t *testing.T) {
-	reason := "Error"
-	message := "Waiting on deployments"
-	ks := &KnativeServingStatus{}
-	mc := &apis.Condition{
-		Type:    EventingConditionReady,
-		Status:  corev1.ConditionFalse,
-		Reason:  reason,
-		Message: "Install failed with message: " + message,
-	}
-	ks.MarkInstallFailed(message)
-	if diff := cmp.Diff(mc, ks.GetCondition(EventingConditionReady), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
 		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
 	}
 }

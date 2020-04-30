@@ -118,13 +118,15 @@ func getDeploymentStatus(d *v1.Deployment) corev1.ConditionStatus {
 
 func getTestKSOperatorCRSpec() v1alpha1.KnativeServingSpec {
 	return v1alpha1.KnativeServingSpec{
-		Config: map[string]map[string]string{
-			DefaultsConfigKey: {
-				"revision-timeout-seconds": "200",
-			},
-			LoggingConfigKey: {
-				"loglevel.controller": "debug",
-				"loglevel.autoscaler": "debug",
+		CommonSpec: v1alpha1.CommonSpec{
+			Config: map[string]map[string]string{
+				DefaultsConfigKey: {
+					"revision-timeout-seconds": "200",
+				},
+				LoggingConfigKey: {
+					"loglevel.controller": "debug",
+					"loglevel.autoscaler": "debug",
+				},
 			},
 		},
 	}

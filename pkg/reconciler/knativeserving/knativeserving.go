@@ -112,6 +112,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.KnativeServing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
 	ks.Status.InitializeConditions()
+	ks.Status.ObservedGeneration = ks.Generation
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 	stages := []func(context.Context, *mf.Manifest, *servingv1alpha1.KnativeServing) error{

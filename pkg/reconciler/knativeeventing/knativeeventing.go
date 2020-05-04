@@ -112,6 +112,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *eventingv1alpha
 func (r *Reconciler) ReconcileKind(ctx context.Context, ke *eventingv1alpha1.KnativeEventing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
 	ke.Status.InitializeConditions()
+	ke.Status.ObservedGeneration = ke.Generation
 
 	logger.Infow("Reconciling KnativeEventing", "status", ke.Status)
 	stages := []func(context.Context, *mf.Manifest, *eventingv1alpha1.KnativeEventing) error{

@@ -83,7 +83,7 @@ func (is *KnativeServingStatus) MarkDependenciesInstalled() {
 	conditions.Manage(is).MarkTrue(DependenciesInstalled)
 }
 
-// MarkDependencyInstalling marks the MarkDependencyInstalling status as false with the
+// MarkDependencyInstalling marks the DependenciesInstalled status as false with the
 // given message.
 func (is *KnativeServingStatus) MarkDependencyInstalling(msg string) {
 	conditions.Manage(is).MarkFalse(
@@ -92,7 +92,7 @@ func (is *KnativeServingStatus) MarkDependencyInstalling(msg string) {
 		"Dependency installing: %s", msg)
 }
 
-// MarkDependencyMissing marks the MarkDependencyInstalling status as false with the
+// MarkDependencyMissing marks the DependenciesInstalled status as false with the
 // given message.
 func (is *KnativeServingStatus) MarkDependencyMissing(msg string) {
 	conditions.Manage(is).MarkFalse(

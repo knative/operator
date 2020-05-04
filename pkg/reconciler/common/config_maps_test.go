@@ -135,7 +135,7 @@ func TestInvalidConfigMap(t *testing.T) {
 	// Break the ConfigMap
 	unstructured.SetNestedField(ucm.Object, "not-a-map", "data")
 	config := map[string]map[string]string{
-		"name": map[string]string{"k": "v"},
+		"name": {"k": "v"},
 	}
 	configMapTransform := ConfigMapTransform(config, log)
 	err := configMapTransform(&ucm)

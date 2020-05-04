@@ -22,9 +22,6 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 const (
 	DependenciesInstalled apis.ConditionType = "DependenciesInstalled"
 	InstallSucceeded      apis.ConditionType = "InstallSucceeded"
@@ -90,10 +87,6 @@ type ResourceRequirementsOverride struct {
 // KnativeServingSpec defines the desired state of KnativeServing
 // +k8s:openapi-gen=true
 type KnativeServingSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
-
 	// A means to override the corresponding entries in the upstream configmaps
 	// +optional
 	Config map[string]map[string]string `json:"config,omitempty"`
@@ -125,11 +118,6 @@ type KnativeServingSpec struct {
 // +k8s:openapi-gen=true
 type KnativeServingStatus struct {
 	duckv1.Status `json:",inline"`
-
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags:
-	// https://book.kubebuilder.io/beyond_basics/generating_crd.html
 
 	// The version of the installed release
 	// +optional

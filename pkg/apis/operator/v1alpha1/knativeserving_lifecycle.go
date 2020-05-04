@@ -31,41 +31,22 @@ func (ks *KnativeServing) GroupVersionKind() schema.GroupVersionKind {
 	return SchemeGroupVersion.WithKind(Kind)
 }
 
-func (is *KnativeServingStatus) IsReady() bool {
-	return conditions.Manage(is).IsHappy()
-}
-
-func (is *KnativeServingStatus) IsInstalled() bool {
-	return is.GetCondition(InstallSucceeded).IsTrue()
-}
-
-func (is *KnativeServingStatus) IsAvailable() bool {
-	return is.GetCondition(DeploymentsAvailable).IsTrue()
-}
-
-func (is *KnativeServingStatus) IsDeploying() bool {
-	return is.IsInstalled() && !is.IsAvailable()
-}
-
-func (is *KnativeServingStatus) IsFullySupported() bool {
-	return is.GetCondition(DependenciesInstalled).IsTrue()
-}
-
+// GetCondition returns the current condition of a given condition type
 func (is *KnativeServingStatus) GetCondition(t apis.ConditionType) *apis.Condition {
 	return conditions.Manage(is).GetCondition(t)
 }
 
+// InitializeConditions initializes conditions of an KnativeServingStatus
 func (is *KnativeServingStatus) InitializeConditions() {
 	conditions.Manage(is).InitializeConditions()
 }
 
-func (is *KnativeServingStatus) MarkInstallFailed(msg string) {
-	conditions.Manage(is).MarkFalse(
-		InstallSucceeded,
-		"Error",
-		"Install failed with message: %s", msg)
+// IsReady looks at the conditions returns true if they are all true.
+func (is *KnativeServingStatus) IsReady() bool {
+	return conditions.Manage(is).IsHappy()
 }
 
+// MarkInstallSucceeded marks the InstallationSucceeded status as true.
 func (is *KnativeServingStatus) MarkInstallSucceeded() {
 	conditions.Manage(is).MarkTrue(InstallSucceeded)
 	if is.GetCondition(DependenciesInstalled).IsUnknown() {
@@ -74,10 +55,22 @@ func (is *KnativeServingStatus) MarkInstallSucceeded() {
 	}
 }
 
+// MarkInstallFailed marks the InstallationSucceeded status as false with the given
+// message.
+func (is *KnativeServingStatus) MarkInstallFailed(msg string) {
+	conditions.Manage(is).MarkFalse(
+		InstallSucceeded,
+		"Error",
+		"Install failed with message: %s", msg)
+}
+
+// MarkDeploymentsAvailable marks the DeploymentsAvailable status as true.
 func (is *KnativeServingStatus) MarkDeploymentsAvailable() {
 	conditions.Manage(is).MarkTrue(DeploymentsAvailable)
 }
 
+// MarkDeploymentsNotReady marks the DeploymentsAvailable status as false and calls out
+// it's waiting for deployments.
 func (is *KnativeServingStatus) MarkDeploymentsNotReady() {
 	conditions.Manage(is).MarkFalse(
 		DeploymentsAvailable,
@@ -85,10 +78,13 @@ func (is *KnativeServingStatus) MarkDeploymentsNotReady() {
 		"Waiting on deployments")
 }
 
+// MarkDependenciesInstalled marks the DependenciesInstalled status as true.
 func (is *KnativeServingStatus) MarkDependenciesInstalled() {
 	conditions.Manage(is).MarkTrue(DependenciesInstalled)
 }
 
+// MarkDependencyInstalling marks the MarkDependencyInstalling status as false with the
+// given message.
 func (is *KnativeServingStatus) MarkDependencyInstalling(msg string) {
 	conditions.Manage(is).MarkFalse(
 		DependenciesInstalled,
@@ -96,6 +92,8 @@ func (is *KnativeServingStatus) MarkDependencyInstalling(msg string) {
 		"Dependency installing: %s", msg)
 }
 
+// MarkDependencyMissing marks the MarkDependencyInstalling status as false with the
+// given message.
 func (is *KnativeServingStatus) MarkDependencyMissing(msg string) {
 	conditions.Manage(is).MarkFalse(
 		DependenciesInstalled,

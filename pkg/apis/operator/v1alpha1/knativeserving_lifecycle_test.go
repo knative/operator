@@ -18,13 +18,8 @@ package v1alpha1
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-	"knative.dev/pkg/apis"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
-
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	apistest "knative.dev/pkg/apis/testing"
 )
 
 func TestKnativeServingGroupVersionKind(t *testing.T) {
@@ -39,129 +34,104 @@ func TestKnativeServingGroupVersionKind(t *testing.T) {
 	}
 }
 
-func TestAssumeDepsInstalled(t *testing.T) {
+func TestKnativeServingHappyPath(t *testing.T) {
 	ks := &KnativeServingStatus{}
 	ks.InitializeConditions()
-	assertEqual(t, ks.GetCondition(DependenciesInstalled).IsUnknown(), true)
-	assertEqual(t, ks.GetCondition(DependenciesInstalled).IsTrue(), false)
+
+	apistest.CheckConditionOngoing(ks, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
+	apistest.CheckConditionOngoing(ks, InstallSucceeded, t)
+
+	// Install succeeds.
 	ks.MarkInstallSucceeded()
-	assertEqual(t, ks.GetCondition(DependenciesInstalled).IsUnknown(), false)
-	assertEqual(t, ks.GetCondition(DependenciesInstalled).IsTrue(), true)
-	assertEqual(t, ks.IsInstalled(), true)
-	assertEqual(t, ks.IsFullySupported(), true)
-}
+	// Dependencies are assumed successful too.
+	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
 
-func assertEqual(t *testing.T, actual, expected interface{}) {
-	if actual == expected {
-		return
-	}
-	t.Fatalf("Expected: %v\nActual: %v", expected, actual)
-}
-
-func TestKnativeServingStatusGetCondition(t *testing.T) {
-	ks := &KnativeServingStatus{}
-	if a := ks.GetCondition(InstallSucceeded); a != nil {
-		t.Errorf("empty ServingStatus returned %v when expected nil", a)
-	}
-	mc := &apis.Condition{
-		Type:   InstallSucceeded,
-		Status: corev1.ConditionTrue,
-	}
-	ks.MarkInstallSucceeded()
-	if diff := cmp.Diff(mc, ks.GetCondition(InstallSucceeded), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
-		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
-	}
-}
-
-func TestKnativeServingInstallFailed(t *testing.T) {
-	reason := "Error"
-	message := "Waiting on deployments"
-	ks := &KnativeServingStatus{}
-	mc := &apis.Condition{
-		Type:    EventingConditionReady,
-		Status:  corev1.ConditionFalse,
-		Reason:  reason,
-		Message: "Install failed with message: " + message,
-	}
-	ks.MarkInstallFailed(message)
-	if diff := cmp.Diff(mc, ks.GetCondition(EventingConditionReady), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
-		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
-	}
-}
-
-func TestKnativeServingDeploymentNotReady(t *testing.T) {
-	reason := "NotReady"
-	message := "Waiting on deployments"
-	ks := &KnativeServingStatus{}
-	mc := &apis.Condition{
-		Type:    DeploymentsAvailable,
-		Status:  corev1.ConditionFalse,
-		Reason:  reason,
-		Message: message,
-	}
+	// Deployments are not available at first.
 	ks.MarkDeploymentsNotReady()
-	if diff := cmp.Diff(mc, ks.GetCondition(DeploymentsAvailable), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
-		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
+	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
+	apistest.CheckConditionFailed(ks, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	if ready := ks.IsReady(); ready {
+		t.Errorf("ks.IsReady() = %v, want false", ready)
 	}
-}
 
-func TestKnativeServingDeploymentsAvailable(t *testing.T) {
-	ks := &KnativeServingStatus{}
-	mc := &apis.Condition{
-		Type:   DeploymentsAvailable,
-		Status: corev1.ConditionTrue,
-	}
+	// Deployments become ready and we're good.
 	ks.MarkDeploymentsAvailable()
-	if diff := cmp.Diff(mc, ks.GetCondition(DeploymentsAvailable), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
-		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
+	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
+	apistest.CheckConditionSucceeded(ks, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	if ready := ks.IsReady(); !ready {
+		t.Errorf("ks.IsReady() = %v, want true", ready)
 	}
 }
 
-func TestKnativeServingDependenciesInstalled(t *testing.T) {
+func TestKnativeServingErrorPath(t *testing.T) {
 	ks := &KnativeServingStatus{}
-	mc := &apis.Condition{
-		Type:   DependenciesInstalled,
-		Status: corev1.ConditionTrue,
+	ks.InitializeConditions()
+
+	apistest.CheckConditionOngoing(ks, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
+	apistest.CheckConditionOngoing(ks, InstallSucceeded, t)
+
+	// Install fails.
+	ks.MarkInstallFailed("test")
+	apistest.CheckConditionOngoing(ks, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
+	apistest.CheckConditionFailed(ks, InstallSucceeded, t)
+
+	// Dependencies are installing.
+	ks.MarkDependencyInstalling("testing")
+	apistest.CheckConditionFailed(ks, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
+	apistest.CheckConditionFailed(ks, InstallSucceeded, t)
+
+	// Install now succeeds.
+	ks.MarkInstallSucceeded()
+	apistest.CheckConditionFailed(ks, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	if ready := ks.IsReady(); ready {
+		t.Errorf("ks.IsReady() = %v, want false", ready)
 	}
+
+	// Deployments become ready
+	ks.MarkDeploymentsAvailable()
+	apistest.CheckConditionFailed(ks, DependenciesInstalled, t)
+	apistest.CheckConditionSucceeded(ks, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	if ready := ks.IsReady(); ready {
+		t.Errorf("ks.IsReady() = %v, want false", ready)
+	}
+
+	// Finally, dependencies become available.
 	ks.MarkDependenciesInstalled()
-	if diff := cmp.Diff(mc, ks.GetCondition(DependenciesInstalled), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
-		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
+	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
+	apistest.CheckConditionSucceeded(ks, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	if ready := ks.IsReady(); !ready {
+		t.Errorf("ks.IsReady() = %v, want true", ready)
 	}
 }
 
-func TestKnativeServingInitializeConditions(t *testing.T) {
-	tests := []struct {
-		name string
-		ke   *KnativeServingStatus
-		want *KnativeServingStatus
-	}{{
-		name: "empty",
-		ke:   &KnativeServingStatus{},
-		want: &KnativeServingStatus{
-			Status: duckv1.Status{
-				Conditions: []apis.Condition{{
-					Type:   DependenciesInstalled,
-					Status: corev1.ConditionUnknown,
-				}, {
-					Type:   DeploymentsAvailable,
-					Status: corev1.ConditionUnknown,
-				}, {
-					Type:   InstallSucceeded,
-					Status: corev1.ConditionUnknown,
-				}, {
-					Type:   "Ready",
-					Status: corev1.ConditionUnknown,
-				}},
-			},
-		},
-	}}
+func TestKnativeServingExternalDependency(t *testing.T) {
+	ks := &KnativeServingStatus{}
+	ks.InitializeConditions()
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			test.ke.InitializeConditions()
-			if diff := cmp.Diff(test.want, test.ke, ignoreAllButTypeAndStatus); diff != "" {
-				t.Errorf("unexpected conditions (-want, +got) = %v", diff)
-			}
-		})
-	}
+	// External marks dependency as failed.
+	ks.MarkDependencyMissing("test")
+
+	// Install succeeds.
+	ks.MarkInstallSucceeded()
+	apistest.CheckConditionFailed(ks, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+
+	// Dependencies are now ready.
+	ks.MarkDependenciesInstalled()
+	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
 }

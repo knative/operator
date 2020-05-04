@@ -72,11 +72,16 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		logger.Fatalw("Error creating the Manifest for knative-serving", zap.Error(err))
 	}
 
+	manifestWithPolicy := &common.ManifestWithPolicy {
+		GlobalPredicate: mf.All(),
+	}
+
 	c := &Reconciler{
-		kubeClientSet:     kubeClient,
-		operatorClientSet: operatorclient.Get(ctx),
-		platform:          common.GetPlatforms(ctx),
-		config:            config,
+		kubeClientSet:      kubeClient,
+		operatorClientSet:  operatorclient.Get(ctx),
+		platform:           common.GetPlatforms(ctx),
+		config:             config,
+		manifestWithPolicy: manifestWithPolicy,
 	}
 	impl := knsreconciler.NewImpl(ctx, c)
 

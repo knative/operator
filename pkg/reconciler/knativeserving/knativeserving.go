@@ -61,6 +61,8 @@ type Reconciler struct {
 	config mf.Manifest
 	// Platform-specific behavior to affect the transform
 	platform common.Platforms
+	// manifestWithPolicy defines the global predicate for the manifest
+	manifestWithPolicy *common.ManifestWithPolicy
 }
 
 // Check that our Reconciler implements controller.Reconciler
@@ -152,7 +154,7 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 		common.ConfigMapTransform(instance.Spec.Config, logger),
 		common.ImageTransform(&instance.Spec.Registry, logger),
 		common.ResourceRequirementsTransform(instance.Spec.Resources, logger),
-		ksc.GatewayTransform(instance, logger),
+		ksc.GatewayTransform(instance, logger, r.manifestWithPolicy),
 		ksc.CustomCertsTransform(instance, logger),
 		ksc.HighAvailabilityTransform(instance, logger),
 		ksc.AggregationRuleTransform(r.config.Client),
@@ -177,7 +179,7 @@ func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instanc
 		instance.Status.MarkInstallFailed(err.Error())
 		return err
 	}
-	if err := manifest.Apply(); err != nil {
+	if err := manifest.Filter(r.manifestWithPolicy.GlobalPredicate).Apply(); err != nil {
 		instance.Status.MarkInstallFailed(err.Error())
 		return err
 	}

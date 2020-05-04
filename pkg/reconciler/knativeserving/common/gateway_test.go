@@ -16,6 +16,8 @@ limitations under the License.
 package common
 
 import (
+	mf "github.com/manifestival/manifestival"
+	"knative.dev/operator/pkg/reconciler/common"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -39,6 +41,7 @@ func TestGatewayTransform(t *testing.T) {
 		knativeIngressGateway servingv1alpha1.IstioGatewayOverride
 		clusterLocalGateway   servingv1alpha1.IstioGatewayOverride
 		expected              map[string]string
+		expectedPolicy        mf.Predicate
 	}{{
 		name:        "UpdatesKnativeIngressGateway",
 		gatewayName: "knative-ingress-gateway",
@@ -107,7 +110,10 @@ func TestGatewayTransform(t *testing.T) {
 					ClusterLocalGateway:   tt.clusterLocalGateway,
 				},
 			}
-			gatewayTransform := GatewayTransform(instance, log)
+			manifestWithPolicy := &common.ManifestWithPolicy {
+				GlobalPredicate: mf.All(),
+			}
+			gatewayTransform := GatewayTransform(instance, log, manifestWithPolicy)
 			gatewayTransform(&unstructedGateway)
 
 			var gateway = &v1alpha3.Gateway{}

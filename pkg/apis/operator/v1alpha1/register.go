@@ -32,8 +32,10 @@ const (
 	// The Version of the schema. This is used for CRDs.
 	SchemaVersion = "v1alpha1"
 
-	// The Kind of the custom resource. This is used for CRDs.
-	Kind = "KnativeServing"
+	// KindKnativeEventing is the Kind of Knative Eventing in a GVK context.
+	KindKnativeEventing = "KnativeEventing"
+	// KindKnativeServing is the Kind of Knative Serving in a GVK context.
+	KindKnativeServing = "KnativeServing"
 )
 
 // Resource takes an unqualified resource and returns a Group qualified GroupResource

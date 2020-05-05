@@ -35,103 +35,103 @@ func TestKnativeEventingGroupVersionKind(t *testing.T) {
 }
 
 func TestKnativeEventingHappyPath(t *testing.T) {
-	ks := &KnativeEventingStatus{}
-	ks.InitializeConditions()
+	ke := &KnativeEventingStatus{}
+	ke.InitializeConditions()
 
-	apistest.CheckConditionOngoing(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionOngoing(ks, InstallSucceeded, t)
+	apistest.CheckConditionOngoing(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionOngoing(ke, InstallSucceeded, t)
 
 	// Install succeeds.
-	ks.MarkInstallSucceeded()
+	ke.MarkInstallSucceeded()
 	// Dependencies are assumed successful too.
-	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	apistest.CheckConditionSucceeded(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
 
 	// Deployments are not available at first.
-	ks.MarkDeploymentsNotReady()
-	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
-	apistest.CheckConditionFailed(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
-	if ready := ks.IsReady(); ready {
-		t.Errorf("ks.IsReady() = %v, want false", ready)
+	ke.MarkDeploymentsNotReady()
+	apistest.CheckConditionSucceeded(ke, DependenciesInstalled, t)
+	apistest.CheckConditionFailed(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
+	if ready := ke.IsReady(); ready {
+		t.Errorf("ke.IsReady() = %v, want false", ready)
 	}
 
 	// Deployments become ready and we're good.
-	ks.MarkDeploymentsAvailable()
-	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
-	apistest.CheckConditionSucceeded(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
-	if ready := ks.IsReady(); !ready {
-		t.Errorf("ks.IsReady() = %v, want true", ready)
+	ke.MarkDeploymentsAvailable()
+	apistest.CheckConditionSucceeded(ke, DependenciesInstalled, t)
+	apistest.CheckConditionSucceeded(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
+	if ready := ke.IsReady(); !ready {
+		t.Errorf("ke.IsReady() = %v, want true", ready)
 	}
 }
 
 func TestKnativeEventingErrorPath(t *testing.T) {
-	ks := &KnativeEventingStatus{}
-	ks.InitializeConditions()
+	ke := &KnativeEventingStatus{}
+	ke.InitializeConditions()
 
-	apistest.CheckConditionOngoing(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionOngoing(ks, InstallSucceeded, t)
+	apistest.CheckConditionOngoing(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionOngoing(ke, InstallSucceeded, t)
 
 	// Install fails.
-	ks.MarkInstallFailed("test")
-	apistest.CheckConditionOngoing(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionFailed(ks, InstallSucceeded, t)
+	ke.MarkInstallFailed("test")
+	apistest.CheckConditionOngoing(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionFailed(ke, InstallSucceeded, t)
 
 	// Dependencies are installing.
-	ks.MarkDependencyInstalling("testing")
-	apistest.CheckConditionFailed(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionFailed(ks, InstallSucceeded, t)
+	ke.MarkDependencyInstalling("testing")
+	apistest.CheckConditionFailed(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionFailed(ke, InstallSucceeded, t)
 
 	// Install now succeeds.
-	ks.MarkInstallSucceeded()
-	apistest.CheckConditionFailed(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
-	if ready := ks.IsReady(); ready {
-		t.Errorf("ks.IsReady() = %v, want false", ready)
+	ke.MarkInstallSucceeded()
+	apistest.CheckConditionFailed(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
+	if ready := ke.IsReady(); ready {
+		t.Errorf("ke.IsReady() = %v, want false", ready)
 	}
 
 	// Deployments become ready
-	ks.MarkDeploymentsAvailable()
-	apistest.CheckConditionFailed(ks, DependenciesInstalled, t)
-	apistest.CheckConditionSucceeded(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
-	if ready := ks.IsReady(); ready {
-		t.Errorf("ks.IsReady() = %v, want false", ready)
+	ke.MarkDeploymentsAvailable()
+	apistest.CheckConditionFailed(ke, DependenciesInstalled, t)
+	apistest.CheckConditionSucceeded(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
+	if ready := ke.IsReady(); ready {
+		t.Errorf("ke.IsReady() = %v, want false", ready)
 	}
 
 	// Finally, dependencies become available.
-	ks.MarkDependenciesInstalled()
-	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
-	apistest.CheckConditionSucceeded(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
-	if ready := ks.IsReady(); !ready {
-		t.Errorf("ks.IsReady() = %v, want true", ready)
+	ke.MarkDependenciesInstalled()
+	apistest.CheckConditionSucceeded(ke, DependenciesInstalled, t)
+	apistest.CheckConditionSucceeded(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
+	if ready := ke.IsReady(); !ready {
+		t.Errorf("ke.IsReady() = %v, want true", ready)
 	}
 }
 
 func TestKnativeEventingExternalDependency(t *testing.T) {
-	ks := &KnativeEventingStatus{}
-	ks.InitializeConditions()
+	ke := &KnativeEventingStatus{}
+	ke.InitializeConditions()
 
 	// External marks dependency as failed.
-	ks.MarkDependencyMissing("test")
+	ke.MarkDependencyMissing("test")
 
 	// Install succeeds.
-	ks.MarkInstallSucceeded()
-	apistest.CheckConditionFailed(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	ke.MarkInstallSucceeded()
+	apistest.CheckConditionFailed(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
 
 	// Dependencies are now ready.
-	ks.MarkDependenciesInstalled()
-	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	ke.MarkDependenciesInstalled()
+	apistest.CheckConditionSucceeded(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
 }

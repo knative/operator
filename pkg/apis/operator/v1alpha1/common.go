@@ -16,7 +16,10 @@ limitations under the License.
 
 package v1alpha1
 
-import "knative.dev/pkg/apis"
+import (
+	corev1 "k8s.io/api/core/v1"
+	"knative.dev/pkg/apis"
+)
 
 const (
 	// DependenciesInstalled is a Condition indicating that potential dependencies have
@@ -29,3 +32,50 @@ const (
 	// the respective component have come up successfully.
 	DeploymentsAvailable apis.ConditionType = "DeploymentsAvailable"
 )
+
+// CommonSpec unifies common fields and functions on the Spec.
+type CommonSpec struct {
+	// A means to override the corresponding entries in the upstream configmaps
+	// +optional
+	Config map[string]map[string]string `json:"config,omitempty"`
+
+	// A means to override the corresponding deployment images in the upstream.
+	// If no registry is provided, the knative release images will be used.
+	// +optional
+	Registry Registry `json:"registry,omitempty"`
+
+	// Override containers' resource requirements
+	// +optional
+	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+}
+
+// Registry defines image overrides of knative images.
+// This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+// The default value is used as a default format to override for all knative deployments.
+// The override values are specific to each knative deployment.
+// +k8s:openapi-gen=true
+type Registry struct {
+	// The default image reference template to use for all knative images.
+	// It takes the form of example-registry.io/custom/path/${NAME}:custom-tag
+	// ${NAME} will be replaced by the deployment container name, or caching.internal.knative.dev/v1alpha1/Image name.
+	// +optional
+	Default string `json:"default,omitempty"`
+
+	// A map of a container name or image name to the full image location of the individual knative image.
+	// +optional
+	Override map[string]string `json:"override,omitempty"`
+
+	// A list of secrets to be used when pulling the knative images. The secret must be created in the
+	// same namespace as the knative-serving deployments, and not the namespace of this resource.
+	// +optional
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
+}
+
+// ResourceRequirementsOverride enables the user to override any container's
+// resource requests/limits specified in the embedded manifest
+type ResourceRequirementsOverride struct {
+	// The container name
+	Container string `json:"container"`
+	// The desired ResourceRequirements
+	corev1.ResourceRequirements
+}

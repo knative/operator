@@ -37,18 +37,7 @@ type KnativeEventing struct {
 // KnativeEventingSpec defines the desired state of KnativeEventing
 // +k8s:openapi-gen=true
 type KnativeEventingSpec struct {
-	// A means to override the corresponding entries in the upstream configmaps
-	// +optional
-	Config map[string]map[string]string `json:"config,omitempty"`
-
-	// A means to override the corresponding deployment images in the upstream.
-	// If no registry is provided, the knative release images will be used.
-	// +optional
-	Registry Registry `json:"registry,omitempty"`
-
-	// Override containers' resource requirements
-	// +optional
-	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+	CommonSpec `json:",inline"`
 
 	// The default broker type to use for the brokers Knative creates.
 	// If no value is provided, ChannelBasedBroker will be used.

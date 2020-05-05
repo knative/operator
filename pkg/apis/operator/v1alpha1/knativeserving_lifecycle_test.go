@@ -32,7 +32,7 @@ func TestKnativeServingGroupVersionKind(t *testing.T) {
 	want := schema.GroupVersionKind{
 		Group:   GroupName,
 		Version: SchemaVersion,
-		Kind:    Kind,
+		Kind:    KindKnativeServing,
 	}
 	if got := r.GroupVersionKind(); got != want {
 		t.Errorf("got: %v, want: %v", got, want)

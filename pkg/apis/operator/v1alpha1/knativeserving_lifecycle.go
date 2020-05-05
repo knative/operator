@@ -20,10 +20,14 @@ import (
 	"knative.dev/pkg/apis"
 )
 
-var servingCondSet = apis.NewLivingConditionSet(
-	DependenciesInstalled,
-	DeploymentsAvailable,
-	InstallSucceeded,
+var (
+	_ KComponentStatus = (*KnativeServingStatus)(nil)
+
+	servingCondSet = apis.NewLivingConditionSet(
+		DependenciesInstalled,
+		DeploymentsAvailable,
+		InstallSucceeded,
+	)
 )
 
 // GroupVersionKind returns SchemeGroupVersion of a KnativeServing
@@ -99,4 +103,14 @@ func (is *KnativeServingStatus) MarkDependencyMissing(msg string) {
 		DependenciesInstalled,
 		"Error",
 		"Dependency missing: %s", msg)
+}
+
+// GetVersion gets the currently installed version of the component.
+func (is *KnativeServingStatus) GetVersion() string {
+	return is.Version
+}
+
+// SetVersion sets the currently installed version of the component.
+func (is *KnativeServingStatus) SetVersion(version string) {
+	is.Version = version
 }

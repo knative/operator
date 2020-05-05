@@ -49,9 +49,6 @@ type CommonSpec struct {
 	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
 }
 
-// Config represents a map of upstream config map data.
-type Config map[string]map[string]string
-
 // Registry defines image overrides of knative images.
 // This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
 // The default value is used as a default format to override for all knative deployments.

@@ -18,19 +18,9 @@ package v1alpha1
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"knative.dev/pkg/apis"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
 	apistest "knative.dev/pkg/apis/testing"
 )
-
-var ignoreAllButTypeAndStatus = cmpopts.IgnoreFields(
-	apis.Condition{},
-	"LastTransitionTime", "Message", "Reason", "Severity")
 
 func TestKnativeEventingGroupVersionKind(t *testing.T) {
 	r := &KnativeEventing{}
@@ -44,226 +34,104 @@ func TestKnativeEventingGroupVersionKind(t *testing.T) {
 	}
 }
 
-func TestKnativeEventingStatusGetCondition(t *testing.T) {
-	ke := &KnativeEventingStatus{}
-	if a := ke.GetCondition(InstallSucceeded); a != nil {
-		t.Errorf("empty EventingStatus returned %v when expected nil", a)
-	}
-	mc := &apis.Condition{
-		Type:   InstallSucceeded,
-		Status: corev1.ConditionTrue,
-	}
-	ke.MarkInstallationReady()
-	if diff := cmp.Diff(mc, ke.GetCondition(InstallSucceeded), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
-		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
-	}
-}
-
-func TestKnativeEventingStatusEventingInstalled(t *testing.T) {
-	ke := &KnativeEventingStatus{}
-	mc := &apis.Condition{
-		Type:   InstallSucceeded,
-		Status: corev1.ConditionTrue,
-	}
-	ke.MarkInstallationReady()
-	if diff := cmp.Diff(mc, ke.GetCondition(InstallSucceeded), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
-		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
-	}
-}
-
-func TestKnativeEventingStatusEventingFailed(t *testing.T) {
-	reason := "NotReady"
-	message := "Waiting on deployments"
-	ke := &KnativeEventingStatus{}
-	mc := &apis.Condition{
-		Type:    EventingConditionReady,
-		Status:  corev1.ConditionFalse,
-		Reason:  reason,
-		Message: message,
-	}
-	ke.MarkEventingFailed(reason, message)
-	if diff := cmp.Diff(mc, ke.GetCondition(EventingConditionReady), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
-		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
-	}
-}
-
-func TestKnativeEventingStatusNotReady(t *testing.T) {
-	reason := "NotReady"
-	message := "Waiting on deployments"
-	ke := &KnativeEventingStatus{}
-	mc := &apis.Condition{
-		Type:    EventingConditionReady,
-		Status:  corev1.ConditionUnknown,
-		Reason:  reason,
-		Message: message,
-	}
-	ke.MarkEventingNotReady(reason, message)
-	if diff := cmp.Diff(mc, ke.GetCondition(EventingConditionReady), cmpopts.IgnoreFields(apis.Condition{}, "LastTransitionTime")); diff != "" {
-		t.Errorf("GetCondition refs diff (-want +got): %v", diff)
-	}
-}
-
-func TestKnativeEventingStatusReady(t *testing.T) {
-	ke := &KnativeEventingStatus{}
-	ke.InitializeConditions()
-	apistest.CheckConditionOngoing(ke, EventingConditionReady, t)
-
-	ke.MarkInstallationReady()
-	ke.MarkEventingReady()
-	apistest.CheckConditionSucceeded(ke, EventingConditionReady, t)
-}
-
-func TestKnativeEventingStatusIsReady(t *testing.T) {
-	ke := &KnativeEventingStatus{}
-	ke.MarkInstallationReady()
-	ke.MarkEventingReady()
-	if diff := cmp.Diff(true, ke.IsReady()); diff != "" {
-		t.Errorf("IsReady refs diff (-want +got): %v", diff)
-	}
-}
-
-func TestKnativeEventingSuccesssFlow(t *testing.T) {
+func TestKnativeEventingHappyPath(t *testing.T) {
 	ke := &KnativeEventingStatus{}
 	ke.InitializeConditions()
 
-	apistest.CheckConditionOngoing(ke, EventingConditionReady, t)
-
-	// Installation succeeds
-	ke.MarkInstallationReady()
-	ke.MarkEventingReady()
-	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
-	apistest.CheckConditionSucceeded(ke, EventingConditionReady, t)
-}
-
-func TestKnativeEventingFailureFlow(t *testing.T) {
-	ke := &KnativeEventingStatus{}
-	ke.InitializeConditions()
-
-	apistest.CheckConditionOngoing(ke, EventingConditionReady, t)
-
-	// Installation not ready
-	ke.MarkInstallationNotReady("slow", "slow cpu.")
+	apistest.CheckConditionOngoing(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
 	apistest.CheckConditionOngoing(ke, InstallSucceeded, t)
-	apistest.CheckConditionOngoing(ke, EventingConditionReady, t)
 
-	// Installation failed
-	ke.MarkInstallationFailed("failed", "no resources.")
-	ke.MarkEventingFailed("failed", "installation failed.")
-	apistest.CheckConditionFailed(ke, InstallSucceeded, t)
-	apistest.CheckConditionFailed(ke, EventingConditionReady, t)
+	// Install succeeds.
+	ke.MarkInstallSucceeded()
+	// Dependencies are assumed successful too.
+	apistest.CheckConditionSucceeded(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
+
+	// Deployments are not available at first.
+	ke.MarkDeploymentsNotReady()
+	apistest.CheckConditionSucceeded(ke, DependenciesInstalled, t)
+	apistest.CheckConditionFailed(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
+	if ready := ke.IsReady(); ready {
+		t.Errorf("ke.IsReady() = %v, want false", ready)
+	}
+
+	// Deployments become ready and we're good.
+	ke.MarkDeploymentsAvailable()
+	apistest.CheckConditionSucceeded(ke, DependenciesInstalled, t)
+	apistest.CheckConditionSucceeded(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
+	if ready := ke.IsReady(); !ready {
+		t.Errorf("ke.IsReady() = %v, want true", ready)
+	}
 }
 
-func TestKnativeEventingInitializeConditions(t *testing.T) {
-	tests := []struct {
-		name string
-		ke   *KnativeEventingStatus
-		want *KnativeEventingStatus
-	}{{
-		name: "empty",
-		ke:   &KnativeEventingStatus{},
-		want: &KnativeEventingStatus{
-			Status: duckv1.Status{
-				Conditions: []apis.Condition{{
-					Type:   InstallSucceeded,
-					Status: corev1.ConditionUnknown,
-				}, {
-					Type:   EventingConditionReady,
-					Status: corev1.ConditionUnknown,
-				}},
-			},
-		},
-	}, {
-		name: "eventingConditionNotReady",
-		ke: &KnativeEventingStatus{
-			Status: duckv1.Status{
-				Conditions: []apis.Condition{{
-					Type:   EventingConditionReady,
-					Status: corev1.ConditionFalse,
-				}},
-			},
-		},
-		want: &KnativeEventingStatus{
-			Status: duckv1.Status{
-				Conditions: []apis.Condition{{
-					Type:   InstallSucceeded,
-					Status: corev1.ConditionUnknown,
-				}, {
-					Type:   EventingConditionReady,
-					Status: corev1.ConditionFalse,
-				}},
-			},
-		},
-	}, {
-		name: "eventingConditionReady",
-		ke: &KnativeEventingStatus{
-			Status: duckv1.Status{
-				Conditions: []apis.Condition{{
-					Type:   EventingConditionReady,
-					Status: corev1.ConditionTrue,
-				}},
-			},
-		},
-		want: &KnativeEventingStatus{
-			Status: duckv1.Status{
-				Conditions: []apis.Condition{{
-					Type:   InstallSucceeded,
-					Status: corev1.ConditionTrue,
-				}, {
-					Type:   EventingConditionReady,
-					Status: corev1.ConditionTrue,
-				}},
-			},
-		},
-	}, {
-		name: "installSucceeded",
-		ke: &KnativeEventingStatus{
-			Status: duckv1.Status{
-				Conditions: []apis.Condition{{
-					Type:   InstallSucceeded,
-					Status: corev1.ConditionTrue,
-				}},
-			},
-		},
-		want: &KnativeEventingStatus{
-			Status: duckv1.Status{
-				Conditions: []apis.Condition{{
-					Type:   InstallSucceeded,
-					Status: corev1.ConditionTrue,
-				}, {
-					Type:   EventingConditionReady,
-					Status: corev1.ConditionUnknown,
-				}},
-			},
-		},
-	}, {
-		name: "installNotSucceeded",
-		ke: &KnativeEventingStatus{
-			Status: duckv1.Status{
-				Conditions: []apis.Condition{{
-					Type:   InstallSucceeded,
-					Status: corev1.ConditionFalse,
-				}},
-			},
-		},
-		want: &KnativeEventingStatus{
-			Status: duckv1.Status{
-				Conditions: []apis.Condition{{
-					Type:   InstallSucceeded,
-					Status: corev1.ConditionFalse,
-				}, {
-					Type:   EventingConditionReady,
-					Status: corev1.ConditionUnknown,
-				}},
-			},
-		},
-	}}
+func TestKnativeEventingErrorPath(t *testing.T) {
+	ke := &KnativeEventingStatus{}
+	ke.InitializeConditions()
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			test.ke.InitializeConditions()
-			if diff := cmp.Diff(test.want, test.ke, ignoreAllButTypeAndStatus); diff != "" {
-				t.Errorf("unexpected conditions (-want, +got) = %v", diff)
-			}
-		})
+	apistest.CheckConditionOngoing(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionOngoing(ke, InstallSucceeded, t)
+
+	// Install fails.
+	ke.MarkInstallFailed("test")
+	apistest.CheckConditionOngoing(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionFailed(ke, InstallSucceeded, t)
+
+	// Dependencies are installing.
+	ke.MarkDependencyInstalling("testing")
+	apistest.CheckConditionFailed(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionFailed(ke, InstallSucceeded, t)
+
+	// Install now succeeds.
+	ke.MarkInstallSucceeded()
+	apistest.CheckConditionFailed(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
+	if ready := ke.IsReady(); ready {
+		t.Errorf("ke.IsReady() = %v, want false", ready)
 	}
+
+	// Deployments become ready
+	ke.MarkDeploymentsAvailable()
+	apistest.CheckConditionFailed(ke, DependenciesInstalled, t)
+	apistest.CheckConditionSucceeded(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
+	if ready := ke.IsReady(); ready {
+		t.Errorf("ke.IsReady() = %v, want false", ready)
+	}
+
+	// Finally, dependencies become available.
+	ke.MarkDependenciesInstalled()
+	apistest.CheckConditionSucceeded(ke, DependenciesInstalled, t)
+	apistest.CheckConditionSucceeded(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
+	if ready := ke.IsReady(); !ready {
+		t.Errorf("ke.IsReady() = %v, want true", ready)
+	}
+}
+
+func TestKnativeEventingExternalDependency(t *testing.T) {
+	ke := &KnativeEventingStatus{}
+	ke.InitializeConditions()
+
+	// External marks dependency as failed.
+	ke.MarkDependencyMissing("test")
+
+	// Install succeeds.
+	ke.MarkInstallSucceeded()
+	apistest.CheckConditionFailed(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
+
+	// Dependencies are now ready.
+	ke.MarkDependenciesInstalled()
+	apistest.CheckConditionSucceeded(ke, DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ke, DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
 }

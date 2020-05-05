@@ -18,14 +18,7 @@ package v1alpha1
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-)
-
-const (
-	DependenciesInstalled apis.ConditionType = "DependenciesInstalled"
-	InstallSucceeded      apis.ConditionType = "InstallSucceeded"
-	DeploymentsAvailable  apis.ConditionType = "DeploymentsAvailable"
 )
 
 // Registry defines image overrides of knative images.

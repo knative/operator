@@ -124,7 +124,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *eventingv1alpha1.Kna
 
 	manifest, err := r.transform(ctx, ke)
 	if err != nil {
-		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
+		ke.Status.MarkInstallFailed(err.Error())
 		return err
 	}
 
@@ -195,19 +195,19 @@ func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke *eve
 	// To avoid this, we strictly order the manifest application as (Cluster)Roles, then
 	// (Cluster)RoleBindings, then the rest of the manifest.
 	if err := manifest.Filter(role).Apply(); err != nil {
-		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
+		ke.Status.MarkInstallFailed(err.Error())
 		return err
 	}
 	if err := manifest.Filter(rolebinding).Apply(); err != nil {
-		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
+		ke.Status.MarkInstallFailed(err.Error())
 		return err
 	}
 	if err := manifest.Filter(mf.None(role, rolebinding)).Apply(); err != nil {
-		ke.Status.MarkEventingFailed("Manifest Installation", err.Error())
+		ke.Status.MarkInstallFailed(err.Error())
 		return err
 	}
+	ke.Status.MarkInstallSucceeded()
 	ke.Status.Version = version.EventingVersion
-	ke.Status.MarkInstallationReady()
 	return nil
 }
 
@@ -225,18 +225,18 @@ func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
 		deployment, err := r.kubeClientSet.AppsV1().Deployments(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
 		if err != nil {
-			ke.Status.MarkEventingNotReady("Deployment check", err.Error())
+			ke.Status.MarkDeploymentsNotReady()
 			if errors.IsNotFound(err) {
 				return nil
 			}
 			return err
 		}
 		if !available(deployment) {
-			ke.Status.MarkEventingNotReady("Deployment check", "The deployment is not available.")
+			ke.Status.MarkDeploymentsNotReady()
 			return nil
 		}
 	}
-	ke.Status.MarkEventingReady()
+	ke.Status.MarkDeploymentsAvailable()
 	return nil
 }
 

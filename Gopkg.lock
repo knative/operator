@@ -1415,15 +1415,15 @@
   revision = "2a1db869228ceaca9df34790b49cdf4893a5d39d"
 
 [[projects]]
-  branch = "release-0.14"
-  digest = "1:50482e6fd500cf50c4a29d640cda026206145c6716dff72e4368a5e57fdb7095"
+  branch = "master"
+  digest = "1:4fc77d1a195bf1eceaa2842e03d195140c03415c7645a11a07bf8cabc3b2a65d"
   name = "knative.dev/test-infra"
   packages = [
     "scripts",
     "tools/dep-collector",
   ]
   pruneopts = "UT"
-  revision = "9fa5882b65c5fe7e177bb74874e9a5ac87b84e98"
+  revision = "e71b1288c15c09476899c526a0d0b0ef7d2d7f20"
 
 [[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"

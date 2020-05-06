@@ -22,9 +22,6 @@ import (
 	"fmt"
 
 	mf "github.com/manifestival/manifestival"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
@@ -118,7 +115,9 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *eventingv1alpha1.Kna
 	stages := []func(context.Context, *mf.Manifest, *eventingv1alpha1.KnativeEventing) error{
 		r.ensureFinalizerRemoval,
 		r.install,
-		r.checkDeployments,
+		func(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
+			return common.CheckDeployments(r.kubeClientSet, manifest, &ke.Status)
+		},
 		r.deleteObsoleteResources,
 	}
 
@@ -208,35 +207,6 @@ func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke *eve
 	}
 	ke.Status.MarkInstallSucceeded()
 	ke.Status.Version = version.EventingVersion
-	return nil
-}
-
-func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
-	logger := logging.FromContext(ctx)
-	logger.Debug("Checking deployments")
-	available := func(d *appsv1.Deployment) bool {
-		for _, c := range d.Status.Conditions {
-			if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
-				return true
-			}
-		}
-		return false
-	}
-	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
-		deployment, err := r.kubeClientSet.AppsV1().Deployments(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
-		if err != nil {
-			ke.Status.MarkDeploymentsNotReady()
-			if errors.IsNotFound(err) {
-				return nil
-			}
-			return err
-		}
-		if !available(deployment) {
-			ke.Status.MarkDeploymentsNotReady()
-			return nil
-		}
-	}
-	ke.Status.MarkDeploymentsAvailable()
 	return nil
 }
 

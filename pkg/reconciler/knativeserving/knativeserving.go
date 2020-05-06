@@ -115,9 +115,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 	stages := []func(context.Context, *mf.Manifest, *servingv1alpha1.KnativeServing) error{
 		r.ensureFinalizerRemoval,
 		r.install,
-		func(ctx context.Context, manifest *mf.Manifest, ks *servingv1alpha1.KnativeServing) error {
-			return common.CheckDeployments(r.kubeClientSet, manifest, &ks.Status)
-		},
+		r.checkDeployments,
 		r.deleteObsoleteResources,
 	}
 
@@ -184,6 +182,13 @@ func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instanc
 	instance.Status.MarkInstallSucceeded()
 	instance.Status.Version = version.ServingVersion
 	return nil
+}
+
+// Check for all deployments available
+func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
+	logger := logging.FromContext(ctx)
+	logger.Debug("Checking deployments")
+	return common.CheckDeployments(r.kubeClientSet, manifest, &instance.Status)
 }
 
 // ensureFinalizerRemoval ensures that the obsolete "delete-knative-serving-manifest" is removed from the resource.

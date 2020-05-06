@@ -115,9 +115,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *eventingv1alpha1.Kna
 	stages := []func(context.Context, *mf.Manifest, *eventingv1alpha1.KnativeEventing) error{
 		r.ensureFinalizerRemoval,
 		r.install,
-		func(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
-			return common.CheckDeployments(r.kubeClientSet, manifest, &ke.Status)
-		},
+		r.checkDeployments,
 		r.deleteObsoleteResources,
 	}
 
@@ -208,6 +206,12 @@ func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke *eve
 	ke.Status.MarkInstallSucceeded()
 	ke.Status.Version = version.EventingVersion
 	return nil
+}
+
+func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
+	logger := logging.FromContext(ctx)
+	logger.Debug("Checking deployments")
+	return common.CheckDeployments(r.kubeClientSet, manifest, &ke.Status)
 }
 
 // Delete obsolete resources from previous versions

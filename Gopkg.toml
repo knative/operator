@@ -59,7 +59,7 @@ required = [
 
 [[override]]
   name = "knative.dev/test-infra"
-  branch = "release-0.14"
+  branch = "master"
 
 [[override]]
   name = "knative.dev/eventing"

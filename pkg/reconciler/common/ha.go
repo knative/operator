@@ -21,28 +21,19 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 const (
 	configMapName        = "config-leader-election"
 	enabledComponentsKey = "enabledComponents"
-	componentsValue      = "controller,hpaautoscaler,certcontroller,istiocontroller,nscontroller"
-)
-
-var deploymentNames = sets.NewString(
-	"controller",
-	"autoscaler-hpa",
-	"networking-certmanager",
-	"networking-ns-cert",
-	"networking-istio",
 )
 
 // HighAvailabilityTransform mutates configmaps and replicacounts of certain
 // controllers when HA control plane is specified.
-func HighAvailabilityTransform(instance *servingv1alpha1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
+func HighAvailabilityTransform(ha *operatorv1alpha1.HighAvailability, componentsValue string, deploymentNames sets.String, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if instance.Spec.HighAvailability == nil {
+		if ha == nil {
 			return nil
 		}
 
@@ -62,7 +53,7 @@ func HighAvailabilityTransform(instance *servingv1alpha1.KnativeServing, log *za
 			}
 		}
 
-		replicas := int64(instance.Spec.HighAvailability.Replicas)
+		replicas := int64(ha.Replicas)
 
 		// Transform deployments that support HA.
 		if u.GetKind() == "Deployment" && deploymentNames.Has(u.GetName()) {

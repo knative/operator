@@ -45,10 +45,6 @@ type KnativeServingSpec struct {
 
 	// Enables controller to trust registries with self-signed certificates
 	ControllerCustomCerts CustomCerts `json:"controller-custom-certs,omitempty"`
-
-	// Allows specification of HA control plane
-	// +optional
-	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
 }
 
 // KnativeServingStatus defines the observed state of KnativeServing
@@ -82,13 +78,4 @@ type CustomCerts struct {
 
 	// The name of the ConfigMap or Secret
 	Name string `json:"name"`
-}
-
-// HighAvailability specifies options for deploying Knative Serving control
-// plane in a highly available manner. Note that HighAvailability is still in
-// progress and does not currently provide a completely HA control plane.
-type HighAvailability struct {
-	// Replicas is the number of replicas that HA parts of the control plane
-	// will be scaled to.
-	Replicas int32 `json:"replicas"`
 }

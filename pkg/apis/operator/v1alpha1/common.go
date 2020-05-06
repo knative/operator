@@ -62,6 +62,15 @@ type KComponentStatus interface {
 	SetVersion(version string)
 }
 
+// HighAvailability specifies options for deploying Knative Serving control
+// plane in a highly available manner. Note that HighAvailability is still in
+// progress and does not currently provide a completely HA control plane.
+type HighAvailability struct {
+	// Replicas is the number of replicas that HA parts of the control plane
+	// will be scaled to.
+	Replicas int32 `json:"replicas"`
+}
+
 // CommonSpec unifies common fields and functions on the Spec.
 type CommonSpec struct {
 	// A means to override the corresponding entries in the upstream configmaps
@@ -76,6 +85,10 @@ type CommonSpec struct {
 	// Override containers' resource requirements
 	// +optional
 	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+
+	// Allows specification of HA control plane
+	// +optional
+	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
 }
 
 // Registry defines image overrides of knative images.

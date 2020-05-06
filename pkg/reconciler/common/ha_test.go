@@ -24,16 +24,27 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
+)
+
+const componentsValue = "controller,hpaautoscaler,certcontroller,istiocontroller,nscontroller"
+
+var deploymentNames = sets.NewString(
+	"controller",
+	"autoscaler-hpa",
+	"networking-certmanager",
+	"networking-ns-cert",
+	"networking-istio",
 )
 
 func TestHighAvailabilityTransform(t *testing.T) {
 	cases := []struct {
 		name     string
-		config   *servingv1alpha1.HighAvailability
+		config   *operatorv1alpha1.HighAvailability
 		in       *unstructured.Unstructured
 		expected *unstructured.Unstructured
 		err      error
@@ -94,13 +105,7 @@ func TestHighAvailabilityTransform(t *testing.T) {
 	for i := range cases {
 		tc := cases[i]
 
-		instance := &servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				HighAvailability: tc.config,
-			},
-		}
-
-		haTransform := HighAvailabilityTransform(instance, log)
+		haTransform := HighAvailabilityTransform(tc.config, componentsValue, deploymentNames, log)
 		err := haTransform(tc.in)
 
 		util.AssertDeepEqual(t, err, tc.err)
@@ -108,8 +113,8 @@ func TestHighAvailabilityTransform(t *testing.T) {
 	}
 }
 
-func makeHa(replicas int32) *servingv1alpha1.HighAvailability {
-	return &servingv1alpha1.HighAvailability{
+func makeHa(replicas int32) *operatorv1alpha1.HighAvailability {
+	return &operatorv1alpha1.HighAvailability{
 		Replicas: replicas,
 	}
 }

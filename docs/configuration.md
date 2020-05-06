@@ -37,6 +37,7 @@ These are the configurable fields in each resource:
       * [default](#specregistrydefault)
       * [override](#specregistryoverride)
       * [imagePullSecrets](#specregistryimagepullsecrets)
+    * [high-availability](#spechigh-availability)
     * [resources](#specresources)
     * [defaultBrokerClass](#specdefaultbrokerclass)
 
@@ -242,22 +243,20 @@ spec:
 
 ## spec.high-availability
 
-By default, Knative Serving runs a single instance of each controller.
+By default, a single instance of each controller is run.
 This field allows you to configure the number of replicas for the
-following master-elected controllers: `controller`, `autoscaler-hpa`,
-and `networking-istio`, as well as the `HorizontalPodAutoscaler`
-resources for the data plane (`activator`):
+following:
+
+* Serving master-elected controllers: `controller`, `autoscaler-hpa`, `networking-istio`
+* Serving `HorizontalPodAutoscaler` resources for the data plane (`activator`)
+* Eventing master-elected controllers: `controller` ,`broker-controller`, `inmemorychannel-dispatcher`, `inmemorychannel-controller`
+
 
 The following configuration specifies a replica count of 3 for the
 controllers and a minimum of 3 activators (which may scale higher if
 needed):
 
 ```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: knative-serving
 spec:
   high-availability:
     replicas: 3

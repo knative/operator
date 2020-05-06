@@ -43,12 +43,20 @@ import (
 )
 
 const (
-	oldFinalizerName = "delete-knative-serving-manifest"
+	oldFinalizerName  = "delete-knative-serving-manifest"
+	haComponentsValue = "controller,hpaautoscaler,certcontroller,istiocontroller,nscontroller"
 )
 
 var (
-	role        mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
-	rolebinding mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
+	role              = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
+	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
+	haDeploymentNames = sets.NewString(
+		"controller",
+		"autoscaler-hpa",
+		"networking-certmanager",
+		"networking-ns-cert",
+		"networking-istio",
+	)
 )
 
 // Reconciler implements controller.Reconciler for Knativeserving resources.
@@ -153,9 +161,9 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 		common.ConfigMapTransform(instance.Spec.Config, logger),
 		common.ImageTransform(&instance.Spec.Registry, logger),
 		common.ResourceRequirementsTransform(instance.Spec.Resources, logger),
+		common.HighAvailabilityTransform(instance.Spec.HighAvailability, haComponentsValue, haDeploymentNames, logger),
 		ksc.GatewayTransform(instance, logger),
 		ksc.CustomCertsTransform(instance, logger),
-		ksc.HighAvailabilityTransform(instance, logger),
 		ksc.AggregationRuleTransform(r.config.Client),
 	}
 	transforms := append(standard, platform...)

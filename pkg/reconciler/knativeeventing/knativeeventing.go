@@ -42,12 +42,19 @@ import (
 )
 
 const (
-	oldFinalizerName = "delete-knative-eventing-manifest"
+	oldFinalizerName  = "delete-knative-eventing-manifest"
+	haComponentsValue = "controller,broker-controller,inmemorychannel-dispatcher,inmemorychannel-controller"
 )
 
 var (
-	role        mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
-	rolebinding mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
+	role              = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
+	rolebinding       = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
+	haDeploymentNames = sets.NewString(
+		"eventing-controller",
+		"broker-controller",
+		"imc-dispatcher",
+		"imc-controller",
+	)
 )
 
 // Reconciler implements controller.Reconciler for KnativeEventing resources.
@@ -151,6 +158,7 @@ func (r *Reconciler) transform(ctx context.Context, instance *eventingv1alpha1.K
 		common.ImageTransform(&instance.Spec.Registry, logger),
 		common.ConfigMapTransform(instance.Spec.Config, logger),
 		common.ResourceRequirementsTransform(instance.Spec.Resources, logger),
+		common.HighAvailabilityTransform(instance.Spec.HighAvailability, haComponentsValue, haDeploymentNames, logger),
 		kec.DefaultBrokerConfigMapTransform(instance, logger),
 	}
 	transforms := append(standard, platform...)

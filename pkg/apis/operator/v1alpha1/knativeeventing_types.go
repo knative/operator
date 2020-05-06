@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package v1alpha1
 
 import (
@@ -20,12 +21,10 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
+// KnativeEventing is the Schema for the eventings API
 // +genclient
 // +genreconciler
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// KnativeEventing is the Schema for the eventings API
-// +k8s:openapi-gen=true
 type KnativeEventing struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -35,7 +34,6 @@ type KnativeEventing struct {
 }
 
 // KnativeEventingSpec defines the desired state of KnativeEventing
-// +k8s:openapi-gen=true
 type KnativeEventingSpec struct {
 	CommonSpec `json:",inline"`
 
@@ -46,7 +44,6 @@ type KnativeEventingSpec struct {
 }
 
 // KnativeEventingStatus defines the observed state of KnativeEventing
-// +k8s:openapi-gen=true
 type KnativeEventingStatus struct {
 	duckv1.Status `json:",inline"`
 
@@ -55,9 +52,8 @@ type KnativeEventingStatus struct {
 	Version string `json:"version,omitempty"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 // KnativeEventingList contains a list of KnativeEventing
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type KnativeEventingList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

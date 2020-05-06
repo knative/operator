@@ -14,9 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains API Schema definitions for the serving v1alpha1 API group
-// +k8s:deepcopy-gen=package,register
-// +groupName=serving.knative.dev
 package v1alpha1
 
 import (
@@ -26,10 +23,10 @@ import (
 )
 
 const (
-	// The group name. This is used for CRDs.
+	// GroupName is the group of the API.
 	GroupName = "operator.knative.dev"
 
-	// The Version of the schema. This is used for CRDs.
+	// SchemaVersion is the current version of the API.
 	SchemaVersion = "v1alpha1"
 
 	// KindKnativeEventing is the Kind of Knative Eventing in a GVK context.
@@ -61,5 +58,6 @@ var (
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
-	AddToScheme   = SchemeBuilder.AddToScheme
+	// AddToScheme adds the API's types to the Scheme.
+	AddToScheme = SchemeBuilder.AddToScheme
 )

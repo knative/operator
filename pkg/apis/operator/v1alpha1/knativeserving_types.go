@@ -13,12 +13,60 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
+
+// KnativeServing is the Schema for the knativeservings API
+// +genclient
+// +genreconciler
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type KnativeServing struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   KnativeServingSpec   `json:"spec,omitempty"`
+	Status KnativeServingStatus `json:"status,omitempty"`
+}
+
+// KnativeServingSpec defines the desired state of KnativeServing
+type KnativeServingSpec struct {
+	CommonSpec `json:",inline"`
+
+	// A means to override the knative-ingress-gateway
+	KnativeIngressGateway IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
+
+	// A means to override the cluster-local-gateway
+	ClusterLocalGateway IstioGatewayOverride `json:"cluster-local-gateway,omitempty"`
+
+	// Enables controller to trust registries with self-signed certificates
+	ControllerCustomCerts CustomCerts `json:"controller-custom-certs,omitempty"`
+
+	// Allows specification of HA control plane
+	// +optional
+	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
+}
+
+// KnativeServingStatus defines the observed state of KnativeServing
+type KnativeServingStatus struct {
+	duckv1.Status `json:",inline"`
+
+	// The version of the installed release
+	// +optional
+	Version string `json:"version,omitempty"`
+}
+
+// KnativeServingList contains a list of KnativeServing
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type KnativeServingList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []KnativeServing `json:"items"`
+}
 
 // IstioGatewayOverride override the knative-ingress-gateway and cluster-local-gateway
 type IstioGatewayOverride struct {
@@ -43,56 +91,4 @@ type HighAvailability struct {
 	// Replicas is the number of replicas that HA parts of the control plane
 	// will be scaled to.
 	Replicas int32 `json:"replicas"`
-}
-
-// KnativeServingSpec defines the desired state of KnativeServing
-// +k8s:openapi-gen=true
-type KnativeServingSpec struct {
-	CommonSpec `json:",inline"`
-
-	// A means to override the knative-ingress-gateway
-	KnativeIngressGateway IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
-
-	// A means to override the cluster-local-gateway
-	ClusterLocalGateway IstioGatewayOverride `json:"cluster-local-gateway,omitempty"`
-
-	// Enables controller to trust registries with self-signed certificates
-	ControllerCustomCerts CustomCerts `json:"controller-custom-certs,omitempty"`
-
-	// Allows specification of HA control plane
-	// +optional
-	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
-}
-
-// KnativeServingStatus defines the observed state of KnativeServing
-// +k8s:openapi-gen=true
-type KnativeServingStatus struct {
-	duckv1.Status `json:",inline"`
-
-	// The version of the installed release
-	// +optional
-	Version string `json:"version,omitempty"`
-}
-
-// +genclient
-// +genreconciler
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// KnativeServing is the Schema for the knativeservings API
-// +k8s:openapi-gen=true
-type KnativeServing struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   KnativeServingSpec   `json:"spec,omitempty"`
-	Status KnativeServingStatus `json:"status,omitempty"`
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// KnativeServingList contains a list of KnativeServing
-type KnativeServingList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []KnativeServing `json:"items"`
 }

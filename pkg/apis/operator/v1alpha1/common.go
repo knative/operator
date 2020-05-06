@@ -82,7 +82,6 @@ type CommonSpec struct {
 // This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
 // The default value is used as a default format to override for all knative deployments.
 // The override values are specific to each knative deployment.
-// +k8s:openapi-gen=true
 type Registry struct {
 	// The default image reference template to use for all knative images.
 	// It takes the form of example-registry.io/custom/path/${NAME}:custom-tag

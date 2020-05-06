@@ -110,7 +110,6 @@ github.com/golang/protobuf/ptypes/timestamp
 github.com/golang/protobuf/ptypes/wrappers
 # github.com/google/go-cmp v0.4.0
 github.com/google/go-cmp/cmp
-github.com/google/go-cmp/cmp/cmpopts
 github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
@@ -733,7 +732,7 @@ knative.dev/caching/pkg/apis/caching/v1alpha1
 # knative.dev/eventing v0.14.1-0.20200428210242-f355830c4d70
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/eventing
-# knative.dev/pkg v0.0.0-20200429171842-47137cdc301d
+# knative.dev/pkg v0.0.0-20200506142844-5b98a558168e
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
 knative.dev/pkg/apis/duck/v1
@@ -777,7 +776,7 @@ knative.dev/pkg/tracker
 knative.dev/pkg/version
 knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
-# knative.dev/test-infra v0.0.0-20200429194242-c1fe00ea21f9
+# knative.dev/test-infra v0.0.0-20200506045344-e71b1288c15c
 knative.dev/test-infra/scripts
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml

@@ -21,10 +21,14 @@ import (
 	"knative.dev/pkg/apis"
 )
 
-var eventingCondSet = apis.NewLivingConditionSet(
-	DependenciesInstalled,
-	DeploymentsAvailable,
-	InstallSucceeded,
+var (
+	_ KComponentStatus = (*KnativeEventingStatus)(nil)
+
+	eventingCondSet = apis.NewLivingConditionSet(
+		DependenciesInstalled,
+		DeploymentsAvailable,
+		InstallSucceeded,
+	)
 )
 
 // GroupVersionKind returns SchemeGroupVersion of an KnativeEventing
@@ -101,4 +105,14 @@ func (es *KnativeEventingStatus) MarkDependencyMissing(msg string) {
 		DependenciesInstalled,
 		"Error",
 		"Dependency missing: %s", msg)
+}
+
+// GetVersion gets the currently installed version of the component.
+func (es *KnativeEventingStatus) GetVersion() string {
+	return es.Version
+}
+
+// SetVersion sets the currently installed version of the component.
+func (es *KnativeEventingStatus) SetVersion(version string) {
+	es.Version = version
 }

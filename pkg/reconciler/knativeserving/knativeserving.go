@@ -162,26 +162,8 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 // Apply the manifest resources
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	logger := logging.FromContext(ctx)
-
 	logger.Debug("Installing manifest")
-	// The Operator needs a higher level of permissions if it 'bind's non-existent roles.
-	// To avoid this, we strictly order the manifest application as (Cluster)Roles, then
-	// (Cluster)RoleBindings, then the rest of the manifest.
-	if err := manifest.Filter(role).Apply(); err != nil {
-		instance.Status.MarkInstallFailed(err.Error())
-		return err
-	}
-	if err := manifest.Filter(rolebinding).Apply(); err != nil {
-		instance.Status.MarkInstallFailed(err.Error())
-		return err
-	}
-	if err := manifest.Apply(); err != nil {
-		instance.Status.MarkInstallFailed(err.Error())
-		return err
-	}
-	instance.Status.MarkInstallSucceeded()
-	instance.Status.Version = version.ServingVersion
-	return nil
+	return common.Install(manifest, version.ServingVersion, &instance.Status)
 }
 
 // Check for all deployments available

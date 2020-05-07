@@ -20,10 +20,11 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 // ConfigMapTransform updates the ConfigMap with the values specified in operator CR
-func ConfigMapTransform(config map[string]map[string]string, log *zap.SugaredLogger) mf.Transformer {
+func ConfigMapTransform(config v1alpha1.ConfigMapData, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Let any config in instance override everything else
 		if u.GetKind() == "ConfigMap" {

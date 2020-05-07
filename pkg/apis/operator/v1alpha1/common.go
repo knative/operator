@@ -18,6 +18,8 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/apis"
 )
 
@@ -32,6 +34,27 @@ const (
 	// the respective component have come up successfully.
 	DeploymentsAvailable apis.ConditionType = "DeploymentsAvailable"
 )
+
+// KComponent is a common interface for accessing meta, spec and status of all known types.
+type KComponent interface {
+	metav1.Object
+	schema.ObjectKind
+
+	// GetSpec returns the common spec for all known types.
+	GetSpec() KComponentSpec
+	// GetStatus returns the common status of all known types.
+	GetStatus() KComponentStatus
+}
+
+// KComponentSpec is a common interface for accessing the common spec of all known types.
+type KComponentSpec interface {
+	// GetConfig returns means to override entries in upstream configmaps.
+	GetConfig() ConfigMapData
+	// GetRegistry returns means to override deployment images.
+	GetRegistry() *Registry
+	// GetResources returns a list of container resource overrides.
+	GetResources() []ResourceRequirementsOverride
+}
 
 // KComponentStatus is a common interface for status mutations of all known types.
 type KComponentStatus interface {
@@ -66,7 +89,7 @@ type KComponentStatus interface {
 type CommonSpec struct {
 	// A means to override the corresponding entries in the upstream configmaps
 	// +optional
-	Config map[string]map[string]string `json:"config,omitempty"`
+	Config ConfigMapData `json:"config,omitempty"`
 
 	// A means to override the corresponding deployment images in the upstream.
 	// If no registry is provided, the knative release images will be used.
@@ -77,6 +100,26 @@ type CommonSpec struct {
 	// +optional
 	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
 }
+
+// GetConfig implements KComponentSpec.
+func (c *CommonSpec) GetConfig() ConfigMapData {
+	return c.Config
+}
+
+// GetRegistry implements KComponentSpec.
+func (c *CommonSpec) GetRegistry() *Registry {
+	return &c.Registry
+}
+
+// GetResources implements KComponentSpec.
+func (c *CommonSpec) GetResources() []ResourceRequirementsOverride {
+	return c.Resources
+}
+
+// ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first
+// level key is the key to the ConfigMap itself (i.e. "logging") while the second level
+// is the data to be filled into the respective ConfigMap.
+type ConfigMapData map[string]map[string]string
 
 // Registry defines image overrides of knative images.
 // This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.

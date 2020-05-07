@@ -21,6 +21,11 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
+var (
+	_ KComponent     = (*KnativeServing)(nil)
+	_ KComponentSpec = (*KnativeServingSpec)(nil)
+)
+
 // KnativeServing is the Schema for the knativeservings API
 // +genclient
 // +genreconciler
@@ -31,6 +36,16 @@ type KnativeServing struct {
 
 	Spec   KnativeServingSpec   `json:"spec,omitempty"`
 	Status KnativeServingStatus `json:"status,omitempty"`
+}
+
+// GetSpec implements KComponent
+func (ks *KnativeServing) GetSpec() KComponentSpec {
+	return &ks.Spec
+}
+
+// GetStatus implements KComponent
+func (ks *KnativeServing) GetStatus() KComponentStatus {
+	return &ks.Status
 }
 
 // KnativeServingSpec defines the desired state of KnativeServing

@@ -282,36 +282,36 @@ func runResourceTransformTest(t *testing.T, tt *updateImageTest) {
 	unstructuredDeployment := util.MakeUnstructured(t, util.MakeDeployment(tt.name, corev1.PodSpec{Containers: tt.containers}))
 	deploymentTransform := ImageTransform(&tt.registry, log)
 	deploymentTransform(&unstructuredDeployment)
-	validateUnstructedDeploymentChanged(t, tt, &unstructuredDeployment)
+	validateUnstructuredDeploymentChanged(t, tt, &unstructuredDeployment)
 
 	// test for daemonSet
 	unstructuredDaemonSet := util.MakeUnstructured(t, makeDaemonSet(tt.name, corev1.PodSpec{Containers: tt.containers}))
 	daemonSetTransform := ImageTransform(&tt.registry, log)
 	daemonSetTransform(&unstructuredDaemonSet)
-	validateUnstructedDaemonSetChanged(t, tt, &unstructuredDaemonSet)
+	validateUnstructuredDaemonSetChanged(t, tt, &unstructuredDaemonSet)
 
 	// test for job
 	unstructuredJob := util.MakeUnstructured(t, makeJob(tt.name, corev1.PodSpec{Containers: tt.containers}))
 	jobTransform := ImageTransform(&tt.registry, log)
 	jobTransform(&unstructuredJob)
-	validateUnstructedJobChanged(t, tt, &unstructuredJob)
+	validateUnstructuredJobChanged(t, tt, &unstructuredJob)
 }
 
-func validateUnstructedDeploymentChanged(t *testing.T, tt *updateImageTest, u *unstructured.Unstructured) {
+func validateUnstructuredDeploymentChanged(t *testing.T, tt *updateImageTest, u *unstructured.Unstructured) {
 	var deployment = &appsv1.Deployment{}
 	err := scheme.Scheme.Convert(u, deployment, nil)
 	util.AssertEqual(t, err, nil)
 	util.AssertDeepEqual(t, deployment.Spec.Template.Spec.Containers, tt.expected)
 }
 
-func validateUnstructedDaemonSetChanged(t *testing.T, tt *updateImageTest, u *unstructured.Unstructured) {
+func validateUnstructuredDaemonSetChanged(t *testing.T, tt *updateImageTest, u *unstructured.Unstructured) {
 	var daemonSet = &appsv1.DaemonSet{}
 	err := scheme.Scheme.Convert(u, daemonSet, nil)
 	util.AssertEqual(t, err, nil)
 	util.AssertDeepEqual(t, daemonSet.Spec.Template.Spec.Containers, tt.expected)
 }
 
-func validateUnstructedJobChanged(t *testing.T, tt *updateImageTest, u *unstructured.Unstructured) {
+func validateUnstructuredJobChanged(t *testing.T, tt *updateImageTest, u *unstructured.Unstructured) {
 	var job = &batchv1.Job{}
 	err := scheme.Scheme.Convert(u, job, nil)
 	util.AssertEqual(t, err, nil)
@@ -403,10 +403,10 @@ func runImageTransformTest(t *testing.T, tt *updateImageSpecTest) {
 	}
 	imageTransform := ImageTransform(&instance.Spec.Registry, log)
 	imageTransform(&unstructuredImage)
-	validateUnstructedImageChanged(t, tt, &unstructuredImage)
+	validateUnstructuredImageChanged(t, tt, &unstructuredImage)
 }
 
-func validateUnstructedImageChanged(t *testing.T, tt *updateImageSpecTest, u *unstructured.Unstructured) {
+func validateUnstructuredImageChanged(t *testing.T, tt *updateImageSpecTest, u *unstructured.Unstructured) {
 	var image = &caching.Image{}
 	err := scheme.Scheme.Convert(u, image, nil)
 	util.AssertEqual(t, err, nil)

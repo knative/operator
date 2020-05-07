@@ -119,7 +119,7 @@ func getDeploymentStatus(d *v1.Deployment) corev1.ConditionStatus {
 func getTestKSOperatorCRSpec() v1alpha1.KnativeServingSpec {
 	return v1alpha1.KnativeServingSpec{
 		CommonSpec: v1alpha1.CommonSpec{
-			Config: map[string]map[string]string{
+			Config: v1alpha1.ConfigMapData{
 				DefaultsConfigKey: {
 					"revision-timeout-seconds": "200",
 				},

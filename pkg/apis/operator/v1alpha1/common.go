@@ -49,7 +49,7 @@ type KComponent interface {
 // KComponentSpec is a common interface for accessing the common spec of all known types.
 type KComponentSpec interface {
 	// GetConfig returns means to override entries in upstream configmaps.
-	GetConfig() map[string]map[string]string
+	GetConfig() ConfigMapData
 	// GetRegistry returns means to override deployment images.
 	GetRegistry() *Registry
 	// GetResources returns a list of container resource overrides.
@@ -89,7 +89,7 @@ type KComponentStatus interface {
 type CommonSpec struct {
 	// A means to override the corresponding entries in the upstream configmaps
 	// +optional
-	Config map[string]map[string]string `json:"config,omitempty"`
+	Config ConfigMapData `json:"config,omitempty"`
 
 	// A means to override the corresponding deployment images in the upstream.
 	// If no registry is provided, the knative release images will be used.
@@ -102,7 +102,7 @@ type CommonSpec struct {
 }
 
 // GetConfig implements KComponentSpec.
-func (c *CommonSpec) GetConfig() map[string]map[string]string {
+func (c *CommonSpec) GetConfig() ConfigMapData {
 	return c.Config
 }
 
@@ -115,6 +115,11 @@ func (c *CommonSpec) GetRegistry() *Registry {
 func (c *CommonSpec) GetResources() []ResourceRequirementsOverride {
 	return c.Resources
 }
+
+// ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first
+// level key is the key to the ConfigMap itself (i.e. "logging") while the second level
+// is the data to be filled into the respective ConfigMap.
+type ConfigMapData map[string]map[string]string
 
 // Registry defines image overrides of knative images.
 // This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.

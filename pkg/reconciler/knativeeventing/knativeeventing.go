@@ -188,24 +188,7 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
-	// The Operator needs a higher level of permissions if it 'bind's non-existent roles.
-	// To avoid this, we strictly order the manifest application as (Cluster)Roles, then
-	// (Cluster)RoleBindings, then the rest of the manifest.
-	if err := manifest.Filter(role).Apply(); err != nil {
-		ke.Status.MarkInstallFailed(err.Error())
-		return err
-	}
-	if err := manifest.Filter(rolebinding).Apply(); err != nil {
-		ke.Status.MarkInstallFailed(err.Error())
-		return err
-	}
-	if err := manifest.Filter(mf.None(role, rolebinding)).Apply(); err != nil {
-		ke.Status.MarkInstallFailed(err.Error())
-		return err
-	}
-	ke.Status.MarkInstallSucceeded()
-	ke.Status.Version = version.EventingVersion
-	return nil
+	return common.Install(manifest, version.EventingVersion, &ke.Status)
 }
 
 func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {

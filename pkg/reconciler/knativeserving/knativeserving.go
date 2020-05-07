@@ -144,19 +144,15 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 	if err != nil {
 		return mf.Manifest{}, err
 	}
-	standard := []mf.Transformer{
-		mf.InjectOwner(instance),
-		mf.InjectNamespace(instance.GetNamespace()),
-		common.ConfigMapTransform(instance.Spec.Config, logger),
-		common.ImageTransform(&instance.Spec.Registry, logger),
-		common.ResourceRequirementsTransform(instance.Spec.Resources, logger),
+
+	transformers := common.Transformers(ctx, instance)
+	transformers = append(transformers,
 		ksc.GatewayTransform(instance, logger),
 		ksc.CustomCertsTransform(instance, logger),
 		ksc.HighAvailabilityTransform(instance, logger),
-		ksc.AggregationRuleTransform(r.config.Client),
-	}
-	transforms := append(standard, platform...)
-	return r.config.Transform(transforms...)
+		ksc.AggregationRuleTransform(r.config.Client))
+	transformers = append(transformers, platform...)
+	return r.config.Transform(transformers...)
 }
 
 // Apply the manifest resources

@@ -142,16 +142,11 @@ func (r *Reconciler) transform(ctx context.Context, instance *eventingv1alpha1.K
 	if err != nil {
 		return mf.Manifest{}, err
 	}
-	standard := []mf.Transformer{
-		mf.InjectOwner(instance),
-		mf.InjectNamespace(instance.GetNamespace()),
-		common.ImageTransform(&instance.Spec.Registry, logger),
-		common.ConfigMapTransform(instance.Spec.Config, logger),
-		common.ResourceRequirementsTransform(instance.Spec.Resources, logger),
-		kec.DefaultBrokerConfigMapTransform(instance, logger),
-	}
-	transforms := append(standard, platform...)
-	return r.config.Transform(transforms...)
+
+	transformers := common.Transformers(ctx, instance)
+	transformers = append(transformers, kec.DefaultBrokerConfigMapTransform(instance, logger))
+	transformers = append(transformers, platform...)
+	return r.config.Transform(transformers...)
 }
 
 // ensureFinalizerRemoval ensures that the obsolete "delete-knative-eventing-manifest" is removed from the resource.

@@ -18,6 +18,8 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/apis"
 )
 
@@ -32,6 +34,27 @@ const (
 	// the respective component have come up successfully.
 	DeploymentsAvailable apis.ConditionType = "DeploymentsAvailable"
 )
+
+// KComponent is a common interface for accessing meta, spec and status of all known types.
+type KComponent interface {
+	metav1.Object
+	schema.ObjectKind
+
+	// GetSpec returns the common spec for all known types.
+	GetSpec() KComponentSpec
+	// GetStatus returns the common status of all known types.
+	GetStatus() KComponentStatus
+}
+
+// KComponentSpec is a common interface for accessing the common spec of all known types.
+type KComponentSpec interface {
+	// GetConfig returns means to override entries in upstream configmaps.
+	GetConfig() map[string]map[string]string
+	// GetRegistry returns means to override deployment images.
+	GetRegistry() *Registry
+	// GetResources returns a list of container resource overrides.
+	GetResources() []ResourceRequirementsOverride
+}
 
 // KComponentStatus is a common interface for status mutations of all known types.
 type KComponentStatus interface {
@@ -76,6 +99,21 @@ type CommonSpec struct {
 	// Override containers' resource requirements
 	// +optional
 	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+}
+
+// GetConfig implements KComponentSpec.
+func (c *CommonSpec) GetConfig() map[string]map[string]string {
+	return c.Config
+}
+
+// GetRegistry implements KComponentSpec.
+func (c *CommonSpec) GetRegistry() *Registry {
+	return &c.Registry
+}
+
+// GetResources implements KComponentSpec.
+func (c *CommonSpec) GetResources() []ResourceRequirementsOverride {
+	return c.Resources
 }
 
 // Registry defines image overrides of knative images.

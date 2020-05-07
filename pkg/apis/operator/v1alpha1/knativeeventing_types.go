@@ -21,6 +21,11 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
+var (
+	_ KComponent     = (*KnativeEventing)(nil)
+	_ KComponentSpec = (*KnativeEventingSpec)(nil)
+)
+
 // KnativeEventing is the Schema for the eventings API
 // +genclient
 // +genreconciler
@@ -31,6 +36,16 @@ type KnativeEventing struct {
 
 	Spec   KnativeEventingSpec   `json:"spec,omitempty"`
 	Status KnativeEventingStatus `json:"status,omitempty"`
+}
+
+// GetSpec implements KComponent
+func (ke *KnativeEventing) GetSpec() KComponentSpec {
+	return &ke.Spec
+}
+
+// GetStatus implements KComponent
+func (ke *KnativeEventing) GetStatus() KComponentStatus {
+	return &ke.Status
 }
 
 // KnativeEventingSpec defines the desired state of KnativeEventing

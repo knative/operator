@@ -100,7 +100,7 @@ func TestGatewayTransform(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			unstructedGateway := makeUnstructuredGateway(t, tt.gatewayName, tt.in)
+			unstructuredGateway := makeUnstructuredGateway(t, tt.gatewayName, tt.in)
 			instance := &servingv1alpha1.KnativeServing{
 				Spec: servingv1alpha1.KnativeServingSpec{
 					KnativeIngressGateway: tt.knativeIngressGateway,
@@ -108,10 +108,10 @@ func TestGatewayTransform(t *testing.T) {
 				},
 			}
 			gatewayTransform := GatewayTransform(instance, log)
-			gatewayTransform(&unstructedGateway)
+			gatewayTransform(&unstructuredGateway)
 
 			var gateway = &v1alpha3.Gateway{}
-			err := scheme.Scheme.Convert(&unstructedGateway, gateway, nil)
+			err := scheme.Scheme.Convert(&unstructuredGateway, gateway, nil)
 			util.AssertEqual(t, err, nil)
 			for expectedKey, expectedValue := range tt.expected {
 				util.AssertEqual(t, gateway.Spec.Selector[expectedKey], expectedValue)

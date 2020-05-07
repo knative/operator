@@ -289,7 +289,7 @@ func TestResourceRequirementsTransform(t *testing.T) {
 			for _, u := range actual.Filter(mf.ByKind("Deployment")).Resources() {
 				deployment := &appsv1.Deployment{}
 				if err := scheme.Scheme.Convert(&u, deployment, nil); err != nil {
-					t.Fatalf("Failed to convert unstructed to deployment: %v", err)
+					t.Fatalf("Failed to convert unstructured to deployment: %v", err)
 				}
 				containers := deployment.Spec.Template.Spec.Containers
 				for i := range containers {

@@ -22,6 +22,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -49,6 +50,8 @@ func ImageTransform(registry *v1alpha1.Registry, log *zap.SugaredLogger) mf.Tran
 			return updateDeployment(registry, u, log)
 		case "DaemonSet":
 			return updateDaemonSet(registry, u, log)
+		case "Job":
+			return updateJob(registry, u, log)
 		case "Image":
 			if u.GetAPIVersion() == "caching.internal.knative.dev/v1alpha1" {
 				return updateCachingImage(registry, u, log)
@@ -85,6 +88,24 @@ func updateDaemonSet(registry *v1alpha1.Registry, u *unstructured.Unstructured, 
 	}
 	updateRegistry(&daemonSet.Spec.Template.Spec, registry, log, daemonSet.GetName())
 	if err := scheme.Scheme.Convert(daemonSet, u, nil); err != nil {
+		return err
+	}
+	// The zero-value timestamp defaulted by the conversion causes
+	// superfluous updates
+	u.SetCreationTimestamp(metav1.Time{})
+
+	log.Debugw("Finished conversion", "name", u.GetName(), "unstructured", u.Object)
+	return nil
+}
+
+func updateJob(registry *v1alpha1.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+	var job = &batchv1.Job{}
+	if err := scheme.Scheme.Convert(u, job, nil); err != nil {
+		log.Error(err, "Error converting Unstructured to job", "unstructured", u, "job", job)
+		return err
+	}
+	updateRegistry(&job.Spec.Template.Spec, registry, log, job.GetName())
+	if err := scheme.Scheme.Convert(job, u, nil); err != nil {
 		return err
 	}
 	// The zero-value timestamp defaulted by the conversion causes

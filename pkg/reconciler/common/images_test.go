@@ -29,6 +29,7 @@ import (
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 )
 
 var log = zap.NewNop().Sugar()
@@ -288,6 +289,12 @@ func runResourceTransformTest(t *testing.T, tt *updateImageTest) {
 	daemonSetTransform := ImageTransform(&tt.registry, log)
 	daemonSetTransform(&unstructuredDaemonSet)
 	validateUnstructedDaemonSetChanged(t, tt, &unstructuredDaemonSet)
+
+	// test for job
+	unstructuredJob := util.MakeUnstructured(t, makeJob(tt.name, corev1.PodSpec{Containers: tt.containers}))
+	jobTransform := ImageTransform(&tt.registry, log)
+	jobTransform(&unstructuredJob)
+	validateUnstructedJobChanged(t, tt, &unstructuredJob)
 }
 
 func validateUnstructedDeploymentChanged(t *testing.T, tt *updateImageTest, u *unstructured.Unstructured) {
@@ -304,6 +311,13 @@ func validateUnstructedDaemonSetChanged(t *testing.T, tt *updateImageTest, u *un
 	util.AssertDeepEqual(t, daemonSet.Spec.Template.Spec.Containers, tt.expected)
 }
 
+func validateUnstructedJobChanged(t *testing.T, tt *updateImageTest, u *unstructured.Unstructured) {
+	var job = &batchv1.Job{}
+	err := scheme.Scheme.Convert(u, job, nil)
+	util.AssertEqual(t, err, nil)
+	util.AssertDeepEqual(t, job.Spec.Template.Spec.Containers, tt.expected)
+}
+
 func makeDaemonSet(name string, podSpec corev1.PodSpec) *appsv1.DaemonSet {
 	return &appsv1.DaemonSet{
 		TypeMeta: metav1.TypeMeta{
@@ -313,6 +327,22 @@ func makeDaemonSet(name string, podSpec corev1.PodSpec) *appsv1.DaemonSet {
 			Name: name,
 		},
 		Spec: appsv1.DaemonSetSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: podSpec,
+			},
+		},
+	}
+}
+
+func makeJob(name string, podSpec corev1.PodSpec) *batchv1.Job {
+	return &batchv1.Job{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "DaemonSet",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: batchv1.JobSpec{
 			Template: corev1.PodTemplateSpec{
 				Spec: podSpec,
 			},

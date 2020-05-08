@@ -22,6 +22,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -40,8 +41,12 @@ var (
 func DeploymentTransform(instance *eventingv1alpha1.KnativeEventing, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Update the deployment with the new registry and tag
-		if u.GetKind() == "Deployment" {
+		switch u.GetKind() {
+		// TODO need to use PodSpecable duck type in order to remove duplicates of deployment, daemonSet
+		case "Deployment":
 			return updateDeployment(instance, u, log)
+		case "Job":
+			return updateJob(instance, u, log)
 		}
 		return nil
 	}
@@ -75,8 +80,49 @@ func updateDeployment(instance *eventingv1alpha1.KnativeEventing, u *unstructure
 	return nil
 }
 
+func updateJob(instance *eventingv1alpha1.KnativeEventing, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+	var job = &batchv1.Job{}
+	err := scheme.Scheme.Convert(u, job, nil)
+	if err != nil {
+		log.Error(err, "Error converting Unstructured to Job", "unstructured", u, "job", job)
+		return err
+	}
+
+	registry := instance.Spec.Registry
+	log.Debugw("Updating Job", "name", u.GetName(), "registry", registry)
+
+	updateJobImage(job, &registry, log)
+	updateJobEnvVarImages(job, &registry, log)
+
+	job.Spec.Template.Spec.ImagePullSecrets = addImagePullSecrets(
+		job.Spec.Template.Spec.ImagePullSecrets, &registry, log)
+	err = scheme.Scheme.Convert(job, u, nil)
+	if err != nil {
+		return err
+	}
+	// The zero-value timestamp defaulted by the conversion causes
+	// superfluous updates
+	u.SetCreationTimestamp(metav1.Time{})
+
+	log.Debugw("Finished conversion", "name", u.GetName(), "unstructured", u.Object)
+	return nil
+}
+
 func updateDeploymentEnvVarImages(deployment *appsv1.Deployment, registry *eventingv1alpha1.Registry, log *zap.SugaredLogger) {
 	containers := deployment.Spec.Template.Spec.Containers
+	for index := range containers {
+		container := &containers[index]
+		for envIndex := range container.Env {
+			env := &container.Env[envIndex]
+			if newImage, ok := registry.Override[env.Name]; ok {
+				env.Value = newImage
+			}
+		}
+	}
+}
+
+func updateJobEnvVarImages(job *batchv1.Job, registry *eventingv1alpha1.Registry, log *zap.SugaredLogger) {
+	containers := job.Spec.Template.Spec.Containers
 	for index := range containers {
 		container := &containers[index]
 		for envIndex := range container.Env {
@@ -99,6 +145,18 @@ func updateDeploymentImage(deployment *appsv1.Deployment, registry *eventingv1al
 		}
 	}
 	log.Debugw("Finished updating images", "name", deployment.GetName(), "containers", deployment.Spec.Template.Spec.Containers)
+}
+
+func updateJobImage(job *batchv1.Job, registry *eventingv1alpha1.Registry, log *zap.SugaredLogger) {
+	containers := job.Spec.Template.Spec.Containers
+	for index := range containers {
+		container := &containers[index]
+		newImage := getNewImage(registry, container.Name, job.Name)
+		if newImage != "" {
+			updateContainer(container, newImage, log)
+		}
+	}
+	log.Debugw("Finished updating images", "name", job.GetName(), "containers", job.Spec.Template.Spec.Containers)
 }
 
 func getNewImage(registry *eventingv1alpha1.Registry, containerName, deploymentName string) string {

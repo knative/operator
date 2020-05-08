@@ -43,11 +43,6 @@ const (
 	oldFinalizerName = "delete-knative-serving-manifest"
 )
 
-var (
-	role        mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
-	rolebinding mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
-)
-
 // Reconciler implements controller.Reconciler for Knativeserving resources.
 type Reconciler struct {
 	// kubeClientSet allows us to talk to the k8s for core APIs

@@ -85,7 +85,7 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 	knativeServingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
 	deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-		FilterFunc: controller.FilterGroupVersionKind(v1alpha1.SchemeGroupVersion.WithKind("KnativeServing")),
+		FilterFunc: controller.FilterControllerGVK(v1alpha1.SchemeGroupVersion.WithKind("KnativeServing")),
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	})
 

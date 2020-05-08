@@ -337,7 +337,7 @@ func makeDaemonSet(name string, podSpec corev1.PodSpec) *appsv1.DaemonSet {
 func makeJob(name string, podSpec corev1.PodSpec) *batchv1.Job {
 	return &batchv1.Job{
 		TypeMeta: metav1.TypeMeta{
-			Kind: "DaemonSet",
+			Kind: "Job",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,

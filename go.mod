@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-logr/zapr v0.1.1
+	github.com/google/go-cmp v0.4.0
 	github.com/grpc-ecosystem/grpc-gateway v1.12.2 // indirect
 	github.com/manifestival/client-go-client v0.2.0
 	github.com/manifestival/manifestival v0.5.0
@@ -22,7 +23,8 @@ require (
 	k8s.io/code-generator v0.18.0
 	knative.dev/caching v0.0.0-20200122154023-853d6022845c
 	knative.dev/eventing v0.14.1-0.20200428210242-f355830c4d70
-	knative.dev/pkg v0.0.0-20200506142844-5b98a558168e
+	knative.dev/pkg v0.0.0-20200508172045-3a7a787c428e
+	knative.dev/test-infra v0.0.0-20200508162345-7ee959873933 // indirect
 	sigs.k8s.io/yaml v1.2.0
 )
 

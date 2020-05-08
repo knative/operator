@@ -18,7 +18,6 @@ package knativeserving
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	mf "github.com/manifestival/manifestival"
@@ -27,7 +26,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
@@ -171,26 +169,13 @@ func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest
 
 // ensureFinalizerRemoval ensures that the obsolete "delete-knative-serving-manifest" is removed from the resource.
 func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
-	finalizers := sets.NewString(instance.Finalizers...)
-
-	if !finalizers.Has(oldFinalizerName) {
-		// Nothing to do.
-		return nil
-	}
-
-	// Remove the finalizer
-	finalizers.Delete(oldFinalizerName)
-
-	mergePatch := map[string]interface{}{
-		"metadata": map[string]interface{}{
-			"finalizers":      finalizers.List(),
-			"resourceVersion": instance.ResourceVersion,
-		},
-	}
-
-	patch, err := json.Marshal(mergePatch)
+	patch, err := common.FinalizerRemovalPatch(instance, oldFinalizerName)
 	if err != nil {
-		return fmt.Errorf("failed to construct finalizer patch: %w", err)
+		return fmt.Errorf("failed to construct the patch: %w", err)
+	}
+	if patch == nil {
+		// Nothing to do here.
+		return nil
 	}
 
 	patcher := r.operatorClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace)

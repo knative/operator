@@ -27,6 +27,7 @@ import (
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 )
 
 type updateDeploymentImageTest struct {
@@ -282,6 +283,16 @@ func runDeploymentTransformTest(t *testing.T, tt *updateDeploymentImageTest) {
 	deploymentTransform := DeploymentTransform(instance, log)
 	deploymentTransform(&unstructuredDeployment)
 	validateUnstructedDeploymentChanged(t, tt, &unstructuredDeployment)
+
+	unstructuredJob := makeUnstructured(t, makeJob(t, tt.name, corev1.PodSpec{Containers: tt.containers}))
+	instance = &eventingv1alpha1.KnativeEventing{
+		Spec: eventingv1alpha1.KnativeEventingSpec{
+			Registry: tt.registry,
+		},
+	}
+	jobTransform := DeploymentTransform(instance, log)
+	jobTransform(&unstructuredJob)
+	validateUnstructedJobChanged(t, tt, &unstructuredJob)
 }
 
 func validateUnstructedDeploymentChanged(t *testing.T, tt *updateDeploymentImageTest, u *unstructured.Unstructured) {
@@ -289,6 +300,13 @@ func validateUnstructedDeploymentChanged(t *testing.T, tt *updateDeploymentImage
 	err := scheme.Scheme.Convert(u, deployment, nil)
 	assertEqual(t, err, nil)
 	assertDeepEqual(t, deployment.Spec.Template.Spec.Containers, tt.expected)
+}
+
+func validateUnstructedJobChanged(t *testing.T, tt *updateDeploymentImageTest, u *unstructured.Unstructured) {
+	var job = &batchv1.Job{}
+	err := scheme.Scheme.Convert(u, job, nil)
+	assertEqual(t, err, nil)
+	assertDeepEqual(t, job.Spec.Template.Spec.Containers, tt.expected)
 }
 
 func makeDeployment(t *testing.T, name string, podSpec corev1.PodSpec) *appsv1.Deployment {
@@ -300,6 +318,22 @@ func makeDeployment(t *testing.T, name string, podSpec corev1.PodSpec) *appsv1.D
 			Name: name,
 		},
 		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: podSpec,
+			},
+		},
+	}
+}
+
+func makeJob(t *testing.T, name string, podSpec corev1.PodSpec) *batchv1.Job {
+	return &batchv1.Job{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "Job",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: batchv1.JobSpec{
 			Template: corev1.PodTemplateSpec{
 				Spec: podSpec,
 			},

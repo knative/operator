@@ -21,14 +21,13 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
-	appsv1 "k8s.io/api/apps/v1"
-	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 	caching "knative.dev/caching/pkg/apis/caching/v1alpha1"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 func init() {
@@ -45,13 +44,12 @@ var (
 func ImageTransform(registry *v1alpha1.Registry, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		switch u.GetKind() {
-		// TODO need to use PodSpecable duck type in order to remove duplicates of deployment, daemonSet
 		case "Deployment":
-			return updateDeployment(registry, u, log)
+			fallthrough
 		case "DaemonSet":
-			return updateDaemonSet(registry, u, log)
+			fallthrough
 		case "Job":
-			return updateJob(registry, u, log)
+			return updatePodSpecable(registry, u, log)
 		case "Image":
 			if u.GetAPIVersion() == "caching.internal.knative.dev/v1alpha1" {
 				return updateCachingImage(registry, u, log)
@@ -61,51 +59,15 @@ func ImageTransform(registry *v1alpha1.Registry, log *zap.SugaredLogger) mf.Tran
 	}
 }
 
-func updateDeployment(registry *v1alpha1.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
-	var deployment = &appsv1.Deployment{}
-	if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
-		log.Error(err, "Error converting Unstructured to Deployment", "unstructured", u, "deployment", deployment)
+func updatePodSpecable(registry *v1alpha1.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+	var withPod = &duckv1.WithPod{}
+	if err := scheme.Scheme.Convert(u, withPod, nil); err != nil {
+		log.Error(err, "Error converting Unstructured to Deployment", "unstructured", u, "withPod", withPod)
 		return err
 	}
 
-	updateRegistry(&deployment.Spec.Template.Spec, registry, log, deployment.GetName())
-	if err := scheme.Scheme.Convert(deployment, u, nil); err != nil {
-		return err
-	}
-	// The zero-value timestamp defaulted by the conversion causes
-	// superfluous updates
-	u.SetCreationTimestamp(metav1.Time{})
-
-	log.Debugw("Finished conversion", "name", u.GetName(), "unstructured", u.Object)
-	return nil
-}
-
-func updateDaemonSet(registry *v1alpha1.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
-	var daemonSet = &appsv1.DaemonSet{}
-	if err := scheme.Scheme.Convert(u, daemonSet, nil); err != nil {
-		log.Error(err, "Error converting Unstructured to daemonSet", "unstructured", u, "daemonSet", daemonSet)
-		return err
-	}
-	updateRegistry(&daemonSet.Spec.Template.Spec, registry, log, daemonSet.GetName())
-	if err := scheme.Scheme.Convert(daemonSet, u, nil); err != nil {
-		return err
-	}
-	// The zero-value timestamp defaulted by the conversion causes
-	// superfluous updates
-	u.SetCreationTimestamp(metav1.Time{})
-
-	log.Debugw("Finished conversion", "name", u.GetName(), "unstructured", u.Object)
-	return nil
-}
-
-func updateJob(registry *v1alpha1.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
-	var job = &batchv1.Job{}
-	if err := scheme.Scheme.Convert(u, job, nil); err != nil {
-		log.Error(err, "Error converting Unstructured to job", "unstructured", u, "job", job)
-		return err
-	}
-	updateRegistry(&job.Spec.Template.Spec, registry, log, job.GetName())
-	if err := scheme.Scheme.Convert(job, u, nil); err != nil {
+	updateRegistry(&withPod.Spec.Template.Spec, registry, log, withPod.GetName())
+	if err := scheme.Scheme.Convert(withPod, u, nil); err != nil {
 		return err
 	}
 	// The zero-value timestamp defaulted by the conversion causes

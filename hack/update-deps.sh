@@ -57,7 +57,6 @@ go mod vendor
 find vendor/ -name 'OWNERS' -delete
 find vendor/ -name '*_test.go' -delete
 
-update_licenses third_party/VENDOR-LICENSE \
-  $(find . -name "*.go" | grep -v vendor | xargs grep "package main" | cut -d: -f1 | xargs -n1 dirname | uniq)
+update_licenses third_party/VENDOR-LICENSE "./..."
 
 remove_broken_symlinks ./vendor

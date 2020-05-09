@@ -732,7 +732,7 @@ knative.dev/caching/pkg/apis/caching/v1alpha1
 # knative.dev/eventing v0.14.1-0.20200428210242-f355830c4d70
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/eventing
-# knative.dev/pkg v0.0.0-20200506142844-5b98a558168e
+# knative.dev/pkg v0.0.0-20200508172045-3a7a787c428e
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
 knative.dev/pkg/apis/duck/v1
@@ -776,7 +776,7 @@ knative.dev/pkg/tracker
 knative.dev/pkg/version
 knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
-# knative.dev/test-infra v0.0.0-20200506045344-e71b1288c15c
+# knative.dev/test-infra v0.0.0-20200509000045-c7114387eed5
 knative.dev/test-infra/scripts
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml

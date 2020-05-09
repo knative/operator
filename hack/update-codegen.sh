@@ -55,4 +55,4 @@ ${GOPATH}/bin/deepcopy-gen \
   -i knative.dev/operator/pkg/apis/operator/v1alpha1
 
 # Make sure our dependencies are up-to-date
-#${REPO_ROOT_DIR}/hack/update-deps.sh
+${REPO_ROOT_DIR}/hack/update-deps.sh

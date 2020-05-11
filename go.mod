@@ -30,6 +30,11 @@ require (
 
 replace (
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
+
+	// Required indirectly by manifestival.
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20190924102528-32369d4db2ad
+
+	// Aligning all Kubernetes dependencies.
 	k8s.io/api => k8s.io/api v0.16.4
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.16.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.16.4

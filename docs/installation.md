@@ -8,10 +8,15 @@
 ## Knative Operator
 
 Before any Knative component can be installed, you must first install
-the Knative Operator:
+the Knative Operator.
 
+To install the latest release:
 ```
 kubectl apply -f https://github.com/knative-sandbox/operator/releases/latest/download/operator.yaml
+```
+Alternatively, the latest nightly build:
+```
+kubectl apply -f https://storage.googleapis.com/knative-nightly/operator/latest/operator.yaml
 ```
 
 Once running, the operator will continuously watch for the following

@@ -40,11 +40,6 @@ const (
 	oldFinalizerName = "delete-knative-eventing-manifest"
 )
 
-var (
-	role        mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
-	rolebinding mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
-)
-
 // Reconciler implements controller.Reconciler for KnativeEventing resources.
 type Reconciler struct {
 	// kubeClientSet allows us to talk to the k8s for core APIs
@@ -71,35 +66,20 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *eventingv1alpha
 		return fmt.Errorf("failed to list all KnativeEventings: %w", err)
 	}
 
-	// Only delete cluster-scoped resources if all KnativeEventings are being deleted.
-	allBeingDeleted := true
 	for _, ke := range kes.Items {
 		if ke.GetDeletionTimestamp().IsZero() {
-			allBeingDeleted = false
-			break
+			// Not deleting all KnativeEventings. Nothing to do here.
+			return nil
 		}
 	}
 
-	if allBeingDeleted {
-		manifest, err := r.transform(ctx, original)
-		if err != nil {
-			return fmt.Errorf("failed to transform manifest: %w", err)
-		}
-
-		logger.Info("Deleting cluster-scoped resources")
-		rbac := mf.Any(role, rolebinding)
-		if err := manifest.Filter(mf.NoCRDs, mf.None(rbac)).Delete(); err != nil {
-			return fmt.Errorf("failed to remove non-crd/non-rbac resources: %w", err)
-		}
-		// Delete Roles last, as they may be useful for human operators to clean up.
-		if err := manifest.Filter(rbac).Delete(); err != nil {
-			return fmt.Errorf("failed to remove rbac: %w", err)
-		}
-
-		logger.Info("Cluster-scoped resources deleted")
+	manifest, err := r.transform(ctx, original)
+	if err != nil {
+		return fmt.Errorf("failed to transform manifest: %w", err)
 	}
 
-	return nil
+	logger.Info("Deleting cluster-scoped resources")
+	return common.Uninstall(&manifest)
 }
 
 // ReconcileKind compares the actual state with the desired, and attempts to

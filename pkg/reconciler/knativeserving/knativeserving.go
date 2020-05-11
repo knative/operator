@@ -67,34 +67,20 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 		return fmt.Errorf("failed to list all KnativeServings: %w", err)
 	}
 
-	// Only delete cluster-scoped resources if all KnativeServings are being deleted.
-	allBeingDeleted := true
 	for _, ks := range kss.Items {
 		if ks.GetDeletionTimestamp().IsZero() {
-			allBeingDeleted = false
-			break
+			// Not deleting all KnativeServings. Nothing to do here.
+			return nil
 		}
 	}
 
-	if allBeingDeleted {
-		manifest, err := r.transform(ctx, original)
-		if err != nil {
-			return fmt.Errorf("failed to transform manifest: %w", err)
-		}
-
-		logger.Info("Deleting cluster-scoped resources")
-		var rbac = mf.Any(mf.ByKind("Role"), mf.ByKind("ClusterRole"), mf.ByKind("RoleBinding"), mf.ByKind("ClusterRoleBinding"))
-		if err := manifest.Filter(mf.NoCRDs, mf.None(rbac)).Delete(); err != nil {
-			return fmt.Errorf("failed to remove non-crd/non-rbac resources: %w", err)
-		}
-		// Delete Roles last, as they may be useful for human operators to clean up.
-		if err := manifest.Filter(rbac).Delete(); err != nil {
-			return fmt.Errorf("failed to remove rbac: %w", err)
-		}
-
-		logger.Info("Cluster-scoped resources deleted")
+	manifest, err := r.transform(ctx, original)
+	if err != nil {
+		return fmt.Errorf("failed to transform manifest: %w", err)
 	}
-	return nil
+
+	logger.Info("Deleting cluster-scoped resources")
+	return common.Uninstall(&manifest)
 }
 
 // ReconcileKind compares the actual state with the desired, and attempts to

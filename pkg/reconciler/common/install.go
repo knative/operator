@@ -50,3 +50,15 @@ func Install(manifest *mf.Manifest, version string, status v1alpha1.KComponentSt
 	status.SetVersion(version)
 	return nil
 }
+
+// Uninstall removes all resources except CRDs, which are never deleted automatically.
+func Uninstall(manifest *mf.Manifest) error {
+	if err := manifest.Filter(mf.NoCRDs, mf.None(role, rolebinding)).Delete(); err != nil {
+		return fmt.Errorf("failed to remove non-crd/non-rbac resources: %w", err)
+	}
+	// Delete Roles last, as they may be useful for human operators to clean up.
+	if err := manifest.Filter(mf.Any(role, rolebinding)).Delete(); err != nil {
+		return fmt.Errorf("failed to remove rbac: %w", err)
+	}
+	return nil
+}

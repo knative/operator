@@ -30,16 +30,16 @@ import (
 func TestInstall(t *testing.T) {
 	// Resources in the manifest
 	version := "v0.14-test"
-	deployment := NamespacedResource("apps/v1", "Deployment", "test", "test-deployment")
-	role := NamespacedResource("rbac.authorization.k8s.io/v1", "Role", "test", "test-role")
-	roleBinding := NamespacedResource("rbac.authorization.k8s.io/v1", "RoleBinding", "test", "test-role-binding")
-	clusterRole := ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRole", "test-cluster-role")
-	clusterRoleBinding := ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRoleBinding", "test-cluster-role-binding")
+	deployment := *NamespacedResource("apps/v1", "Deployment", "test", "test-deployment")
+	role := *NamespacedResource("rbac.authorization.k8s.io/v1", "Role", "test", "test-role")
+	roleBinding := *NamespacedResource("rbac.authorization.k8s.io/v1", "RoleBinding", "test", "test-role-binding")
+	clusterRole := *ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRole", "test-cluster-role")
+	clusterRoleBinding := *ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRoleBinding", "test-cluster-role-binding")
 
 	// Deliberately mixing the order in the manifest.
-	in := []unstructured.Unstructured{*deployment, *role, *roleBinding, *clusterRole, *clusterRoleBinding}
+	in := []unstructured.Unstructured{deployment, role, roleBinding, clusterRole, clusterRoleBinding}
 	// Expect things to be applied in order.
-	want := []*unstructured.Unstructured{role, clusterRole, roleBinding, clusterRoleBinding, deployment}
+	want := []unstructured.Unstructured{role, clusterRole, roleBinding, clusterRoleBinding, deployment}
 
 	client := &fakeClient{}
 	manifest, err := mf.ManifestFrom(mf.Slice(in), mf.UseClient(client))
@@ -97,22 +97,59 @@ func TestInstallError(t *testing.T) {
 	}
 }
 
+func TestUninstall(t *testing.T) {
+	// Resources in the manifest
+	deployment := *NamespacedResource("apps/v1", "Deployment", "test", "test-deployment")
+	role := *NamespacedResource("rbac.authorization.k8s.io/v1", "Role", "test", "test-role")
+	roleBinding := *NamespacedResource("rbac.authorization.k8s.io/v1", "RoleBinding", "test", "test-role-binding")
+	clusterRole := *ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRole", "test-cluster-role")
+	clusterRoleBinding := *ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRoleBinding", "test-cluster-role-binding")
+	crd := *ClusterScopedResource("apiextensions.k8s.io/v1beta1", "CustomResourceDefinition", "test-crd")
+
+	// Deliberately mixing the order in the manifest.
+	in := []unstructured.Unstructured{deployment, role, roleBinding, clusterRole, clusterRoleBinding, crd}
+	// Expect things to be deleted, non-rbac resources first and then in reversed order.
+	// CRDs are not removed.
+	want := []unstructured.Unstructured{deployment, clusterRoleBinding, clusterRole, roleBinding, role}
+
+	client := &fakeClient{resourcesExist: true}
+	manifest, err := mf.ManifestFrom(mf.Slice(in), mf.UseClient(client))
+	if err != nil {
+		t.Fatalf("Failed to generate manifest: %v", err)
+	}
+
+	if err := Uninstall(&manifest); err != nil {
+		t.Fatalf("Uninstall() = %v, want no error", err)
+	}
+
+	if !cmp.Equal(client.deletes, want) {
+		t.Fatalf("Unexpected deletes: %s", cmp.Diff(client.deletes, want))
+	}
+}
+
 type fakeClient struct {
-	err     error
-	creates []*unstructured.Unstructured
+	err            error
+	resourcesExist bool
+	creates        []unstructured.Unstructured
+	deletes        []unstructured.Unstructured
 }
 
 func (f *fakeClient) Get(obj *unstructured.Unstructured) (*unstructured.Unstructured, error) {
-	return nil, f.err
+	var resource *unstructured.Unstructured
+	if f.resourcesExist {
+		resource = &unstructured.Unstructured{}
+	}
+	return resource, f.err
 }
 
 func (f *fakeClient) Delete(obj *unstructured.Unstructured, options ...mf.DeleteOption) error {
+	f.deletes = append(f.deletes, *obj)
 	return f.err
 }
 
 func (f *fakeClient) Create(obj *unstructured.Unstructured, options ...mf.ApplyOption) error {
 	obj.SetAnnotations(nil) // Deleting the extra annotation. Irrelevant for the test.
-	f.creates = append(f.creates, obj)
+	f.creates = append(f.creates, *obj)
 	return f.err
 }
 

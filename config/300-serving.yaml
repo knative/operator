@@ -170,6 +170,40 @@ spec:
                       ephemeral-storage:
                         type: string
                         pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+            ingress:
+              description: bla
+              type: object
+              properties:
+                istio:
+                  description: Istio settings
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                    knative-ingress-gateway:
+                      description: A means to override the knative-ingress-gateway
+                      type: object
+                      properties:
+                        selector:
+                          description: The selector for the ingress-gateway.
+                          type: object
+                          additionalProperties:
+                            type: string
+                    cluster-local-gateway:
+                      description: A means to override the cluster-local-gateway
+                      type: object
+                      properties:
+                        selector:
+                          description: The selector for the ingress-gateway.
+                          type: object
+                          additionalProperties:
+                            type: string
+                kourier:
+                  description: Kourier settings
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
           type: object
         status:
           description: Status defines the observed state of KnativeServing

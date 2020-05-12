@@ -119,6 +119,7 @@ metadata:
   name: webhook.istio.networking.internal.knative.dev
   labels:
     serving.knative.dev/release: "v0.14.0"
+    networking.knative.dev/ingress-provider: istio
 webhooks:
 - admissionReviewVersions:
   - v1beta1
@@ -154,6 +155,7 @@ metadata:
   name: config.webhook.istio.networking.internal.knative.dev
   labels:
     serving.knative.dev/release: "v0.14.0"
+    networking.knative.dev/ingress-provider: istio
 webhooks:
 - admissionReviewVersions:
   - v1beta1
@@ -191,6 +193,7 @@ metadata:
   namespace: knative-serving
   labels:
     serving.knative.dev/release: "v0.14.0"
+    networking.knative.dev/ingress-provider: istio
 
 ---
 # Copyright 2018 The Knative Authors
@@ -359,6 +362,7 @@ metadata:
   namespace: knative-serving
   labels:
     serving.knative.dev/release: "v0.14.0"
+    networking.knative.dev/ingress-provider: istio
 spec:
   selector:
     matchLabels:
@@ -433,6 +437,7 @@ metadata:
   labels:
     role: istio-webhook
     serving.knative.dev/release: "v0.14.0"
+    networking.knative.dev/ingress-provider: istio
 spec:
   ports:
   - # Define metrics and profiling for them to be accessible within service meshes.

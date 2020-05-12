@@ -64,6 +64,9 @@ type KnativeServingSpec struct {
 	// Allows specification of HA control plane
 	// +optional
 	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
+
+	// Ingress allows configuration of different ingress adapters to be shipped.
+	Ingress *IngressConfigurations `json:"ingress,omitempty"`
 }
 
 // KnativeServingStatus defines the observed state of KnativeServing
@@ -106,4 +109,17 @@ type HighAvailability struct {
 	// Replicas is the number of replicas that HA parts of the control plane
 	// will be scaled to.
 	Replicas int32 `json:"replicas"`
+}
+
+type IngressConfigurations struct {
+	Istio   IstioIngressConfiguration   `json:"istio"`
+	Kourier KourierIngressConfiguration `json:"kourier"`
+}
+
+type IstioIngressConfiguration struct {
+	Enabled bool `json:"enabled"`
+}
+
+type KourierIngressConfiguration struct {
+	Enabled bool `json:"enabled"`
 }

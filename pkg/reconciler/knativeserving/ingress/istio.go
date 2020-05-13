@@ -34,14 +34,26 @@ func istioTransformers(ctx context.Context, instance *v1alpha1.KnativeServing) [
 }
 
 func gatewayTransform(instance *v1alpha1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
+	var knativeIngressGateway v1alpha1.IstioGatewayOverride
+	var clusterLocalGateway v1alpha1.IstioGatewayOverride
+
+	if instance.Spec.Ingress == nil {
+		// Backwards compat. If users don't use ingress API, respect the top-level fields.
+		knativeIngressGateway = instance.Spec.KnativeIngressGateway
+		clusterLocalGateway = instance.Spec.ClusterLocalGateway
+	} else {
+		knativeIngressGateway = instance.Spec.Ingress.Istio.KnativeIngressGateway
+		clusterLocalGateway = instance.Spec.Ingress.Istio.ClusterLocalGateway
+	}
+
 	return func(u *unstructured.Unstructured) error {
 		// Update the deployment with the new registry and tag
 		if u.GetAPIVersion() == "networking.istio.io/v1alpha3" && u.GetKind() == "Gateway" {
 			if u.GetName() == "knative-ingress-gateway" {
-				return updateKnativeIngressGateway(instance.Spec.KnativeIngressGateway, u, log)
+				return updateKnativeIngressGateway(knativeIngressGateway, u, log)
 			}
 			if u.GetName() == "cluster-local-gateway" {
-				return updateKnativeIngressGateway(instance.Spec.ClusterLocalGateway, u, log)
+				return updateKnativeIngressGateway(clusterLocalGateway, u, log)
 			}
 		}
 		return nil

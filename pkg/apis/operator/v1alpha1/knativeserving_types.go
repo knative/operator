@@ -53,9 +53,11 @@ type KnativeServingSpec struct {
 	CommonSpec `json:",inline"`
 
 	// A means to override the knative-ingress-gateway
+	// Deprecated: Use Ingress.Istio.KnativeIngressGateway instead.
 	KnativeIngressGateway IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
 
 	// A means to override the cluster-local-gateway
+	// Deprecated: Use Ingress.Istio.ClusterLocalGateway instead.
 	ClusterLocalGateway IstioGatewayOverride `json:"cluster-local-gateway,omitempty"`
 
 	// Enables controller to trust registries with self-signed certificates
@@ -118,6 +120,9 @@ type IngressConfigurations struct {
 
 type IstioIngressConfiguration struct {
 	Enabled bool `json:"enabled"`
+
+	KnativeIngressGateway IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
+	ClusterLocalGateway   IstioGatewayOverride `json:"cluster-local-gateway,omitempty"`
 }
 
 type KourierIngressConfiguration struct {

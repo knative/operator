@@ -2,13 +2,13 @@ package client
 
 import (
 	mf "github.com/manifestival/manifestival"
-	"github.com/operator-framework/operator-sdk/pkg/restmapper"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
 
 func NewManifest(pathname string, config *rest.Config, opts ...mf.Option) (mf.Manifest, error) {
@@ -24,7 +24,7 @@ func NewClient(config *rest.Config) (mf.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	mapper, err := restmapper.NewDynamicRESTMapper(config)
+	mapper, err := apiutil.NewDynamicRESTMapper(config)
 	if err != nil {
 		return nil, err
 	}

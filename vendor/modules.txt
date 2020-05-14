@@ -141,7 +141,7 @@ github.com/json-iterator/go
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/manifestival/client-go-client v0.2.0
+# github.com/manifestival/client-go-client v0.2.2
 github.com/manifestival/client-go-client
 # github.com/manifestival/manifestival v0.5.0
 github.com/manifestival/manifestival
@@ -156,8 +156,6 @@ github.com/modern-go/concurrent
 github.com/modern-go/reflect2
 # github.com/openzipkin/zipkin-go v0.2.2
 github.com/openzipkin/zipkin-go/model
-# github.com/operator-framework/operator-sdk v0.15.1
-github.com/operator-framework/operator-sdk/pkg/restmapper
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/prometheus/client_golang v1.5.0
@@ -778,5 +776,7 @@ knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
 # knative.dev/test-infra v0.0.0-20200509000045-c7114387eed5
 knative.dev/test-infra/scripts
+# sigs.k8s.io/controller-runtime v0.5.0
+sigs.k8s.io/controller-runtime/pkg/client/apiutil
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml

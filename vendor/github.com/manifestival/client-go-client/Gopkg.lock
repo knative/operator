@@ -78,16 +78,17 @@
   revision = "ab8a2e0c74be"
 
 [[projects]]
-  digest = "1:2575736731bd3046cf6bd5a08a7d694a30a6be8b4af230470f1ad4239bb7d0c3"
+  branch = "master"
+  digest = "1:06a0d9b156b459a988b70c9f5d7ce3dc0a0231fe5329eb56dd1cfd7704c6fa19"
   name = "github.com/manifestival/manifestival"
   packages = [
     ".",
+    "overlay",
     "patch",
     "sources",
   ]
   pruneopts = "UT"
-  revision = "062c519a505b425bf0990e7f78e06568b2756b89"
-  version = "v0.2.0"
+  revision = "15996b119a3d7b7ea059528df3dbbbf4f5b93017"
 
 [[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
@@ -104,14 +105,6 @@
   pruneopts = "UT"
   revision = "94122c33edd36123c84d5368cfb2b69df93a0ec8"
   version = "v1.0.1"
-
-[[projects]]
-  digest = "1:a9c110560d6c7ae97fe37ca11a1eb711c41cd154121b36bee7284289d8d21739"
-  name = "github.com/operator-framework/operator-sdk"
-  packages = ["pkg/restmapper"]
-  pruneopts = "UT"
-  revision = "e35ec7b722ba095e6438f63fafb9e7326870b486"
-  version = "v0.15.1"
 
 [[projects]]
   digest = "1:9e1d37b58d17113ec3cb5608ac0382313c5b59470b94ed97d0976e69c7022314"
@@ -195,6 +188,17 @@
   packages = ["rate"]
   pruneopts = "UT"
   revision = "555d28b269f0569763d25dbe1a237ae74c6bcc82"
+
+[[projects]]
+  branch = "master"
+  digest = "1:918a46e4a2fb83df33f668f5a6bd51b2996775d073fce1800d3ec01b0a5ddd2b"
+  name = "golang.org/x/xerrors"
+  packages = [
+    ".",
+    "internal",
+  ]
+  pruneopts = "UT"
+  revision = "9bdfabe68543c54f90421aeb9a60ef8061b5b544"
 
 [[projects]]
   digest = "1:e0a1881f9e0564bebdeac98c75e59f07acdde6ed3a5396e0e613eaad31194866"
@@ -344,8 +348,8 @@
     "util/keyutil",
   ]
   pruneopts = "UT"
-  revision = "78d2af792babf2dd937ba2e2a8d99c753a5eda89"
-  version = "v12.0.0"
+  revision = "06eb1244587a17d4994ff9de4ce93756a2f16f0b"
+  version = "kubernetes-1.15.4"
 
 [[projects]]
   digest = "1:fd24a140b16df03386fb0d9da8a5879e3b0178f35fff6545d3101f70ff9a4f1a"
@@ -371,6 +375,14 @@
   revision = "c2654d5206da"
 
 [[projects]]
+  digest = "1:37e05f80b83ed690540056bcf6cacc4f9027743d8d21dcf9f1aebbd6ac48bb2c"
+  name = "sigs.k8s.io/controller-runtime"
+  packages = ["pkg/client/apiutil"]
+  pruneopts = "UT"
+  revision = "d21241119ea4de139f1892ba2f5bc72c96d07f3f"
+  version = "v0.3.0"
+
+[[projects]]
   digest = "1:7719608fe0b52a4ece56c2dde37bedd95b938677d1ab0f84b8a7852e4c59f849"
   name = "sigs.k8s.io/yaml"
   packages = ["."]
@@ -383,13 +395,13 @@
   analyzer-version = 1
   input-imports = [
     "github.com/manifestival/manifestival",
-    "github.com/operator-framework/operator-sdk/pkg/restmapper",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
     "k8s.io/client-go/dynamic",
     "k8s.io/client-go/rest",
+    "sigs.k8s.io/controller-runtime/pkg/client/apiutil",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

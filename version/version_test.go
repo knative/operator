@@ -25,13 +25,13 @@ import (
 
 func TestManifestVersionServingSame(t *testing.T) {
 	_, b, _, _ := runtime.Caller(0)
-	manifest, err := mf.NewManifest(filepath.Join(filepath.Dir(b)+"/..", "cmd/operator/kodata/knative-serving/"))
+	expectedLabelValue := "v" + ServingVersion
+	manifest, err := mf.NewManifest(filepath.Join(filepath.Dir(b)+"/..", "cmd/operator/kodata/knative-serving/"+expectedLabelValue))
 	if err != nil {
 		t.Fatal("Failed to load manifest", err)
 	}
 
 	// example: v0.10.1
-	expectedLabelValue := "v" + ServingVersion
 	label := "serving.knative.dev/release"
 
 	for _, resource := range manifest.Filter(mf.ByLabel(label, "")).Resources() {

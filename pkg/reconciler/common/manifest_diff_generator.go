@@ -17,9 +17,17 @@ limitations under the License.
 package common
 
 import (
+	"context"
 	"fmt"
+	"k8s.io/client-go/rest"
+	"os"
+	"path/filepath"
 
+	"github.com/go-logr/zapr"
+	mfc "github.com/manifestival/client-go-client"
 	mf "github.com/manifestival/manifestival"
+	"go.uber.org/zap"
+	"knative.dev/pkg/logging"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -52,17 +60,30 @@ func ManifestDiffGenerator(oldManifest, newManifest mf.Manifest) ([]unstructured
 }
 
 // FindResourceByNSGroupKindName is a lookup function, which returns true and the old resource, if the resource is available in an array of
-// unstructured.Unstructured, matching by namespace, APIVersion, Kind and Name.
+// unstructured.Unstructured, matching by APIVersion, Kind and Name.
 func FindResourceByNSGroupKindName(r unstructured.Unstructured, manifestResource []unstructured.Unstructured) (bool, unstructured.Unstructured) {
 	mapMenifestResource := make(map[string]unstructured.Unstructured, len(manifestResource))
 	for _, resource := range manifestResource {
-		key := fmt.Sprintf("%s%s%s%s", resource.GetNamespace(), resource.GetAPIVersion(),
+		key := fmt.Sprintf("%s%s%s", resource.GetAPIVersion(),
 			resource.GetKind(), resource.GetName())
 		mapMenifestResource[key] = resource
 	}
-	key := fmt.Sprintf("%s%s%s%s", r.GetNamespace(), r.GetAPIVersion(), r.GetKind(), r.GetName())
+	key := fmt.Sprintf("%s%s%s", r.GetAPIVersion(), r.GetKind(), r.GetName())
 	if val, found := mapMenifestResource[key]; found {
 		return true, val
 	}
 	return false, unstructured.Unstructured{}
+}
+
+func CreateManifestByVersion(config *rest.Config, ctx context.Context, version string) (mf.Manifest, error) {
+	logger := logging.FromContext(ctx)
+	koDataDir := os.Getenv("KO_DATA_PATH")
+	manifest, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-serving/"+"v"+version),
+		config,
+		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+	if err != nil {
+		logger.Fatalw("Error creating the Manifest for knative-serving", zap.Error(err))
+		return mf.Manifest{}, err
+	}
+	return manifest, err
 }

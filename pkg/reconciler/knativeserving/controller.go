@@ -16,9 +16,6 @@ package knativeserving
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
-
 	"go.uber.org/zap"
 
 	operatorclient "knative.dev/operator/pkg/client/injection/client"
@@ -26,9 +23,6 @@ import (
 	"knative.dev/pkg/injection"
 	"knative.dev/pkg/logging"
 
-	"github.com/go-logr/zapr"
-	mfc "github.com/manifestival/client-go-client"
-	mf "github.com/manifestival/manifestival"
 	"k8s.io/client-go/tools/cache"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -64,19 +58,11 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		logger.Fatal(err)
 	}
 
-	koDataDir := os.Getenv("KO_DATA_PATH")
-	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-serving/"),
-		injection.GetConfig(ctx),
-		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
-	if err != nil {
-		logger.Fatalw("Error creating the Manifest for knative-serving", zap.Error(err))
-	}
-
 	c := &Reconciler{
 		kubeClientSet:     kubeClient,
 		operatorClientSet: operatorclient.Get(ctx),
 		platform:          common.GetPlatforms(ctx),
-		config:            config,
+		config:		       injection.GetConfig(ctx),
 	}
 	impl := knsreconciler.NewImpl(ctx, c)
 

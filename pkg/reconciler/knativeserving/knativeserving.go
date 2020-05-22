@@ -19,8 +19,8 @@ package knativeserving
 import (
 	"context"
 	"fmt"
-
 	mf "github.com/manifestival/manifestival"
+	"k8s.io/client-go/rest"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -48,9 +48,14 @@ type Reconciler struct {
 	// operatorClientSet allows us to configure operator objects
 	operatorClientSet clientset.Interface
 	// config is the manifest of KnativeServing
-	config mf.Manifest
+	config *rest.Config
+	// oldManifest is the previous manifest of KnativeServing
+	oldManifest mf.Manifest
+	// currentManifest is the current manifest of KnativeServing
+	currentManifest mf.Manifest
 	// Platform-specific behavior to affect the transform
 	platform common.Platforms
+
 }
 
 // Check that our Reconciler implements controller.Reconciler
@@ -87,6 +92,22 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 // converge the two.
 func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.KnativeServing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
+
+	oldVerion := version.ServingVersion
+	if ks.Status.Version != "" {
+		oldVerion = ks.Status.Version
+	}
+	var err error
+	r.currentManifest, err = common.CreateManifestByVersion(r.config, ctx, version.ServingVersion)
+	if err != nil {
+		return err
+	}
+
+	r.oldManifest, err = common.CreateManifestByVersion(r.config, ctx, oldVerion)
+	if err != nil {
+		return err
+	}
+
 	ks.Status.InitializeConditions()
 	ks.Status.ObservedGeneration = ks.Generation
 
@@ -94,6 +115,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 	stages := []func(context.Context, *mf.Manifest, *servingv1alpha1.KnativeServing) error{
 		r.ensureFinalizerRemoval,
 		r.install,
+		r.removeResourcesOldManifests,
 		r.checkDeployments,
 		r.deleteObsoleteResources,
 	}
@@ -129,9 +151,9 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 		ksc.GatewayTransform(instance, logger),
 		ksc.CustomCertsTransform(instance, logger),
 		ksc.HighAvailabilityTransform(instance, logger),
-		ksc.AggregationRuleTransform(r.config.Client))
+		ksc.AggregationRuleTransform(r.currentManifest.Client))
 	transformers = append(transformers, platform...)
-	return r.config.Transform(transformers...)
+	return r.currentManifest.Transform(transformers...)
 }
 
 // Apply the manifest resources
@@ -162,6 +184,17 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 	patcher := r.operatorClientSet.OperatorV1alpha1().KnativeServings(instance.Namespace)
 	if _, err := patcher.Patch(instance.Name, types.MergePatchType, patch); err != nil {
 		return fmt.Errorf("failed to patch finalizer away: %w", err)
+	}
+	return nil
+}
+
+// Delete the resources that do not exist in the new manifest
+func (r *Reconciler) removeResourcesOldManifests(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
+	_, _, listResourceDelete := common.ManifestDiffGenerator(r.oldManifest, *manifest)
+	for _, r := range listResourceDelete {
+		if err := manifest.Client.Delete(&r); err != nil {
+			return err
+		}
 	}
 	return nil
 }

@@ -22,6 +22,8 @@ import (
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
 	"knative.dev/pkg/metrics/metricstest"
+
+	_ "knative.dev/pkg/metrics/testing"
 )
 
 const (

@@ -19,6 +19,9 @@ package knativeserving
 import (
 	"context"
 	"fmt"
+	"os"
+    "path/filepath"
+	"github.com/go-logr/zapr"
 
 	mf "github.com/manifestival/manifestival"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
@@ -47,8 +50,8 @@ type Reconciler struct {
 	kubeClientSet kubernetes.Interface
 	// operatorClientSet allows us to configure operator objects
 	operatorClientSet clientset.Interface
-	// config is the manifest of KnativeServing
-	config mf.Manifest
+	// manifests is the map of Knative Serving manifests
+	manifests map[string]mf.Manifest
 	// mfClient is the client needed for manifestival.
 	mfClient mf.Client
 	// Platform-specific behavior to affect the transform
@@ -76,7 +79,14 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 		}
 	}
 
-	manifest, err := r.transform(ctx, original)
+	servingManifest, err := r.retrieveManifest(ctx, version.ServingVersion)
+	if err != nil {
+		return err
+	} else if len(servingManifest.Resources()) == 0 {
+		return fmt.Errorf("unable to find the manifest for the Knative Serving version %s", version.ServingVersion)
+	}
+
+	manifest, err := r.transform(ctx, original, servingManifest)
 	if err != nil {
 		return fmt.Errorf("failed to transform manifest: %w", err)
 	}
@@ -93,6 +103,14 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 	ks.Status.ObservedGeneration = ks.Generation
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
+
+	servingManifest, err := r.retrieveManifest(ctx, version.ServingVersion)
+	if err != nil {
+		return err
+	} else if len(servingManifest.Resources()) == 0 {
+		return fmt.Errorf("unable to find the manifest for the Knative Serving version %s", version.ServingVersion)
+	}
+
 	stages := []func(context.Context, *mf.Manifest, *servingv1alpha1.KnativeServing) error{
 		r.ensureFinalizerRemoval,
 		r.install,
@@ -100,7 +118,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 		r.deleteObsoleteResources,
 	}
 
-	manifest, err := r.transform(ctx, ks)
+	manifest, err := r.transform(ctx, ks, servingManifest)
 	if err != nil {
 		ks.Status.MarkInstallFailed(err.Error())
 		return err
@@ -116,7 +134,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 }
 
 // Transform the resources
-func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
+func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.KnativeServing, servingManifest mf.Manifest) (mf.Manifest, error) {
 	logger := logging.FromContext(ctx)
 
 	logger.Debug("Transforming manifest")
@@ -131,9 +149,9 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 		ksc.GatewayTransform(instance, logger),
 		ksc.CustomCertsTransform(instance, logger),
 		ksc.HighAvailabilityTransform(instance, logger),
-		ksc.AggregationRuleTransform(r.config.Client))
+		ksc.AggregationRuleTransform(servingManifest.Client))
 	transformers = append(transformers, platform...)
-	return r.config.Transform(transformers...)
+	return servingManifest.Transform(transformers...)
 }
 
 // Apply the manifest resources
@@ -184,4 +202,24 @@ func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.M
 		}
 	}
 	return nil
+}
+
+func (r *Reconciler) retrieveManifest(ctx context.Context, version string) (mf.Manifest, error){
+	if val, found := r.manifests[version]; found {
+		return val, nil
+	}
+
+	logger := logging.FromContext(ctx)
+	koDataDir := os.Getenv("KO_DATA_PATH")
+	manifesrDir := fmt.Sprintf("knative-serving/v%s", version)
+	manifest, err := mf.NewManifest(filepath.Join(koDataDir, manifesrDir),
+		mf.UseClient(r.mfClient),
+		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+
+	if err != nil {
+		return manifest, err
+	}
+
+	r.manifests[version] = manifest
+	return manifest, nil
 }

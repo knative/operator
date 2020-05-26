@@ -27,7 +27,6 @@ import (
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -79,7 +78,8 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 		}
 	}
 
-	servingManifest, err := r.retrieveManifest(ctx, original.Status.GetVersion())
+	oldVerion, _ := r.retrieveVersions(original)
+	servingManifest, err := r.retrieveManifest(ctx, oldVerion)
 	if err != nil {
 		return err
 	} else if len(servingManifest.Resources()) == 0 {
@@ -145,8 +145,8 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 	}
 
 	// Find the common resources between the old and the current serving manifests
-	manifestApply := servingManifest.Filter(In(oldManifest))
-	manifestDelete := servingManifest.Filter(None(In(oldManifest)))
+	manifestApply := servingManifest.Filter(mf.In(oldManifest))
+	manifestDelete := servingManifest.Filter(mf.None(mf.In(oldManifest)))
 	for _, stage := range stages {
 		if err := stage(ctx, &manifestApply, ks); err != nil {
 			return err
@@ -188,7 +188,11 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
-	return common.Install(manifest, instance.Spec.GetVersion(), &instance.Status)
+	version := version.ServingVersion
+	if instance.Spec.GetVersion() != "" {
+		version = instance.Spec.GetVersion()
+	}
+	return common.Install(manifest, version, &instance.Status)
 }
 
 // Check for all deployments available
@@ -231,7 +235,7 @@ func (r *Reconciler) retrieveManifest(ctx context.Context, version string) (mf.M
 
 	logger := logging.FromContext(ctx)
 	koDataDir := os.Getenv("KO_DATA_PATH")
-	manifesrDir := fmt.Sprintf("knative-serving/v%s", version)
+	manifesrDir := fmt.Sprintf("knative-serving/%s", version)
 	manifest, err := mf.NewManifest(filepath.Join(koDataDir, manifesrDir),
 		mf.UseClient(r.mfClient),
 		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
@@ -249,7 +253,7 @@ func (r *Reconciler) retrieveVersions(instance *servingv1alpha1.KnativeServing) 
 	newVersion := version.ServingVersion
 	if instance.Status.GetVersion() != "" {
 		oldVersion = instance.Status.GetVersion()
-	} else {
+	} else if instance.Spec.GetVersion() != "" {
 		oldVersion = instance.Spec.GetVersion()
 	}
 	if instance.Spec.GetVersion() != "" {

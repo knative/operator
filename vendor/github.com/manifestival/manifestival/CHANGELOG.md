@@ -5,12 +5,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
-### Changed
-
 ### Added
+
+- Introduced `Append` to the `Manifestival` interface. This enables
+  the creation of new manifests from the concatenation of others. The
+  resulting manifest retains the options, e.g. client and logger, of
+  the receiver. [#41](https://github.com/manifestival/manifestival/issues/41)
+- New fake `Client` to facilitate testing. Provides both a simple
+  in-memory object store and easily-override-able stubs for all the
+  `Client` functions: `Create`, `Update`, `Delete`, or `Get`
+  [#43](https://github.com/manifestival/manifestival/pull/43)
+- More [docs](README.md), including
+  [godoc](https://godoc.org/github.com/manifestival/manifestival)
+  [#42](https://github.com/manifestival/manifestival/pull/42)
+- New filter `Predicate`, `In`, that returns true if a resource is in
+  a given manifest, uniquely identified by GVK, namespace, and name
+  [#50](https://github.com/manifestival/manifestival/pull/50)
 
 ### Removed
 
+- Removed dependency on `k8s.io/kubernetes`. It was only used in a
+  test, to verify a proper response to server-side validation errors,
+  but 'go modules' doesn't distinguish test-only dependencies, and
+  `k8s.io/kubernetes` was never intended to be consumed as a module,
+  so we replicated the validation logic in the test itself.
+  
 
 ## [0.5.0] - 2020-03-31
 

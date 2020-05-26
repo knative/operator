@@ -64,6 +64,11 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		logger.Fatal(err)
 	}
 
+	mfClient, err := mfc.NewClient(injection.GetConfig(ctx))
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	koDataDir := os.Getenv("KO_DATA_PATH")
 	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-serving/"),
 		injection.GetConfig(ctx),
@@ -77,6 +82,7 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		operatorClientSet: operatorclient.Get(ctx),
 		platform:          common.GetPlatforms(ctx),
 		config:            config,
+		mfClient:          mfClient,
 	}
 	impl := knsreconciler.NewImpl(ctx, c)
 

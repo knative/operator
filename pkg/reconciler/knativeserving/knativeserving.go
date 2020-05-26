@@ -49,6 +49,8 @@ type Reconciler struct {
 	operatorClientSet clientset.Interface
 	// config is the manifest of KnativeServing
 	config mf.Manifest
+	// mfClient is the client needed for manifestival.
+	mfClient mf.Client
 	// Platform-specific behavior to affect the transform
 	platform common.Platforms
 }

@@ -79,7 +79,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 		}
 	}
 
-	servingManifest, err := r.retrieveManifest(ctx, version.ServingVersion)
+	servingManifest, err := r.retrieveManifest(ctx, original.Status.GetVersion())
 	if err != nil {
 		return err
 	} else if len(servingManifest.Resources()) == 0 {
@@ -104,31 +104,61 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 
-	servingManifest, err := r.retrieveManifest(ctx, version.ServingVersion)
+	// Read the old version of the Knative Serving and the version of Knative Serving to be installed
+	oldVerion, newVersion := r.retrieveVersions(ks)
+
+	// Get the Serving Manifest to be installed
+	servingManifest, err := r.retrieveManifest(ctx, newVersion)
 	if err != nil {
 		return err
 	} else if len(servingManifest.Resources()) == 0 {
-		return fmt.Errorf("unable to find the manifest for the Knative Serving version %s", version.ServingVersion)
+		return fmt.Errorf("unable to find the manifest for the Knative Serving version %s", newVersion)
+	}
+
+	// Get the previous Manifest, which has been installed.
+	oldManifest, err := r.retrieveManifest(ctx, oldVerion)
+	if err != nil {
+		return err
+	} else if len(oldManifest.Resources()) == 0 {
+		return fmt.Errorf("unable to find the previous manifest for the Knative Serving version %s", oldVerion)
 	}
 
 	stages := []func(context.Context, *mf.Manifest, *servingv1alpha1.KnativeServing) error{
 		r.ensureFinalizerRemoval,
 		r.install,
 		r.checkDeployments,
+	}
+
+	deleteStages := []func(context.Context, *mf.Manifest, *servingv1alpha1.KnativeServing) error{
 		r.deleteObsoleteResources,
 	}
 
-	manifest, err := r.transform(ctx, ks, servingManifest)
+	oldManifest, err = r.transform(ctx, ks, oldManifest)
+	if err != nil {
+		return err
+	}
+
+	servingManifest, err = r.transform(ctx, ks, servingManifest)
 	if err != nil {
 		ks.Status.MarkInstallFailed(err.Error())
 		return err
 	}
 
+	// Find the common resources between the old and the current serving manifests
+	manifestApply := servingManifest.Filter(In(oldManifest))
+	manifestDelete := servingManifest.Filter(None(In(oldManifest)))
 	for _, stage := range stages {
-		if err := stage(ctx, &manifest, ks); err != nil {
+		if err := stage(ctx, &manifestApply, ks); err != nil {
 			return err
 		}
 	}
+
+	for _, stage := range deleteStages {
+		if err := stage(ctx, &manifestDelete, ks); err != nil {
+			return err
+		}
+	}
+
 	logger.Infow("Reconcile stages complete", "status", ks.Status)
 	return nil
 }
@@ -158,7 +188,7 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
-	return common.Install(manifest, version.ServingVersion, &instance.Status)
+	return common.Install(manifest, instance.Spec.GetVersion(), &instance.Status)
 }
 
 // Check for all deployments available
@@ -188,18 +218,8 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 
 // Delete obsolete resources from previous versions
 func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
-	resources := []*unstructured.Unstructured{
-		// istio-system resources from 0.3.
-		common.NamespacedResource("v1", "Service", "istio-system", "knative-ingressgateway"),
-		common.NamespacedResource("apps/v1", "Deployment", "istio-system", "knative-ingressgateway"),
-		common.NamespacedResource("autoscaling/v1", "HorizontalPodAutoscaler", "istio-system", "knative-ingressgateway"),
-		// config-controller from 0.5
-		common.NamespacedResource("v1", "ConfigMap", instance.GetNamespace(), "config-controller"),
-	}
-	for _, r := range resources {
-		if err := manifest.Client.Delete(r); err != nil {
-			return err
-		}
+	if err := manifest.Delete(); err != nil {
+		return fmt.Errorf("failed to delete the obsolete resources: %w", err)
 	}
 	return nil
 }
@@ -222,4 +242,18 @@ func (r *Reconciler) retrieveManifest(ctx context.Context, version string) (mf.M
 
 	r.manifests[version] = manifest
 	return manifest, nil
+}
+
+func (r *Reconciler) retrieveVersions(instance *servingv1alpha1.KnativeServing) (string, string){
+	oldVersion := version.ServingVersion
+	newVersion := version.ServingVersion
+	if instance.Status.GetVersion() != "" {
+		oldVersion = instance.Status.GetVersion()
+	} else {
+		oldVersion = instance.Spec.GetVersion()
+	}
+	if instance.Spec.GetVersion() != "" {
+		newVersion = instance.Spec.GetVersion()
+	}
+	return oldVersion, newVersion
 }

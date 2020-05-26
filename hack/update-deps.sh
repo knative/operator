@@ -22,7 +22,7 @@ export GO111MODULE=on
 export GOFLAGS=-mod=vendor
 
 # This controls the release branch we track.
-VERSION="master"
+VERSION="release-0.15"
 
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/library.sh
 

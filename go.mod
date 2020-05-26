@@ -25,8 +25,8 @@ require (
 	k8s.io/kubernetes v1.16.2 // indirect
 	knative.dev/caching v0.0.0-20200122154023-853d6022845c
 	knative.dev/eventing v0.14.1-0.20200428210242-f355830c4d70
-	knative.dev/pkg v0.0.0-20200508172045-3a7a787c428e
-	knative.dev/test-infra v0.0.0-20200509000045-c7114387eed5
+	knative.dev/pkg v0.0.0-20200519155757-14eb3ae3a5a7
+	knative.dev/test-infra v0.0.0-20200519161858-554a95a37986
 	sigs.k8s.io/yaml v1.2.0
 )
 

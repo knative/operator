@@ -57,6 +57,9 @@ spec:
         spec:
           description: Spec defines the desired state of KnativeServing
           properties:
+            version:
+              description: The version of Knative Serving to be installed
+              type: string
             config:
               additionalProperties:
                 additionalProperties:

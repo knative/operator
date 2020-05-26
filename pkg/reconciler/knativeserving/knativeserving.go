@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-    "path/filepath"
+	"path/filepath"
 	"github.com/go-logr/zapr"
 
 	mf "github.com/manifestival/manifestival"
@@ -99,13 +99,17 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 // converge the two.
 func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.KnativeServing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
+	// Read the old version of the Knative Serving and the version of Knative Serving to be installed
+	oldVerion, newVersion := r.retrieveVersions(ks)
+	if newVersion == "" {
+		logger.Info("No version is specified in Knative Serving CR.")
+		return nil
+	}
+
 	ks.Status.InitializeConditions()
 	ks.Status.ObservedGeneration = ks.Generation
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
-
-	// Read the old version of the Knative Serving and the version of Knative Serving to be installed
-	oldVerion, newVersion := r.retrieveVersions(ks)
 
 	// Get the Serving Manifest to be installed
 	servingManifest, err := r.retrieveManifest(ctx, newVersion)
@@ -188,11 +192,7 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
-	version := version.ServingVersion
-	if instance.Spec.GetVersion() != "" {
-		version = instance.Spec.GetVersion()
-	}
-	return common.Install(manifest, version, &instance.Status)
+	return common.Install(manifest, instance.Spec.GetVersion(), &instance.Status)
 }
 
 // Check for all deployments available
@@ -228,7 +228,7 @@ func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.M
 	return nil
 }
 
-func (r *Reconciler) retrieveManifest(ctx context.Context, version string) (mf.Manifest, error){
+func (r *Reconciler) retrieveManifest(ctx context.Context, version string) (mf.Manifest, error) {
 	if val, found := r.manifests[version]; found {
 		return val, nil
 	}
@@ -248,16 +248,20 @@ func (r *Reconciler) retrieveManifest(ctx context.Context, version string) (mf.M
 	return manifest, nil
 }
 
-func (r *Reconciler) retrieveVersions(instance *servingv1alpha1.KnativeServing) (string, string){
-	oldVersion := version.ServingVersion
+func (r *Reconciler) retrieveVersions(instance *servingv1alpha1.KnativeServing) (string, string) {
+	// The new version is set to the default version
 	newVersion := version.ServingVersion
-	if instance.Status.GetVersion() != "" {
-		oldVersion = instance.Status.GetVersion()
-	} else if instance.Spec.GetVersion() != "" {
-		oldVersion = instance.Spec.GetVersion()
-	}
 	if instance.Spec.GetVersion() != "" {
+		// If the version is set in spec of the CR, pick the version from the spec of the CR
 		newVersion = instance.Spec.GetVersion()
+	}
+
+	// The old version is aligned with the new version by default, meaning there is no upgrade or downgrade
+	oldVersion := newVersion
+	if instance.Status.GetVersion() != "" {
+		// If the version is available in the status of the CR, meaning there is an existing Knative Serving,
+		// pick the version from the status of the CR
+		oldVersion = instance.Status.GetVersion()
 	}
 	return oldVersion, newVersion
 }

@@ -78,15 +78,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 		}
 	}
 
-	oldVerion, _ := r.retrieveVersions(original)
-	servingManifest, err := r.retrieveManifest(ctx, oldVerion)
-	if err != nil {
-		return err
-	} else if len(servingManifest.Resources()) == 0 {
-		return fmt.Errorf("unable to find the manifest for the Knative Serving version %s", version.ServingVersion)
-	}
-
-	manifest, err := r.transform(ctx, original, servingManifest)
+	manifest, err := r.getCurrentManifest(ctx, original)
 	if err != nil {
 		return fmt.Errorf("failed to transform manifest: %w", err)
 	}
@@ -99,12 +91,6 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 // converge the two.
 func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.KnativeServing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
-	// Read the old version of the Knative Serving and the version of Knative Serving to be installed
-	oldVerion, newVersion := r.retrieveVersions(ks)
-	if newVersion == "" {
-		logger.Info("No version is specified in Knative Serving CR.")
-		return nil
-	}
 
 	ks.Status.InitializeConditions()
 	ks.Status.ObservedGeneration = ks.Generation
@@ -112,19 +98,16 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 
 	// Get the Serving Manifest to be installed
-	servingManifest, err := r.retrieveManifest(ctx, newVersion)
+	servingManifest, err := r.getTargetManifest(ctx, ks)
 	if err != nil {
+		ks.Status.MarkInstallFailed(err.Error())
 		return err
-	} else if len(servingManifest.Resources()) == 0 {
-		return fmt.Errorf("unable to find the manifest for the Knative Serving version %s", newVersion)
 	}
 
 	// Get the previous Manifest, which has been installed.
-	oldManifest, err := r.retrieveManifest(ctx, oldVerion)
+	oldManifest, err := r.getCurrentManifest(ctx, ks)
 	if err != nil {
 		return err
-	} else if len(oldManifest.Resources()) == 0 {
-		return fmt.Errorf("unable to find the previous manifest for the Knative Serving version %s", oldVerion)
 	}
 
 	stages := []func(context.Context, *mf.Manifest, *servingv1alpha1.KnativeServing) error{
@@ -133,34 +116,15 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 		r.checkDeployments,
 	}
 
-	deleteStages := []func(context.Context, *mf.Manifest, *servingv1alpha1.KnativeServing) error{
-		r.deleteObsoleteResources,
-	}
-
-	oldManifest, err = r.transform(ctx, ks, oldManifest)
-	if err != nil {
-		return err
-	}
-
-	servingManifest, err = r.transform(ctx, ks, servingManifest)
-	if err != nil {
-		ks.Status.MarkInstallFailed(err.Error())
-		return err
-	}
-
-	// Find the common resources between the old and the current serving manifests
-	manifestApply := servingManifest.Filter(mf.In(oldManifest))
-	manifestDelete := servingManifest.Filter(mf.None(mf.In(oldManifest)))
 	for _, stage := range stages {
-		if err := stage(ctx, &manifestApply, ks); err != nil {
+		if err := stage(ctx, &servingManifest, ks); err != nil {
 			return err
 		}
 	}
 
-	for _, stage := range deleteStages {
-		if err := stage(ctx, &manifestDelete, ks); err != nil {
-			return err
-		}
+	// Remove the resources, that does not exist in the new Serving manifest
+	if err := oldManifest.Filter(mf.None(mf.In(servingManifest))).Delete(); err != nil {
+		return err
 	}
 
 	logger.Infow("Reconcile stages complete", "status", ks.Status)
@@ -168,14 +132,14 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 }
 
 // Transform the resources
-func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.KnativeServing, servingManifest mf.Manifest) (mf.Manifest, error) {
+func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.KnativeServing) ([]mf.Transformer, error) {
 	logger := logging.FromContext(ctx)
 
 	logger.Debug("Transforming manifest")
 
 	platform, err := r.platform.Transformers(r.kubeClientSet, logger)
 	if err != nil {
-		return mf.Manifest{}, err
+		return []mf.Transformer{}, err
 	}
 
 	transformers := common.Transformers(ctx, instance)
@@ -183,9 +147,8 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 		ksc.GatewayTransform(instance, logger),
 		ksc.CustomCertsTransform(instance, logger),
 		ksc.HighAvailabilityTransform(instance, logger),
-		ksc.AggregationRuleTransform(servingManifest.Client))
-	transformers = append(transformers, platform...)
-	return servingManifest.Transform(transformers...)
+		ksc.AggregationRuleTransform(r.mfClient))
+	return append(transformers, platform...), nil
 }
 
 // Apply the manifest resources
@@ -220,15 +183,7 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 	return nil
 }
 
-// Delete obsolete resources from previous versions
-func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
-	if err := manifest.Delete(); err != nil {
-		return fmt.Errorf("failed to delete the obsolete resources: %w", err)
-	}
-	return nil
-}
-
-func (r *Reconciler) retrieveManifest(ctx context.Context, version string) (mf.Manifest, error) {
+func (r *Reconciler) retrieveManifest(ctx context.Context, version string, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
 	if val, found := r.manifests[version]; found {
 		return val, nil
 	}
@@ -244,24 +199,47 @@ func (r *Reconciler) retrieveManifest(ctx context.Context, version string) (mf.M
 		return manifest, err
 	}
 
-	r.manifests[version] = manifest
+	if len(manifest.Resources()) == 0 {
+		return manifest, fmt.Errorf("unable to find the manifest for the Knative Serving version %s", version)
+	}
+
+	// Transform the manifest
+	transformers, err := r.transform(ctx, instance)
+	if err != nil {
+		return mf.Manifest{}, err
+	}
+
+	manifestTransformed, err := manifest.Transform(transformers...)
+	if err != nil {
+		return mf.Manifest{}, err
+	}
+
+	// Save the transformed manifest in the map
+	r.manifests[version] = manifestTransformed
+
 	return manifest, nil
 }
 
-func (r *Reconciler) retrieveVersions(instance *servingv1alpha1.KnativeServing) (string, string) {
-	// The new version is set to the default version
-	newVersion := version.ServingVersion
+func (r *Reconciler) getTargetManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
+	// The version is set to the default version
+	version := version.ServingVersion
 	if instance.Spec.GetVersion() != "" {
 		// If the version is set in spec of the CR, pick the version from the spec of the CR
-		newVersion = instance.Spec.GetVersion()
+		version = instance.Spec.GetVersion()
+	} else if instance.Status.GetVersion() != "" {
+		// If the version is not set in the spec of the CR, use the one in status of the CR
+		version = instance.Status.GetVersion()
 	}
 
-	// The old version is aligned with the new version by default, meaning there is no upgrade or downgrade
-	oldVersion := newVersion
+	return r.retrieveManifest(ctx, version, instance)
+}
+
+func (r *Reconciler) getCurrentManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
+	// The version is set to the default version
+	version := version.ServingVersion
 	if instance.Status.GetVersion() != "" {
-		// If the version is available in the status of the CR, meaning there is an existing Knative Serving,
-		// pick the version from the status of the CR
-		oldVersion = instance.Status.GetVersion()
+		// If the version is set in the status of the CR, pick the version from the status of the CR
+		version = instance.Status.GetVersion()
 	}
-	return oldVersion, newVersion
+	return r.retrieveManifest(ctx, version, instance)
 }

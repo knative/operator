@@ -3,11 +3,12 @@ module knative.dev/operator
 go 1.13
 
 require (
+	github.com/blang/semver/v4 v4.0.0
 	github.com/emicklei/go-restful v2.11.1+incompatible // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-logr/zapr v0.1.1
 	github.com/google/go-cmp v0.4.0
-	github.com/google/go-github/v31 v31.0.0 // indirect
+	github.com/google/go-github/v31 v31.0.0
 	github.com/grpc-ecosystem/grpc-gateway v1.12.2 // indirect
 	github.com/manifestival/client-go-client v0.2.2
 	github.com/manifestival/manifestival v0.5.0

@@ -17,6 +17,7 @@ limitations under the License.
 package common
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -43,6 +44,10 @@ func listKodataReleases(kComponent string) ([]string, error) {
 			releaseTags = append(releaseTags, file.Name())
 		}
 	}
+	if len(releaseTags) == 0 {
+		return releaseTags, fmt.Errorf("unable to find available version number for the Knative Serving")
+	}
+
 	sort.Slice(releaseTags, func(i, j int) bool {
 		return releaseTags[i] > releaseTags[j]
 	})
@@ -55,9 +60,6 @@ func GetLatestKodataReleaseTag(kComponent string) (string, error) {
 	releaseTags, err := listKodataReleases(kComponent)
 	if err != nil {
 		return releaseTag, err
-	}
-	if len(releaseTags) == 0 {
-		return releaseTag, nil
 	}
 
 	releaseTag = releaseTags[0]

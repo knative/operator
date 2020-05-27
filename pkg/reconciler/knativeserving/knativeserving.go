@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"github.com/go-logr/zapr"
 
+	"github.com/go-logr/zapr"
 	mf "github.com/manifestival/manifestival"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 
@@ -33,7 +33,6 @@ import (
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
 	"knative.dev/operator/pkg/reconciler/common"
 	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
-	"knative.dev/operator/version"
 	"knative.dev/pkg/logging"
 
 	pkgreconciler "knative.dev/pkg/reconciler"
@@ -221,25 +220,29 @@ func (r *Reconciler) retrieveManifest(ctx context.Context, version string, insta
 }
 
 func (r *Reconciler) getTargetManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
-	// The version is set to the default version
-	version := version.ServingVersion
 	if instance.Spec.GetVersion() != "" {
 		// If the version is set in spec of the CR, pick the version from the spec of the CR
-		version = instance.Spec.GetVersion()
-	} else if instance.Status.GetVersion() != "" {
-		// If the version is not set in the spec of the CR, use the one in status of the CR
-		version = instance.Status.GetVersion()
+		return r.retrieveManifest(ctx, instance.Spec.GetVersion(), instance)
 	}
 
-	return r.retrieveManifest(ctx, version, instance)
+	return r.getLatestManifest(ctx, instance)
 }
 
 func (r *Reconciler) getCurrentManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
-	// The version is set to the default version
-	version := version.ServingVersion
 	if instance.Status.GetVersion() != "" {
 		// If the version is set in the status of the CR, pick the version from the status of the CR
-		version = instance.Status.GetVersion()
+		return r.retrieveManifest(ctx, instance.Status.GetVersion(), instance)
 	}
+
+	return r.getLatestManifest(ctx, instance)
+}
+
+func (r *Reconciler) getLatestManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
+	// The version is set to the default version
+	version, err := common.GetLatestKodataReleaseTag("knative-serving")
+	if err != nil {
+		return mf.Manifest{}, err
+	}
+
 	return r.retrieveManifest(ctx, version, instance)
 }

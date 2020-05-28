@@ -19,18 +19,19 @@ package knativeserving
 import (
 	"context"
 	"fmt"
-	mf "github.com/manifestival/manifestival"
-	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
+
+	mf "github.com/manifestival/manifestival"
+
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
 	"knative.dev/operator/pkg/reconciler/common"
 	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"knative.dev/pkg/logging"
-
 	pkgreconciler "knative.dev/pkg/reconciler"
 )
 
@@ -152,17 +153,18 @@ func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instanc
 	logger.Debug("Installing manifest")
 
 	version := instance.Spec.GetVersion()
-    var err error = nil
+
 	if version == "" {
 		version = instance.Status.GetVersion()
 	}
 
 	if version == "" {
+		var err error = nil
 		version, err = common.GetLatestRelease("knative-serving")
-	}
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
 	}
 
 	return common.Install(manifest, version, &instance.Status)

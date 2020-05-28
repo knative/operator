@@ -52,7 +52,12 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 	}
 
 	koDataDir := os.Getenv("KO_DATA_PATH")
-	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-eventing/"),
+	version, err := common.GetLatestRelease("knative-eventing")
+	if err != nil {
+		logger.Fatalw("Failed to find the latest release of Knative Eventing", zap.Error(err))
+		version = "0.14.2"
+	}
+	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-eventing/"+version),
 		injection.GetConfig(ctx),
 		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
 	if err != nil {

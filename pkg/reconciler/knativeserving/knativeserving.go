@@ -225,7 +225,7 @@ func (r *Reconciler) getTargetManifest(ctx context.Context, instance *servingv1a
 		return r.retrieveManifest(ctx, instance.Spec.GetVersion(), instance)
 	}
 
-	return r.getLatestLocalManifest(ctx, instance)
+	return r.getCurrentManifest(ctx, instance)
 }
 
 func (r *Reconciler) getCurrentManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {

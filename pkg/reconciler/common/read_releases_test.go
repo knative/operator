@@ -23,9 +23,9 @@ import (
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
-func TestGetLatestKodataReleaseTag(t *testing.T) {
+func TestGetLatestRelease(t *testing.T) {
 	os.Setenv("KO_DATA_PATH", "testdata/kodata")
-	releaseTag, err := GetLatestKodataReleaseTag("knative-serving")
+	releaseTag, err := GetLatestRelease("knative-serving")
 	util.AssertEqual(t, err, nil)
 	util.AssertEqual(t, releaseTag, "0.15.0")
 	os.Unsetenv("KO_DATA_PATH")

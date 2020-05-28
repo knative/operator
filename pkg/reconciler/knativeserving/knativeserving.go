@@ -225,7 +225,7 @@ func (r *Reconciler) getTargetManifest(ctx context.Context, instance *servingv1a
 		return r.retrieveManifest(ctx, instance.Spec.GetVersion(), instance)
 	}
 
-	return r.getLatestManifest(ctx, instance)
+	return r.getLatestLocalManifest(ctx, instance)
 }
 
 func (r *Reconciler) getCurrentManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
@@ -234,10 +234,10 @@ func (r *Reconciler) getCurrentManifest(ctx context.Context, instance *servingv1
 		return r.retrieveManifest(ctx, instance.Status.GetVersion(), instance)
 	}
 
-	return r.getLatestManifest(ctx, instance)
+	return r.getLatestLocalManifest(ctx, instance)
 }
 
-func (r *Reconciler) getLatestManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
+func (r *Reconciler) getLatestLocalManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
 	// The version is set to the default version
 	version, err := common.GetLatestRelease("knative-serving")
 	if err != nil {

@@ -25,7 +25,8 @@ import (
 	"sort"
 )
 
-func listReleases(kComponent string) ([]string, error) {
+// ListReleases returns the all the available release verions available under kodata directory for Knative component.
+func ListReleases(kComponent string) ([]string, error) {
 	releaseTags := []string{}
 	// List all the directories available under kodata
 	koDataDir := os.Getenv("KO_DATA_PATH")
@@ -57,7 +58,7 @@ func listReleases(kComponent string) ([]string, error) {
 // GetLatestRelease returns the latest release tag available under kodata directory for Knative component.
 func GetLatestRelease(kComponent string) (string, error) {
 	releaseTag := ""
-	releaseTags, err := listReleases(kComponent)
+	releaseTags, err := ListReleases(kComponent)
 	if err != nil {
 		return releaseTag, err
 	}

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2020 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,9 +17,6 @@ limitations under the License.
 package version
 
 var (
-	// ServingVersion is the default version that will be applied to the KnativeServing resource.
-	ServingVersion = "0.15.0"
-
 	// EventingVersion is the version that will be applied to the KnativeEventing resource.
 	EventingVersion = "0.14.2"
 )

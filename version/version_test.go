@@ -16,31 +16,54 @@ limitations under the License.
 package version
 
 import (
+	"fmt"
+	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
+	"knative.dev/operator/pkg/reconciler/common"
 )
 
 func TestManifestVersionServingSame(t *testing.T) {
 	_, b, _, _ := runtime.Caller(0)
-	manifest, err := mf.NewManifest(filepath.Join(filepath.Dir(b)+"/..", "cmd/operator/kodata/knative-serving/"))
-	if err != nil {
-		t.Fatal("Failed to load manifest", err)
-	}
 
-	// example: v0.10.1
-	expectedLabelValue := "v" + ServingVersion
-	label := "serving.knative.dev/release"
+	components := []struct {
+		name  string
+		label string
+	}{{
+		name:  "knative-serving",
+		label: "serving.knative.dev/release",
+	}}
 
-	for _, resource := range manifest.Filter(mf.ByLabel(label, "")).Resources() {
-		v := resource.GetLabels()[label]
-		if v != expectedLabelValue {
-			t.Errorf("Version info in manifest and operator don't match. got: %v, want: %v. Resource GVK: %v, Resource name: %v", v, expectedLabelValue,
-				resource.GroupVersionKind(), resource.GetName())
-		}
+	kodata := filepath.Join(filepath.Dir(b)+"/..", "cmd/operator/kodata")
+	os.Setenv("KO_DATA_PATH", kodata)
+	for _, component := range components {
+		t.Run(component.name, func(t *testing.T) {
+			releases, err := common.ListReleases(component.name)
+			if err != nil {
+				t.Fatalf("Failed to get the release versions: %v", err)
+			}
+
+			for _, release := range releases {
+				manifest, err := mf.NewManifest(fmt.Sprintf("%s/%s/%s", kodata, component.name, release))
+				if err != nil {
+					t.Fatal("Failed to load manifest", err)
+				}
+
+				expectedLabelValue := "v" + release
+				for _, resource := range manifest.Filter(mf.ByLabel(component.label, "")).Resources() {
+					v := resource.GetLabels()[component.label]
+					if v != expectedLabelValue {
+						t.Errorf("Version info in manifest and operator don't match. got: %v, want: %v. Resource GVK: %v, Resource name: %v", v, expectedLabelValue,
+							resource.GroupVersionKind(), resource.GetName())
+					}
+				}
+			}
+		})
 	}
+	os.Unsetenv("KO_DATA_PATH")
 }
 
 func TestManifestVersionEventingSame(t *testing.T) {

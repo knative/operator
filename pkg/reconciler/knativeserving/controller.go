@@ -16,7 +16,7 @@ package knativeserving
 import (
 	"context"
 	"fmt"
-	mf "github.com/manifestival/manifestival"
+
 	"go.uber.org/zap"
 
 	operatorclient "knative.dev/operator/pkg/client/injection/client"
@@ -25,6 +25,7 @@ import (
 	"knative.dev/pkg/logging"
 
 	mfc "github.com/manifestival/client-go-client"
+	mf "github.com/manifestival/manifestival"
 	"k8s.io/client-go/tools/cache"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"

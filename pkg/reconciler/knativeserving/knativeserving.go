@@ -96,15 +96,15 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 
-	// Get the Serving Manifest to be installed
-	servingManifest, err := r.getTargetManifest(ctx, ks)
+	// Get the target Serving Manifest to be installed
+	targetManifest, err := r.getTargetManifest(ctx, ks)
 	if err != nil {
 		ks.Status.MarkInstallFailed(err.Error())
 		return err
 	}
 
-	// Get the previous Manifest, which has been installed.
-	oldManifest, err := r.getCurrentManifest(ctx, ks)
+	// Get the current Manifest, which has been installed.
+	currentManifest, err := r.getCurrentManifest(ctx, ks)
 	if err != nil {
 		return err
 	}
@@ -116,13 +116,13 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 	}
 
 	for _, stage := range stages {
-		if err := stage(ctx, &servingManifest, ks); err != nil {
+		if err := stage(ctx, &targetManifest, ks); err != nil {
 			return err
 		}
 	}
 
 	// Remove the resources, that does not exist in the new Serving manifest
-	if err := oldManifest.Filter(mf.None(mf.In(servingManifest))).Delete(); err != nil {
+	if err := currentManifest.Filter(mf.None(mf.In(targetManifest))).Delete(); err != nil {
 		return err
 	}
 
@@ -183,23 +183,26 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 }
 
 func (r *Reconciler) retrieveManifest(ctx context.Context, version string, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
-	if val, found := r.manifests[version]; found {
-		return val, nil
-	}
-
 	logger := logging.FromContext(ctx)
-	koDataDir := os.Getenv("KO_DATA_PATH")
-	manifesrDir := fmt.Sprintf("knative-serving/%s", version)
-	manifest, err := mf.NewManifest(filepath.Join(koDataDir, manifesrDir),
-		mf.UseClient(r.mfClient),
-		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+	var err error
+	manifest, found := r.manifests[version]
+	if !found {
+		koDataDir := os.Getenv("KO_DATA_PATH")
+		manifesrDir := fmt.Sprintf("knative-serving/%s", version)
+		manifest, err = mf.NewManifest(filepath.Join(koDataDir, manifesrDir),
+			mf.UseClient(r.mfClient),
+			mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
 
-	if err != nil {
-		return manifest, err
-	}
+		if err != nil {
+			return manifest, err
+		}
 
-	if len(manifest.Resources()) == 0 {
-		return manifest, fmt.Errorf("unable to find the manifest for the Knative Serving version %s", version)
+		if len(manifest.Resources()) == 0 {
+			return manifest, fmt.Errorf("unable to find the manifest for the Knative Serving version %s", version)
+		}
+
+		// Save the manifest in the map
+		r.manifests[version] = manifest
 	}
 
 	// Transform the manifest
@@ -213,10 +216,7 @@ func (r *Reconciler) retrieveManifest(ctx context.Context, version string, insta
 		return mf.Manifest{}, err
 	}
 
-	// Save the transformed manifest in the map
-	r.manifests[version] = manifestTransformed
-
-	return manifest, nil
+	return manifestTransformed, nil
 }
 
 func (r *Reconciler) getTargetManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
@@ -239,7 +239,7 @@ func (r *Reconciler) getCurrentManifest(ctx context.Context, instance *servingv1
 
 func (r *Reconciler) getLatestManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
 	// The version is set to the default version
-	version, err := common.GetLatestKodataReleaseTag("knative-serving")
+	version, err := common.GetLatestRelease("knative-serving")
 	if err != nil {
 		return mf.Manifest{}, err
 	}

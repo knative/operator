@@ -17,12 +17,18 @@ limitations under the License.
 package common
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
+
+	"github.com/go-logr/zapr"
+	mf "github.com/manifestival/manifestival"
+
+	"knative.dev/pkg/logging"
 )
 
 // ListReleases returns the all the available release verions available under kodata directory for Knative component.
@@ -65,4 +71,23 @@ func GetLatestRelease(kComponent string) (string, error) {
 
 	releaseTag = releaseTags[0]
 	return releaseTag, nil
+}
+
+func RetrieveManifest(ctx context.Context, version string, mfClient mf.Client) (mf.Manifest, error) {
+	logger := logging.FromContext(ctx)
+	koDataDir := os.Getenv("KO_DATA_PATH")
+	manifestDir := fmt.Sprintf("knative-serving/%s", version)
+	manifest, err := mf.NewManifest(filepath.Join(koDataDir, manifestDir),
+		mf.UseClient(mfClient),
+		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+
+	if err != nil {
+		return manifest, err
+	}
+
+	if len(manifest.Resources()) == 0 {
+		return manifest, fmt.Errorf("unable to find the manifest for the Knative Serving version %s", version)
+	}
+
+	return manifest, nil
 }

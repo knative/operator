@@ -208,8 +208,8 @@ func (r *Reconciler) getTargetManifest(ctx context.Context, instance *servingv1a
 	ver, err := common.GetEarliestSupportedRelease("knative-serving")
 	if err == nil && version < ver {
 		// If the version of the existing Knative serving deployment is prior to the earliest supported version,
-		// we need to pick the earliest supported version.
-		version = ver
+		// we need to pick the latest supported version for upgrade.
+		return r.getLatestManifest(ctx, instance)
 	}
 
 	return r.tranformManifest(ctx, version, instance)
@@ -247,6 +247,14 @@ func (r *Reconciler) tranformManifest(ctx context.Context, version string,
 		if err != nil {
 			return manifest, err
 		}
+
+		// Append the net-istio resources
+		manifestNet, err := common.RetrieveNetworkManifest(ctx, r.mfClient)
+		if err != nil {
+			return manifest, err
+		}
+
+		manifest = manifest.Append(manifestNet)
 
 		// Save the manifest in the map
 		r.manifests[version] = manifest

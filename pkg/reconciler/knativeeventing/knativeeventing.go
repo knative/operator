@@ -198,8 +198,8 @@ func (r *Reconciler) getTargetManifest(ctx context.Context, instance *eventingv1
 	ver, err := common.GetEarliestSupportedRelease("knative-eventing")
 	if err == nil && version < ver {
 		// If the version of the existing Knative eventing deployment is prior to the earliest supported version,
-		// we need to pick the earliest supported version.
-		version = ver
+		// we need to pick the latest supported version for upgrade.
+		return r.getLatestManifest(ctx, instance)
 	}
 
 	return r.tranformManifest(ctx, version, instance)

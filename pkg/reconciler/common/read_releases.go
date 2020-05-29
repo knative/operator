@@ -89,6 +89,25 @@ func GetLatestRelease(kComponent string) (string, error) {
 	return releaseTag, nil
 }
 
+// RetrieveNetworkManifest returns the manifest for net istio based a provided version
+func RetrieveNetworkManifest(ctx context.Context, mfClient mf.Client) (mf.Manifest, error) {
+	logger := logging.FromContext(ctx)
+	koDataDir := os.Getenv("KO_DATA_PATH")
+	manifest, err := mf.NewManifest(filepath.Join(koDataDir, "net-istio"),
+		mf.UseClient(mfClient),
+		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+
+	if err != nil {
+		return manifest, err
+	}
+
+	if len(manifest.Resources()) == 0 {
+		return manifest, fmt.Errorf("unable to find the manifest for the net-istio")
+	}
+
+	return manifest, nil
+}
+
 // RetrieveManifest returns the manifest for Knative based a provided version
 func RetrieveManifest(ctx context.Context, version, component string, mfClient mf.Client,
 	yamlList []string) (mf.Manifest, error) {

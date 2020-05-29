@@ -43,7 +43,7 @@ const (
 	controllerAgentName = "knativeserving-controller"
 )
 
-var yamlList = []string{"serving-core.yaml", "serving-hpa.yaml", "net-istio.yaml"}
+var yamlList = []string{"serving-core.yaml", "serving-hpa.yaml"}
 
 // NewController initializes the controller and is called by the generated code
 // Registers eventhandlers to enqueue events

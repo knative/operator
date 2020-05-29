@@ -19,10 +19,7 @@ package knativeserving
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
-	"github.com/go-logr/zapr"
 	mf "github.com/manifestival/manifestival"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 
@@ -79,7 +76,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 
 	manifest, err := r.getCurrentManifest(ctx, original)
 	if err != nil {
-		return fmt.Errorf("failed to transform manifest: %w", err)
+		return err
 	}
 
 	logger.Info("Deleting cluster-scoped resources")
@@ -121,7 +118,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 		}
 	}
 
-	// Remove the resources, that does not exist in the new Serving manifest
+	// Remove the resources that do not exist in the new Serving manifest
 	if err := currentManifest.Filter(mf.None(mf.In(targetManifest))).Delete(); err != nil {
 		return err
 	}
@@ -154,7 +151,21 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
-	return common.Install(manifest, instance.Spec.GetVersion(), &instance.Status)
+
+	version := instance.Spec.GetVersion()
+	var err error = nil
+	if version == "" {
+		version = instance.Status.GetVersion()
+	}
+
+	if version == "" {
+		version, err = common.GetLatestRelease("knative-serving")
+	}
+
+	if err != nil {
+		return err
+	}
+	return common.Install(manifest, version, &instance.Status)
 }
 
 // Check for all deployments available
@@ -182,61 +193,27 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 	return nil
 }
 
-func (r *Reconciler) retrieveManifest(ctx context.Context, version string, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
-	logger := logging.FromContext(ctx)
-	var err error
-	manifest, found := r.manifests[version]
-	if !found {
-		koDataDir := os.Getenv("KO_DATA_PATH")
-		manifesrDir := fmt.Sprintf("knative-serving/%s", version)
-		manifest, err = mf.NewManifest(filepath.Join(koDataDir, manifesrDir),
-			mf.UseClient(r.mfClient),
-			mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
-
-		if err != nil {
-			return manifest, err
-		}
-
-		if len(manifest.Resources()) == 0 {
-			return manifest, fmt.Errorf("unable to find the manifest for the Knative Serving version %s", version)
-		}
-
-		// Save the manifest in the map
-		r.manifests[version] = manifest
-	}
-
-	// Transform the manifest
-	transformers, err := r.transform(ctx, instance)
-	if err != nil {
-		return mf.Manifest{}, err
-	}
-
-	manifestTransformed, err := manifest.Transform(transformers...)
-	if err != nil {
-		return mf.Manifest{}, err
-	}
-
-	return manifestTransformed, nil
-}
-
+// getTargetManifest returns the manifest to be installed
 func (r *Reconciler) getTargetManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
 	if instance.Spec.GetVersion() != "" {
 		// If the version is set in spec of the CR, pick the version from the spec of the CR
-		return r.retrieveManifest(ctx, instance.Spec.GetVersion(), instance)
+		return r.tranformManifest(ctx, instance.Spec.GetVersion(), instance)
 	}
 
-	return r.getLatestManifest(ctx, instance)
+	return r.getCurrentManifest(ctx, instance)
 }
 
+// getCurrentManifest returns the manifest which has been installed
 func (r *Reconciler) getCurrentManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
 	if instance.Status.GetVersion() != "" {
 		// If the version is set in the status of the CR, pick the version from the status of the CR
-		return r.retrieveManifest(ctx, instance.Status.GetVersion(), instance)
+		return r.tranformManifest(ctx, instance.Status.GetVersion(), instance)
 	}
 
 	return r.getLatestManifest(ctx, instance)
 }
 
+// getLatestManifest returns the manifest of the latest version locally available
 func (r *Reconciler) getLatestManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
 	// The version is set to the default version
 	version, err := common.GetLatestRelease("knative-serving")
@@ -244,5 +221,35 @@ func (r *Reconciler) getLatestManifest(ctx context.Context, instance *servingv1a
 		return mf.Manifest{}, err
 	}
 
-	return r.retrieveManifest(ctx, version, instance)
+	return r.tranformManifest(ctx, version, instance)
+}
+
+// transformManifest tranforms the manifest by providing the version number and the Knative Serving CR
+func (r *Reconciler) tranformManifest(ctx context.Context, version string,
+	instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
+	manifest, found := r.manifests[version]
+	var err error = nil
+	if !found {
+		manifest, err = common.RetrieveManifest(ctx, version, r.mfClient)
+		if err != nil {
+			return manifest, err
+		}
+
+		// Save the manifest in the map
+		r.manifests[version] = manifest
+	}
+
+	// Create the transformer for Knative Serving
+	transformers, err := r.transform(ctx, instance)
+	if err != nil {
+		return mf.Manifest{}, err
+	}
+
+	// Transform the manifest
+	manifestTransformed, err := manifest.Transform(transformers...)
+	if err != nil {
+		return mf.Manifest{}, err
+	}
+
+	return manifestTransformed, nil
 }

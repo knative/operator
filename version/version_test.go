@@ -16,8 +16,11 @@ limitations under the License.
 package version
 
 import (
+	"fmt"
+	util "knative.dev/operator/pkg/reconciler/common/testing"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
@@ -45,7 +48,7 @@ func TestManifestVersionServingSame(t *testing.T) {
 
 func TestManifestVersionEventingSame(t *testing.T) {
 	_, b, _, _ := runtime.Caller(0)
-	manifest, err := mf.NewManifest(filepath.Join(filepath.Dir(b)+"/..", "cmd/operator/kodata/knative-eventing/"))
+	manifest, err := mf.NewManifest(filepath.Join(filepath.Dir(b)+"/..", "cmd/operator/kodata/knative-eventing/0.14.2"))
 	if err != nil {
 		t.Fatal("Failed to load manifest", err)
 	}
@@ -61,4 +64,45 @@ func TestManifestVersionEventingSame(t *testing.T) {
 				resource.GroupVersionKind(), resource.GetName())
 		}
 	}
+}
+
+func TestManifestVersionEventingSame1(t *testing.T) {
+	yaml := "upgrade-to-v%s.yaml"
+	component := "eventing"
+	version := "0.15.0"
+	RELEASE_LINK := "https://github.com/knative/%s/releases/download/v%s/%s"
+	file := yaml
+	if strings.Contains(yaml, "%s") {
+		file = fmt.Sprintf(yaml, version)
+	}
+	fmt.Println(file)
+	fileLink := fmt.Sprintf(RELEASE_LINK, component, version, file)
+	fmt.Println(fileLink)
+	manifest, err := mf.NewManifest(fileLink)
+	if err != nil {
+		t.Fatal("Failed to load manifest", err)
+	}
+	util.AssertEqual(t, len(manifest.Resources()) == 0, false)
+
+	yaml = "eventing-crds.yaml"
+	file = yaml
+	if strings.Contains(yaml, "%s") {
+		file = fmt.Sprintf(yaml, version)
+	}
+	fmt.Println(file)
+	fileLink = fmt.Sprintf(RELEASE_LINK, component, version, file)
+	fmt.Println(fileLink)
+	manifest1, err1 := mf.NewManifest(fileLink)
+	if err1 != nil {
+		t.Fatal("Failed to load manifest", err)
+	}
+
+	fmt.Println("old manifest")
+	fmt.Println(manifest)
+	manifest = manifest.Append(manifest1)
+
+	fmt.Println("new manifest")
+	fmt.Println(manifest)
+	util.AssertEqual(t, len(manifest.Resources()), 100)
+
 }

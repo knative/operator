@@ -200,14 +200,27 @@ func (r *Reconciler) getTargetManifest(ctx context.Context, instance *servingv1a
 		return r.tranformManifest(ctx, instance.Spec.GetVersion(), instance)
 	}
 
-	return r.getCurrentManifest(ctx, instance)
+	version := instance.Status.GetVersion()
+	if version == "" {
+		return r.getLatestManifest(ctx, instance)
+	}
+
+	ver, err := common.GetEarliestSupportedRelease("knative-serving")
+	if err == nil && version < ver {
+		// If the version of the existing Knative serving deployment is prior to the earliest supported version,
+		// we need to pick the earliest supported version.
+		version = ver
+	}
+
+	return r.tranformManifest(ctx, version, instance)
 }
 
 // getCurrentManifest returns the manifest which has been installed
 func (r *Reconciler) getCurrentManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
 	if instance.Status.GetVersion() != "" {
 		// If the version is set in the status of the CR, pick the version from the status of the CR
-		return r.tranformManifest(ctx, instance.Status.GetVersion(), instance)
+		version := instance.Status.GetVersion()
+		return r.tranformManifest(ctx, version, instance)
 	}
 
 	return r.getLatestManifest(ctx, instance)
@@ -230,7 +243,7 @@ func (r *Reconciler) tranformManifest(ctx context.Context, version string,
 	manifest, found := r.manifests[version]
 	var err error = nil
 	if !found {
-		manifest, err = common.RetrieveManifest(ctx, version, r.mfClient)
+		manifest, err = common.RetrieveManifest(ctx, version, "serving", r.mfClient, yamlList)
 		if err != nil {
 			return manifest, err
 		}

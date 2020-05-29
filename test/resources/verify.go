@@ -242,7 +242,7 @@ func verifyNoKSOperatorCR(clients *test.Clients) error {
 func AssertKnativeDeploymentStatus(t *testing.T, clients *test.Clients, namespace string, expectedDeployments []string) {
 	if err := WaitForKnativeDeploymentState(clients, namespace, expectedDeployments, t.Logf,
 		IsKnativeDeploymentReady); err != nil {
-		t.Fatalf("Knative Serving deployments failed to meet the expected deployments: %v", err)
+		t.Fatalf("Knative deployments failed to meet the expected deployments: %v", err)
 	}
 }
 

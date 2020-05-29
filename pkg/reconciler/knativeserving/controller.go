@@ -43,6 +43,8 @@ const (
 	controllerAgentName = "knativeserving-controller"
 )
 
+var yamlList = []string{"serving-core.yaml", "serving-hpa.yaml", "net-istio.yaml"}
+
 // NewController initializes the controller and is called by the generated code
 // Registers eventhandlers to enqueue events
 func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {

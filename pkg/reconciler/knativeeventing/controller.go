@@ -15,10 +15,7 @@ package knativeeventing
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 
-	"github.com/go-logr/zapr"
 	mfc "github.com/manifestival/client-go-client"
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
@@ -38,6 +35,11 @@ import (
 	"knative.dev/pkg/logging"
 )
 
+var (
+	yamlList = []string{"eventing-core.yaml", "channel-broker.yaml", "mt-channel-broker.yaml", "in-memory-channel.yaml",
+		"upgrade-to-v%s.yaml"}
+)
+
 // NewController initializes the controller and is called by the generated code
 // Registers eventhandlers to enqueue events
 func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
@@ -51,19 +53,18 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		logger.Fatalw("Failed to remove old resources", zap.Error(err))
 	}
 
-	koDataDir := os.Getenv("KO_DATA_PATH")
-	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-eventing/"),
-		injection.GetConfig(ctx),
-		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+	mfClient, err := mfc.NewClient(injection.GetConfig(ctx))
 	if err != nil {
-		logger.Fatalw("Error creating the Manifest for knative-eventing", zap.Error(err))
+		logger.Fatal(err)
 	}
 
+	manifests := make(map[string]mf.Manifest)
 	c := &Reconciler{
 		kubeClientSet:     kubeClient,
 		operatorClientSet: operatorclient.Get(ctx),
 		platform:          common.GetPlatforms(ctx),
-		config:            config,
+		mfClient:          mfClient,
+		manifests:         manifests,
 	}
 	impl := knereconciler.NewImpl(ctx, c)
 

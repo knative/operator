@@ -160,20 +160,10 @@ func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke *eve
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
 
-	version := ke.Spec.GetVersion()
-	var err error = nil
-	if version == "" {
-		version = ke.Status.GetVersion()
-	}
-
-	if version == "" {
-		version, err = common.GetLatestRelease("knative-serving")
-	}
-
+	version, err := common.GetCurrentVersion("knative-eventing", ke.Spec.GetVersion(), ke.Status.GetVersion())
 	if err != nil {
 		return err
 	}
-
 	return common.Install(manifest, version, &ke.Status)
 }
 
@@ -185,23 +175,10 @@ func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest
 
 // getTargetManifest returns the manifest to be installed
 func (r *Reconciler) getTargetManifest(ctx context.Context, instance *eventingv1alpha1.KnativeEventing) (mf.Manifest, error) {
-	if instance.Spec.GetVersion() != "" {
-		// If the version is set in spec of the CR, pick the version from the spec of the CR
-		return r.tranformManifest(ctx, instance.Spec.GetVersion(), instance)
+	version, err := common.GetCurrentVersion("knative-eventing", instance.Spec.GetVersion(), instance.Status.GetVersion())
+	if err != nil {
+		return mf.Manifest{}, err
 	}
-
-	version := instance.Status.GetVersion()
-	if version == "" {
-		return r.getLatestManifest(ctx, instance)
-	}
-
-	ver, err := common.GetEarliestSupportedRelease("knative-eventing")
-	if err == nil && version < ver {
-		// If the version of the existing Knative eventing deployment is prior to the earliest supported version,
-		// we need to pick the latest supported version for upgrade.
-		return r.getLatestManifest(ctx, instance)
-	}
-
 	return r.tranformManifest(ctx, version, instance)
 }
 
@@ -223,6 +200,8 @@ func (r *Reconciler) getLatestManifest(ctx context.Context, instance *eventingv1
 		return mf.Manifest{}, err
 	}
 
+	fmt.Println("latest version is")
+	fmt.Println(version)
 	return r.tranformManifest(ctx, version, instance)
 }
 

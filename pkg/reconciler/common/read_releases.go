@@ -132,9 +132,6 @@ func RetrieveManifest(ctx context.Context, version, component string, mfClient m
 			if err != nil {
 				return manifest, err
 			}
-			if len(manifestYaml.Resources()) == 0 {
-				return manifest, fmt.Errorf("The following file is not valid, since it does not contain any resource: %s", fileLink)
-			}
 			fmt.Println("appending", fileLink)
 			fmt.Println("I found resources")
 			fmt.Println(len(manifestYaml.Resources()))
@@ -154,4 +151,27 @@ func RetrieveManifest(ctx context.Context, version, component string, mfClient m
 	}
 
 	return manifest, nil
+}
+
+func GetCurrentVersion(component, specVer, statusVer string) (string, error) {
+	if specVer != "" {
+		return specVer, nil
+	}
+
+	if statusVer == "" {
+		ver, err := GetLatestRelease(component)
+		if err != nil {
+			return "", err
+		}
+		return ver, nil
+	}
+
+	ver, err := GetEarliestSupportedRelease(component)
+	if err == nil && statusVer < ver {
+		// If the version of the existing Knative deployment is prior to the earliest supported version,
+		// we need to pick the earliest supported version for upgrade.
+		// TODO: we need discussion here.
+		return ver, nil
+	}
+	return statusVer, nil
 }

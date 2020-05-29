@@ -152,16 +152,7 @@ func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instanc
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
 
-	version := instance.Spec.GetVersion()
-	var err error = nil
-	if version == "" {
-		version = instance.Status.GetVersion()
-	}
-
-	if version == "" {
-		version, err = common.GetLatestRelease("knative-serving")
-	}
-
+	version, err := common.GetCurrentVersion("knative-serving", instance.Spec.GetVersion(), instance.Status.GetVersion())
 	if err != nil {
 		return err
 	}
@@ -195,23 +186,10 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 
 // getTargetManifest returns the manifest to be installed
 func (r *Reconciler) getTargetManifest(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
-	if instance.Spec.GetVersion() != "" {
-		// If the version is set in spec of the CR, pick the version from the spec of the CR
-		return r.tranformManifest(ctx, instance.Spec.GetVersion(), instance)
+	version, err := common.GetCurrentVersion("knative-serving", instance.Spec.GetVersion(), instance.Status.GetVersion())
+	if err != nil {
+		return mf.Manifest{}, err
 	}
-
-	version := instance.Status.GetVersion()
-	if version == "" {
-		return r.getLatestManifest(ctx, instance)
-	}
-
-	ver, err := common.GetEarliestSupportedRelease("knative-serving")
-	if err == nil && version < ver {
-		// If the version of the existing Knative serving deployment is prior to the earliest supported version,
-		// we need to pick the latest supported version for upgrade.
-		return r.getLatestManifest(ctx, instance)
-	}
-
 	return r.tranformManifest(ctx, version, instance)
 }
 

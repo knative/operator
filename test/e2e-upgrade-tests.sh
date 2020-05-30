@@ -35,7 +35,6 @@ export GO111MODULE=auto
 
 source $(dirname $0)/e2e-common.sh
 
-#function install_previous_serving_operator_release() {
 function download_install_previous_operator_release() {
   local full_url="https://github.com/knative/operator/releases/download/${PREVIOUS_OPERATOR_RELEASE_VERSION}/operator.yaml"
 

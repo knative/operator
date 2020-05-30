@@ -183,6 +183,10 @@ func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.M
 		common.ClusterScopedResource("apiextensions.k8s.io/v1beta1", "CustomResourceDefinition", "sinkbindings.sources.eventing.knative.dev"),
 		// Remove the deployment sources-controller at 0.13
 		common.NamespacedResource("apps/v1", "Deployment", instance.GetNamespace(), "sources-controller"),
+		// Remove the resources at at 0.14
+		common.NamespacedResource("v1", "ServiceAccount", instance.GetNamespace(), "pingsource-jobrunner"),
+		common.ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRole", "knative-eventing-jobrunner"),
+		common.ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRoleBinding", "pingsource-jobrunner"),
 	}
 	for _, r := range resources {
 		if err := manifest.Client.Delete(r); err != nil {

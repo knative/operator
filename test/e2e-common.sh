@@ -38,9 +38,9 @@ readonly TEST_EVENTING_NAMESPACE="knative-eventing"
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch SERVING_REPO_BRANCH.
 GENERATE_SERVING_YAML=0
 # This is the current minor release of Knative Serving to be install for upgrade
-CURRENT_SERVING_RELEASE_VERSION="0.14.0"
+CURRENT_SERVING_RELEASE_VERSION="0.15.0"
 # This is the current minor release of Knative Eventing to be install for upgrade
-CURRENT_EVENTING_RELEASE_VERSION="0.14.2"
+CURRENT_EVENTING_RELEASE_VERSION="0.15.0"
 
 OPERATOR_DIR=$(dirname $0)/..
 KNATIVE_SERVING_DIR=${OPERATOR_DIR}/..

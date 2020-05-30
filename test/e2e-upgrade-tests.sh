@@ -52,6 +52,35 @@ function install_previous_operator_release() {
   wait_until_pods_running default || fail_test "Operator did not come up"
 }
 
+function create_custom_resource_no_version() {
+  echo ">> Creating the custom resource of Knative Serving:"
+  cat <<EOF | kubectl apply -f -
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeServing
+metadata:
+  name: knative-serving
+  namespace: ${TEST_NAMESPACE}
+spec:
+  config:
+    defaults:
+      revision-timeout-seconds: "300"  # 5 minutes
+    autoscaler:
+      stable-window: "60s"
+    deployment:
+      registriesSkippingTagResolving: "ko.local,dev.local"
+    logging:
+      loglevel.controller: "debug"
+EOF
+  echo ">> Creating the custom resource of Knative Eventing:"
+  cat <<-EOF | kubectl apply -f -
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+  namespace: ${TEST_EVENTING_NAMESPACE}
+EOF
+}
+
 function create_custom_resource() {
   local serving_version=$1
   local eventing_version=$2
@@ -89,7 +118,7 @@ EOF
 function knative_setup() {
   create_namespace
   download_install_previous_operator_release
-  create_custom_resource
+  create_custom_resource_no_version
   wait_until_pods_running ${TEST_NAMESPACE}
   wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 }

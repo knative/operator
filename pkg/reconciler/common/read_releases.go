@@ -166,12 +166,5 @@ func GetCurrentVersion(component, specVer, statusVer string) (string, error) {
 		return ver, nil
 	}
 
-	ver, err := GetEarliestSupportedRelease(component)
-	if err == nil && statusVer < ver {
-		// If the version of the existing Knative deployment is prior to the earliest supported version,
-		// we need to pick the earliest supported version for upgrade.
-		// TODO: we need discussion here.
-		return ver, nil
-	}
 	return statusVer, nil
 }

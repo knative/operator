@@ -17,7 +17,7 @@ kind: ClusterRole
 metadata:
   name: custom-metrics-server-resources
   labels:
-    serving.knative.dev/release: "v0.14.0"
+    serving.knative.dev/release: "v0.15.0"
     autoscaling.knative.dev/metric-provider: custom-metrics
 rules:
 - apiGroups: ["custom.metrics.k8s.io"]
@@ -44,7 +44,7 @@ kind: ClusterRoleBinding
 metadata:
   name: custom-metrics:system:auth-delegator
   labels:
-    serving.knative.dev/release: "v0.14.0"
+    serving.knative.dev/release: "v0.15.0"
     autoscaling.knative.dev/metric-provider: custom-metrics
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -75,7 +75,7 @@ kind: ClusterRoleBinding
 metadata:
   name: hpa-controller-custom-metrics
   labels:
-    serving.knative.dev/release: "v0.14.0"
+    serving.knative.dev/release: "v0.15.0"
     autoscaling.knative.dev/metric-provider: custom-metrics
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -107,7 +107,7 @@ metadata:
   name: custom-metrics-auth-reader
   namespace: kube-system
   labels:
-    serving.knative.dev/release: "v0.14.0"
+    serving.knative.dev/release: "v0.15.0"
     autoscaling.knative.dev/metric-provider: custom-metrics
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -139,7 +139,7 @@ metadata:
   name: autoscaler-hpa
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.14.0"
+    serving.knative.dev/release: "v0.15.0"
     autoscaling.knative.dev/autoscaler-provider: hpa
 spec:
   selector:
@@ -151,14 +151,14 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
       labels:
         app: autoscaler-hpa
-        serving.knative.dev/release: "v0.14.0"
+        serving.knative.dev/release: "v0.15.0"
     spec:
       serviceAccountName: controller
       containers:
       - name: autoscaler-hpa
         # This is the Go import path for the binary that is containerized
         # and substituted here.
-        image: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler-hpa@sha256:a3941ff9d5bdd728ae6aabdf6c52a2e05888654cfbf9ac26aa8f3e091dbdd30c
+        image: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler-hpa@sha256:807a4ccd295b2ac1a29b5f60b869ff60930d4ebfdc9421b2c041dd17f0c1279c
         resources:
           requests:
             cpu: 30m
@@ -191,7 +191,7 @@ kind: Service
 metadata:
   labels:
     app: autoscaler-hpa
-    serving.knative.dev/release: "v0.14.0"
+    serving.knative.dev/release: "v0.15.0"
     autoscaling.knative.dev/autoscaler-provider: hpa
   name: autoscaler-hpa
   namespace: knative-serving
@@ -227,7 +227,7 @@ kind: APIService
 metadata:
   name: v1beta1.custom.metrics.k8s.io
   labels:
-    serving.knative.dev/release: "v0.14.0"
+    serving.knative.dev/release: "v0.15.0"
     autoscaling.knative.dev/metric-provider: custom-metrics
 spec:
   service:

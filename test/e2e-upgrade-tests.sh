@@ -35,7 +35,6 @@ export GO111MODULE=auto
 
 source $(dirname $0)/e2e-common.sh
 
-#function install_previous_serving_operator_release() {
 function download_install_previous_operator_release() {
   local full_url="https://github.com/knative/operator/releases/download/${PREVIOUS_OPERATOR_RELEASE_VERSION}/operator.yaml"
 
@@ -54,6 +53,8 @@ function install_previous_operator_release() {
 }
 
 function create_custom_resource() {
+  local serving_version=$1
+  local eventing_version=$2
   echo ">> Creating the custom resource of Knative Serving:"
   cat <<EOF | kubectl apply -f -
 apiVersion: operator.knative.dev/v1alpha1
@@ -62,6 +63,7 @@ metadata:
   name: knative-serving
   namespace: ${TEST_NAMESPACE}
 spec:
+  version: ${serving_version}
   config:
     defaults:
       revision-timeout-seconds: "300"  # 5 minutes
@@ -79,6 +81,8 @@ kind: KnativeEventing
 metadata:
   name: knative-eventing
   namespace: ${TEST_EVENTING_NAMESPACE}
+spec:
+  version: ${eventing_version}
 EOF
 }
 
@@ -174,6 +178,7 @@ PROBER_PID=$!
 echo "Prober PID is ${PROBER_PID}"
 
 install_operator
+create_custom_resource ${CURRENT_SERVING_RELEASE_VERSION} ${CURRENT_EVENTING_RELEASE_VERSION}
 
 # If we got this far, the operator installed Knative of the latest source code.
 header "Running tests for Knative Operator"

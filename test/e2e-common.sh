@@ -17,11 +17,14 @@
 # This script provides helper methods to perform cluster actions.
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
-# Latest serving operator release.
-readonly LATEST_SERVING_OPERATOR_RELEASE_VERSION="v0.13.2"
-# Latest serving release, installed by the operator at LATEST_SERVING_OPERATOR_RELEASE_VERSION. This can be
-# different from LATEST_SERVING_OPERATOR_RELEASE_VERSION.
-LATEST_SERVING_RELEASE_VERSION="v0.13.2"
+# The previous operator release.
+readonly PREVIOUS_OPERATOR_RELEASE_VERSION="v0.14.2"
+# The previous serving release, installed by the operator at PREVIOUS_OPERATOR_RELEASE_VERSION. This can be
+# different from PREVIOUS_OPERATOR_RELEASE_VERSION.
+readonly PREVIOUS_SERVING_RELEASE_VERSION="v0.14.0"
+# The previous eventing release, installed by the operator at PREVIOUS_OPERATOR_RELEASE_VERSION. This can be
+# different from PREVIOUS_OPERATOR_RELEASE_VERSION.
+readonly PREVIOUS_EVENTING_RELEASE_VERSION="v0.14.2"
 # This is the branch name of serving repo, where we run the upgrade tests.
 SERVING_REPO_BRANCH=${PULL_BASE_REF}
 # Istio version we test with
@@ -117,10 +120,10 @@ function donwload_knative_serving() {
 
 # Install Istio.
 function install_istio() {
-  local base_url="https://raw.githubusercontent.com/knative/serving/${LATEST_SERVING_RELEASE_VERSION}"
+  local base_url="https://raw.githubusercontent.com/knative/serving/${PREVIOUS_SERVING_RELEASE_VERSION}"
   local istio_version="istio-${ISTIO_VERSION}"
   if [[ ${istio_version} == *-latest ]] ; then
-    istio_version=$(curl https://raw.githubusercontent.com/knative/serving/${LATEST_SERVING_RELEASE_VERSION}/third_party/${istio_version})
+    istio_version=$(curl https://raw.githubusercontent.com/knative/serving/${PREVIOUS_SERVING_RELEASE_VERSION}/third_party/${istio_version})
   fi
   INSTALL_ISTIO_CRD_YAML="${base_url}/$(istio_crds_yaml $istio_version)"
   INSTALL_ISTIO_YAML="${base_url}/$(istio_yaml $istio_version $ISTIO_MESH)"

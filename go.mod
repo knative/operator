@@ -9,7 +9,7 @@ require (
 	github.com/google/go-cmp v0.4.0
 	github.com/grpc-ecosystem/grpc-gateway v1.12.2 // indirect
 	github.com/manifestival/client-go-client v0.2.2
-	github.com/manifestival/manifestival v0.5.0
+	github.com/manifestival/manifestival v0.5.1-0.20200526175228-b0136214e13f
 	github.com/pkg/errors v0.9.1
 	go.opencensus.io v0.22.3
 	go.uber.org/zap v1.14.1
@@ -22,7 +22,6 @@ require (
 	k8s.io/apimachinery v0.17.3
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/code-generator v0.18.0
-	k8s.io/kubernetes v1.16.2 // indirect
 	knative.dev/caching v0.0.0-20200122154023-853d6022845c
 	knative.dev/eventing v0.14.1-0.20200428210242-f355830c4d70
 	knative.dev/pkg v0.0.0-20200519155757-14eb3ae3a5a7

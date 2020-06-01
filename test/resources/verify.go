@@ -238,10 +238,10 @@ func verifyNoKSOperatorCR(clients *test.Clients) error {
 	return nil
 }
 
-// AssertKSOperatorDeploymentStatus verifies if the Knative deployments reach the READY status.
-func AssertKSOperatorDeploymentStatus(t *testing.T, clients *test.Clients, namespace string, expectedDeployments []string) {
-	if _, err := WaitForKnativeServingDeploymentState(clients, namespace, expectedDeployments,
-		IsKnativeServingDeploymentReady); err != nil {
+// AssertKnativeDeploymentStatus verifies if the Knative deployments reach the READY status.
+func AssertKnativeDeploymentStatus(t *testing.T, clients *test.Clients, namespace string, expectedDeployments []string) {
+	if err := WaitForKnativeDeploymentState(clients, namespace, expectedDeployments, t.Logf,
+		IsKnativeDeploymentReady); err != nil {
 		t.Fatalf("Knative Serving deployments failed to meet the expected deployments: %v", err)
 	}
 }
@@ -341,12 +341,4 @@ func verifyNoKnativeEventings(clients *test.Clients) error {
 		return errors.New("Unable to verify cluster-scoped resources are deleted if any KnativeEventing exists")
 	}
 	return nil
-}
-
-// AssertKEOperatorDeploymentStatus verifies if the Knative deployments reach the READY status.
-func AssertKEOperatorDeploymentStatus(t *testing.T, clients *test.Clients, namespace string, expectedDeployments []string) {
-	if err := WaitForKnativeEventingDeploymentState(clients, namespace, expectedDeployments, t.Logf,
-		IsKnativeEventingDeploymentReady); err != nil {
-		t.Fatalf("Knative Eventing deployments failed to meet the expected deployments: %v", err)
-	}
 }

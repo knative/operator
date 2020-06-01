@@ -49,7 +49,7 @@ func TestKnativeServingPostUpgrade(t *testing.T) {
 		// TODO: We only verify the deployment, but we need to add other resources as well, like ServiceAccount, ClusterRoleBinding, etc.
 		expectedDeployments := []string{"networking-istio", "webhook", "controller", "activator", "autoscaler-hpa",
 			"autoscaler", "istio-webhook"}
-		resources.AssertKSOperatorDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
 	})
 }

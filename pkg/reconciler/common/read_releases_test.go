@@ -18,15 +18,17 @@ package common
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
-
-	mf "github.com/manifestival/manifestival"
 
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
-func TestRetrieveManifest(t *testing.T) {
+func TestRetrieveManifestPath(t *testing.T) {
+	koPathEnvKey := "KO_DATA_PATH"
+	koPath := "../../../cmd/operator/kodata"
+
 	tests := []struct {
 		component string
 		version   string
@@ -34,30 +36,44 @@ func TestRetrieveManifest(t *testing.T) {
 	}{{
 		component: "knative-serving",
 		version:   "0.14.0",
-		label:     "serving.knative.dev/release",
 	}, {
 		component: "knative-eventing",
 		version:   "0.14.2",
-		label:     "eventing.knative.dev/release",
 	}}
 
-	os.Setenv("KO_DATA_PATH", "../../../cmd/operator/kodata")
+	os.Setenv(koPathEnvKey, koPath)
 	for _, test := range tests {
 		t.Run(test.component, func(t *testing.T) {
-			manifest, err := RetrieveManifest(context.Background(), test.version, test.component)
-			util.AssertEqual(t, err, nil)
-			util.AssertEqual(t, len(manifest.Resources()) != 0, true)
-
-			expectedLabelValue := "v" + test.version
-
-			for _, resource := range manifest.Filter(mf.ByLabel(test.label, "")).Resources() {
-				v := resource.GetLabels()[test.label]
-				if v != expectedLabelValue {
-					t.Errorf("Version info in manifest and operator don't match. got: %v, want: %v. Resource GVK: %v, Resource name: %v", v, expectedLabelValue,
-						resource.GroupVersionKind(), resource.GetName())
-				}
-			}
+			manifestPath := RetrieveManifestPath(context.Background(), test.version, test.component)
+			expected := fmt.Sprintf("%s/%s/%s", koPath, test.component, test.version)
+			util.AssertEqual(t, manifestPath, expected)
 		})
 	}
-	os.Unsetenv("KO_DATA_PATH")
+	os.Unsetenv(koPathEnvKey)
+}
+
+func TestGetLatestRelease(t *testing.T) {
+	koPathEnvKey := "KO_DATA_PATH"
+	koPath := "../../../cmd/operator/kodata"
+
+	tests := []struct {
+		component string
+		expected  string
+	}{{
+		component: "knative-serving",
+		expected:  "0.14.0",
+	}, {
+		component: "knative-eventing",
+		expected:  "0.14.2",
+	}}
+
+	os.Setenv(koPathEnvKey, koPath)
+	for _, test := range tests {
+		t.Run(test.component, func(t *testing.T) {
+			version, err := GetLatestRelease(test.component)
+			util.AssertEqual(t, err, nil)
+			util.AssertEqual(t, version, test.expected)
+		})
+	}
+	os.Unsetenv(koPathEnvKey)
 }

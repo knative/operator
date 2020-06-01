@@ -17,6 +17,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-logr/zapr"
+	mfc "github.com/manifestival/client-go-client"
+	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/client-go/tools/cache"
 
@@ -28,16 +31,17 @@ import (
 	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/common"
 	servingcommon "knative.dev/operator/pkg/reconciler/knativeserving/common"
-	"knative.dev/operator/version"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/injection"
 	"knative.dev/pkg/logging"
 )
 
 const (
 	controllerAgentName = "knativeserving-controller"
+	kcomponent = "knative-serving"
 )
 
 // NewController initializes the controller and is called by the generated code
@@ -58,16 +62,25 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		logger.Fatal(err)
 	}
 
-	config, err := common.RetrieveManifest(ctx, version.ServingVersion, "knative-serving")
+	version, err := common.GetLatestRelease(kcomponent)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatalw("Error getting the version of the Manifest for knative-serving", zap.Error(err))
+	}
+
+	manifestPath := common.RetrieveManifestPath(ctx, version, kcomponent)
+	manifest, err := mfc.NewManifest(manifestPath,
+		injection.GetConfig(ctx),
+		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+
+	if err != nil {
+		logger.Fatalw("Error creating the Manifest for knative-serving", zap.Error(err))
 	}
 
 	c := &Reconciler{
 		kubeClientSet:     kubeClient,
 		operatorClientSet: operatorclient.Get(ctx),
 		platform:          common.GetPlatforms(ctx),
-		config:            config,
+		config:            manifest,
 	}
 	impl := knsreconciler.NewImpl(ctx, c)
 

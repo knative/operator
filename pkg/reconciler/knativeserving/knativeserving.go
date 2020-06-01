@@ -31,7 +31,6 @@ import (
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
 	"knative.dev/operator/pkg/reconciler/common"
 	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
-	"knative.dev/operator/version"
 	"knative.dev/pkg/logging"
 
 	pkgreconciler "knative.dev/pkg/reconciler"
@@ -138,7 +137,11 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
-	return common.Install(manifest, version.ServingVersion, &instance.Status)
+	version, err := common.GetLatestRelease(kcomponent)
+	if err != nil {
+		return err
+	}
+	return common.Install(manifest, version, &instance.Status)
 }
 
 // Check for all deployments available

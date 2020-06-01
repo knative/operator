@@ -147,11 +147,7 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
-	version, err := common.GetLatestRelease(kcomponent)
-	if err != nil {
-		return err
-	}
-	return common.Install(manifest, version, &ke.Status)
+	return common.Install(manifest, common.GetLatestRelease(kcomponent), &ke.Status)
 }
 
 func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {

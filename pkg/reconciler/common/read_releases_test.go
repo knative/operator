@@ -17,10 +17,10 @@ limitations under the License.
 package common
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
@@ -28,8 +28,8 @@ import (
 )
 
 func TestRetrieveManifestPath(t *testing.T) {
-	koPathEnvKey := "KO_DATA_PATH"
-	koPath := "../../../cmd/operator/kodata"
+	_, b, _, _ := runtime.Caller(0)
+	koPath := b + "/../../../cmd/operator/kodata"
 
 	tests := []struct {
 		component string
@@ -43,20 +43,20 @@ func TestRetrieveManifestPath(t *testing.T) {
 		version:   "0.14.2",
 	}}
 
-	os.Setenv(koPathEnvKey, koPath)
+	os.Setenv(KoEnvKey, koPath)
 	for _, test := range tests {
 		t.Run(test.component, func(t *testing.T) {
-			manifestPath := RetrieveManifestPath(context.Background(), test.version, test.component)
+			manifestPath := RetrieveManifestPath(test.version, test.component)
 			expected := fmt.Sprintf("%s/%s/%s", koPath, test.component, test.version)
 			util.AssertEqual(t, manifestPath, expected)
 		})
 	}
-	os.Unsetenv(koPathEnvKey)
+	os.Unsetenv(KoEnvKey)
 }
 
 func TestGetLatestRelease(t *testing.T) {
-	koPathEnvKey := "KO_DATA_PATH"
-	koPath := "../../../cmd/operator/kodata"
+	_, b, _, _ := runtime.Caller(0)
+	koPath := b + "/../../../cmd/operator/kodata"
 
 	tests := []struct {
 		component string
@@ -69,20 +69,19 @@ func TestGetLatestRelease(t *testing.T) {
 		expected:  "0.14.2",
 	}}
 
-	os.Setenv(koPathEnvKey, koPath)
+	os.Setenv(KoEnvKey, koPath)
 	for _, test := range tests {
 		t.Run(test.component, func(t *testing.T) {
-			version, err := GetLatestRelease(test.component)
-			util.AssertEqual(t, err, nil)
+			version := GetLatestRelease(test.component)
 			util.AssertEqual(t, version, test.expected)
 		})
 	}
-	os.Unsetenv(koPathEnvKey)
+	os.Unsetenv(KoEnvKey)
 }
 
 func TestManifestVersionTheSame(t *testing.T) {
-	koPathEnvKey := "KO_DATA_PATH"
-	koPath := "../../../cmd/operator/kodata"
+	_, b, _, _ := runtime.Caller(0)
+	koPath := b + "/../../../cmd/operator/kodata"
 
 	tests := []struct {
 		component string
@@ -95,15 +94,14 @@ func TestManifestVersionTheSame(t *testing.T) {
 		label:     "eventing.knative.dev/release",
 	}}
 
-	os.Setenv(koPathEnvKey, koPath)
+	os.Setenv(KoEnvKey, koPath)
 	for _, test := range tests {
 		t.Run(test.component, func(t *testing.T) {
-			versionList, err := ListRelease(test.component)
-			util.AssertEqual(t, err, nil)
+			versionList := ListReleases(test.component)
 
 			// Check all the available version under the directory of each Knative component
 			for _, version := range versionList {
-				manifest, err := mf.NewManifest(filepath.Join(os.Getenv(koPathEnvKey), test.component, version))
+				manifest, err := mf.NewManifest(filepath.Join(os.Getenv(KoEnvKey), test.component, version))
 				util.AssertEqual(t, err, nil)
 				expectedLabelValue := "v" + version
 				for _, resource := range manifest.Filter(mf.ByLabel(test.label, "")).Resources() {
@@ -113,5 +111,5 @@ func TestManifestVersionTheSame(t *testing.T) {
 			}
 		})
 	}
-	os.Unsetenv(koPathEnvKey)
+	os.Unsetenv(KoEnvKey)
 }

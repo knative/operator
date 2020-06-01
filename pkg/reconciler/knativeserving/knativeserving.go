@@ -21,18 +21,17 @@ import (
 	"fmt"
 
 	mf "github.com/manifestival/manifestival"
-	clientset "knative.dev/operator/pkg/client/clientset/versioned"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
+
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
 	"knative.dev/operator/pkg/reconciler/common"
 	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"knative.dev/pkg/logging"
-
 	pkgreconciler "knative.dev/pkg/reconciler"
 )
 
@@ -137,11 +136,7 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
-	version, err := common.GetLatestRelease(kcomponent)
-	if err != nil {
-		return err
-	}
-	return common.Install(manifest, version, &instance.Status)
+	return common.Install(manifest, common.GetLatestRelease(kcomponent), &instance.Status)
 }
 
 // Check for all deployments available

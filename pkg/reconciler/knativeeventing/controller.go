@@ -53,12 +53,8 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		logger.Fatalw("Failed to remove old resources", zap.Error(err))
 	}
 
-	version, err := common.GetLatestRelease(kcomponent)
-	if err != nil {
-		logger.Fatalw("Error getting the version of the Manifest for knative-eventing", zap.Error(err))
-	}
-
-	manifestPath := common.RetrieveManifestPath(ctx, version, kcomponent)
+	version := common.GetLatestRelease(kcomponent)
+	manifestPath := common.RetrieveManifestPath(version, kcomponent)
 	manifest, err := mfc.NewManifest(manifestPath,
 		injection.GetConfig(ctx),
 		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))

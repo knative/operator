@@ -1,4 +1,4 @@
-// +build postupgrade
+//// +build postupgrade
 
 /*
 Copyright 2020 The Knative Authors

@@ -17,7 +17,6 @@ limitations under the License.
 package common
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -28,56 +27,62 @@ import (
 	"golang.org/x/mod/semver"
 )
 
+const (
+	KoEnvKey = "KO_DATA_PATH"
+)
+
 // RetrieveManifestPath returns the manifest path for Knative based a provided version and component
-func RetrieveManifestPath(ctx context.Context, version, kcomponent string) string {
-	koDataDir := os.Getenv("KO_DATA_PATH")
+func RetrieveManifestPath(version, kcomponent string) string {
+	koDataDir := os.Getenv(KoEnvKey)
 	return filepath.Join(koDataDir, kcomponent, version)
 }
 
-// ListRelease returns the all the available release versions available under kodata directory for Knative component.
-func ListRelease(kComponent string) ([]string, error) {
+func isFirstVersionMoreRecent(former, latter string) bool {
+	return semver.Compare(addMissingLetterV(former), addMissingLetterV(latter)) == 1
+}
+
+func addMissingLetterV(version string) string {
+	if version == "" || version[0] == 'v' {
+		return version
+	}
+	return fmt.Sprintf("v%s", version)
+}
+
+// ListReleases returns the all the available release versions available under kodata directory for Knative component.
+func ListReleases(kComponent string) []string {
 	releaseTags := []string{}
 	// List all the directories available under kodata
-	koDataDir := os.Getenv("KO_DATA_PATH")
+	koDataDir := os.Getenv(KoEnvKey)
 	pathname := filepath.Join(koDataDir, kComponent)
 	fileList, err := ioutil.ReadDir(pathname)
 	if err != nil {
-		return releaseTags, err
+		panic(err)
 	}
 	for _, file := range fileList {
 		name := path.Join(pathname, file.Name())
 		pathDirOrFile, err := os.Stat(name)
 		if err != nil {
-			return releaseTags, err
+			panic(err)
 		}
 		if pathDirOrFile.IsDir() {
 			releaseTags = append(releaseTags, file.Name())
 		}
 	}
 	if len(releaseTags) == 0 {
-		return releaseTags, fmt.Errorf("unable to find any version number for %s", kComponent)
+		panic(fmt.Errorf("unable to find any version number for %s", kComponent))
 	}
 
 	// This function makes sure the versions are sorted in a descending order.
 	sort.Slice(releaseTags, func(i, j int) bool {
-		// Add the prefix "v" in front of the version
-		versionI := fmt.Sprintf("v%s", releaseTags[i])
-		versionJ := fmt.Sprintf("v%s", releaseTags[j])
-		return semver.Compare(versionI, versionJ) == 1
+		// The index i is the one after the index j. If i is more recent than j, return true to swap.
+		return isFirstVersionMoreRecent(releaseTags[i], releaseTags[j])
 	})
 
-	return releaseTags, nil
+	return releaseTags
 }
 
 // GetLatestRelease returns the latest release tag available under kodata directory for Knative component.
-func GetLatestRelease(kcomponent string) (string, error) {
-	releaseTag := ""
-	releaseTags, err := ListRelease(kcomponent)
-	if err != nil {
-		return releaseTag, err
-	}
-
+func GetLatestRelease(kcomponent string) string {
 	// The versions are in a descending order, so the first one will be the latest version.
-	releaseTag = releaseTags[0]
-	return releaseTag, nil
+	return ListReleases(kcomponent)[0]
 }

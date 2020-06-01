@@ -37,6 +37,7 @@ import (
 	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/common"
 	servingcommon "knative.dev/operator/pkg/reconciler/knativeserving/common"
+	"knative.dev/operator/version"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
@@ -65,7 +66,7 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 	}
 
 	koDataDir := os.Getenv("KO_DATA_PATH")
-	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-serving/"),
+	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-serving", version.ServingVersion),
 		injection.GetConfig(ctx),
 		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
 	if err != nil {

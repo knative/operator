@@ -25,7 +25,7 @@ import (
 
 func TestManifestVersionServingSame(t *testing.T) {
 	_, b, _, _ := runtime.Caller(0)
-	manifest, err := mf.NewManifest(filepath.Join(filepath.Dir(b)+"/..", "cmd/operator/kodata/knative-serving/"))
+	manifest, err := mf.NewManifest(filepath.Join(filepath.Dir(b)+"/..", "cmd/operator/kodata/knative-serving", ServingVersion))
 	if err != nil {
 		t.Fatal("Failed to load manifest", err)
 	}
@@ -45,7 +45,7 @@ func TestManifestVersionServingSame(t *testing.T) {
 
 func TestManifestVersionEventingSame(t *testing.T) {
 	_, b, _, _ := runtime.Caller(0)
-	manifest, err := mf.NewManifest(filepath.Join(filepath.Dir(b)+"/..", "cmd/operator/kodata/knative-eventing/"))
+	manifest, err := mf.NewManifest(filepath.Join(filepath.Dir(b)+"/..", "cmd/operator/kodata/knative-eventing", EventingVersion))
 	if err != nil {
 		t.Fatal("Failed to load manifest", err)
 	}

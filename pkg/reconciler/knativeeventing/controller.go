@@ -30,6 +30,7 @@ import (
 	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeeventing"
 	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/common"
+	"knative.dev/operator/version"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
@@ -52,7 +53,7 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 	}
 
 	koDataDir := os.Getenv("KO_DATA_PATH")
-	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-eventing/"),
+	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-eventing", version.EventingVersion),
 		injection.GetConfig(ctx),
 		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
 	if err != nil {

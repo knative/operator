@@ -19,7 +19,9 @@ package common
 import (
 	"context"
 	"fmt"
+	mf "github.com/manifestival/manifestival"
 	"os"
+	"path/filepath"
 	"testing"
 
 	util "knative.dev/operator/pkg/reconciler/common/testing"
@@ -73,6 +75,44 @@ func TestGetLatestRelease(t *testing.T) {
 			version, err := GetLatestRelease(test.component)
 			util.AssertEqual(t, err, nil)
 			util.AssertEqual(t, version, test.expected)
+		})
+	}
+	os.Unsetenv(koPathEnvKey)
+}
+
+func TestManifestVersionTheSame(t *testing.T) {
+	koPathEnvKey := "KO_DATA_PATH"
+	koPath := "../../../cmd/operator/kodata"
+
+	tests := []struct {
+		component string
+		label     string
+	}{{
+		component: "knative-serving",
+		label:     "serving.knative.dev/release",
+	}, {
+		component: "knative-eventing",
+		label:     "eventing.knative.dev/release",
+	}}
+
+	os.Setenv(koPathEnvKey, koPath)
+	for _, test := range tests {
+		t.Run(test.component, func(t *testing.T) {
+			versionList, err := ListRelease(test.component)
+			util.AssertEqual(t, err, nil)
+
+			// Check all the avialable version under the directory of each Knative component
+			for _, version := range versionList {
+				manifest, err := mf.NewManifest(filepath.Join(os.Getenv(koPathEnvKey), test.component, version))
+				util.AssertEqual(t, err, nil)
+				expectedLabelValue := "v" + version
+				fmt.Println(len(manifest.Resources()))
+				fmt.Println(len(manifest.Filter(mf.ByLabel(test.label, "")).Resources()))
+				for _, resource := range manifest.Filter(mf.ByLabel(test.label, "")).Resources() {
+					label := resource.GetLabels()[test.label]
+					util.AssertEqual(t, label, expectedLabelValue)
+				}
+			}
 		})
 	}
 	os.Unsetenv(koPathEnvKey)

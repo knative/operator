@@ -16,31 +16,24 @@ package knativeserving
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"go.uber.org/zap"
-
-	operatorclient "knative.dev/operator/pkg/client/injection/client"
-	kubeclient "knative.dev/pkg/client/injection/kube/client"
-	"knative.dev/pkg/injection"
-	"knative.dev/pkg/logging"
-
-	"github.com/go-logr/zapr"
-	mfc "github.com/manifestival/client-go-client"
-	mf "github.com/manifestival/manifestival"
 	"k8s.io/client-go/tools/cache"
+
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorclient "knative.dev/operator/pkg/client/injection/client"
 	knativeServinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeserving"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
 	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/common"
 	servingcommon "knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"knative.dev/operator/version"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/logging"
 )
 
 const (
@@ -65,12 +58,9 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		logger.Fatal(err)
 	}
 
-	koDataDir := os.Getenv("KO_DATA_PATH")
-	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-serving", version.ServingVersion),
-		injection.GetConfig(ctx),
-		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+	config, err := common.RetrieveManifest(ctx, version.ServingVersion, "knative-serving")
 	if err != nil {
-		logger.Fatalw("Error creating the Manifest for knative-serving", zap.Error(err))
+		logger.Fatal(err)
 	}
 
 	c := &Reconciler{

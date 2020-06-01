@@ -15,12 +15,7 @@ package knativeeventing
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 
-	"github.com/go-logr/zapr"
-	mfc "github.com/manifestival/client-go-client"
-	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/client-go/tools/cache"
 
@@ -35,7 +30,6 @@ import (
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
-	"knative.dev/pkg/injection"
 	"knative.dev/pkg/logging"
 )
 
@@ -52,12 +46,9 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		logger.Fatalw("Failed to remove old resources", zap.Error(err))
 	}
 
-	koDataDir := os.Getenv("KO_DATA_PATH")
-	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-eventing", version.EventingVersion),
-		injection.GetConfig(ctx),
-		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+	config, err := common.RetrieveManifest(ctx, version.EventingVersion, "knative-eventing")
 	if err != nil {
-		logger.Fatalw("Error creating the Manifest for knative-eventing", zap.Error(err))
+		logger.Fatal(err)
 	}
 
 	c := &Reconciler{

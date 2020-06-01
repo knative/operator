@@ -34,7 +34,7 @@ func RetrieveManifestPath(ctx context.Context, version, kcomponent string) strin
 	return filepath.Join(koDataDir, kcomponent, version)
 }
 
-// ListRelease returns the all the available release verions available under kodata directory for Knative component.
+// ListRelease returns the all the available release versions available under kodata directory for Knative component.
 func ListRelease(kComponent string) ([]string, error) {
 	releaseTags := []string{}
 	// List all the directories available under kodata
@@ -55,7 +55,7 @@ func ListRelease(kComponent string) ([]string, error) {
 		}
 	}
 	if len(releaseTags) == 0 {
-		return releaseTags, fmt.Errorf("unable to find available version number for the Knative Serving")
+		return releaseTags, fmt.Errorf("unable to find any version number for %s", kComponent)
 	}
 
 	// This function makes sure the versions are sorted in a descending order.

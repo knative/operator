@@ -19,11 +19,11 @@ package common
 import (
 	"context"
 	"fmt"
-	mf "github.com/manifestival/manifestival"
 	"os"
 	"path/filepath"
 	"testing"
 
+	mf "github.com/manifestival/manifestival"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -101,13 +101,11 @@ func TestManifestVersionTheSame(t *testing.T) {
 			versionList, err := ListRelease(test.component)
 			util.AssertEqual(t, err, nil)
 
-			// Check all the avialable version under the directory of each Knative component
+			// Check all the available version under the directory of each Knative component
 			for _, version := range versionList {
 				manifest, err := mf.NewManifest(filepath.Join(os.Getenv(koPathEnvKey), test.component, version))
 				util.AssertEqual(t, err, nil)
 				expectedLabelValue := "v" + version
-				fmt.Println(len(manifest.Resources()))
-				fmt.Println(len(manifest.Filter(mf.ByLabel(test.label, "")).Resources()))
 				for _, resource := range manifest.Filter(mf.ByLabel(test.label, "")).Resources() {
 					label := resource.GetLabels()[test.label]
 					util.AssertEqual(t, label, expectedLabelValue)

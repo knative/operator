@@ -41,7 +41,7 @@ import (
 
 const (
 	controllerAgentName = "knativeserving-controller"
-	kcomponent = "knative-serving"
+	kcomponent          = "knative-serving"
 )
 
 // NewController initializes the controller and is called by the generated code

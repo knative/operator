@@ -13,7 +13,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	go.opencensus.io v0.22.3
 	go.uber.org/zap v1.14.1
-	golang.org/x/mod v0.2.0
+	golang.org/x/mod v0.3.0
 	gonum.org/v1/gonum v0.0.0-20190710053202-4340aa3071a0 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	istio.io/api v0.0.0-20191115173247-e1a1952e5b81

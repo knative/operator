@@ -45,13 +45,13 @@ func sanitizeSemver(version string) string {
 }
 
 // ListReleases returns the all the available release versions available under kodata directory for Knative component.
-func ListReleases(kComponent string) []string {
+func ListReleases(kComponent string) ([]string, error) {
 	// List all the directories available under kodata
 	koDataDir := os.Getenv(KoEnvKey)
 	pathname := filepath.Join(koDataDir, kComponent)
 	fileList, err := ioutil.ReadDir(pathname)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	releaseTags := make([]string, 0, len(fileList))
@@ -59,14 +59,14 @@ func ListReleases(kComponent string) []string {
 		name := path.Join(pathname, file.Name())
 		pathDirOrFile, err := os.Stat(name)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		if pathDirOrFile.IsDir() {
 			releaseTags = append(releaseTags, file.Name())
 		}
 	}
 	if len(releaseTags) == 0 {
-		panic(fmt.Errorf("unable to find any version number for %s", kComponent))
+		return nil, fmt.Errorf("unable to find any version number for %s", kComponent)
 	}
 
 	// This function makes sure the versions are sorted in a descending order.
@@ -75,11 +75,15 @@ func ListReleases(kComponent string) []string {
 		return semver.Compare(sanitizeSemver(releaseTags[i]), sanitizeSemver(releaseTags[j])) == 1
 	})
 
-	return releaseTags
+	return releaseTags, nil
 }
 
 // GetLatestRelease returns the latest release tag available under kodata directory for Knative component.
 func GetLatestRelease(kcomponent string) string {
+	vers, err := ListReleases(kcomponent)
+	if err != nil {
+		panic(err)
+	}
 	// The versions are in a descending order, so the first one will be the latest version.
-	return ListReleases(kcomponent)[0]
+	return vers[0]
 }

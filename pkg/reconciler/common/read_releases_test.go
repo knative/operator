@@ -106,3 +106,28 @@ func TestGetLatestRelease(t *testing.T) {
 		})
 	}
 }
+
+func TestListReleases(t *testing.T) {
+	koPath := "testdata/kodata"
+
+	tests := []struct {
+		component string
+		expected  []string
+	}{{
+		component: "knative-serving",
+		expected:  []string{"0.15.0", "0.14.0"},
+	}, {
+		component: "knative-eventing",
+		expected:  []string{"0.15.0", "0.14.2"},
+	}}
+
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
+	for _, test := range tests {
+		t.Run(test.component, func(t *testing.T) {
+			version, err := ListReleases(test.component)
+			util.AssertEqual(t, err, nil)
+			util.AssertDeepEqual(t, version, test.expected)
+		})
+	}
+}

@@ -28,35 +28,65 @@ import (
 )
 
 func TestRetrieveManifestPath(t *testing.T) {
-	_, b, _, _ := runtime.Caller(0)
-	koPath := b + "/../../../cmd/operator/kodata"
+	koPath := "../../../cmd/operator/kodata"
 
 	tests := []struct {
 		component string
 		version   string
-		label     string
+		name      string
 	}{{
+		name:      "Valid Knative Serving Version",
 		component: "knative-serving",
 		version:   "0.14.0",
 	}, {
+		name:      "Valid Knative Eventing Version",
 		component: "knative-eventing",
 		version:   "0.14.2",
 	}}
 
 	os.Setenv(KoEnvKey, koPath)
 	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			manifestPath := RetrieveManifestPath(test.version, test.component)
+			expected := fmt.Sprintf("%s/%s/%s", koPath, test.component, test.version)
+			util.AssertEqual(t, manifestPath, expected)
+			manifest, err := mf.NewManifest(manifestPath)
+			util.AssertEqual(t, err, nil)
+			util.AssertEqual(t, len(manifest.Resources()) > 0, true)
+		})
+	}
+
+	invalidPathTests := []struct {
+		component string
+		version   string
+		name      string
+	}{{
+		name:      "Invalid Knative Serving Version",
+		component: "knative-serving",
+		version:   "invalid-version",
+	}, {
+		name:      "Invalid Knative component name",
+		component: "invalid-component",
+		version:   "0.14.2",
+	}}
+
+	for _, test := range invalidPathTests {
 		t.Run(test.component, func(t *testing.T) {
 			manifestPath := RetrieveManifestPath(test.version, test.component)
 			expected := fmt.Sprintf("%s/%s/%s", koPath, test.component, test.version)
 			util.AssertEqual(t, manifestPath, expected)
+			manifest, err := mf.NewManifest(manifestPath)
+			util.AssertEqual(t, err != nil, true)
+			util.AssertEqual(t, len(manifest.Resources()) == 0, true)
 		})
 	}
+
 	os.Unsetenv(KoEnvKey)
 }
 
 func TestGetLatestRelease(t *testing.T) {
 	_, b, _, _ := runtime.Caller(0)
-	koPath := b + "/../../../cmd/operator/kodata"
+	koPath := filepath.Dir(b) + "/../../../cmd/operator/kodata"
 
 	tests := []struct {
 		component string
@@ -81,7 +111,7 @@ func TestGetLatestRelease(t *testing.T) {
 
 func TestManifestVersionTheSame(t *testing.T) {
 	_, b, _, _ := runtime.Caller(0)
-	koPath := b + "/../../../cmd/operator/kodata"
+	koPath := filepath.Dir(b) + "/../../../cmd/operator/kodata"
 
 	tests := []struct {
 		component string
@@ -101,12 +131,17 @@ func TestManifestVersionTheSame(t *testing.T) {
 
 			// Check all the available version under the directory of each Knative component
 			for _, version := range versionList {
-				manifest, err := mf.NewManifest(filepath.Join(os.Getenv(KoEnvKey), test.component, version))
+				manifest, err := mf.NewManifest(filepath.Join(koPath, test.component, version))
 				util.AssertEqual(t, err, nil)
 				expectedLabelValue := "v" + version
 				for _, resource := range manifest.Filter(mf.ByLabel(test.label, "")).Resources() {
 					label := resource.GetLabels()[test.label]
 					util.AssertEqual(t, label, expectedLabelValue)
+				}
+
+				fmt.Println(len(manifest.Filter(mf.ByKind("Deployment")).Resources()))
+				for _, resource := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
+					fmt.Println(resource.GetName())
 				}
 			}
 		})

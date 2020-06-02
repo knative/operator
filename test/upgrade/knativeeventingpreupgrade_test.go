@@ -47,7 +47,7 @@ func TestKnativeEventingPreUpgrade(t *testing.T) {
 	t.Run("verify resources", func(t *testing.T) {
 		resources.AssertKEOperatorCRReadyStatus(t, clients, names)
 		expectedDeployments := []string{"eventing-controller", "eventing-webhook", "imc-controller",
-			"imc-dispatcher", "broker-controller", "sources-controller"}
+			"imc-dispatcher", "broker-controller", "broker-filter", "broker-ingress", "mt-broker-controller"}
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 	})
 }

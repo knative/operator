@@ -37,11 +37,7 @@ func RetrieveManifestPath(version, kcomponent string) string {
 	return filepath.Join(koDataDir, kcomponent, version)
 }
 
-func isFirstVersionMoreRecent(former, latter string) bool {
-	return semver.Compare(addMissingLetterV(former), addMissingLetterV(latter)) == 1
-}
-
-func addMissingLetterV(version string) string {
+func sanitizeSemver(version string) string {
 	if version == "" || version[0] == 'v' {
 		return version
 	}
@@ -50,7 +46,6 @@ func addMissingLetterV(version string) string {
 
 // ListReleases returns the all the available release versions available under kodata directory for Knative component.
 func ListReleases(kComponent string) []string {
-	releaseTags := []string{}
 	// List all the directories available under kodata
 	koDataDir := os.Getenv(KoEnvKey)
 	pathname := filepath.Join(koDataDir, kComponent)
@@ -58,6 +53,8 @@ func ListReleases(kComponent string) []string {
 	if err != nil {
 		panic(err)
 	}
+
+	releaseTags := make([]string, 0, len(fileList))
 	for _, file := range fileList {
 		name := path.Join(pathname, file.Name())
 		pathDirOrFile, err := os.Stat(name)
@@ -75,7 +72,7 @@ func ListReleases(kComponent string) []string {
 	// This function makes sure the versions are sorted in a descending order.
 	sort.Slice(releaseTags, func(i, j int) bool {
 		// The index i is the one after the index j. If i is more recent than j, return true to swap.
-		return isFirstVersionMoreRecent(releaseTags[i], releaseTags[j])
+		return semver.Compare(sanitizeSemver(releaseTags[i]), sanitizeSemver(releaseTags[j])) == 1
 	})
 
 	return releaseTags

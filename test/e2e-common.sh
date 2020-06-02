@@ -18,10 +18,10 @@
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
 # Latest serving operator release.
-readonly LATEST_SERVING_OPERATOR_RELEASE_VERSION="v0.13.2"
+readonly LATEST_SERVING_OPERATOR_RELEASE_VERSION="v0.14.0"
 # Latest serving release, installed by the operator at LATEST_SERVING_OPERATOR_RELEASE_VERSION. This can be
 # different from LATEST_SERVING_OPERATOR_RELEASE_VERSION.
-LATEST_SERVING_RELEASE_VERSION="v0.13.2"
+LATEST_SERVING_RELEASE_VERSION="v0.14.0"
 # This is the branch name of serving repo, where we run the upgrade tests.
 SERVING_REPO_BRANCH=${PULL_BASE_REF}
 # Istio version we test with

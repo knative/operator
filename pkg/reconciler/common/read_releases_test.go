@@ -17,7 +17,6 @@ limitations under the License.
 package common
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -61,21 +60,23 @@ func TestRetrieveManifestPath(t *testing.T) {
 		component string
 		version   string
 		name      string
+		expected  string
 	}{{
 		name:      "Invalid Knative Serving Version",
 		component: "knative-serving",
 		version:   "invalid-version",
+		expected:  koPath + "/knative-serving/invalid-version",
 	}, {
 		name:      "Invalid Knative component name",
 		component: "invalid-component",
 		version:   "0.14.2",
+		expected:  koPath + "/invalid-component/0.14.2",
 	}}
 
 	for _, test := range invalidPathTests {
 		t.Run(test.component, func(t *testing.T) {
 			manifestPath := RetrieveManifestPath(test.version, test.component)
-			expected := fmt.Sprintf("%s/%s/%s", koPath, test.component, test.version)
-			util.AssertEqual(t, manifestPath, expected)
+			util.AssertEqual(t, manifestPath, test.expected)
 			manifest, err := mf.NewManifest(manifestPath)
 			util.AssertEqual(t, err != nil, true)
 			util.AssertEqual(t, len(manifest.Resources()) == 0, true)

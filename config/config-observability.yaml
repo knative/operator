@@ -16,6 +16,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-observability
+  namespace: default
   labels:
     operator.knative.dev/release: devel
 

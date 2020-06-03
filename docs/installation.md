@@ -12,7 +12,7 @@ the Knative Operator.
 
 To install the latest release:
 ```
-kubectl apply -f https://github.com/knative-sandbox/operator/releases/latest/download/operator.yaml
+kubectl apply -f https://github.com/knative/operator/releases/latest/download/operator.yaml
 ```
 Alternatively, the latest nightly build:
 ```

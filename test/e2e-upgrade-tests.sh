@@ -192,28 +192,28 @@ cd ${KNATIVE_SERVING_DIR}/serving
 go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
 
 # Verify with the bash script to make sure there is no resource with the label of the previous release.
-list_resources="deployment,pod,service,apiservice,cm,crd,sa,ClusterRole,ClusterRoleBinding,Image,ValidatingWebhookConfiguration,\
-MutatingWebhookConfiguration,Secret,RoleBinding,APIService,Gateway"
-result="$(kubectl get ${list_resources} -l serving.knative.dev/release=${PREVIOUS_SERVING_RELEASE_VERSION} --all-namespaces 2>/dev/null)"
+#list_resources="deployment,pod,service,apiservice,cm,crd,sa,ClusterRole,ClusterRoleBinding,Image,ValidatingWebhookConfiguration,\
+#MutatingWebhookConfiguration,Secret,RoleBinding,APIService,Gateway"
+#result="$(kubectl get ${list_resources} -l serving.knative.dev/release=${PREVIOUS_SERVING_RELEASE_VERSION} --all-namespaces 2>/dev/null)"
 
 # If the ${result} is not empty, we fail the tests, because the resources from the previous release still exist.
-if [[ ! -z ${result} ]] ; then
-  header "The following obsolete resources still exist for serving operator:"
-  echo "${result}"
-  fail_test "The resources with the label of previous release have not been removed."
-fi
+#if [[ ! -z ${result} ]] ; then
+#  header "The following obsolete resources still exist for serving operator:"
+#  echo "${result}"
+#  fail_test "The resources with the label of previous release have not been removed."
+#fi
 
 # Verify with the bash script to make sure there is no resource with the label of the previous release.
-list_resources="deployment,pod,service,cm,crd,sa,ClusterRole,ClusterRoleBinding,ValidatingWebhookConfiguration,\
-MutatingWebhookConfiguration,Secret,RoleBinding"
-result="$(kubectl get ${list_resources} -l eventing.knative.dev/release=${PREVIOUS_EVENTING_RELEASE_VERSION} --all-namespaces 2>/dev/null)"
+#list_resources="deployment,pod,service,cm,crd,sa,ClusterRole,ClusterRoleBinding,ValidatingWebhookConfiguration,\
+#MutatingWebhookConfiguration,Secret,RoleBinding"
+#result="$(kubectl get ${list_resources} -l eventing.knative.dev/release=${PREVIOUS_EVENTING_RELEASE_VERSION} --all-namespaces 2>/dev/null)"
 
 # If the ${result} is not empty, we fail the tests, because the resources from the previous release still exist.
-if [[ ! -z ${result} ]] ; then
-  header "The following obsolete resources still exist for eventing operator:"
-  echo "${result}"
-  fail_test "The resources with the label of previous release have not been removed."
-fi
+#if [[ ! -z ${result} ]] ; then
+#  header "The following obsolete resources still exist for eventing operator:"
+#  echo "${result}"
+#  fail_test "The resources with the label of previous release have not been removed."
+#fi
 
 install_previous_operator_release
 wait_until_pods_running ${TEST_NAMESPACE}

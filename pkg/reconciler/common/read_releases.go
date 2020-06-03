@@ -37,8 +37,8 @@ func RetrieveManifestPath(version, kcomponent string) string {
 	return filepath.Join(koDataDir, kcomponent, version)
 }
 
-// sanitizeSemver always add `v` in front of the version.
-// x.y.z is the standard format we used as the semantic version for Knative. The letter `v` is added for
+// sanitizeSemver always adds `v` in front of the version.
+// x.y.z is the standard format we use as the semantic version for Knative. The letter `v` is added for
 // comparison purpose.
 func sanitizeSemver(version string) string {
 	return fmt.Sprintf("v%s", version)

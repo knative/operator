@@ -68,6 +68,7 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		operatorClientSet: operatorclient.Get(ctx),
 		platform:          common.GetPlatforms(ctx),
 		config:            manifest,
+		targetVersion:     version,
 	}
 	impl := knereconciler.NewImpl(ctx, c)
 

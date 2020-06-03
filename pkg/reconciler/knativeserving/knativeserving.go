@@ -47,6 +47,8 @@ type Reconciler struct {
 	operatorClientSet clientset.Interface
 	// config is the manifest of KnativeServing
 	config mf.Manifest
+	// targetVersion is the version of the KnativeServing manifest to install
+	targetVersion string
 	// Platform-specific behavior to affect the transform
 	platform common.Platforms
 }
@@ -136,7 +138,7 @@ func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.Kn
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
-	return common.Install(manifest, common.GetLatestRelease(kcomponent), &instance.Status)
+	return common.Install(manifest, r.targetVersion, &instance.Status)
 }
 
 // Check for all deployments available

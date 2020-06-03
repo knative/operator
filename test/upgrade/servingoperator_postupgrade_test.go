@@ -19,11 +19,13 @@ limitations under the License.
 package e2e
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 
+	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/reconciler/common"
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
@@ -55,9 +57,24 @@ func TestKnativeServingPostUpgrade(t *testing.T) {
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
 		version := common.GetLatestRelease(kcomponent)
-		expectedDeployments := resources.GetExpectedDeployments(t, version, kcomponent)
+		targetManifest, expectedDeployments := resources.GetExpectedDeployments(t, version, kcomponent)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
+
+		preServingVer := test.OperatorFlags.PreviousServingVersion
+		if preServingVer == "" {
+			preServingVer = version
+		}
+		fmt.Println("previous serving version")
+		fmt.Println(preServingVer)
+		// Compare the previous manifest with the target manifest, we verify that all the obsolete resources
+		// do not exist any more.
+		preManifest, err := resources.GetManifest(preServingVer, kcomponent)
+		if err != nil {
+			t.Fatalf("Failed to get KnativeServing manifest: %v", err)
+		}
+		resources.AssertKnativeObsoleteResource(t, clients, names.Namespace,
+			preManifest.Filter(mf.None(mf.In(targetManifest))).Resources())
 	})
 }

@@ -89,6 +89,8 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 	return true, nil
 }
 
+// GetExpectedDeployments will return an array of deployment resources based on the version for the knative
+// component.
 func GetExpectedDeployments(t *testing.T, version, kcomponent string) []string {
 	SetKodataDir()
 	defer os.Unsetenv(common.KoEnvKey)
@@ -105,6 +107,7 @@ func GetExpectedDeployments(t *testing.T, version, kcomponent string) []string {
 	return removeDuplications(deployments)
 }
 
+// SetKodataDir will set the env var KO_DATA_PATH into the path of the kodata of this repository.
 func SetKodataDir() {
 	_, b, _, _ := runtime.Caller(0)
 	koPath := filepath.Join(filepath.Dir(b)+"/../..", "cmd/operator/kodata")

@@ -147,6 +147,7 @@ func removeDuplications(slice []string) []string {
 	return list
 }
 
+// WaitForKnativeResourceState returns the status of whether all obsolete resources are removed
 func WaitForKnativeResourceState(clients *test.Clients, namespace string,
 	obsResources []unstructured.Unstructured, logf logging.FormatLogger, inState func(clients *test.Clients,
 		namespace string, obsResources []unstructured.Unstructured, logf logging.FormatLogger) (bool, error)) error {
@@ -160,6 +161,7 @@ func WaitForKnativeResourceState(clients *test.Clients, namespace string,
 	return waitErr
 }
 
+// IsKnativeObsoleteResourceGone check the status conditions of the resources and return true if the obsolete resources are removed.
 func IsKnativeObsoleteResourceGone(clients *test.Clients, namespace string, obsResources []unstructured.Unstructured,
 	logf logging.FormatLogger) (bool, error) {
 	for _, resource := range obsResources {

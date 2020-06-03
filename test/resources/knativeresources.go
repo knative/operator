@@ -92,17 +92,17 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 func GetExpectedDeployments(t *testing.T, version, kcomponent string) []string {
 	SetKodataDir()
 	defer os.Unsetenv(common.KoEnvKey)
-	manifestPath := common.RetrieveManifestPath(version, "knative-eventing")
+	manifestPath := common.RetrieveManifestPath(version, kcomponent)
 	manifest, err := mf.NewManifest(manifestPath)
 	if err != nil {
-		t.Fatalf("Failed to get the manifest for Knative Eventing: %v", err)
+		t.Fatalf("Failed to get the manifest for Knative: %v", err)
 	}
 
 	deployments := []string{}
 	for _, resource := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
 		deployments = append(deployments, resource.GetName())
 	}
-	return unique(deployments)
+	return removeDuplications(deployments)
 }
 
 func SetKodataDir() {
@@ -111,7 +111,7 @@ func SetKodataDir() {
 	os.Setenv(common.KoEnvKey, koPath)
 }
 
-func unique(intSlice []string) []string {
+func removeDuplications(intSlice []string) []string {
 	keys := make(map[string]bool)
 	list := []string{}
 	for _, entry := range intSlice {

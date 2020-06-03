@@ -21,7 +21,14 @@ package resources
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
+	"testing"
 	"time"
+
+	mf "github.com/manifestival/manifestival"
+	"knative.dev/operator/pkg/reconciler/common"
 
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -80,4 +87,38 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 		}
 	}
 	return true, nil
+}
+
+func GetExpectedDeployments(t *testing.T, version, kcomponent string) []string {
+	SetKodataDir()
+	defer os.Unsetenv(common.KoEnvKey)
+	manifestPath := common.RetrieveManifestPath(version, "knative-eventing")
+	manifest, err := mf.NewManifest(manifestPath)
+	if err != nil {
+		t.Fatalf("Failed to get the manifest for Knative Eventing: %v", err)
+	}
+
+	deployments := []string{}
+	for _, resource := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
+		deployments = append(deployments, resource.GetName())
+	}
+	return unique(deployments)
+}
+
+func SetKodataDir() {
+	_, b, _, _ := runtime.Caller(0)
+	koPath := filepath.Join(filepath.Dir(b)+"/../..", "cmd/operator/kodata")
+	os.Setenv(common.KoEnvKey, koPath)
+}
+
+func unique(intSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range intSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }

@@ -21,6 +21,7 @@ package e2e
 import (
 	"testing"
 
+	"knative.dev/operator/pkg/reconciler/common"
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
@@ -47,8 +48,11 @@ func TestKnativeEventingUpgrade(t *testing.T) {
 	// Verify if resources match the requirement for the previous release before upgrade
 	t.Run("verify resources", func(t *testing.T) {
 		resources.AssertKEOperatorCRReadyStatus(t, clients, names)
-		expectedDeployments := []string{"eventing-controller", "eventing-webhook", "imc-controller",
-			"imc-dispatcher", "broker-controller", "broker-filter", "broker-ingress", "mt-broker-controller"}
+		kcomponent := "knative-eventing"
+		resources.SetKodataDir()
+		version := common.GetLatestRelease(kcomponent)
+		// Based on the latest release version, get the deployment resources.
+		expectedDeployments := resources.GetExpectedDeployments(t, version, kcomponent)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 	})
 }

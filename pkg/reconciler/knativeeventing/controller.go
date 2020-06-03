@@ -15,8 +15,6 @@ package knativeeventing
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 
 	"github.com/go-logr/zapr"
 	mfc "github.com/manifestival/client-go-client"
@@ -30,13 +28,16 @@ import (
 	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeeventing"
 	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/common"
-	"knative.dev/operator/version"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/injection"
 	"knative.dev/pkg/logging"
+)
+
+const (
+	kcomponent = "knative-eventing"
 )
 
 // NewController initializes the controller and is called by the generated code
@@ -52,10 +53,12 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		logger.Fatalw("Failed to remove old resources", zap.Error(err))
 	}
 
-	koDataDir := os.Getenv("KO_DATA_PATH")
-	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-eventing", version.EventingVersion),
+	version := common.GetLatestRelease(kcomponent)
+	manifestPath := common.RetrieveManifestPath(version, kcomponent)
+	manifest, err := mfc.NewManifest(manifestPath,
 		injection.GetConfig(ctx),
 		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+
 	if err != nil {
 		logger.Fatalw("Error creating the Manifest for knative-eventing", zap.Error(err))
 	}
@@ -64,7 +67,8 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		kubeClientSet:     kubeClient,
 		operatorClientSet: operatorclient.Get(ctx),
 		platform:          common.GetPlatforms(ctx),
-		config:            config,
+		config:            manifest,
+		targetVersion:     version,
 	}
 	impl := knereconciler.NewImpl(ctx, c)
 

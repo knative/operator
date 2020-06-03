@@ -16,35 +16,32 @@ package knativeserving
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
-
-	"go.uber.org/zap"
-
-	operatorclient "knative.dev/operator/pkg/client/injection/client"
-	kubeclient "knative.dev/pkg/client/injection/kube/client"
-	"knative.dev/pkg/injection"
-	"knative.dev/pkg/logging"
 
 	"github.com/go-logr/zapr"
 	mfc "github.com/manifestival/client-go-client"
 	mf "github.com/manifestival/manifestival"
+	"go.uber.org/zap"
 	"k8s.io/client-go/tools/cache"
+
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorclient "knative.dev/operator/pkg/client/injection/client"
 	knativeServinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeserving"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
 	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/common"
 	servingcommon "knative.dev/operator/pkg/reconciler/knativeserving/common"
-	"knative.dev/operator/version"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/injection"
+	"knative.dev/pkg/logging"
 )
 
 const (
 	controllerAgentName = "knativeserving-controller"
+	kcomponent          = "knative-serving"
 )
 
 // NewController initializes the controller and is called by the generated code
@@ -65,10 +62,12 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		logger.Fatal(err)
 	}
 
-	koDataDir := os.Getenv("KO_DATA_PATH")
-	config, err := mfc.NewManifest(filepath.Join(koDataDir, "knative-serving", version.ServingVersion),
+	version := common.GetLatestRelease(kcomponent)
+	manifestPath := common.RetrieveManifestPath(version, kcomponent)
+	manifest, err := mfc.NewManifest(manifestPath,
 		injection.GetConfig(ctx),
 		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+
 	if err != nil {
 		logger.Fatalw("Error creating the Manifest for knative-serving", zap.Error(err))
 	}
@@ -77,7 +76,8 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		kubeClientSet:     kubeClient,
 		operatorClientSet: operatorclient.Get(ctx),
 		platform:          common.GetPlatforms(ctx),
-		config:            config,
+		config:            manifest,
+		targetVersion:     version,
 	}
 	impl := knsreconciler.NewImpl(ctx, c)
 

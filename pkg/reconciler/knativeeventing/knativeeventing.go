@@ -31,7 +31,6 @@ import (
 	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeeventing"
 	"knative.dev/operator/pkg/reconciler/common"
 	kec "knative.dev/operator/pkg/reconciler/knativeeventing/common"
-	"knative.dev/operator/version"
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
 )
@@ -48,6 +47,8 @@ type Reconciler struct {
 	operatorClientSet clientset.Interface
 	// config is the manifest of KnativeEventing
 	config mf.Manifest
+	// targetVersion is the version of the KnativeEventing manifest to install
+	targetVersion string
 	// Platform-specific behavior to affect the transform
 	platform common.Platforms
 }
@@ -148,7 +149,7 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
-	return common.Install(manifest, version.EventingVersion, &ke.Status)
+	return common.Install(manifest, r.targetVersion, &ke.Status)
 }
 
 func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {

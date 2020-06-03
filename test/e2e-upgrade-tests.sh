@@ -36,7 +36,7 @@ export GO111MODULE=auto
 source $(dirname $0)/e2e-common.sh
 
 function download_install_previous_operator_release() {
-  local full_url="https://github.com/knative/operator/releases/download/${PREVIOUS_OPERATOR_RELEASE_VERSION}/operator.yaml"
+  local full_url="https://github.com/knative/operator/releases/download/v${PREVIOUS_OPERATOR_RELEASE_VERSION}/operator.yaml"
 
   wget "${full_url}" -O "${release_yaml}" \
       || fail_test "Unable to download latest Knative Operator release."
@@ -182,7 +182,8 @@ failed=0
 # Operator tests here will make sure that all the Knative deployments reach the desired states and operator CR is
 # in ready state.
 cd ${OPERATOR_DIR}
-go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
+go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade \
+  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
 wait_until_pods_running ${TEST_NAMESPACE}
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
@@ -190,30 +191,6 @@ header "Running tests under Knative Serving"
 # Run the postupgrade tests under serving
 cd ${KNATIVE_SERVING_DIR}/serving
 go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
-
-# Verify with the bash script to make sure there is no resource with the label of the previous release.
-#list_resources="deployment,pod,service,apiservice,cm,crd,sa,ClusterRole,ClusterRoleBinding,Image,ValidatingWebhookConfiguration,\
-#MutatingWebhookConfiguration,Secret,RoleBinding,APIService,Gateway"
-#result="$(kubectl get ${list_resources} -l serving.knative.dev/release=${PREVIOUS_SERVING_RELEASE_VERSION} --all-namespaces 2>/dev/null)"
-
-# If the ${result} is not empty, we fail the tests, because the resources from the previous release still exist.
-#if [[ ! -z ${result} ]] ; then
-#  header "The following obsolete resources still exist for serving operator:"
-#  echo "${result}"
-#  fail_test "The resources with the label of previous release have not been removed."
-#fi
-
-# Verify with the bash script to make sure there is no resource with the label of the previous release.
-#list_resources="deployment,pod,service,cm,crd,sa,ClusterRole,ClusterRoleBinding,ValidatingWebhookConfiguration,\
-#MutatingWebhookConfiguration,Secret,RoleBinding"
-#result="$(kubectl get ${list_resources} -l eventing.knative.dev/release=${PREVIOUS_EVENTING_RELEASE_VERSION} --all-namespaces 2>/dev/null)"
-
-# If the ${result} is not empty, we fail the tests, because the resources from the previous release still exist.
-#if [[ ! -z ${result} ]] ; then
-#  header "The following obsolete resources still exist for eventing operator:"
-#  echo "${result}"
-#  fail_test "The resources with the label of previous release have not been removed."
-#fi
 
 install_previous_operator_release
 wait_until_pods_running ${TEST_NAMESPACE}

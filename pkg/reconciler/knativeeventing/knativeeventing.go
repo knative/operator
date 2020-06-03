@@ -186,6 +186,7 @@ func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.M
 		common.NamespacedResource("apps/v1", "Deployment", instance.GetNamespace(), "sources-controller"),
 		// Remove the resources at at 0.14
 		common.NamespacedResource("v1", "ServiceAccount", instance.GetNamespace(), "pingsource-jobrunner"),
+		common.NamespacedResource("batch/v1", "Job", instance.GetNamespace(), "v0.14.0-upgrade"),
 		common.ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRole", "knative-eventing-jobrunner"),
 		common.ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRoleBinding", "pingsource-jobrunner"),
 	}

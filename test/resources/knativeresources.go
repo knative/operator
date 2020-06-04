@@ -92,8 +92,6 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 // GetExpectedDeployments will return an array of deployment resources based on the version for the knative
 // component.
 func GetExpectedDeployments(t *testing.T, version, kcomponent string) []string {
-	SetKodataDir()
-	defer os.Unsetenv(common.KoEnvKey)
 	manifestPath := common.RetrieveManifestPath(version, kcomponent)
 	manifest, err := mf.NewManifest(manifestPath)
 	if err != nil {
@@ -114,10 +112,10 @@ func SetKodataDir() {
 	os.Setenv(common.KoEnvKey, koPath)
 }
 
-func removeDuplications(intSlice []string) []string {
+func removeDuplications(slice []string) []string {
 	keys := make(map[string]bool)
 	list := []string{}
-	for _, entry := range intSlice {
+	for _, entry := range slice {
 		if _, value := keys[entry]; !value {
 			keys[entry] = true
 			list = append(list, entry)

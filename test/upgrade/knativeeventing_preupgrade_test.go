@@ -22,6 +22,8 @@ import (
 	"os"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"knative.dev/operator/pkg/reconciler/common"
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"

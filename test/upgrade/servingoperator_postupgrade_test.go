@@ -19,8 +19,12 @@ limitations under the License.
 package e2e
 
 import (
+	"os"
 	"testing"
 
+	util "knative.dev/operator/pkg/reconciler/common/testing"
+
+	"knative.dev/operator/pkg/reconciler/common"
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
@@ -47,8 +51,12 @@ func TestKnativeServingPostUpgrade(t *testing.T) {
 	// Verify if resources match the latest requirement after upgrade
 	t.Run("verify resources", func(t *testing.T) {
 		// TODO: We only verify the deployment, but we need to add other resources as well, like ServiceAccount, ClusterRoleBinding, etc.
-		expectedDeployments := []string{"networking-istio", "webhook", "controller", "activator", "autoscaler-hpa",
-			"autoscaler", "istio-webhook"}
+		kcomponent := "knative-serving"
+		resources.SetKodataDir()
+		defer os.Unsetenv(common.KoEnvKey)
+		version := common.GetLatestRelease(kcomponent)
+		expectedDeployments := resources.GetExpectedDeployments(t, version, kcomponent)
+		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
 	})

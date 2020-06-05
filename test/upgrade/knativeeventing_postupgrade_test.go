@@ -1,4 +1,4 @@
-// +build preupgrade
+// +build postupgrade
 
 /*
 Copyright 2020 The Knative Authors
@@ -19,16 +19,20 @@ limitations under the License.
 package e2e
 
 import (
+	"os"
 	"testing"
 
+	"knative.dev/operator/pkg/reconciler/common"
+	util "knative.dev/operator/pkg/reconciler/common/testing"
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
 	"knative.dev/pkg/test/logstream"
 )
 
-// TestKnativeEventingPreUpgrade verifies the KnativeEventing creation, before upgraded to the latest HEAD at master.
-func TestKnativeEventingPreUpgrade(t *testing.T) {
+// TestKnativeEventingUpgrade verifies the KnativeEventing creation, deployment recreation, and KnativeEventing deletion
+// after upgraded to the latest HEAD at master, with the latest generated manifest of KnativeEventing.
+func TestKnativeEventingUpgrade(t *testing.T) {
 	cancel := logstream.Start(t)
 	defer cancel()
 	clients := client.Setup(t)
@@ -46,8 +50,13 @@ func TestKnativeEventingPreUpgrade(t *testing.T) {
 	// Verify if resources match the requirement for the previous release before upgrade
 	t.Run("verify resources", func(t *testing.T) {
 		resources.AssertKEOperatorCRReadyStatus(t, clients, names)
-		expectedDeployments := []string{"eventing-controller", "eventing-webhook", "imc-controller",
-			"imc-dispatcher", "broker-controller", "broker-filter", "broker-ingress", "mt-broker-controller"}
+		kcomponent := "knative-eventing"
+		resources.SetKodataDir()
+		defer os.Unsetenv(common.KoEnvKey)
+		version := common.GetLatestRelease(kcomponent)
+		// Based on the latest release version, get the deployment resources.
+		expectedDeployments := resources.GetExpectedDeployments(t, version, kcomponent)
+		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 	})
 }

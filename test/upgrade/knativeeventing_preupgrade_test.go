@@ -1,4 +1,4 @@
-// +build postupgrade
+// +build preupgrade
 
 /*
 Copyright 2020 The Knative Authors
@@ -19,17 +19,21 @@ limitations under the License.
 package e2e
 
 import (
+	"os"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"knative.dev/operator/pkg/reconciler/common"
+	util "knative.dev/operator/pkg/reconciler/common/testing"
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
 	"knative.dev/pkg/test/logstream"
 )
 
-// TestKnativeEventingUpgrade verifies the KnativeEventing creation, deployment recreation, and KnativeEventing deletion
-// after upgraded to the latest HEAD at master, with the latest generated manifest of KnativeEventing.
-func TestKnativeEventingUpgrade(t *testing.T) {
+// TestKnativeEventingPreUpgrade verifies the KnativeEventing creation, before upgraded to the latest HEAD at master.
+func TestKnativeEventingPreUpgrade(t *testing.T) {
 	cancel := logstream.Start(t)
 	defer cancel()
 	clients := client.Setup(t)
@@ -41,14 +45,21 @@ func TestKnativeEventingUpgrade(t *testing.T) {
 
 	// Create a KnativeEventing
 	if _, err := resources.EnsureKnativeEventingExists(clients.KnativeEventing(), names); err != nil {
-		t.Fatalf("KnativeService %q failed to create: %v", names.KnativeEventing, err)
+		t.Fatalf("KnativeEventing %q failed to create: %v", names.KnativeEventing, err)
 	}
 
 	// Verify if resources match the requirement for the previous release before upgrade
 	t.Run("verify resources", func(t *testing.T) {
 		resources.AssertKEOperatorCRReadyStatus(t, clients, names)
-		expectedDeployments := []string{"eventing-controller", "eventing-webhook", "imc-controller",
-			"imc-dispatcher", "broker-controller", "broker-filter", "broker-ingress", "mt-broker-controller"}
+		keventing, err := clients.KnativeEventing().Get(names.KnativeEventing, metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("Failed to get KnativeEventing CR: %v", err)
+		}
+		resources.SetKodataDir()
+		defer os.Unsetenv(common.KoEnvKey)
+		// Based on the status.version, get the deployment resources.
+		expectedDeployments := resources.GetExpectedDeployments(t, keventing.Status.Version, "knative-eventing")
+		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 	})
 }

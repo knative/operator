@@ -49,10 +49,7 @@ function pr_only_contains() {
 # List changed files in the current PR.
 # This is implemented as a function so it can be mocked in unit tests.
 function list_changed_files() {
-  # Avoid warning when there are more than 1085 files renamed:
-  # https://stackoverflow.com/questions/7830728/warning-on-diff-renamelimit-variable-when-doing-git-push
-  git config diff.renames 0
-  git --no-pager diff --name-only ${PULL_BASE_SHA}..${PULL_SHA}
+  /workspace/githubhelper -list-changed-files -github-token /etc/repoview-token/token
 }
 
 # Initialize flags and context for presubmit tests:
@@ -132,7 +129,7 @@ function markdown_build_tests() {
   (( DISABLE_MD_LINTING && DISABLE_MD_LINK_CHECK )) && return 0
   # Get changed markdown files (ignore /vendor, github templates, and deleted files)
   local mdfiles=""
-  for file in $(echo "${CHANGED_FILES}" | grep \\.md$ | grep -v ^vendor/ | grep -v ^.github/); do
+  for file in $(echo "${CHANGED_FILES}" | grep \.md$ | grep -v ^vendor/ | grep -v ^.github/); do
     [[ -f "${file}" ]] && mdfiles="${mdfiles} ${file}"
   done
   [[ -z "${mdfiles}" ]] && return 0
@@ -180,13 +177,11 @@ function default_build_test_runner() {
     # Consider an error message everything that's not a package name.
     errors_go1="$(grep -v '^\(github\.com\|knative\.dev\)/' "${report}" | sort | uniq)"
   fi
-  # Get all build tags in go code (ignore /vendor, /hack and /third_party)
+  # Get all build tags in go code (ignore /vendor and /hack)
   local tags="$(grep -r '// +build' . \
-    | grep -v '^./vendor/' | grep -v '^./hack/' | grep -v '^./third_party' \
-    | cut -f3 -d' ' | sort | uniq | tr '\n' ' ')"
+      | grep -v '^./vendor/' | grep -v '^./hack/' | cut -f3 -d' ' | sort | uniq | tr '\n' ' ')"
   local tagged_pkgs="$(grep -r '// +build' . \
-    | grep -v '^./vendor/' | grep -v '^./hack/' | grep -v '^./third_party' \
-    | grep ":// +build " | cut -f1 -d: | xargs dirname \
+    | grep -v '^./vendor/' | grep -v '^./hack/' | grep ":// +build " | cut -f1 -d: | xargs dirname \
     | sort | uniq | tr '\n' ' ')"
   for pkg in ${tagged_pkgs}; do
     # `go test -c` lets us compile the tests but do not run them.
@@ -203,7 +198,7 @@ function default_build_test_runner() {
   create_junit_xml _build_tests Build_Go "${errors_go}"
   # Check that we don't have any forbidden licenses in our images.
   subheader "Checking for forbidden licenses"
-  report_build_test Check_Licenses check_licenses || failed=1
+  report_build_test Check_Licenses check_licenses ${go_pkg_dirs} || failed=1
   return ${failed}
 }
 
@@ -311,8 +306,6 @@ function main() {
     kubectl version --client
     echo ">> go version"
     go version
-    echo ">> python3 version"
-    python3 --version
     echo ">> git version"
     git version
     echo ">> ko version"

@@ -108,8 +108,20 @@ func GetExpectedDeployments(t *testing.T, version, kcomponent string) []string {
 // SetKodataDir will set the env var KO_DATA_PATH into the path of the kodata of this repository.
 func SetKodataDir() {
 	_, b, _, _ := runtime.Caller(0)
-	koPath := filepath.Join(filepath.Dir(b)+"/../..", "cmd/operator/kodata")
+	koPath := filepath.Join(getParentDir(b, 2), "cmd/operator/kodata")
 	os.Setenv(common.KoEnvKey, koPath)
+}
+
+func getParentDir(path string, times int) string {
+	if times < 0 {
+		return path
+	}
+
+	if times == 0 {
+		return filepath.Dir(path)
+	}
+
+	return getParentDir(filepath.Dir(path), times-1)
 }
 
 func removeDuplications(slice []string) []string {

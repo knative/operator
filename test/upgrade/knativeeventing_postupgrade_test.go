@@ -19,7 +19,6 @@ limitations under the License.
 package e2e
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -66,8 +65,6 @@ func TestKnativeEventingUpgrade(t *testing.T) {
 		if preEventingVer == "" {
 			preEventingVer = version
 		}
-		fmt.Println("previous eventing version")
-		fmt.Println(preEventingVer)
 		// Compare the previous manifest with the target manifest, we verify that all the obsolete resources
 		// do not exist any more.
 		preManifest, err := resources.GetManifest(preEventingVer, kcomponent)

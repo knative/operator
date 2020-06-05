@@ -19,7 +19,6 @@ limitations under the License.
 package e2e
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -66,8 +65,6 @@ func TestKnativeServingPostUpgrade(t *testing.T) {
 		if preServingVer == "" {
 			preServingVer = version
 		}
-		fmt.Println("previous serving version")
-		fmt.Println(preServingVer)
 		// Compare the previous manifest with the target manifest, we verify that all the obsolete resources
 		// do not exist any more.
 		preManifest, err := resources.GetManifest(preServingVer, kcomponent)

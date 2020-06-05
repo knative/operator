@@ -17,7 +17,10 @@ limitations under the License.
 package common
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
@@ -131,4 +134,10 @@ func TestListReleases(t *testing.T) {
 			util.AssertDeepEqual(t, version, test.expected)
 		})
 	}
+}
+
+func TestListReleases1(t *testing.T) {
+	_, b, _, _ := runtime.Caller(0)
+	koPath := filepath.Dir(b)
+	fmt.Println(koPath)
 }

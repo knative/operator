@@ -22,6 +22,8 @@ import (
 	"os"
 	"testing"
 
+	util "knative.dev/operator/pkg/reconciler/common/testing"
+
 	"knative.dev/operator/pkg/reconciler/common"
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
@@ -54,6 +56,7 @@ func TestKnativeServingPostUpgrade(t *testing.T) {
 		defer os.Unsetenv(common.KoEnvKey)
 		version := common.GetLatestRelease(kcomponent)
 		expectedDeployments := resources.GetExpectedDeployments(t, version, kcomponent)
+		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
 	})

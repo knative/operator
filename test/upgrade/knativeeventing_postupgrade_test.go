@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"knative.dev/operator/pkg/reconciler/common"
+	util "knative.dev/operator/pkg/reconciler/common/testing"
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
@@ -55,6 +56,7 @@ func TestKnativeEventingUpgrade(t *testing.T) {
 		version := common.GetLatestRelease(kcomponent)
 		// Based on the latest release version, get the deployment resources.
 		expectedDeployments := resources.GetExpectedDeployments(t, version, kcomponent)
+		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 	})
 }

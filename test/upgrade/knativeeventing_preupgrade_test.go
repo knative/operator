@@ -25,6 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"knative.dev/operator/pkg/reconciler/common"
+	util "knative.dev/operator/pkg/reconciler/common/testing"
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
@@ -58,6 +59,7 @@ func TestKnativeEventingPreUpgrade(t *testing.T) {
 		defer os.Unsetenv(common.KoEnvKey)
 		// Based on the status.version, get the deployment resources.
 		expectedDeployments := resources.GetExpectedDeployments(t, keventing.Status.Version, "knative-eventing")
+		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 	})
 }

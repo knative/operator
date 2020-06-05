@@ -53,7 +53,7 @@ type KnativeEventingSpec struct {
 	CommonSpec `json:",inline"`
 
 	// The default broker type to use for the brokers Knative creates.
-	// If no value is provided, ChannelBasedBroker will be used.
+	// If no value is provided, MTChannelBasedBroker will be used.
 	// +optional
 	DefaultBrokerClass string `json:"defaultBrokerClass,omitempty"`
 }

@@ -1,6 +1,6 @@
 module knative.dev/operator
 
-go 1.13
+go 1.14
 
 require (
 	github.com/emicklei/go-restful v2.11.1+incompatible // indirect

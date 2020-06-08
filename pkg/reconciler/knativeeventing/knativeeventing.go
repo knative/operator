@@ -50,7 +50,7 @@ type Reconciler struct {
 	// targetVersion is the version of the KnativeEventing manifest to install
 	targetVersion string
 	// Platform-specific behavior to affect the transform
-	platform common.Platforms
+	platform common.Extension
 }
 
 // Check that our Reconciler implements controller.Reconciler
@@ -74,8 +74,9 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *eventingv1alpha
 		}
 	}
 
-	manifest, err := r.transform(ctx, original)
-	if err != nil {
+	// Appending nothing effectively results in a deep-copy clone
+	manifest := r.config.Append()
+	if err := r.transform(ctx, &manifest, original); err != nil {
 		return fmt.Errorf("failed to transform manifest: %w", err)
 	}
 
@@ -92,18 +93,15 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *eventingv1alpha1.Kna
 
 	logger.Infow("Reconciling KnativeEventing", "status", ke.Status)
 	stages := []func(context.Context, *mf.Manifest, *eventingv1alpha1.KnativeEventing) error{
+		r.transform,
 		r.ensureFinalizerRemoval,
 		r.install,
 		r.checkDeployments,
 		r.deleteObsoleteResources,
 	}
 
-	manifest, err := r.transform(ctx, ke)
-	if err != nil {
-		ke.Status.MarkInstallFailed(err.Error())
-		return err
-	}
-
+	// Appending nothing effectively results in a deep-copy clone
+	manifest := r.config.Append()
 	for _, stage := range stages {
 		if err := stage(ctx, &manifest, ke); err != nil {
 			return err
@@ -113,19 +111,12 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *eventingv1alpha1.Kna
 	return nil
 }
 
-func (r *Reconciler) transform(ctx context.Context, instance *eventingv1alpha1.KnativeEventing) (mf.Manifest, error) {
+// transform mutates the passed manifest to one with common and
+// platform transforms, plus any extras passed in
+func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, instance *eventingv1alpha1.KnativeEventing) error {
 	logger := logging.FromContext(ctx)
-	logger.Debug("Transforming manifest")
-
-	platform, err := r.platform.Transformers(r.kubeClientSet, logger)
-	if err != nil {
-		return mf.Manifest{}, err
-	}
-
-	transformers := common.Transformers(ctx, instance)
-	transformers = append(transformers, kec.DefaultBrokerConfigMapTransform(instance, logger))
-	transformers = append(transformers, platform...)
-	return r.config.Transform(transformers...)
+	return common.Transform(ctx, manifest, instance, r.platform,
+		kec.DefaultBrokerConfigMapTransform(instance, logger))
 }
 
 // ensureFinalizerRemoval ensures that the obsolete "delete-knative-eventing-manifest" is removed from the resource.

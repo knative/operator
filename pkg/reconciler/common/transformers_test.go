@@ -21,7 +21,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	mf "github.com/manifestival/manifestival"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/ptr"
 )
@@ -33,17 +35,30 @@ func TestCommonTransformers(t *testing.T) {
 			Name:      "test-name",
 		},
 	}
-	transformers := Transformers(context.Background(), component)
-
-	resource := NamespacedResource("test/v1", "TestCR", "another-ns", "test-resource")
-	for _, t := range transformers {
-		t(resource)
+	in := []unstructured.Unstructured{*NamespacedResource("test/v1", "TestCR", "another-ns", "test-resource")}
+	manifest, err := mf.ManifestFrom(mf.Slice(in))
+	if err != nil {
+		t.Fatalf("Failed to generate manifest: %v", err)
 	}
-
-	// Only verify generic transformers are applied for simplicity.
+	if err := Transform(context.Background(), &manifest, component, nil); err != nil {
+		t.Fatalf("Failed to transform manifest: %v", err)
+	}
+	resource := &manifest.Resources()[0]
 
 	// Verify namespace is carried over.
 	if got, want := resource.GetNamespace(), component.GetNamespace(); got != want {
+		t.Fatalf("GetNamespace() = %s, want %s", got, want)
+	}
+
+	// Transform with a platform extension
+	platform := TestExtension("fubar")
+	if err := Transform(context.Background(), &manifest, component, platform); err != nil {
+		t.Fatalf("Failed to transform manifest: %v", err)
+	}
+	resource = &manifest.Resources()[0]
+
+	// Verify namespace is transformed
+	if got, want := resource.GetNamespace(), string(platform); got != want {
 		t.Fatalf("GetNamespace() = %s, want %s", got, want)
 	}
 

@@ -75,7 +75,7 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 	c := &Reconciler{
 		kubeClientSet:     kubeClient,
 		operatorClientSet: operatorclient.Get(ctx),
-		platform:          common.GetPlatforms(ctx),
+		platform:          common.GetPlatform(ctx),
 		config:            manifest,
 		targetVersion:     version,
 	}

@@ -50,7 +50,7 @@ type Reconciler struct {
 	// targetVersion is the version of the KnativeServing manifest to install
 	targetVersion string
 	// Platform-specific behavior to affect the transform
-	platform common.Platforms
+	platform common.Extension
 }
 
 // Check that our Reconciler implements controller.Reconciler
@@ -74,8 +74,9 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 		}
 	}
 
-	manifest, err := r.transform(ctx, original)
-	if err != nil {
+	// Appending nothing effectively results in a deep-copy clone
+	manifest := r.config.Append()
+	if err := r.transform(ctx, &manifest, original); err != nil {
 		return fmt.Errorf("failed to transform manifest: %w", err)
 	}
 
@@ -92,18 +93,15 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 	stages := []func(context.Context, *mf.Manifest, *servingv1alpha1.KnativeServing) error{
+		r.transform,
 		r.ensureFinalizerRemoval,
 		r.install,
 		r.checkDeployments,
 		r.deleteObsoleteResources,
 	}
 
-	manifest, err := r.transform(ctx, ks)
-	if err != nil {
-		ks.Status.MarkInstallFailed(err.Error())
-		return err
-	}
-
+	// Appending nothing effectively results in a deep-copy clone
+	manifest := r.config.Append()
 	for _, stage := range stages {
 		if err := stage(ctx, &manifest, ks); err != nil {
 			return err
@@ -113,25 +111,15 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.Knat
 	return nil
 }
 
-// Transform the resources
-func (r *Reconciler) transform(ctx context.Context, instance *servingv1alpha1.KnativeServing) (mf.Manifest, error) {
+// transform mutates the passed manifest to one with common and
+// platform transforms, plus any extras passed in
+func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, instance *servingv1alpha1.KnativeServing) error {
 	logger := logging.FromContext(ctx)
-
-	logger.Debug("Transforming manifest")
-
-	platform, err := r.platform.Transformers(r.kubeClientSet, logger)
-	if err != nil {
-		return mf.Manifest{}, err
-	}
-
-	transformers := common.Transformers(ctx, instance)
-	transformers = append(transformers,
+	return common.Transform(ctx, manifest, instance, r.platform,
 		ksc.GatewayTransform(instance, logger),
 		ksc.CustomCertsTransform(instance, logger),
 		ksc.HighAvailabilityTransform(instance, logger),
-		ksc.AggregationRuleTransform(r.config.Client))
-	transformers = append(transformers, platform...)
-	return r.config.Transform(transformers...)
+		ksc.AggregationRuleTransform(manifest.Client))
 }
 
 // Apply the manifest resources

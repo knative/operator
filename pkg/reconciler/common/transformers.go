@@ -22,8 +22,8 @@ import (
 	"knative.dev/pkg/logging"
 )
 
-// Transformers returns transformers that are common to all components.
-func Transformers(ctx context.Context, obj v1alpha1.KComponent) []mf.Transformer {
+// transformers that are common to all components.
+func transformers(ctx context.Context, obj v1alpha1.KComponent) []mf.Transformer {
 	logger := logging.FromContext(ctx)
 	return []mf.Transformer{
 		mf.InjectOwner(obj),
@@ -31,4 +31,28 @@ func Transformers(ctx context.Context, obj v1alpha1.KComponent) []mf.Transformer
 		ImageTransform(obj.GetSpec().GetRegistry(), logger),
 		ConfigMapTransform(obj.GetSpec().GetConfig(), logger),
 		ResourceRequirementsTransform(obj.GetSpec().GetResources(), logger)}
+}
+
+// Transform will mutate the passed-by-reference manifest with one
+// transformed by platform, common, and any extra passed in
+func Transform(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent, platform Extension, extra ...mf.Transformer) error {
+	logger := logging.FromContext(ctx)
+	logger.Debug("Transforming manifest")
+	transformers := transformers(ctx, instance)
+	transformers = append(transformers, extra...)
+	if platform != nil {
+		pfts, err := platform.Transformers()
+		if err != nil {
+			instance.GetStatus().MarkInstallFailed(err.Error())
+			return err
+		}
+		transformers = append(transformers, pfts...)
+	}
+	m, err := manifest.Transform(transformers...)
+	if err != nil {
+		instance.GetStatus().MarkInstallFailed(err.Error())
+		return err
+	}
+	*manifest = m
+	return nil
 }

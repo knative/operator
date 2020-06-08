@@ -22,60 +22,49 @@ import (
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
-	"go.uber.org/zap"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-
 	util "knative.dev/operator/pkg/reconciler/common/testing"
-	kubeclient "knative.dev/pkg/client/injection/kube/client"
-	_ "knative.dev/pkg/client/injection/kube/client/fake"
-	"knative.dev/pkg/injection"
-	"knative.dev/pkg/logging"
-	"knative.dev/pkg/logging/logkey"
 )
 
-var (
-	platform    Platforms
-	platformErr Platforms
-)
+type TestExtension string
 
-func TestTransformers(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	cfg := &rest.Config{}
-	ctx, _ = injection.Fake.SetupInformers(ctx, cfg)
-
-	logger := logging.FromContext(ctx).
-		Named("test-controller").
-		With(zap.String(logkey.ControllerType, "test-controller"))
-
-	results, err := platform.Transformers(kubeclient.Get(ctx), logger)
-	util.AssertEqual(t, err, nil)
-	util.AssertEqual(t, len(results), 0)
-
-	platform = append(platform, fakePlatform)
-	results, err = platform.Transformers(kubeclient.Get(ctx), logger)
-	util.AssertEqual(t, err, nil)
-	util.AssertEqual(t, len(results), 1)
-
-	platformErr = append(platformErr, fakePlatformErr)
-	results, err = platformErr.Transformers(kubeclient.Get(ctx), logger)
-	util.AssertEqual(t, err.Error(), "Test Error")
-	util.AssertEqual(t, len(results), 0)
+func (t TestExtension) Transformers() ([]mf.Transformer, error) {
+	if t == "fail" {
+		return nil, errors.New(string(t))
+	}
+	return []mf.Transformer{mf.InjectNamespace(string(t))}, nil
 }
 
-func fakePlatformErr(kubeClient kubernetes.Interface, logger *zap.SugaredLogger) (mf.Transformer, error) {
-	return fakeTransformer(), errors.New("Test Error")
-}
+func TestExtensions(t *testing.T) {
+	tests := []struct {
+		name      string
+		platform  Extension
+		wantError bool
+	}{{
+		name:      "happy path",
+		platform:  TestExtension("happy"),
+		wantError: false,
+	}, {
+		name:      "sad path",
+		platform:  TestExtension("fail"),
+		wantError: true,
+	}, {
+		name:      "no path",
+		platform:  nil,
+		wantError: false,
+	}}
 
-func fakePlatform(kubeClient kubernetes.Interface, logger *zap.SugaredLogger) (mf.Transformer, error) {
-	return fakeTransformer(), nil
-}
-
-func fakeTransformer() mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		return nil
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctx := WithPlatform(context.Background(), test.platform)
+			ext := GetPlatform(ctx)
+			util.AssertEqual(t, ext, test.platform)
+			if ext != nil {
+				transformers, err := ext.Transformers()
+				if !test.wantError {
+					util.AssertEqual(t, err, nil)
+					util.AssertEqual(t, len(transformers), 1)
+				}
+			}
+		})
 	}
 }

@@ -27,12 +27,17 @@ import (
 	"testing"
 	"time"
 
+	"knative.dev/pkg/apis"
+
+	apierrs "k8s.io/apimachinery/pkg/api/errors"
+
 	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/reconciler/common"
 
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"knative.dev/operator/test"
 	"knative.dev/pkg/test/logging"
@@ -91,9 +96,9 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 
 // GetExpectedDeployments will return an array of deployment resources based on the version for the knative
 // component.
-func GetExpectedDeployments(t *testing.T, version, kcomponent string) []string {
-	manifestPath := common.RetrieveManifestPath(version, kcomponent)
-	manifest, err := mf.NewManifest(manifestPath)
+
+func GetExpectedDeployments(t *testing.T, version, kcomponent string) (mf.Manifest, []string) {
+	manifest, err := GetManifest(version, kcomponent)
 	if err != nil {
 		t.Fatalf("Failed to get the manifest for Knative: %v", err)
 	}
@@ -102,7 +107,13 @@ func GetExpectedDeployments(t *testing.T, version, kcomponent string) []string {
 	for _, resource := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
 		deployments = append(deployments, resource.GetName())
 	}
-	return removeDuplications(deployments)
+	return manifest, removeDuplications(deployments)
+}
+
+// GetManifest will return the manifest based on the version for the knative
+func GetManifest(version, kcomponent string) (mf.Manifest, error) {
+	manifestPath := common.RetrieveManifestPath(version, kcomponent)
+	return mf.NewManifest(manifestPath)
 }
 
 // SetKodataDir will set the env var KO_DATA_PATH into the path of the kodata of this repository.
@@ -134,4 +145,39 @@ func removeDuplications(slice []string) []string {
 		}
 	}
 	return list
+}
+
+// WaitForKnativeResourceState returns the status of whether all obsolete resources are removed
+func WaitForKnativeResourceState(clients *test.Clients, namespace string,
+	obsResources []unstructured.Unstructured, logf logging.FormatLogger, inState func(clients *test.Clients,
+		namespace string, obsResources []unstructured.Unstructured, logf logging.FormatLogger) (bool, error)) error {
+	span := logging.GetEmitableSpan(context.Background(), fmt.Sprintf("WaitForKnativeResourceState/%s/%s", obsResources, "KnativeObsoleteResourceIsGone"))
+	defer span.End()
+
+	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+		return inState(clients, namespace, obsResources, logf)
+	})
+
+	return waitErr
+}
+
+// IsKnativeObsoleteResourceGone check the status conditions of the resources and return true if the obsolete resources are removed.
+func IsKnativeObsoleteResourceGone(clients *test.Clients, namespace string, obsResources []unstructured.Unstructured,
+	logf logging.FormatLogger) (bool, error) {
+	for _, resource := range obsResources {
+		gvr := apis.KindToResource(resource.GroupVersionKind())
+		var err error
+		if resource.GetNamespace() != "" {
+			// This is a namespaced resource
+			_, err = clients.Dynamic.Resource(gvr).Namespace(namespace).Get(resource.GetName(), metav1.GetOptions{})
+		} else {
+			// This is a clustered resource
+			_, err = clients.Dynamic.Resource(gvr).Get(resource.GetName(), metav1.GetOptions{})
+		}
+		if !apierrs.IsNotFound(err) {
+			logf("The resource %v still exists.", resource.GetName())
+			return false, nil
+		}
+	}
+	return true, nil
 }

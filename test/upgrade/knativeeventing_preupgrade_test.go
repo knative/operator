@@ -58,7 +58,8 @@ func TestKnativeEventingPreUpgrade(t *testing.T) {
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
 		// Based on the status.version, get the deployment resources.
-		expectedDeployments := resources.GetExpectedDeployments(t, keventing.Status.Version, "knative-eventing")
+		defer os.Unsetenv(common.KoEnvKey)
+		_, expectedDeployments := resources.GetExpectedDeployments(t, keventing.Status.Version, "knative-eventing")
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 	})

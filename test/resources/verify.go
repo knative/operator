@@ -27,6 +27,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/wait"
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -236,6 +237,14 @@ func verifyNoKSOperatorCR(clients *test.Clients) error {
 		return errors.New("Unable to verify cluster-scoped resources are deleted if any KnativeServing exists")
 	}
 	return nil
+}
+
+// AssertKnativeObsoleteResource verifies if all obsolete resources disappear in the cluster
+func AssertKnativeObsoleteResource(t *testing.T, clients *test.Clients, namespace string, obsResources []unstructured.Unstructured) {
+	if err := WaitForKnativeResourceState(clients, namespace, obsResources, t.Logf,
+		IsKnativeObsoleteResourceGone); err != nil {
+		t.Fatalf("Knative obsolete resources failed to be removed: %v", err)
+	}
 }
 
 // AssertKnativeDeploymentStatus verifies if the Knative deployments reach the READY status.

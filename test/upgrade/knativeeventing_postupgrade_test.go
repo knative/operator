@@ -19,6 +19,7 @@ limitations under the License.
 package e2e
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -67,7 +68,7 @@ func TestKnativeEventingUpgrade(t *testing.T) {
 		}
 		// Compare the previous manifest with the target manifest, we verify that all the obsolete resources
 		// do not exist any more.
-		preManifest, err := resources.GetManifest(preEventingVer, kcomponent)
+		preManifest, err := common.RetrieveManifest(context.Background(), preEventingVer, kcomponent, nil)
 		if err != nil {
 			t.Fatalf("Failed to get KnativeEventing manifest: %v", err)
 		}

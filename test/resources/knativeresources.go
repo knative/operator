@@ -98,7 +98,7 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 // component.
 
 func GetExpectedDeployments(t *testing.T, version, kcomponent string) (mf.Manifest, []string) {
-	manifest, err := GetManifest(version, kcomponent)
+	manifest, err := common.RetrieveManifest(context.Background(), version, kcomponent, nil)
 	if err != nil {
 		t.Fatalf("Failed to get the manifest for Knative: %v", err)
 	}
@@ -108,12 +108,6 @@ func GetExpectedDeployments(t *testing.T, version, kcomponent string) (mf.Manife
 		deployments = append(deployments, resource.GetName())
 	}
 	return manifest, removeDuplications(deployments)
-}
-
-// GetManifest will return the manifest based on the version for the knative
-func GetManifest(version, kcomponent string) (mf.Manifest, error) {
-	manifestPath := common.RetrieveManifestPath(version, kcomponent)
-	return mf.NewManifest(manifestPath)
 }
 
 // SetKodataDir will set the env var KO_DATA_PATH into the path of the kodata of this repository.

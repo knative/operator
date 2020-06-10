@@ -17,14 +17,14 @@ limitations under the License.
 package common
 
 import (
+	"context"
 	"os"
 	"testing"
 
-	mf "github.com/manifestival/manifestival"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
-func TestRetrieveManifestPath(t *testing.T) {
+func TestRetrieveManifest(t *testing.T) {
 	koPath := "testdata/kodata"
 
 	tests := []struct {
@@ -48,9 +48,9 @@ func TestRetrieveManifestPath(t *testing.T) {
 	defer os.Unsetenv(KoEnvKey)
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			manifestPath := RetrieveManifestPath(test.version, test.component)
+			manifestPath := retrieveManifestPath(test.version, test.component)
 			util.AssertEqual(t, manifestPath, test.expected)
-			manifest, err := mf.NewManifest(manifestPath)
+			manifest, err := RetrieveManifest(context.Background(), test.version, test.component, nil)
 			util.AssertEqual(t, err, nil)
 			util.AssertEqual(t, len(manifest.Resources()) > 0, true)
 		})
@@ -75,9 +75,9 @@ func TestRetrieveManifestPath(t *testing.T) {
 
 	for _, test := range invalidPathTests {
 		t.Run(test.component, func(t *testing.T) {
-			manifestPath := RetrieveManifestPath(test.version, test.component)
+			manifestPath := retrieveManifestPath(test.version, test.component)
 			util.AssertEqual(t, manifestPath, test.expected)
-			manifest, err := mf.NewManifest(manifestPath)
+			manifest, err := RetrieveManifest(context.Background(), test.version, test.component, nil)
 			util.AssertEqual(t, err != nil, true)
 			util.AssertEqual(t, len(manifest.Resources()) == 0, true)
 		})

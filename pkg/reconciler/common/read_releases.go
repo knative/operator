@@ -17,12 +17,17 @@ limitations under the License.
 package common
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
+
+	"github.com/go-logr/zapr"
+	mf "github.com/manifestival/manifestival"
+	"knative.dev/pkg/logging"
 
 	"golang.org/x/mod/semver"
 )
@@ -31,8 +36,8 @@ const (
 	KoEnvKey = "KO_DATA_PATH"
 )
 
-// RetrieveManifestPath returns the manifest path for Knative based a provided version and component
-func RetrieveManifestPath(version, kcomponent string) string {
+// retrieveManifestPath returns the manifest path for Knative based a provided version and component
+func retrieveManifestPath(version, kcomponent string) string {
 	koDataDir := os.Getenv(KoEnvKey)
 	return filepath.Join(koDataDir, kcomponent, version)
 }
@@ -86,4 +91,22 @@ func GetLatestRelease(kcomponent string) string {
 	}
 	// The versions are in a descending order, so the first one will be the latest version.
 	return vers[0]
+}
+
+// RetrieveManifest returns the manifest for Knative component based a provided version
+func RetrieveManifest(ctx context.Context, version, component string, mfClient mf.Client) (mf.Manifest, error) {
+	logger := logging.FromContext(ctx)
+	manifest, err := mf.NewManifest(retrieveManifestPath(version, component),
+		mf.UseClient(mfClient),
+		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+
+	if err != nil {
+		return manifest, err
+	}
+
+	if len(manifest.Resources()) == 0 {
+		return manifest, fmt.Errorf("unable to find the manifest for %s at the version %s", component, version)
+	}
+
+	return manifest, nil
 }

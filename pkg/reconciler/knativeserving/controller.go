@@ -17,9 +17,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-logr/zapr"
 	mfc "github.com/manifestival/client-go-client"
-	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/client-go/tools/cache"
 
@@ -62,11 +60,13 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		logger.Fatal(err)
 	}
 
+	mfClient, err := mfc.NewClient(injection.GetConfig(ctx))
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	version := common.GetLatestRelease(kcomponent)
-	manifestPath := common.RetrieveManifestPath(version, kcomponent)
-	manifest, err := mfc.NewManifest(manifestPath,
-		injection.GetConfig(ctx),
-		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
+	manifest, err := common.RetrieveManifest(ctx, version, kcomponent, mfClient)
 
 	if err != nil {
 		logger.Fatalw("Error creating the Manifest for knative-serving", zap.Error(err))

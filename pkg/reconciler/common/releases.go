@@ -35,8 +35,33 @@ const (
 
 var cache = map[string]mf.Manifest{}
 
-// FetchManifest returns a possibly cached manifest
-func FetchManifest(path string) (mf.Manifest, error) {
+func TargetVersion(instance v1alpha1.KComponent) string {
+	switch {
+	case instance.GetSpec().GetVersion() != "":
+		return instance.GetSpec().GetVersion()
+	case instance.GetStatus().GetVersion() != "":
+		return instance.GetStatus().GetVersion()
+	default:
+		return latestRelease(instance)
+	}
+}
+
+func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
+	return fetch(manifestPath(TargetVersion(instance), instance))
+}
+
+func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
+	switch {
+	case instance.GetStatus().GetVersion() != "":
+		return fetch(manifestPath(instance.GetStatus().GetVersion(), instance))
+	case instance.GetSpec().GetVersion() != "":
+		return fetch(manifestPath(instance.GetSpec().GetVersion(), instance))
+	default:
+		return fetch(manifestPath(latestRelease(instance), instance))
+	}
+}
+
+func fetch(path string) (mf.Manifest, error) {
 	if m, ok := cache[path]; ok {
 		return m, nil
 	}
@@ -47,32 +72,20 @@ func FetchManifest(path string) (mf.Manifest, error) {
 	return result, err
 }
 
-// ManifestPath returns the manifest path for Knative based a provided version and component
-func ManifestPath(version, kcomponent string) string {
+func componentDir(instance v1alpha1.KComponent) string {
 	koDataDir := os.Getenv(KoEnvKey)
-	return filepath.Join(koDataDir, kcomponent, version)
-}
-
-// TargetRelease returns spec.Version, status.Version, or the
-// operator's latest release
-func TargetRelease(instance v1alpha1.KComponent) string {
-	if instance.GetSpec().GetVersion() != "" {
-		return instance.GetSpec().GetVersion()
-	}
-	if instance.GetStatus().GetVersion() != "" {
-		return instance.GetStatus().GetVersion()
-	}
-	return LatestRelease(PathElement(instance))
-}
-
-func PathElement(instance v1alpha1.KComponent) string {
 	switch instance.(type) {
 	case *v1alpha1.KnativeServing:
-		return "knative-serving"
+		return filepath.Join(koDataDir, "knative-serving")
 	case *v1alpha1.KnativeEventing:
-		return "knative-eventing"
+		return filepath.Join(koDataDir, "knative-eventing")
 	}
 	return ""
+}
+
+func manifestPath(version string, instance v1alpha1.KComponent) string {
+	// TODO: check if file exists and if not, construct URL instead
+	return filepath.Join(componentDir(instance), version)
 }
 
 // sanitizeSemver always adds `v` in front of the version.
@@ -82,11 +95,11 @@ func sanitizeSemver(version string) string {
 	return fmt.Sprintf("v%s", version)
 }
 
-// ListReleases returns the all the available release versions available under kodata directory for Knative component.
-func allReleases(kComponent string) ([]string, error) {
+// allReleases returns the all the available release versions
+// available under kodata directory for Knative component.
+func allReleases(instance v1alpha1.KComponent) ([]string, error) {
 	// List all the directories available under kodata
-	koDataDir := os.Getenv(KoEnvKey)
-	pathname := filepath.Join(koDataDir, kComponent)
+	pathname := componentDir(instance)
 	fileList, err := ioutil.ReadDir(pathname)
 	if err != nil {
 		return nil, err
@@ -104,7 +117,7 @@ func allReleases(kComponent string) ([]string, error) {
 		}
 	}
 	if len(releaseTags) == 0 {
-		return nil, fmt.Errorf("unable to find any version number for %s", kComponent)
+		return nil, fmt.Errorf("unable to find any version number for %v", instance)
 	}
 
 	// This function makes sure the versions are sorted in a descending order.
@@ -116,9 +129,9 @@ func allReleases(kComponent string) ([]string, error) {
 	return releaseTags, nil
 }
 
-// LatestRelease returns the latest release tag available under kodata directory for Knative component.
-func LatestRelease(kcomponent string) string {
-	vers, err := allReleases(kcomponent)
+// latestRelease returns the latest release tag available under kodata directory for Knative component.
+func latestRelease(instance v1alpha1.KComponent) string {
+	vers, err := allReleases(instance)
 	if err != nil {
 		panic(err)
 	}

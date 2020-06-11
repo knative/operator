@@ -71,15 +71,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1alpha1.Knativ
 		}
 	}
 
-	// TODO: which manifest should we delete? both?
-	version := ""
-	if original.GetStatus().IsReady() {
-		version = original.Status.Version
-	} else {
-		version = common.TargetRelease(original)
-	}
-
-	manifest, err := common.FetchManifest(common.ManifestPath(version, common.PathElement(original)))
+	manifest, err := common.InstalledManifest(original)
 	if err != nil {
 		return err
 	}
@@ -124,8 +116,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 // create mutates the passed manifest, appending to it one appropriate
 // for the specified version in the instance
 func (r *Reconciler) create(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
-	path := common.ManifestPath(common.TargetRelease(instance), common.PathElement(instance))
-	m, err := common.FetchManifest(path)
+	m, err := common.TargetManifest(instance)
 	if err != nil {
 		return err
 	}
@@ -183,13 +174,10 @@ func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.M
 	if instance.GetStatus().GetVersion() == "" {
 		return nil
 	}
-	if common.TargetRelease(instance) == instance.GetStatus().GetVersion() {
-		return nil
-	}
 	logger := logging.FromContext(ctx)
-	m, err := common.FetchManifest(common.ManifestPath(instance.GetStatus().GetVersion(), common.PathElement(instance)))
+	m, err := common.InstalledManifest(instance)
 	if err != nil {
-		logger.Error(err, "Unable to fetch previous manifest; some obsolete resources may remain")
+		logger.Error(err, "Unable to fetch installed manifest; some obsolete resources may remain")
 		return nil
 	}
 	m = r.manifest.Append(m)
@@ -202,7 +190,7 @@ func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.M
 // updateVersion sets the status version if all conditions are satisfied
 func (r *Reconciler) updateVersion(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	if instance.GetStatus().IsReady() {
-		instance.GetStatus().SetVersion(common.TargetRelease(instance))
+		instance.GetStatus().SetVersion(common.TargetVersion(instance))
 	}
 	return nil
 }

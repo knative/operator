@@ -25,6 +25,7 @@ import (
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 
 	mf "github.com/manifestival/manifestival"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler/common"
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
@@ -52,22 +53,23 @@ func TestKnativeServingPostUpgrade(t *testing.T) {
 	// Verify if resources match the latest requirement after upgrade
 	t.Run("verify resources", func(t *testing.T) {
 		// TODO: We only verify the deployment, but we need to add other resources as well, like ServiceAccount, ClusterRoleBinding, etc.
-		kcomponent := "knative-serving"
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
-		version := common.LatestRelease(kcomponent)
-		targetManifest, expectedDeployments := resources.GetExpectedDeployments(t, version, kcomponent)
+		targetManifest, expectedDeployments := resources.GetExpectedDeployments(t, &v1alpha1.KnativeServing{})
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
 
-		preServingVer := test.OperatorFlags.PreviousServingVersion
-		if preServingVer == "" {
-			preServingVer = version
+		instance := &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: test.OperatorFlags.PreviousServingVersion,
+				},
+			},
 		}
 		// Compare the previous manifest with the target manifest, we verify that all the obsolete resources
 		// do not exist any more.
-		preManifest, err := resources.GetManifest(preServingVer, kcomponent)
+		preManifest, err := common.TargetManifest(instance)
 		if err != nil {
 			t.Fatalf("Failed to get KnativeServing manifest: %v", err)
 		}

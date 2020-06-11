@@ -45,10 +45,8 @@ type Reconciler struct {
 	kubeClientSet kubernetes.Interface
 	// kubeClientSet allows us to talk to the k8s for operator APIs
 	operatorClientSet clientset.Interface
-	// config is the manifest of KnativeEventing
-	config mf.Manifest
-	// targetVersion is the version of the KnativeEventing manifest to install
-	targetVersion string
+	// manifest is empty but with a valid client and logger
+	manifest mf.Manifest
 	// Platform-specific behavior to affect the transform
 	platform common.Extension
 }
@@ -74,12 +72,14 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *eventingv1alpha
 		}
 	}
 
-	// Appending nothing effectively results in a deep-copy clone
-	manifest := r.config.Append()
-	if err := r.transform(ctx, &manifest, original); err != nil {
-		return fmt.Errorf("failed to transform manifest: %w", err)
+	manifest, err := common.InstalledManifest(original)
+	if err != nil {
+		return err
 	}
-
+	manifest = r.manifest.Append(manifest)
+	if err := r.transform(ctx, &manifest, original); err != nil {
+		return err
+	}
 	logger.Info("Deleting cluster-scoped resources")
 	return common.Uninstall(&manifest)
 }
@@ -100,8 +100,11 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *eventingv1alpha1.Kna
 		r.deleteObsoleteResources,
 	}
 
-	// Appending nothing effectively results in a deep-copy clone
-	manifest := r.config.Append()
+	manifest, err := common.TargetManifest(ke)
+	if err != nil {
+		return err
+	}
+	manifest = r.manifest.Append(manifest)
 	for _, stage := range stages {
 		if err := stage(ctx, &manifest, ke); err != nil {
 			return err
@@ -140,7 +143,7 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
-	return common.Install(manifest, r.targetVersion, &ke.Status)
+	return common.Install(manifest, common.TargetVersion(ke), &ke.Status)
 }
 
 func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {

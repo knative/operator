@@ -54,6 +54,8 @@ type KComponentSpec interface {
 	GetRegistry() *Registry
 	// GetResources returns a list of container resource overrides.
 	GetResources() []ResourceRequirementsOverride
+	// GetVersion gets the version to be installed
+	GetVersion() string
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -83,6 +85,9 @@ type KComponentStatus interface {
 	GetVersion() string
 	// SetVersion sets the currently installed version of the component.
 	SetVersion(version string)
+
+	// IsReady return true if all conditions are satisfied
+	IsReady() bool
 }
 
 // CommonSpec unifies common fields and functions on the Spec.
@@ -99,6 +104,10 @@ type CommonSpec struct {
 	// Override containers' resource requirements
 	// +optional
 	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+
+	// Override containers' resource requirements
+	// +optional
+	Version string `json:"version,omitempty"`
 }
 
 // GetConfig implements KComponentSpec.
@@ -114,6 +123,11 @@ func (c *CommonSpec) GetRegistry() *Registry {
 // GetResources implements KComponentSpec.
 func (c *CommonSpec) GetResources() []ResourceRequirementsOverride {
 	return c.Resources
+}
+
+// GetVersion implements KComponentSpec.
+func (c *CommonSpec) GetVersion() string {
+	return c.Version
 }
 
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first

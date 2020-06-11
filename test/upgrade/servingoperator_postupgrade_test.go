@@ -55,7 +55,7 @@ func TestKnativeServingPostUpgrade(t *testing.T) {
 		kcomponent := "knative-serving"
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
-		version := common.GetLatestRelease(kcomponent)
+		version := common.LatestRelease(kcomponent)
 		targetManifest, expectedDeployments := resources.GetExpectedDeployments(t, version, kcomponent)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)

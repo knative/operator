@@ -30,7 +30,7 @@ var (
 
 // Install applies the manifest resources for the given version and updates the given
 // status accordingly.
-func Install(manifest *mf.Manifest, version string, status v1alpha1.KComponentStatus) error {
+func Install(manifest *mf.Manifest, status v1alpha1.KComponentStatus) error {
 	// The Operator needs a higher level of permissions if it 'bind's non-existent roles.
 	// To avoid this, we strictly order the manifest application as (Cluster)Roles, then
 	// (Cluster)RoleBindings, then the rest of the manifest.
@@ -47,7 +47,6 @@ func Install(manifest *mf.Manifest, version string, status v1alpha1.KComponentSt
 		return fmt.Errorf("failed to apply non rbac manifest: %w", err)
 	}
 	status.MarkInstallSucceeded()
-	status.SetVersion(version)
 	return nil
 }
 

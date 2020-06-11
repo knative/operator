@@ -29,7 +29,6 @@ import (
 
 func TestInstall(t *testing.T) {
 	// Resources in the manifest
-	version := "v0.14-test"
 	deployment := *NamespacedResource("apps/v1", "Deployment", "test", "test-deployment")
 	role := *NamespacedResource("rbac.authorization.k8s.io/v1", "Role", "test", "test-role")
 	roleBinding := *NamespacedResource("rbac.authorization.k8s.io/v1", "RoleBinding", "test", "test-role-binding")
@@ -50,7 +49,7 @@ func TestInstall(t *testing.T) {
 	status := &v1alpha1.KnativeServingStatus{
 		Version: "0.13-test",
 	}
-	if err := Install(&manifest, version, status); err != nil {
+	if err := Install(&manifest, status); err != nil {
 		t.Fatalf("Install() = %v, want no error", err)
 	}
 
@@ -62,15 +61,10 @@ func TestInstall(t *testing.T) {
 	if condition == nil || condition.Status != corev1.ConditionTrue {
 		t.Fatalf("InstallSucceeded = %v, want %v", condition, corev1.ConditionTrue)
 	}
-
-	if got, want := status.GetVersion(), version; got != want {
-		t.Fatalf("GetVersion() = %s, want %s", got, want)
-	}
 }
 
 func TestInstallError(t *testing.T) {
 	oldVersion := "v0.13-test"
-	version := "v0.14-test"
 
 	client := &fakeClient{err: errors.New("test")}
 	manifest, err := mf.ManifestFrom(mf.Slice([]unstructured.Unstructured{
@@ -83,7 +77,7 @@ func TestInstallError(t *testing.T) {
 	status := &v1alpha1.KnativeServingStatus{
 		Version: oldVersion,
 	}
-	if err := Install(&manifest, version, status); err == nil {
+	if err := Install(&manifest, status); err == nil {
 		t.Fatalf("Install() = nil, wanted an error")
 	}
 

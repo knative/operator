@@ -24,17 +24,55 @@ import (
 	"path/filepath"
 	"sort"
 
+	mf "github.com/manifestival/manifestival"
 	"golang.org/x/mod/semver"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 const (
 	KoEnvKey = "KO_DATA_PATH"
 )
 
-// RetrieveManifestPath returns the manifest path for Knative based a provided version and component
-func RetrieveManifestPath(version, kcomponent string) string {
+var cache = map[string]mf.Manifest{}
+
+// FetchManifest returns a possibly cached manifest
+func FetchManifest(path string) (mf.Manifest, error) {
+	if m, ok := cache[path]; ok {
+		return m, nil
+	}
+	result, err := mf.NewManifest(path)
+	if err == nil {
+		cache[path] = result
+	}
+	return result, err
+}
+
+// ManifestPath returns the manifest path for Knative based a provided version and component
+func ManifestPath(version, kcomponent string) string {
 	koDataDir := os.Getenv(KoEnvKey)
 	return filepath.Join(koDataDir, kcomponent, version)
+}
+
+// TargetRelease returns spec.Version, status.Version, or the
+// operator's latest release
+func TargetRelease(instance v1alpha1.KComponent) string {
+	if instance.GetSpec().GetVersion() != "" {
+		return instance.GetSpec().GetVersion()
+	}
+	if instance.GetStatus().GetVersion() != "" {
+		return instance.GetStatus().GetVersion()
+	}
+	return LatestRelease(PathElement(instance))
+}
+
+func PathElement(instance v1alpha1.KComponent) string {
+	switch instance.(type) {
+	case *v1alpha1.KnativeServing:
+		return "knative-serving"
+	case *v1alpha1.KnativeEventing:
+		return "knative-eventing"
+	}
+	return ""
 }
 
 // sanitizeSemver always adds `v` in front of the version.
@@ -45,7 +83,7 @@ func sanitizeSemver(version string) string {
 }
 
 // ListReleases returns the all the available release versions available under kodata directory for Knative component.
-func ListReleases(kComponent string) ([]string, error) {
+func allReleases(kComponent string) ([]string, error) {
 	// List all the directories available under kodata
 	koDataDir := os.Getenv(KoEnvKey)
 	pathname := filepath.Join(koDataDir, kComponent)
@@ -78,9 +116,9 @@ func ListReleases(kComponent string) ([]string, error) {
 	return releaseTags, nil
 }
 
-// GetLatestRelease returns the latest release tag available under kodata directory for Knative component.
-func GetLatestRelease(kcomponent string) string {
-	vers, err := ListReleases(kcomponent)
+// LatestRelease returns the latest release tag available under kodata directory for Knative component.
+func LatestRelease(kcomponent string) string {
+	vers, err := allReleases(kcomponent)
 	if err != nil {
 		panic(err)
 	}

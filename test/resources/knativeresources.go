@@ -112,7 +112,7 @@ func GetExpectedDeployments(t *testing.T, version, kcomponent string) (mf.Manife
 
 // GetManifest will return the manifest based on the version for the knative
 func GetManifest(version, kcomponent string) (mf.Manifest, error) {
-	manifestPath := common.RetrieveManifestPath(version, kcomponent)
+	manifestPath := common.ManifestPath(version, kcomponent)
 	return mf.NewManifest(manifestPath)
 }
 

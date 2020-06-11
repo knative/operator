@@ -55,7 +55,7 @@ func TestKnativeEventingUpgrade(t *testing.T) {
 		kcomponent := "knative-eventing"
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
-		version := common.GetLatestRelease(kcomponent)
+		version := common.LatestRelease(kcomponent)
 		// Based on the latest release version, get the deployment resources.
 		targetManifest, expectedDeployments := resources.GetExpectedDeployments(t, version, kcomponent)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)

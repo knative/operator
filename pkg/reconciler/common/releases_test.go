@@ -48,7 +48,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 	defer os.Unsetenv(KoEnvKey)
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			manifestPath := RetrieveManifestPath(test.version, test.component)
+			manifestPath := ManifestPath(test.version, test.component)
 			util.AssertEqual(t, manifestPath, test.expected)
 			manifest, err := mf.NewManifest(manifestPath)
 			util.AssertEqual(t, err, nil)
@@ -75,7 +75,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 
 	for _, test := range invalidPathTests {
 		t.Run(test.component, func(t *testing.T) {
-			manifestPath := RetrieveManifestPath(test.version, test.component)
+			manifestPath := ManifestPath(test.version, test.component)
 			util.AssertEqual(t, manifestPath, test.expected)
 			manifest, err := mf.NewManifest(manifestPath)
 			util.AssertEqual(t, err != nil, true)
@@ -102,7 +102,7 @@ func TestGetLatestRelease(t *testing.T) {
 	defer os.Unsetenv(KoEnvKey)
 	for _, test := range tests {
 		t.Run(test.component, func(t *testing.T) {
-			version := GetLatestRelease(test.component)
+			version := LatestRelease(test.component)
 			util.AssertEqual(t, version, test.expected)
 		})
 	}
@@ -126,7 +126,7 @@ func TestListReleases(t *testing.T) {
 	defer os.Unsetenv(KoEnvKey)
 	for _, test := range tests {
 		t.Run(test.component, func(t *testing.T) {
-			version, err := ListReleases(test.component)
+			version, err := allReleases(test.component)
 			util.AssertEqual(t, err, nil)
 			util.AssertDeepEqual(t, version, test.expected)
 		})

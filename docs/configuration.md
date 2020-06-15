@@ -37,6 +37,7 @@ These are the configurable fields in each resource:
       * [default](#specregistrydefault)
       * [override](#specregistryoverride)
       * [imagePullSecrets](#specregistryimagepullsecrets)
+    * [high-availability](#spechigh-availability)
     * [resources](#specresources)
     * [defaultBrokerClass](#specdefaultbrokerclass)
 
@@ -242,25 +243,36 @@ spec:
 
 ## spec.high-availability
 
-By default, Knative Serving runs a single instance of each controller.
+By default, a single instance of each controller is run.
 This field allows you to configure the number of replicas for the
-following master-elected controllers: `controller`, `autoscaler-hpa`,
-and `networking-istio`, as well as the `HorizontalPodAutoscaler`
-resources for the data plane (`activator`):
+following:
+
+* Serving leader-elected controllers: `controller`, `autoscaler-hpa`, `networking-certmanager`, `networking-ns-cert`, `networking-istio`
+* Serving `HorizontalPodAutoscaler` resources for the data plane (`activator`)
+* Eventing leader-elected controllers: `controller`
+* Eventing `HorizontalPodAutoscaler` resources for the data plane (`broker-ingress-hpa`, `broker-filter-hpa`)
+
 
 The following configuration specifies a replica count of 3 for the
 controllers and a minimum of 3 activators (which may scale higher if
 needed):
 
 ```
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: knative-serving
 spec:
   high-availability:
     replicas: 3
+```
+
+The leader-elected components that can be configured by `leader-elected-components` field.
+The following configuration will specify that in addition to default Knative Serving leader-elected
+`controller`, `autoscaler-hpa`, `networking-certmanager`, `networking-ns-cert` and `networking-istio` components,
+`nscontroller`  component will also be leader-elected:
+
+```
+spec:
+  high-availability:
+    replicas: 3
+    leader-elected-components: "controller,autoscaler-hpa,networking-certmanager,networking-ns-cert,networking-istio,nscontroller"
 ```
 
 

@@ -53,6 +53,11 @@ func (in *CommonSpec) DeepCopyInto(out *CommonSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.HighAvailability != nil {
+		in, out := &in.HighAvailability, &out.HighAvailability
+		*out = new(HighAvailability)
+		**out = **in
+	}
 	return
 }
 
@@ -316,11 +321,6 @@ func (in *KnativeServingSpec) DeepCopyInto(out *KnativeServingSpec) {
 	in.KnativeIngressGateway.DeepCopyInto(&out.KnativeIngressGateway)
 	in.ClusterLocalGateway.DeepCopyInto(&out.ClusterLocalGateway)
 	out.ControllerCustomCerts = in.ControllerCustomCerts
-	if in.HighAvailability != nil {
-		in, out := &in.HighAvailability, &out.HighAvailability
-		*out = new(HighAvailability)
-		**out = **in
-	}
 	return
 }
 

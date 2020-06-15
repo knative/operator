@@ -20,29 +20,21 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/util/sets"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 const (
-	configMapName        = "config-leader-election"
-	enabledComponentsKey = "enabledComponents"
-	componentsValue      = "controller,hpaautoscaler,certcontroller,istiocontroller,nscontroller"
-)
-
-var deploymentNames = sets.NewString(
-	"controller",
-	"autoscaler-hpa",
-	"networking-certmanager",
-	"networking-ns-cert",
-	"networking-istio",
+	configMapName          = "config-leader-election"
+	enabledComponentsKey   = "enabledComponents"
+	haDeploymentLabelKey   = "knative.dev/high-availability"
+	haDeploymentLabelValue = "true"
 )
 
 // HighAvailabilityTransform mutates configmaps and replicacounts of certain
 // controllers when HA control plane is specified.
-func HighAvailabilityTransform(instance *servingv1alpha1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
+func HighAvailabilityTransform(ha *operatorv1alpha1.HighAvailability, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if instance.Spec.HighAvailability == nil {
+		if ha == nil {
 			return nil
 		}
 
@@ -56,16 +48,21 @@ func HighAvailabilityTransform(instance *servingv1alpha1.KnativeServing, log *za
 				data = map[string]string{}
 			}
 
-			data[enabledComponentsKey] = componentsValue
+			data[enabledComponentsKey] = ha.LeaderElectedComponents
 			if err := unstructured.SetNestedStringMap(u.Object, data, "data"); err != nil {
 				return err
 			}
 		}
 
-		replicas := int64(instance.Spec.HighAvailability.Replicas)
+		replicas := int64(ha.Replicas)
 
 		// Transform deployments that support HA.
-		if u.GetKind() == "Deployment" && deploymentNames.Has(u.GetName()) {
+		if u.GetKind() == "Deployment" {
+			val, ok := u.GetLabels()[haDeploymentLabelKey]
+			if !ok || val != haDeploymentLabelValue {
+				// not a HA deployment
+				return nil
+			}
 			if err := unstructured.SetNestedField(u.Object, replicas, "spec", "replicas"); err != nil {
 				return err
 			}

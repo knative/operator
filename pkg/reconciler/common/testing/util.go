@@ -85,3 +85,11 @@ func AssertDeepEqual(t *testing.T, actual, expected interface{}) {
 	}
 	t.Fatalf("expected does not deep equal actual. \nExpected: %T %+v\nActual:   %T %+v", expected, expected, actual, actual)
 }
+
+func AssertDeepEqualWithName(t *testing.T, name string, actual, expected interface{}) {
+	t.Helper()
+	if reflect.DeepEqual(actual, expected) {
+		return
+	}
+	t.Fatalf("%s: expected does not deep equal actual. \nExpected: %T %+v\nActual:   %T %+v", name, expected, expected, actual, actual)
+}

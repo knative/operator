@@ -26,14 +26,14 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
 func TestHighAvailabilityTransform(t *testing.T) {
 	cases := []struct {
 		name     string
-		config   *servingv1alpha1.HighAvailability
+		config   *operatorv1alpha1.HighAvailability
 		in       *unstructured.Unstructured
 		expected *unstructured.Unstructured
 		err      error
@@ -44,49 +44,34 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		expected: makeUnstructuredConfigMap(t, nil),
 	}, {
 		name:   "HA; ConfigMap",
-		config: makeHa(2),
+		config: makeHa(2, "foo,bar"),
 		in:     makeUnstructuredConfigMap(t, nil),
 		expected: makeUnstructuredConfigMap(t, map[string]string{
-			enabledComponentsKey: componentsValue,
+			enabledComponentsKey: "foo,bar",
 		}),
 	}, {
-		name:     "HA; controller",
-		config:   makeHa(2),
-		in:       makeUnstructuredDeployment(t, "controller"),
-		expected: makeUnstructuredDeploymentReplicas(t, "controller", 2),
+		name:     "HA; HA deployment",
+		config:   makeHa(2, "foo,bar"),
+		in:       makeUnstructuredDeployment(t, "controller", map[string]string{"knative.dev/high-availability": "true"}),
+		expected: makeUnstructuredDeploymentReplicasWithLabels(t, "controller", 2, map[string]string{"knative.dev/high-availability": "true"}),
 	}, {
-		name:     "HA; autoscaler-hpa",
-		config:   makeHa(2),
-		in:       makeUnstructuredDeployment(t, "autoscaler-hpa"),
-		expected: makeUnstructuredDeploymentReplicas(t, "autoscaler-hpa", 2),
+		name:     "HA; no HA deployment - no HA info",
+		config:   makeHa(2, "foo,bar"),
+		in:       makeUnstructuredDeployment(t, "some-unsupported-controller", map[string]string{}),
+		expected: makeUnstructuredDeploymentReplicas(t, "some-unsupported-controller", 1),
 	}, {
-		name:     "HA; networking-certmanager",
-		config:   makeHa(2),
-		in:       makeUnstructuredDeployment(t, "networking-certmanager"),
-		expected: makeUnstructuredDeploymentReplicas(t, "networking-certmanager", 2),
-	}, {
-		name:     "HA; networking-ns-cert",
-		config:   makeHa(2),
-		in:       makeUnstructuredDeployment(t, "networking-ns-cert"),
-		expected: makeUnstructuredDeploymentReplicas(t, "networking-ns-cert", 2),
-	}, {
-		name:     "HA; networking-istio",
-		config:   makeHa(2),
-		in:       makeUnstructuredDeployment(t, "networking-istio"),
-		expected: makeUnstructuredDeploymentReplicas(t, "networking-istio", 2),
-	}, {
-		name:     "HA; some-unsupported-controller",
-		config:   makeHa(2),
-		in:       makeUnstructuredDeployment(t, "some-unsupported-controller"),
-		expected: makeUnstructuredDeployment(t, "some-unsupported-controller"),
+		name:     "HA; no HA deployment - HA false",
+		config:   makeHa(2, "foo,bar"),
+		in:       makeUnstructuredDeployment(t, "some-unsupported-controller", map[string]string{"knative.dev/high-availability": "false"}),
+		expected: makeUnstructuredDeploymentReplicasWithLabels(t, "some-unsupported-controller", 1, map[string]string{"knative.dev/high-availability": "false"}),
 	}, {
 		name:     "HA; adjust hpa",
-		config:   makeHa(2),
+		config:   makeHa(2, "foo,bar"),
 		in:       makeUnstructuredHPA(t, "activator", 1),
 		expected: makeUnstructuredHPA(t, "activator", 2),
 	}, {
 		name:     "HA; keep higher hpa value",
-		config:   makeHa(2),
+		config:   makeHa(2, "foo,bar"),
 		in:       makeUnstructuredHPA(t, "activator", 3),
 		expected: makeUnstructuredHPA(t, "activator", 3),
 	}}
@@ -94,23 +79,18 @@ func TestHighAvailabilityTransform(t *testing.T) {
 	for i := range cases {
 		tc := cases[i]
 
-		instance := &servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				HighAvailability: tc.config,
-			},
-		}
-
-		haTransform := HighAvailabilityTransform(instance, log)
+		haTransform := HighAvailabilityTransform(tc.config, log)
 		err := haTransform(tc.in)
 
 		util.AssertDeepEqual(t, err, tc.err)
-		util.AssertDeepEqual(t, tc.in, tc.expected)
+		util.AssertDeepEqualWithName(t, tc.name, tc.in, tc.expected)
 	}
 }
 
-func makeHa(replicas int32) *servingv1alpha1.HighAvailability {
-	return &servingv1alpha1.HighAvailability{
-		Replicas: replicas,
+func makeHa(replicas int32, leaderElectedComponents string) *operatorv1alpha1.HighAvailability {
+	return &operatorv1alpha1.HighAvailability{
+		Replicas:                replicas,
+		LeaderElectedComponents: leaderElectedComponents,
 	}
 }
 
@@ -130,14 +110,19 @@ func makeUnstructuredConfigMap(t *testing.T, data map[string]string) *unstructur
 	return result
 }
 
-func makeUnstructuredDeployment(t *testing.T, name string) *unstructured.Unstructured {
-	return makeUnstructuredDeploymentReplicas(t, name, 1)
+func makeUnstructuredDeployment(t *testing.T, name string, labels map[string]string) *unstructured.Unstructured {
+	return makeUnstructuredDeploymentReplicasWithLabels(t, name, 1, labels)
 }
 
 func makeUnstructuredDeploymentReplicas(t *testing.T, name string, replicas int32) *unstructured.Unstructured {
+	return makeUnstructuredDeploymentReplicasWithLabels(t, name, replicas, map[string]string{})
+}
+
+func makeUnstructuredDeploymentReplicasWithLabels(t *testing.T, name string, replicas int32, labels map[string]string) *unstructured.Unstructured {
 	d := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
+			Name:   name,
+			Labels: labels,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,

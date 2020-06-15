@@ -288,6 +288,7 @@ metadata:
   labels:
     serving.knative.dev/release: "v0.15.1"
     networking.knative.dev/ingress-provider: istio
+    knative.dev/high-availability: "true"
 spec:
   selector:
     matchLabels:

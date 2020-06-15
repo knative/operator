@@ -118,7 +118,6 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, insta
 	return common.Transform(ctx, manifest, instance, r.platform,
 		ksc.GatewayTransform(instance, logger),
 		ksc.CustomCertsTransform(instance, logger),
-		ksc.HighAvailabilityTransform(instance, logger),
 		ksc.AggregationRuleTransform(manifest.Client))
 }
 

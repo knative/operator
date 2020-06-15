@@ -129,6 +129,9 @@ spec:
                   description: The number of replicas that HA parts of the control plane will be scaled to
                   type: integer
                   minimum: 1
+                leader-elected-components:
+                  description: The names of the components that will have HA enabled with leader-election.
+                  type: string
             resources:
               description: A mapping of deployment name to resource requirements
               type: array

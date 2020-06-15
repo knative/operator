@@ -141,6 +141,7 @@ metadata:
   labels:
     serving.knative.dev/release: "v0.15.0"
     autoscaling.knative.dev/autoscaler-provider: hpa
+    knative.dev/high-availability: "true"
 spec:
   selector:
     matchLabels:

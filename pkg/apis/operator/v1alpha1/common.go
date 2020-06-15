@@ -54,6 +54,8 @@ type KComponentSpec interface {
 	GetRegistry() *Registry
 	// GetResources returns a list of container resource overrides.
 	GetResources() []ResourceRequirementsOverride
+	// GetHighAvailability returns the specification of HA control plane
+	GetHighAvailability() *HighAvailability
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -85,6 +87,20 @@ type KComponentStatus interface {
 	SetVersion(version string)
 }
 
+// HighAvailability specifies options for deploying Knative Serving control
+// plane in a highly available manner. Note that HighAvailability is still in
+// progress and does not currently provide a completely HA control plane.
+type HighAvailability struct {
+	// Replicas is the number of replicas that HA parts of the control plane
+	// will be scaled to.
+	Replicas int32 `json:"replicas"`
+
+	// LeaderElectedComponents is the names of the components that will have HA enabled with leader-election.
+	// Other HA components such as HPA-enabled components and stateless deployments will not be affected
+	// by the value of this field.
+	LeaderElectedComponents string `json:"leader-elected-components,omitempty"`
+}
+
 // CommonSpec unifies common fields and functions on the Spec.
 type CommonSpec struct {
 	// A means to override the corresponding entries in the upstream configmaps
@@ -99,6 +115,10 @@ type CommonSpec struct {
 	// Override containers' resource requirements
 	// +optional
 	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+
+	// Allows specification of HA control plane
+	// +optional
+	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
 }
 
 // GetConfig implements KComponentSpec.
@@ -114,6 +134,11 @@ func (c *CommonSpec) GetRegistry() *Registry {
 // GetResources implements KComponentSpec.
 func (c *CommonSpec) GetResources() []ResourceRequirementsOverride {
 	return c.Resources
+}
+
+// GetHighAvailability implements KComponentSpec.
+func (c *CommonSpec) GetHighAvailability() *HighAvailability {
+	return c.HighAvailability
 }
 
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first

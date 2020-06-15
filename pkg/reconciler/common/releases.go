@@ -35,6 +35,12 @@ const (
 
 var cache = map[string]mf.Manifest{}
 
+// TargetVersion returns the version of the manifest to be installed
+// per the spec in the component. If spec.version is empty, but
+// status.version is set, that will be returned, since the expectation
+// is that the current installation should be reconciled. If both
+// spec.version and status.version are empty, the latest version known
+// to the operator is returned.
 func TargetVersion(instance v1alpha1.KComponent) string {
 	switch {
 	case instance.GetSpec().GetVersion() != "":
@@ -46,19 +52,21 @@ func TargetVersion(instance v1alpha1.KComponent) string {
 	}
 }
 
+// TargetManifest returns the manifest for the TargetVersion
 func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 	return fetch(manifestPath(TargetVersion(instance), instance))
 }
 
+// InstalledManifest returns the version currently installed, which is
+// harder than it sounds, since status.version isn't set until the
+// target version is successfully installed, which can take some time.
+// So we return the target manifest if status.version is empty.
 func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
-	switch {
-	case instance.GetStatus().GetVersion() != "":
-		return fetch(manifestPath(instance.GetStatus().GetVersion(), instance))
-	case instance.GetSpec().GetVersion() != "":
-		return fetch(manifestPath(instance.GetSpec().GetVersion(), instance))
-	default:
-		return fetch(manifestPath(latestRelease(instance), instance))
+	current := instance.GetStatus().GetVersion()
+	if current != "" {
+		return fetch(manifestPath(current, instance))
 	}
+	return TargetManifest(instance)
 }
 
 func fetch(path string) (mf.Manifest, error) {

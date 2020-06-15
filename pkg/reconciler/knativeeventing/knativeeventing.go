@@ -45,7 +45,10 @@ type Reconciler struct {
 	kubeClientSet kubernetes.Interface
 	// kubeClientSet allows us to talk to the k8s for operator APIs
 	operatorClientSet clientset.Interface
-	// manifest is empty but with a valid client and logger
+	// manifest is empty, but with a valid client and logger. all
+	// manifests are immutable, and any created during reconcile are
+	// expected to be appended to this one, obviating the passing of
+	// client & logger
 	manifest mf.Manifest
 	// Platform-specific behavior to affect the transform
 	platform common.Extension
@@ -74,7 +77,12 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *eventingv1alpha
 
 	manifest, err := common.InstalledManifest(original)
 	if err != nil {
-		return err
+		logger.Error("Unable to fetch installed manifest, some resources may not be finalized", err)
+		manifest, err = common.TargetManifest(original)
+	}
+	if err != nil {
+		logger.Error("Unable to fetch target manifest, no cluster-scoped resources will be finalized", err)
+		return nil
 	}
 	manifest = r.manifest.Append(manifest)
 	if err := r.transform(ctx, &manifest, original); err != nil {

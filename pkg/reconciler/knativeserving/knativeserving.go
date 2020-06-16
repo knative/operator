@@ -88,6 +88,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *servingv1alpha1
 // converge the two.
 func (r *Reconciler) ReconcileKind(ctx context.Context, ks *servingv1alpha1.KnativeServing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
+	ks.SetDefaults(ctx)
 	ks.Status.InitializeConditions()
 	ks.Status.ObservedGeneration = ks.Generation
 

@@ -36,20 +36,14 @@ const (
 var cache = map[string]mf.Manifest{}
 
 // TargetVersion returns the version of the manifest to be installed
-// per the spec in the component. If spec.version is empty, but
-// status.version is set, that will be returned, since the expectation
-// is that the current installation should be reconciled. If both
-// spec.version and status.version are empty, the latest version known
-// to the operator is returned.
+// per the spec in the component. If spec.version is empty, the latest
+// version known to the operator is returned.
 func TargetVersion(instance v1alpha1.KComponent) string {
-	switch {
-	case instance.GetSpec().GetVersion() != "":
-		return instance.GetSpec().GetVersion()
-	case instance.GetStatus().GetVersion() != "":
-		return instance.GetStatus().GetVersion()
-	default:
+	target := instance.GetSpec().GetVersion()
+	if target == "" {
 		return latestRelease(instance)
 	}
+	return target
 }
 
 // TargetManifest returns the manifest for the TargetVersion

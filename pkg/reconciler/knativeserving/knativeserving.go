@@ -80,7 +80,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1alpha1.Knativ
 	manifest := r.manifest.Append()
 
 	// TODO: add ingress, etc
-	stages := common.Stages{common.InstalledOrTargetStage, r.transform}
+	stages := common.Stages{common.AppendInstalled, r.transform}
 
 	if err := stages.Execute(ctx, &manifest, original); err != nil {
 		logger.Error("Unable to fetch installed manifest; no cluster-scoped resources will be finalized", err)
@@ -98,7 +98,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 	stages := common.Stages{
-		common.TargetStage,
+		common.AppendTarget,
 		r.transform,
 		r.ensureFinalizerRemoval,
 		r.install,

@@ -24,9 +24,13 @@ import (
 	"knative.dev/pkg/logging"
 )
 
+// Stage represents a step in the reconcile process
 type Stage func(context.Context, *mf.Manifest, v1alpha1.KComponent) error
+
+// Stages are a list of steps
 type Stages []Stage
 
+// Execute each stage in sequence until one returns an error
 func (stages Stages) Execute(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	for _, stage := range stages {
 		if err := stage(ctx, manifest, instance); err != nil {
@@ -36,7 +40,9 @@ func (stages Stages) Execute(ctx context.Context, manifest *mf.Manifest, instanc
 	return nil
 }
 
-func TargetStage(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+// AppendTarget mutates the passed manifest by appending one
+// appropriate for the passed KComponent
+func AppendTarget(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	m, err := TargetManifest(instance)
 	if err != nil {
 		return err
@@ -45,7 +51,10 @@ func TargetStage(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.K
 	return nil
 }
 
-func InstalledOrTargetStage(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+// AppendInstalled mutates the passed manifest by appending one
+// appropriate for the passed KComponent, which may not be the one
+// corresponding to status.version
+func AppendInstalled(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	logger := logging.FromContext(ctx)
 	m, err := InstalledManifest(instance)
 	if err != nil {

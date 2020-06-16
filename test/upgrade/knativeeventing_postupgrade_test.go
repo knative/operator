@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 
 	"knative.dev/operator/pkg/reconciler/common"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
@@ -52,22 +53,23 @@ func TestKnativeEventingUpgrade(t *testing.T) {
 	// Verify if resources match the requirement for the previous release before upgrade
 	t.Run("verify resources", func(t *testing.T) {
 		resources.AssertKEOperatorCRReadyStatus(t, clients, names)
-		kcomponent := "knative-eventing"
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
-		version := common.GetLatestRelease(kcomponent)
 		// Based on the latest release version, get the deployment resources.
-		targetManifest, expectedDeployments := resources.GetExpectedDeployments(t, version, kcomponent)
+		targetManifest, expectedDeployments := resources.GetExpectedDeployments(t, &v1alpha1.KnativeEventing{})
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 
-		preEventingVer := test.OperatorFlags.PreviousEventingVersion
-		if preEventingVer == "" {
-			preEventingVer = version
+		instance := &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: test.OperatorFlags.PreviousEventingVersion,
+				},
+			},
 		}
 		// Compare the previous manifest with the target manifest, we verify that all the obsolete resources
 		// do not exist any more.
-		preManifest, err := resources.GetManifest(preEventingVer, kcomponent)
+		preManifest, err := common.TargetManifest(instance)
 		if err != nil {
 			t.Fatalf("Failed to get KnativeEventing manifest: %v", err)
 		}

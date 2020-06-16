@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -28,18 +29,18 @@ func TestRetrieveManifestPath(t *testing.T) {
 	koPath := "testdata/kodata"
 
 	tests := []struct {
-		component string
+		component v1alpha1.KComponent
 		version   string
 		name      string
 		expected  string
 	}{{
 		name:      "Valid Knative Serving Version",
-		component: "knative-serving",
+		component: &v1alpha1.KnativeServing{},
 		version:   "0.14.0",
 		expected:  koPath + "/knative-serving/0.14.0",
 	}, {
 		name:      "Valid Knative Eventing Version",
-		component: "knative-eventing",
+		component: &v1alpha1.KnativeEventing{},
 		version:   "0.14.2",
 		expected:  koPath + "/knative-eventing/0.14.2",
 	}}
@@ -48,7 +49,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 	defer os.Unsetenv(KoEnvKey)
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			manifestPath := RetrieveManifestPath(test.version, test.component)
+			manifestPath := manifestPath(test.version, test.component)
 			util.AssertEqual(t, manifestPath, test.expected)
 			manifest, err := mf.NewManifest(manifestPath)
 			util.AssertEqual(t, err, nil)
@@ -57,25 +58,25 @@ func TestRetrieveManifestPath(t *testing.T) {
 	}
 
 	invalidPathTests := []struct {
-		component string
+		component v1alpha1.KComponent
 		version   string
 		name      string
 		expected  string
 	}{{
 		name:      "Invalid Knative Serving Version",
-		component: "knative-serving",
+		component: &v1alpha1.KnativeServing{},
 		version:   "invalid-version",
 		expected:  koPath + "/knative-serving/invalid-version",
 	}, {
 		name:      "Invalid Knative component name",
-		component: "invalid-component",
+		component: nil,
 		version:   "0.14.2",
-		expected:  koPath + "/invalid-component/0.14.2",
+		expected:  "0.14.2",
 	}}
 
 	for _, test := range invalidPathTests {
-		t.Run(test.component, func(t *testing.T) {
-			manifestPath := RetrieveManifestPath(test.version, test.component)
+		t.Run(test.name, func(t *testing.T) {
+			manifestPath := manifestPath(test.version, test.component)
 			util.AssertEqual(t, manifestPath, test.expected)
 			manifest, err := mf.NewManifest(manifestPath)
 			util.AssertEqual(t, err != nil, true)
@@ -88,21 +89,24 @@ func TestGetLatestRelease(t *testing.T) {
 	koPath := "testdata/kodata"
 
 	tests := []struct {
-		component string
+		name      string
+		component v1alpha1.KComponent
 		expected  string
 	}{{
-		component: "knative-serving",
+		name:      "serving",
+		component: &v1alpha1.KnativeServing{},
 		expected:  "0.15.0",
 	}, {
-		component: "knative-eventing",
+		name:      "eventing",
+		component: &v1alpha1.KnativeEventing{},
 		expected:  "0.15.0",
 	}}
 
 	os.Setenv(KoEnvKey, koPath)
 	defer os.Unsetenv(KoEnvKey)
 	for _, test := range tests {
-		t.Run(test.component, func(t *testing.T) {
-			version := GetLatestRelease(test.component)
+		t.Run(test.name, func(t *testing.T) {
+			version := latestRelease(test.component)
 			util.AssertEqual(t, version, test.expected)
 		})
 	}
@@ -112,21 +116,24 @@ func TestListReleases(t *testing.T) {
 	koPath := "testdata/kodata"
 
 	tests := []struct {
-		component string
+		name      string
+		component v1alpha1.KComponent
 		expected  []string
 	}{{
-		component: "knative-serving",
+		name:      "knative-serving",
+		component: &v1alpha1.KnativeServing{},
 		expected:  []string{"0.15.0", "0.14.0"},
 	}, {
-		component: "knative-eventing",
+		name:      "knative-eventing",
+		component: &v1alpha1.KnativeEventing{},
 		expected:  []string{"0.15.0", "0.14.2"},
 	}}
 
 	os.Setenv(KoEnvKey, koPath)
 	defer os.Unsetenv(KoEnvKey)
 	for _, test := range tests {
-		t.Run(test.component, func(t *testing.T) {
-			version, err := ListReleases(test.component)
+		t.Run(test.name, func(t *testing.T) {
+			version, err := allReleases(test.component)
 			util.AssertEqual(t, err, nil)
 			util.AssertDeepEqual(t, version, test.expected)
 		})

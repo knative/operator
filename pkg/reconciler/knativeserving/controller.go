@@ -36,10 +36,6 @@ import (
 	"knative.dev/pkg/logging"
 )
 
-const (
-	kcomponent = "knative-serving"
-)
-
 // NewController initializes the controller and is called by the generated code
 // Registers eventhandlers to enqueue events
 func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
@@ -53,22 +49,18 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		logger.Fatalw("Failed to remove old resources", zap.Error(err))
 	}
 
-	version := common.GetLatestRelease(kcomponent)
-	manifestPath := common.RetrieveManifestPath(version, kcomponent)
-	manifest, err := mfc.NewManifest(manifestPath,
-		injection.GetConfig(ctx),
-		mf.UseLogger(zapr.NewLogger(logger.Desugar()).WithName("manifestival")))
-
+	mfclient, err := mfc.NewClient(injection.GetConfig(ctx))
 	if err != nil {
-		logger.Fatalw("Error creating the Manifest for knative-serving", zap.Error(err))
+		logger.Fatalw("Error creating client from injected config", zap.Error(err))
 	}
+	mflogger := zapr.NewLogger(logger.Named("manifestival").Desugar())
+	manifest, _ := mf.ManifestFrom(mf.Slice{}, mf.UseClient(mfclient), mf.UseLogger(mflogger))
 
 	c := &Reconciler{
 		kubeClientSet:     kubeClient,
 		operatorClientSet: operatorclient.Get(ctx),
 		platform:          common.GetPlatform(ctx),
-		config:            manifest,
-		targetVersion:     version,
+		manifest:          manifest,
 	}
 	impl := knsreconciler.NewImpl(ctx, c)
 

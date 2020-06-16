@@ -34,6 +34,6 @@ func (cs *KnativeEventingSpec) SetDefaults(_ context.Context) {
 		return
 	}
 	if cs.HighAvailability.LeaderElectedComponents == "" {
-		cs.HighAvailability.LeaderElectedComponents = "controller"
+		cs.HighAvailability.LeaderElectedComponents = "controller,broker-controller,inmemorychannel-dispatcher,inmemorychannel-controller"
 	}
 }

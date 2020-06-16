@@ -39,7 +39,7 @@ func HighAvailabilityTransform(ha *operatorv1alpha1.HighAvailability, log *zap.S
 		}
 
 		// Transform the leader election config.
-		if u.GetKind() == "ConfigMap" && u.GetName() == "config-leader-election" {
+		if u.GetKind() == "ConfigMap" && u.GetName() == configMapName {
 			data, ok, err := unstructured.NestedStringMap(u.UnstructuredContent(), "data")
 			if err != nil {
 				return nil

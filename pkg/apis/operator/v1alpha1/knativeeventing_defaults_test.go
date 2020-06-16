@@ -55,7 +55,7 @@ func TestKnativeEventingDefaults(t *testing.T) {
 			expected: KnativeEventingSpec{
 				CommonSpec: CommonSpec{
 					HighAvailability: &HighAvailability{
-						LeaderElectedComponents: "controller",
+						LeaderElectedComponents: "controller,broker-controller,inmemorychannel-dispatcher,inmemorychannel-controller",
 					},
 				},
 			},

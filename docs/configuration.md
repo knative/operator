@@ -249,7 +249,7 @@ following:
 
 * Serving leader-elected controllers: `controller`, `autoscaler-hpa`, `networking-certmanager`, `networking-ns-cert`, `networking-istio`
 * Serving `HorizontalPodAutoscaler` resources for the data plane (`activator`)
-* Eventing leader-elected controllers: `controller`
+* Eventing leader-elected controllers: `controller`, `broker-controller`, `inmemorychannel-dispatcher` and `inmemorychannel-controller`
 * Eventing `HorizontalPodAutoscaler` resources for the data plane (`broker-ingress-hpa`, `broker-filter-hpa`)
 
 

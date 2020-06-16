@@ -2988,6 +2988,7 @@ metadata:
   namespace: knative-eventing
   labels:
     eventing.knative.dev/release: "v0.15.0"
+    knative.dev/high-availability: "true"
 spec:
   replicas: 1
   selector:
@@ -4103,6 +4104,7 @@ metadata:
   namespace: knative-eventing
   labels:
     eventing.knative.dev/release: "v0.15.0"
+    knative.dev/high-availability: "true"
 spec:
   replicas: 1
   selector:
@@ -4160,6 +4162,7 @@ metadata:
   namespace: knative-eventing
   labels:
     eventing.knative.dev/release: "v0.15.0"
+    knative.dev/high-availability: "true"
 spec:
   replicas: 1
   selector:

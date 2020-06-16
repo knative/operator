@@ -23,6 +23,8 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
+	"strconv"
+	"strings"
 
 	mf "github.com/manifestival/manifestival"
 	"golang.org/x/mod/semver"
@@ -61,6 +63,51 @@ func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 		return fetch(manifestPath(current, instance))
 	}
 	return TargetManifest(instance)
+}
+
+// IsUpDowngradeEligible returns the bool indicate whether the installed manifest is able to upgrade or downgrade to
+// the target manifest.
+func IsUpDowngradeEligible(instance v1alpha1.KComponent) bool {
+	current := instance.GetStatus().GetVersion()
+	if current == "" {
+		// If there is no manifest installed, return true, because the target manifest is able to install.
+		return true
+	}
+	current = sanitizeSemver(current)
+	target := sanitizeSemver(TargetVersion(instance))
+
+	currentMajor := semver.Major(current)
+	targetMajor := semver.Major(target)
+	if currentMajor != targetMajor {
+		// All the official releases of Knative are under the same Major version number. If target and current versions
+		// are different in terms of major version, upgrade or downgrade is not supported.
+		// TODO We need to deal with the the case of bumping major version later.
+		return false
+	}
+
+	var err error
+	currentMinor, err := strconv.Atoi(strings.TrimPrefix(semver.MajorMinor(current), currentMajor+"."))
+	if err != nil {
+		return false
+	}
+
+	targetMinor, err := strconv.Atoi(strings.TrimPrefix(semver.MajorMinor(target), targetMajor+"."))
+	if err != nil {
+		return false
+	}
+
+	if abs(currentMinor-targetMinor) == 1 {
+		return true
+	}
+
+	return false
+}
+
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
 }
 
 func fetch(path string) (mf.Manifest, error) {

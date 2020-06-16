@@ -92,6 +92,13 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	ks.Status.ObservedGeneration = ks.Generation
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
+
+	if !common.IsUpDowngradeEligible(ks) {
+		logger.Errorf("It is not supported to upgrade or downgrade across multiple MINOR versions. The "+
+			"installed KnativeServing version is %v.", ks.Status.Version)
+		return nil
+	}
+
 	if err := r.extension.Reconcile(ctx, ks); err != nil {
 		return err
 	}

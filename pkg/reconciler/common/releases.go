@@ -69,8 +69,8 @@ func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 // the target manifest.
 func IsUpDowngradeEligible(instance v1alpha1.KComponent) bool {
 	current := instance.GetStatus().GetVersion()
+	// If there is no manifest installed, return true, because the target manifest is able to install.
 	if current == "" {
-		// If there is no manifest installed, return true, because the target manifest is able to install.
 		return true
 	}
 	current = sanitizeSemver(current)
@@ -96,7 +96,8 @@ func IsUpDowngradeEligible(instance v1alpha1.KComponent) bool {
 		return false
 	}
 
-	if abs(currentMinor-targetMinor) == 1 {
+	// If the diff between minor versions are less than 2, return true.
+	if abs(currentMinor-targetMinor) < 2 {
 		return true
 	}
 

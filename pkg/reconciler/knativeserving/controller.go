@@ -15,7 +15,6 @@ package knativeserving
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-logr/zapr"
 	mfc "github.com/manifestival/client-go-client"
@@ -24,13 +23,11 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operatorclient "knative.dev/operator/pkg/client/injection/client"
 	knativeServinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeserving"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
 	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/common"
-	servingcommon "knative.dev/operator/pkg/reconciler/knativeserving/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/configmap"
@@ -40,8 +37,7 @@ import (
 )
 
 const (
-	controllerAgentName = "knativeserving-controller"
-	kcomponent          = "knative-serving"
+	kcomponent = "knative-serving"
 )
 
 // NewController initializes the controller and is called by the generated code
@@ -55,11 +51,6 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 	// Clean up old non-unified operator resources before even starting the controller.
 	if err := reconciler.RemovePreUnifiedResources(kubeClient, "knative-serving-operator"); err != nil {
 		logger.Fatalw("Failed to remove old resources", zap.Error(err))
-	}
-
-	statsReporter, err := servingcommon.NewStatsReporter(controllerAgentName)
-	if err != nil {
-		logger.Fatal(err)
 	}
 
 	version := common.GetLatestRelease(kcomponent)
@@ -90,30 +81,5 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	})
 
-	// Reporting statistics on KnativeServing events.
-	knativeServingInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: func(newObj interface{}) {
-			new := newObj.(*servingv1alpha1.KnativeServing)
-			if new.Generation == 1 {
-				statsReporter.ReportKnativeservingChange(key(new), "creation")
-			}
-		},
-		UpdateFunc: func(oldObj interface{}, newObj interface{}) {
-			old := oldObj.(*servingv1alpha1.KnativeServing)
-			new := newObj.(*servingv1alpha1.KnativeServing)
-			if old.Generation < new.Generation {
-				statsReporter.ReportKnativeservingChange(key(new), "edit")
-			}
-		},
-		DeleteFunc: func(oldObj interface{}) {
-			old := oldObj.(*servingv1alpha1.KnativeServing)
-			statsReporter.ReportKnativeservingChange(key(old), "deletion")
-		},
-	})
-
 	return impl
-}
-
-func key(ks *servingv1alpha1.KnativeServing) string {
-	return fmt.Sprintf("%s/%s", ks.Namespace, ks.Name)
 }

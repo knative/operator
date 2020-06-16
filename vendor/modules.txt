@@ -183,7 +183,6 @@ github.com/prometheus/procfs/internal/util
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
 # go.opencensus.io v0.22.3
-## explicit
 go.opencensus.io
 go.opencensus.io/internal
 go.opencensus.io/internal/tagencoding
@@ -790,8 +789,6 @@ knative.dev/pkg/logging
 knative.dev/pkg/logging/logkey
 knative.dev/pkg/metrics
 knative.dev/pkg/metrics/metricskey
-knative.dev/pkg/metrics/metricstest
-knative.dev/pkg/metrics/testing
 knative.dev/pkg/network
 knative.dev/pkg/profiling
 knative.dev/pkg/ptr

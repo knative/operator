@@ -20,17 +20,12 @@ import (
 	"testing"
 
 	"go.uber.org/zap"
-	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
-
-var log = zap.NewNop().Sugar()
 
 func TestDefaultBrokerTransform(t *testing.T) {
 	tests := []struct {
@@ -40,7 +35,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 		expected           corev1.ConfigMap
 	}{{
 		name: "UsesDefaultWhenNotSpecified",
-		configMap: makeConfigMap(t, "config-br-defaults", v1alpha1.ConfigMapData{
+		configMap: makeConfigMap(t, "config-br-defaults", "default-br-config", v1alpha1.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "Foo",
 				"apiVersion":  "v1",
@@ -50,7 +45,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 			},
 		}),
 		defaultBrokerClass: "",
-		expected: makeConfigMap(t, "config-br-defaults", v1alpha1.ConfigMapData{
+		expected: makeConfigMap(t, "config-br-defaults", "default-br-config", v1alpha1.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "MTChannelBasedBroker",
 				"apiVersion":  "v1",
@@ -61,7 +56,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 		}),
 	}, {
 		name: "UsesTheSpecifiedValueWhenSpecified",
-		configMap: makeConfigMap(t, "config-br-defaults", v1alpha1.ConfigMapData{
+		configMap: makeConfigMap(t, "config-br-defaults", "default-br-config", v1alpha1.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "Foo",
 				"apiVersion":  "v1",
@@ -71,7 +66,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 			},
 		}),
 		defaultBrokerClass: "MyCustomerBroker",
-		expected: makeConfigMap(t, "config-br-defaults", v1alpha1.ConfigMapData{
+		expected: makeConfigMap(t, "config-br-defaults", "default-br-config", v1alpha1.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "MyCustomerBroker",
 				"apiVersion":  "v1",
@@ -82,7 +77,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 		}),
 	}, {
 		name: "DoesNotTouchOtherConfigMaps",
-		configMap: makeConfigMap(t, "some-other-config-map-foo-bar-baz", v1alpha1.ConfigMapData{
+		configMap: makeConfigMap(t, "some-other-config-map-foo-bar-baz", "default-br-config", v1alpha1.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "Foo",
 				"apiVersion":  "v1",
@@ -92,7 +87,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 			},
 		}),
 		defaultBrokerClass: "MyCustomerBroker",
-		expected: makeConfigMap(t, "config-br-defaults", v1alpha1.ConfigMapData{
+		expected: makeConfigMap(t, "config-br-defaults", "default-br-config", v1alpha1.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "Foo",
 				"apiVersion":  "v1",
@@ -102,6 +97,8 @@ func TestDefaultBrokerTransform(t *testing.T) {
 			},
 		}),
 	}}
+
+	log := zap.NewNop().Sugar()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -119,23 +116,5 @@ func TestDefaultBrokerTransform(t *testing.T) {
 			util.AssertEqual(t, err, nil)
 			util.AssertDeepEqual(t, configMap.Data, tt.expected.Data)
 		})
-	}
-}
-
-func makeConfigMap(t *testing.T, name string, data v1alpha1.ConfigMapData) corev1.ConfigMap {
-	out, err := yaml.Marshal(&data)
-	if err != nil {
-		t.Fatal("Unable to marshal test data. Possible implementation problem.", "data", data)
-	}
-	return corev1.ConfigMap{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "ConfigMap",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-		Data: map[string]string{
-			"default-br-config": string(out),
-		},
 	}
 }

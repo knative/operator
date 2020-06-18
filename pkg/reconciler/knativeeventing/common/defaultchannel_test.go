@@ -19,7 +19,7 @@ package common
 import (
 	"testing"
 
-	"gopkg.in/yaml.v2"
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -30,9 +30,6 @@ import (
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
-// TODO: common
-//var log = zap.NewNop().Sugar()
-
 func TestDefaultChannelTemplateTransform(t *testing.T) {
 	tests := []struct {
 		name                   string
@@ -41,14 +38,14 @@ func TestDefaultChannelTemplateTransform(t *testing.T) {
 		expected               corev1.ConfigMap
 	}{{
 		name: "UsesDefaultWhenNotSpecified",
-		configMap: makeDefaultChannelConfigMap(t, "default-ch-webhook", v1alpha1.ConfigMapData{
+		configMap: makeConfigMap(t, "default-ch-webhook", "default-ch-config", v1alpha1.ConfigMapData{
 			"clusterDefault": {
 				"apiVersion": "to-be-overridden-api-version",
 				"kind":       "to-be-overridden-kind",
 			},
 		}),
 		defaultChannelTemplate: nil,
-		expected: makeDefaultChannelConfigMap(t, "default-ch-webhook", v1alpha1.ConfigMapData{
+		expected: makeConfigMap(t, "default-ch-webhook", "default-ch-config", v1alpha1.ConfigMapData{
 			"clusterDefault": {
 				"apiVersion": "messaging.knative.dev/v1beta1",
 				"kind":       "InMemoryChannel",
@@ -56,7 +53,7 @@ func TestDefaultChannelTemplateTransform(t *testing.T) {
 		}),
 	}, {
 		name: "UsesTheSpecifiedValueWhenSpecified",
-		configMap: makeDefaultChannelConfigMap(t, "default-ch-webhook", v1alpha1.ConfigMapData{
+		configMap: makeConfigMap(t, "default-ch-webhook", "default-ch-config", v1alpha1.ConfigMapData{
 			"clusterDefault": {
 				"apiVersion": "to-be-overridden-api-version",
 				"kind":       "to-be-overridden-kind",
@@ -68,7 +65,7 @@ func TestDefaultChannelTemplateTransform(t *testing.T) {
 				Kind:       "CustomChannel",
 			},
 		},
-		expected: makeDefaultChannelConfigMap(t, "default-ch-webhook", v1alpha1.ConfigMapData{
+		expected: makeConfigMap(t, "default-ch-webhook", "default-ch-config", v1alpha1.ConfigMapData{
 			"clusterDefault": {
 				"apiVersion": "example.org/v1beta1",
 				"kind":       "CustomChannel",
@@ -76,7 +73,7 @@ func TestDefaultChannelTemplateTransform(t *testing.T) {
 		}),
 	}, {
 		name: "DoesNotTouchOtherConfigMaps",
-		configMap: makeDefaultChannelConfigMap(t, "some-other-config-map-foo-bar-baz", v1alpha1.ConfigMapData{
+		configMap: makeConfigMap(t, "some-other-config-map-foo-bar-baz", "default-ch-config", v1alpha1.ConfigMapData{
 			"clusterDefault": {
 				"apiVersion": "to-be-overridden-api-version",
 				"kind":       "to-be-overridden-kind",
@@ -88,13 +85,15 @@ func TestDefaultChannelTemplateTransform(t *testing.T) {
 				Kind:       "CustomChannel",
 			},
 		},
-		expected: makeDefaultChannelConfigMap(t, "default-ch-webhook", v1alpha1.ConfigMapData{
+		expected: makeConfigMap(t, "default-ch-webhook", "default-ch-config", v1alpha1.ConfigMapData{
 			"clusterDefault": {
 				"apiVersion": "to-be-overridden-api-version",
 				"kind":       "to-be-overridden-kind",
 			},
 		}),
 	}}
+
+	log := zap.NewNop().Sugar()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -112,24 +111,5 @@ func TestDefaultChannelTemplateTransform(t *testing.T) {
 			util.AssertEqual(t, err, nil)
 			util.AssertDeepEqual(t, configMap.Data, tt.expected.Data)
 		})
-	}
-}
-
-// TODO: merge shit
-func makeDefaultChannelConfigMap(t *testing.T, name string, data v1alpha1.ConfigMapData) corev1.ConfigMap {
-	out, err := yaml.Marshal(&data)
-	if err != nil {
-		t.Fatal("Unable to marshal test data. Possible implementation problem.", "data", data)
-	}
-	return corev1.ConfigMap{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "ConfigMap",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-		Data: map[string]string{
-			"default-ch-config": string(out),
-		},
 	}
 }

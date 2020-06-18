@@ -17,9 +17,6 @@ limitations under the License.
 package common
 
 import (
-	"encoding/json"
-
-	"github.com/ghodss/yaml"
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -58,7 +55,7 @@ func DefaultChannelConfigMapTransform(instance *eventingv1alpha1.KnativeEventing
 			}
 			defaults.ClusterDefault = defaultChannelTemplate
 
-			err = writeChannelDefaultsToConfigMap(defaults, configMap, log)
+			err = writeDefaultsToConfigMap(defaults, configMap, messagingconfig.ChannelDefaulterKey, log)
 			if err != nil {
 				log.Error(err, "Error converting channel template defaults to default channel ConfigMap", "defaults", defaults, "configMap", configMap)
 				return err
@@ -75,22 +72,4 @@ func DefaultChannelConfigMapTransform(instance *eventingv1alpha1.KnativeEventing
 		}
 		return nil
 	}
-}
-
-// TODO: make generic
-func writeChannelDefaultsToConfigMap(defaults *messagingconfig.ChannelDefaults, configMap *corev1.ConfigMap, log *zap.SugaredLogger) error {
-	jsonBytes, err := json.Marshal(defaults)
-	if err != nil {
-		log.Error("Defaults could not be converted to JSON", "defaults", defaults)
-		return err
-	}
-
-	yamlBytes, err := yaml.JSONToYAML(jsonBytes)
-	if err != nil {
-		log.Error("Defaults could not be converted to YAML", "defaults", defaults)
-		return err
-	}
-
-	configMap.Data[messagingconfig.ChannelDefaulterKey] = string(yamlBytes)
-	return nil
 }

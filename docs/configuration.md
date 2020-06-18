@@ -318,11 +318,11 @@ spec:
 ## spec.defaultChannelTemplate
 
 Knative Eventing allows you to define a default channel template when
-the user creates a generic `Channel`. 
+the user creates a generic `Channel`.
 Defaults to `messaging.knative.dev/v1beta1 InMemoryChannel` if not set.
 
 Following configuration sets default channel to `KafkaChannel` which is
-distributed with https://github.com/knative/eventing-contrib. 
+distributed with https://github.com/knative/eventing-contrib.
 
 ```
 apiVersion: operator.knative.dev/v1alpha1

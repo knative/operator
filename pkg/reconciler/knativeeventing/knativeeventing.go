@@ -127,7 +127,9 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *eventingv1alpha1.Kna
 func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, instance *eventingv1alpha1.KnativeEventing) error {
 	logger := logging.FromContext(ctx)
 	return common.Transform(ctx, manifest, instance, r.platform,
-		kec.DefaultBrokerConfigMapTransform(instance, logger))
+		kec.DefaultBrokerConfigMapTransform(instance, logger),
+		kec.DefaultChannelConfigMapTransform(instance, logger),
+	)
 }
 
 // ensureFinalizerRemoval ensures that the obsolete "delete-knative-eventing-manifest" is removed from the resource.

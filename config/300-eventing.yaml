@@ -93,6 +93,23 @@ spec:
               description: The default broker type to use for the brokers Knative creates.
                 If no value is provided, ChannelBasedBroker will be used.
               type: string
+            defaultChannelTemplate:
+              description: The default channel template to use for the generic Channel.
+                If no value is provided, a template with messaging.knative.dev/v1beta1
+                InMemoryChannel is used
+              type: object
+              properties:
+                apiVersion:
+                  type: string
+                  description: API version of the channel implementation.
+                  minLength: 1
+                kind:
+                  type: string
+                  description: Kind of the channel implementation to use (InMemoryChannel, KafkaChannel, etc.).
+                  minLength: 1
+                spec:
+                  type: object
+                  description: Spec defines the Spec to use for each channel created. Passed in verbatim to the Channel CRD as Spec section.
             resources:
               description: A mapping of deployment name to resource requirements
               type: array

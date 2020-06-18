@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	messagingconfig "knative.dev/eventing/pkg/apis/messaging/config"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
@@ -56,6 +57,12 @@ type KnativeEventingSpec struct {
 	// If no value is provided, MTChannelBasedBroker will be used.
 	// +optional
 	DefaultBrokerClass string `json:"defaultBrokerClass,omitempty"`
+
+	// The default channel template to use for the generic Channel.
+	// If no value is provided, a template with messaging.knative.dev/v1beta1
+	// InMemoryChannel is used
+	// +optional
+	DefaultChannelTemplate *messagingconfig.ChannelTemplateSpec `json:"defaultChannelTemplate,omitempty"`
 }
 
 // KnativeEventingStatus defines the observed state of KnativeEventing

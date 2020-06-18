@@ -39,6 +39,7 @@ These are the configurable fields in each resource:
       * [imagePullSecrets](#specregistryimagepullsecrets)
     * [resources](#specresources)
     * [defaultBrokerClass](#specdefaultbrokerclass)
+    * [defaultChannelTemplate](#specdefaultchanneltemplate)
 
 
 ## spec.config
@@ -312,4 +313,25 @@ metadata:
   namespace: knative-eventing
 spec:
   defaultBrokerClass: MTChannelBasedBroker
+```
+
+## spec.defaultChannelTemplate
+
+Knative Eventing allows you to define a default channel template when
+the user creates a generic `Channel`. 
+Defaults to `messaging.knative.dev/v1beta1 InMemoryChannel` if not set.
+
+Following configuration sets default channel to `KafkaChannel` which is
+distributed with https://github.com/knative/eventing-contrib. 
+
+```
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+  namespace: knative-eventing
+spec:
+  defaultChannelTemplate:
+    apiVersion: messaging.knative.dev/v1alpha1
+    kind: KafkaChannel
 ```

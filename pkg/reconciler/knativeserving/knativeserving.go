@@ -22,7 +22,6 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 
@@ -76,17 +75,12 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1alpha1.Knativ
 	}
 
 	logger.Info("Deleting cluster-scoped resources")
-	// Create new, empty manifest with valid client and logger
-	manifest := r.manifest.Append()
-
-	// TODO: add ingress, etc
-	stages := common.Stages{common.AppendInstalled, r.transform}
-
-	if err := stages.Execute(ctx, &manifest, original); err != nil {
+	manifest, err := r.installed(ctx, original)
+	if err != nil {
 		logger.Error("Unable to fetch installed manifest; no cluster-scoped resources will be finalized", err)
 		return nil
 	}
-	return common.Uninstall(&manifest)
+	return common.Uninstall(manifest)
 }
 
 // ReconcileKind compares the actual state with the desired, and attempts to
@@ -103,7 +97,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 		r.ensureFinalizerRemoval,
 		r.install,
 		r.checkDeployments,
-		r.deleteObsoleteResources,
+		r.deleteObsoleteResources(ctx, ks),
 	}
 	manifest := r.manifest.Append()
 	return stages.Execute(ctx, &manifest, ks)
@@ -153,20 +147,29 @@ func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, i
 	return nil
 }
 
-// Delete obsolete resources from previous versions
-func (r *Reconciler) deleteObsoleteResources(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
-	resources := []*unstructured.Unstructured{
-		// istio-system resources from 0.3.
-		common.NamespacedResource("v1", "Service", "istio-system", "knative-ingressgateway"),
-		common.NamespacedResource("apps/v1", "Deployment", "istio-system", "knative-ingressgateway"),
-		common.NamespacedResource("autoscaling/v1", "HorizontalPodAutoscaler", "istio-system", "knative-ingressgateway"),
-		// config-controller from 0.5
-		common.NamespacedResource("v1", "ConfigMap", instance.GetNamespace(), "config-controller"),
+// deleteObsoleteResources returns a Stage after calculating the
+// installed manifest from the instance, but *before* any other stages
+// might mutate the instance's status.version.
+func (r *Reconciler) deleteObsoleteResources(ctx context.Context, instance v1alpha1.KComponent) common.Stage {
+	if common.TargetVersion(instance) == instance.GetStatus().GetVersion() {
+		return common.NoOp
 	}
-	for _, r := range resources {
-		if err := manifest.Client.Delete(r); err != nil {
-			return err
-		}
+	logger := logging.FromContext(ctx)
+	installed, err := r.installed(ctx, instance)
+	if err != nil {
+		logger.Error("Unable to obtain the installed manifest; obsolete resources may linger", err)
+		return common.NoOp
 	}
-	return nil
+	return func(_ context.Context, manifest *mf.Manifest, _ v1alpha1.KComponent) error {
+		return installed.Filter(mf.None(mf.In(*manifest))).Delete()
+	}
+}
+
+func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error) {
+	// Create new, empty manifest with valid client and logger
+	installed := r.manifest.Append()
+	// TODO: add ingress, etc
+	stages := common.Stages{common.AppendInstalled, r.transform}
+	err := stages.Execute(ctx, &installed, instance)
+	return &installed, err
 }

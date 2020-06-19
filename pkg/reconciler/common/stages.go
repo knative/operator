@@ -40,6 +40,11 @@ func (stages Stages) Execute(ctx context.Context, manifest *mf.Manifest, instanc
 	return nil
 }
 
+// NoOp does nothing
+func NoOp(context.Context, *mf.Manifest, v1alpha1.KComponent) error {
+	return nil
+}
+
 // AppendTarget mutates the passed manifest by appending one
 // appropriate for the passed KComponent
 func AppendTarget(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {

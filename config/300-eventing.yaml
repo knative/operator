@@ -93,7 +93,7 @@ spec:
                         type: string
             defaultBrokerClass:
               description: The default broker type to use for the brokers Knative creates.
-                If no value is provided, ChannelBasedBroker will be used.
+                If no value is provided, MTChannelBasedBroker will be used.
               type: string
             resources:
               description: A mapping of deployment name to resource requirements

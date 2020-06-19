@@ -32,13 +32,20 @@ import (
 )
 
 const (
-	KoEnvKey        = "KO_DATA_PATH"
-	UrlLinkTemplate = "https://github.com/knative/%s/releases/download/v%s/%s"
+	// KoEnvKey is the key of the environment variable to specify the path to the ko data directory
+	KoEnvKey = "KO_DATA_PATH"
+
+	// URLLinkTemplate is the template of the URL used to access the released artifacts of Knative
+	URLLinkTemplate = "https://github.com/knative/%s/releases/download/v%s/%s"
 )
 
 var (
-	cache             = map[string]mf.Manifest{}
-	ServingYamlNames  = []string{"serving-crds.yaml", "serving-core.yaml", "serving-hpa.yaml", "serving-storage-version-migration.yaml"}
+	cache = map[string]mf.Manifest{}
+
+	// ServingYamlNames is the string array containing all the artifacts to download for Knative serving
+	ServingYamlNames = []string{"serving-crds.yaml", "serving-core.yaml", "serving-hpa.yaml", "serving-storage-version-migration.yaml"}
+
+	// EventingYamlNames is the string array containing all the artifacts to download for Knative eventing
 	EventingYamlNames = []string{"eventing.yaml", "upgrade-to-%s.yaml", "storage-version-migration-%s.yaml"}
 )
 
@@ -137,7 +144,7 @@ func componentDir(instance v1alpha1.KComponent) string {
 	return ""
 }
 
-func componentUrl(version string, instance v1alpha1.KComponent) string {
+func componentURL(version string, instance v1alpha1.KComponent) string {
 	component := "serving"
 	urlList := []string{}
 	switch instance.(type) {
@@ -159,11 +166,11 @@ func componentUrl(version string, instance v1alpha1.KComponent) string {
 		return ""
 	}
 
-	result := fmt.Sprintf(UrlLinkTemplate, component,
+	result := fmt.Sprintf(URLLinkTemplate, component,
 		version, urlList[0])
 
 	for i := 1; i < len(urlList); i++ {
-		result = fmt.Sprintf("%s,"+UrlLinkTemplate, result, component,
+		result = fmt.Sprintf("%s,"+URLLinkTemplate, result, component,
 			version, urlList[i])
 	}
 
@@ -180,7 +187,7 @@ func manifestPath(version string, instance v1alpha1.KComponent) string {
 		return ""
 	}
 
-	return componentUrl(version, instance)
+	return componentURL(version, instance)
 }
 
 // sanitizeSemver always adds `v` in front of the version.

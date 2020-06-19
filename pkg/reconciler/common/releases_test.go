@@ -27,6 +27,8 @@ import (
 
 func TestRetrieveManifestPath(t *testing.T) {
 	koPath := "testdata/kodata"
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
 
 	tests := []struct {
 		component v1alpha1.KComponent
@@ -45,8 +47,6 @@ func TestRetrieveManifestPath(t *testing.T) {
 		expected:  koPath + "/knative-eventing/0.14.2",
 	}}
 
-	os.Setenv(KoEnvKey, koPath)
-	defer os.Unsetenv(KoEnvKey)
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			manifestPath := manifestPath(test.version, test.component)
@@ -54,6 +54,35 @@ func TestRetrieveManifestPath(t *testing.T) {
 			manifest, err := mf.NewManifest(manifestPath)
 			util.AssertEqual(t, err, nil)
 			util.AssertEqual(t, len(manifest.Resources()) > 0, true)
+		})
+	}
+
+	testManifestsRemote := []struct {
+		component v1alpha1.KComponent
+		version   string
+		name      string
+		expected  string
+	}{{
+		name:      "Valid Knative Serving Version locally unavailable",
+		component: &v1alpha1.KnativeServing{},
+		version:   "0.15.1",
+		expected: "https://github.com/knative/serving/releases/download/v0.15.1/serving-crds.yaml," +
+			"https://github.com/knative/serving/releases/download/v0.15.1/serving-core.yaml," +
+			"https://github.com/knative/serving/releases/download/v0.15.1/serving-hpa.yaml," +
+			"https://github.com/knative/serving/releases/download/v0.15.1/serving-storage-version-migration.yaml",
+	}, {
+		name:      "Valid Knative Eventing Version locally unavailable",
+		component: &v1alpha1.KnativeEventing{},
+		version:   "0.15.1",
+		expected: "https://github.com/knative/eventing/releases/download/v0.15.1/eventing.yaml," +
+			"https://github.com/knative/eventing/releases/download/v0.15.1/upgrade-to-v0.15.0.yaml," +
+			"https://github.com/knative/eventing/releases/download/v0.15.1/storage-version-migration-v0.15.0.yaml",
+	}}
+
+	for _, test := range testManifestsRemote {
+		t.Run(test.name, func(t *testing.T) {
+			manifestPath := manifestPath(test.version, test.component)
+			util.AssertEqual(t, manifestPath, test.expected)
 		})
 	}
 
@@ -66,12 +95,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 		name:      "Invalid Knative Serving Version",
 		component: &v1alpha1.KnativeServing{},
 		version:   "invalid-version",
-		expected:  koPath + "/knative-serving/invalid-version",
-	}, {
-		name:      "Invalid Knative component name",
-		component: nil,
-		version:   "0.14.2",
-		expected:  "0.14.2",
+		expected:  "",
 	}}
 
 	for _, test := range invalidPathTests {

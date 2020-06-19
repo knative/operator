@@ -32,10 +32,15 @@ import (
 )
 
 const (
-	KoEnvKey = "KO_DATA_PATH"
+	KoEnvKey        = "KO_DATA_PATH"
+	UrlLinkTemplate = "https://github.com/knative/%s/releases/download/v%s/%s"
 )
 
-var cache = map[string]mf.Manifest{}
+var (
+	cache             = map[string]mf.Manifest{}
+	ServingYamlNames  = []string{"serving-crds.yaml", "serving-core.yaml", "serving-hpa.yaml", "serving-storage-version-migration.yaml"}
+	EventingYamlNames = []string{"eventing.yaml", "upgrade-to-%s.yaml", "storage-version-migration-%s.yaml"}
+)
 
 // TargetVersion returns the version of the manifest to be installed
 // per the spec in the component. If spec.version is empty, the latest
@@ -132,9 +137,50 @@ func componentDir(instance v1alpha1.KComponent) string {
 	return ""
 }
 
+func componentUrl(version string, instance v1alpha1.KComponent) string {
+	component := "serving"
+	urlList := []string{}
+	switch instance.(type) {
+	case *v1alpha1.KnativeServing:
+		urlList = ServingYamlNames
+	case *v1alpha1.KnativeEventing:
+		component = "eventing"
+		for _, value := range EventingYamlNames {
+			if strings.Contains(value, "%s") {
+				// Some eventing artifacts' names always contain the version with the patch number equal to 0
+				value = fmt.Sprintf(value, fmt.Sprintf("%s.0", semver.MajorMinor(sanitizeSemver(version))))
+			}
+			urlList = append(urlList, value)
+		}
+	}
+
+	// Create the comma-separated string as the URL to retrieve the manifest
+	if len(urlList) == 0 {
+		return ""
+	}
+
+	result := fmt.Sprintf(UrlLinkTemplate, component,
+		version, urlList[0])
+
+	for i := 1; i < len(urlList); i++ {
+		result = fmt.Sprintf("%s,"+UrlLinkTemplate, result, component,
+			version, urlList[i])
+	}
+
+	return result
+}
+
 func manifestPath(version string, instance v1alpha1.KComponent) string {
-	// TODO: check if file exists and if not, construct URL instead
-	return filepath.Join(componentDir(instance), version)
+	localPath := filepath.Join(componentDir(instance), version)
+	if _, err := os.Stat(localPath); !os.IsNotExist(err) {
+		return localPath
+	}
+
+	if !semver.IsValid(sanitizeSemver(version)) {
+		return ""
+	}
+
+	return componentUrl(version, instance)
 }
 
 // sanitizeSemver always adds `v` in front of the version.

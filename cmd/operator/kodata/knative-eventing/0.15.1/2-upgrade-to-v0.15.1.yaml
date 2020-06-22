@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: v0.15.0-upgrade
+  namespace: knative-eventing
+  labels:
+    eventing.knative.dev/release: "v0.15.1"
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      serviceAccountName: eventing-controller
+      restartPolicy: Never
+      containers:
+      - name: upgrade-brokers
+        image: gcr.io/knative-releases/knative.dev/eventing/cmd/upgrade/v0.15.0@sha256:5322b8b5c1baf725e40734a262997b8e201733feea23e76c5fd532d41e9a8ad8
+
+---

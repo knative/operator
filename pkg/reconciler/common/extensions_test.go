@@ -22,16 +22,24 @@ import (
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
 type TestExtension string
 
-func (t TestExtension) Transformers() ([]mf.Transformer, error) {
+func (t TestExtension) Transformers(v1alpha1.KComponent) ([]mf.Transformer, error) {
 	if t == "fail" {
 		return nil, errors.New(string(t))
 	}
 	return []mf.Transformer{mf.InjectNamespace(string(t))}, nil
+}
+
+func (t TestExtension) Reconcile(context.Context, v1alpha1.KComponent) error {
+	return nil
+}
+func (t TestExtension) Finalize(context.Context, v1alpha1.KComponent) error {
+	return nil
 }
 
 func TestExtensions(t *testing.T) {
@@ -59,7 +67,7 @@ func TestExtensions(t *testing.T) {
 			ext := GetPlatform(ctx)
 			util.AssertEqual(t, ext, test.platform)
 			if ext != nil {
-				transformers, err := ext.Transformers()
+				transformers, err := ext.Transformers(nil)
 				if !test.wantError {
 					util.AssertEqual(t, err, nil)
 					util.AssertEqual(t, len(transformers), 1)

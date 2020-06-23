@@ -60,3 +60,4 @@ find vendor/ -name '*_test.go' -delete
 update_licenses third_party/VENDOR-LICENSE "./..."
 
 remove_broken_symlinks ./vendor
+git apply hack/patches/*.patch

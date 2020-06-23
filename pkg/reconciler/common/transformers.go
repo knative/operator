@@ -41,7 +41,7 @@ func Transform(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KCo
 	transformers := transformers(ctx, instance)
 	transformers = append(transformers, extra...)
 	if platform != nil {
-		pfts, err := platform.Transformers()
+		pfts, err := platform.Transformers(instance)
 		if err != nil {
 			instance.GetStatus().MarkInstallFailed(err.Error())
 			return err

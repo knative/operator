@@ -19,10 +19,13 @@ import (
 	"context"
 
 	mf "github.com/manifestival/manifestival"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 type Extension interface {
-	Transformers() ([]mf.Transformer, error)
+	Transformers(v1alpha1.KComponent) ([]mf.Transformer, error)
+	Reconcile(context.Context, v1alpha1.KComponent) error
+	Finalize(context.Context, v1alpha1.KComponent) error
 }
 
 // pfKey is used as the key for associating Platforms with the context.

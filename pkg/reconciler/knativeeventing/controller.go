@@ -39,39 +39,46 @@ import (
 // NewController initializes the controller and is called by the generated code
 // Registers eventhandlers to enqueue events
 func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
-	knativeEventingInformer := knativeEventinginformer.Get(ctx)
-	deploymentInformer := deploymentinformer.Get(ctx)
-	kubeClient := kubeclient.Get(ctx)
-	logger := logging.FromContext(ctx)
+	return NewExtendedController(common.NoPlatform)(ctx, cmw)
+}
 
-	// Clean up old non-unified operator resources before even starting the controller.
-	if err := reconciler.RemovePreUnifiedResources(kubeClient, "knative-eventing-operator"); err != nil {
-		logger.Fatalw("Failed to remove old resources", zap.Error(err))
+// NewExtendedController returns a controller extended to a specific platform
+func NewExtendedController(generator common.ExtensionGenerator) injection.ControllerConstructor {
+	return func(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
+		knativeEventingInformer := knativeEventinginformer.Get(ctx)
+		deploymentInformer := deploymentinformer.Get(ctx)
+		kubeClient := kubeclient.Get(ctx)
+		logger := logging.FromContext(ctx)
+
+		// Clean up old non-unified operator resources before even starting the controller.
+		if err := reconciler.RemovePreUnifiedResources(kubeClient, "knative-eventing-operator"); err != nil {
+			logger.Fatalw("Failed to remove old resources", zap.Error(err))
+		}
+
+		mfclient, err := mfc.NewClient(injection.GetConfig(ctx))
+		if err != nil {
+			logger.Fatalw("Error creating client from injected config", zap.Error(err))
+		}
+		mflogger := zapr.NewLogger(logger.Named("manifestival").Desugar())
+		manifest, _ := mf.ManifestFrom(mf.Slice{}, mf.UseClient(mfclient), mf.UseLogger(mflogger))
+
+		c := &Reconciler{
+			kubeClientSet:     kubeClient,
+			operatorClientSet: operatorclient.Get(ctx),
+			platform:          generator(ctx),
+			manifest:          manifest,
+		}
+		impl := knereconciler.NewImpl(ctx, c)
+
+		logger.Info("Setting up event handlers")
+
+		knativeEventingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
+
+		deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+			FilterFunc: controller.FilterControllerGVK(v1alpha1.SchemeGroupVersion.WithKind("KnativeEventing")),
+			Handler:    controller.HandleAll(impl.EnqueueControllerOf),
+		})
+
+		return impl
 	}
-
-	mfclient, err := mfc.NewClient(injection.GetConfig(ctx))
-	if err != nil {
-		logger.Fatalw("Error creating client from injected config", zap.Error(err))
-	}
-	mflogger := zapr.NewLogger(logger.Named("manifestival").Desugar())
-	manifest, _ := mf.ManifestFrom(mf.Slice{}, mf.UseClient(mfclient), mf.UseLogger(mflogger))
-
-	c := &Reconciler{
-		kubeClientSet:     kubeClient,
-		operatorClientSet: operatorclient.Get(ctx),
-		platform:          common.GetPlatform(ctx),
-		manifest:          manifest,
-	}
-	impl := knereconciler.NewImpl(ctx, c)
-
-	logger.Info("Setting up event handlers")
-
-	knativeEventingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
-
-	deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-		FilterFunc: controller.FilterControllerGVK(v1alpha1.SchemeGroupVersion.WithKind("KnativeEventing")),
-		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
-	})
-
-	return impl
 }

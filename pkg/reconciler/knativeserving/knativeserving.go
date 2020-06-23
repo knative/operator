@@ -74,6 +74,9 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1alpha1.Knativ
 		}
 	}
 
+	if err := r.platform.Finalize(ctx, original); err != nil {
+		logger.Error("Failed to finalize platform resources", err)
+	}
 	logger.Info("Deleting cluster-scoped resources")
 	manifest, err := r.installed(ctx, original)
 	if err != nil {
@@ -91,6 +94,9 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	ks.Status.ObservedGeneration = ks.Generation
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
+	if err := r.platform.Reconcile(ctx, ks); err != nil {
+		return err
+	}
 	stages := common.Stages{
 		common.AppendTarget,
 		r.transform,

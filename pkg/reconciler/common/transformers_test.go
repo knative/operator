@@ -40,7 +40,7 @@ func TestCommonTransformers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to generate manifest: %v", err)
 	}
-	if err := Transform(context.Background(), &manifest, component, nil); err != nil {
+	if err := Transform(context.Background(), &manifest, component, NilExtension); err != nil {
 		t.Fatalf("Failed to transform manifest: %v", err)
 	}
 	resource := &manifest.Resources()[0]

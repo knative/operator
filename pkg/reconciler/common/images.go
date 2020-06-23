@@ -41,34 +41,80 @@ var (
 	delimiter             = "/"
 )
 
+// ImageTransformer is an interface for transforming images passed to the ResourceImageTransformer
+type ImageTransformer interface {
+	HandleImage(containerName, parent string, useDefault bool) (string, bool)
+	HandleImagePullSecrets(imagePullSecrets []corev1.LocalObjectReference, log *zap.SugaredLogger) []corev1.LocalObjectReference
+}
+
+// registryImageTransformer is a v1alpha1.Registry specific transformer
+type registryImageTransformer struct {
+	registry *v1alpha1.Registry
+}
+
+var _ ImageTransformer = (*registryImageTransformer)(nil)
+
+func (rit *registryImageTransformer) HandleImage(containerName, parent string, useDefault bool) (string, bool) {
+	if image, ok := rit.registry.Override[parent+delimiter+containerName]; ok {
+		return image, true
+	}
+	if image, ok := rit.registry.Override[containerName]; ok {
+		return image, true
+	}
+	if !useDefault {
+		return "", false
+	}
+	return replaceName(rit.registry.Default, containerName), true
+}
+
+func replaceName(imageTemplate string, name string) string {
+	return strings.ReplaceAll(imageTemplate, containerNameVariable, name)
+}
+
+func (rit *registryImageTransformer) HandleImagePullSecrets(imagePullSecrets []corev1.LocalObjectReference, log *zap.SugaredLogger) []corev1.LocalObjectReference {
+	if len(rit.registry.ImagePullSecrets) > 0 {
+		log.Debugf("Adding ImagePullSecrets: %v", rit.registry.ImagePullSecrets)
+		imagePullSecrets = append(imagePullSecrets, rit.registry.ImagePullSecrets...)
+	}
+	return imagePullSecrets
+}
+
 // ImageTransform updates image with a new registry and tag
 func ImageTransform(registry *v1alpha1.Registry, log *zap.SugaredLogger) mf.Transformer {
+	rit := &registryImageTransformer{
+		registry: registry,
+	}
+	return ResourceImageTransformer(rit, log)
+}
+
+// ResourceImageTransformer takes an ImageTransformer and transform images across resources
+func ResourceImageTransformer(imageTransformer ImageTransformer, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		switch u.GetKind() {
 		// TODO need to use PodSpecable duck type in order to remove duplicates of deployment, daemonSet
 		case "Deployment":
-			return updateDeployment(registry, u, log)
+			return updateDeployment(imageTransformer, u, log)
 		case "DaemonSet":
-			return updateDaemonSet(registry, u, log)
+			return updateDaemonSet(imageTransformer, u, log)
 		case "Job":
-			return updateJob(registry, u, log)
+			return updateJob(imageTransformer, u, log)
 		case "Image":
 			if u.GetAPIVersion() == "caching.internal.knative.dev/v1alpha1" {
-				return updateCachingImage(registry, u, log)
+				return updateCachingImage(imageTransformer, u, log)
 			}
 		}
 		return nil
 	}
 }
 
-func updateDeployment(registry *v1alpha1.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+func updateDeployment(imageTransformer ImageTransformer, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
 	var deployment = &appsv1.Deployment{}
 	if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
 		log.Error(err, "Error converting Unstructured to Deployment", "unstructured", u, "deployment", deployment)
 		return err
 	}
 
-	updateRegistry(&deployment.Spec.Template.Spec, registry, log, deployment.GetName())
+	updateRegistry(&deployment.Spec.Template.Spec, imageTransformer, log, deployment.GetName())
 	if err := scheme.Scheme.Convert(deployment, u, nil); err != nil {
 		return err
 	}
@@ -80,13 +126,13 @@ func updateDeployment(registry *v1alpha1.Registry, u *unstructured.Unstructured,
 	return nil
 }
 
-func updateDaemonSet(registry *v1alpha1.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+func updateDaemonSet(imageTransformer ImageTransformer, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
 	var daemonSet = &appsv1.DaemonSet{}
 	if err := scheme.Scheme.Convert(u, daemonSet, nil); err != nil {
 		log.Error(err, "Error converting Unstructured to daemonSet", "unstructured", u, "daemonSet", daemonSet)
 		return err
 	}
-	updateRegistry(&daemonSet.Spec.Template.Spec, registry, log, daemonSet.GetName())
+	updateRegistry(&daemonSet.Spec.Template.Spec, imageTransformer, log, daemonSet.GetName())
 	if err := scheme.Scheme.Convert(daemonSet, u, nil); err != nil {
 		return err
 	}
@@ -98,13 +144,13 @@ func updateDaemonSet(registry *v1alpha1.Registry, u *unstructured.Unstructured, 
 	return nil
 }
 
-func updateJob(registry *v1alpha1.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+func updateJob(imageTransformer ImageTransformer, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
 	var job = &batchv1.Job{}
 	if err := scheme.Scheme.Convert(u, job, nil); err != nil {
 		log.Error(err, "Error converting Unstructured to job", "unstructured", u, "job", job)
 		return err
 	}
-	updateRegistry(&job.Spec.Template.Spec, registry, log, job.GetName())
+	updateRegistry(&job.Spec.Template.Spec, imageTransformer, log, job.GetName())
 	if err := scheme.Scheme.Convert(job, u, nil); err != nil {
 		return err
 	}
@@ -116,22 +162,22 @@ func updateJob(registry *v1alpha1.Registry, u *unstructured.Unstructured, log *z
 	return nil
 }
 
-func updateRegistry(spec *corev1.PodSpec, registry *v1alpha1.Registry, log *zap.SugaredLogger, name string) {
-	log.Debugw("Updating", "name", name, "registry", registry)
+func updateRegistry(spec *corev1.PodSpec, imageTransformer ImageTransformer, log *zap.SugaredLogger, name string) {
+	log.Debugw("Updating", "name", name, "imageTransformer", imageTransformer)
 
-	updateImage(spec, registry, log, name)
-	updateEnvVarImages(spec, registry, log, name)
+	updateImage(spec, imageTransformer, log, name)
+	updateEnvVarImages(spec, imageTransformer, log, name)
 
-	spec.ImagePullSecrets = addImagePullSecrets(
-		spec.ImagePullSecrets, registry, log)
+	spec.ImagePullSecrets = imageTransformer.HandleImagePullSecrets(
+		spec.ImagePullSecrets, log)
 }
 
 // updateImage updates the image with a new registry and tag
-func updateImage(spec *corev1.PodSpec, registry *v1alpha1.Registry, log *zap.SugaredLogger, name string) {
+func updateImage(spec *corev1.PodSpec, imageTransformer ImageTransformer, log *zap.SugaredLogger, name string) {
 	containers := spec.Containers
 	for index := range containers {
 		container := &containers[index]
-		newImage := getNewImage(registry, container.Name, name)
+		newImage, _ := imageTransformer.HandleImage(container.Name, name, true)
 		if newImage != "" {
 			updateContainer(container, newImage, log)
 		}
@@ -139,29 +185,29 @@ func updateImage(spec *corev1.PodSpec, registry *v1alpha1.Registry, log *zap.Sug
 	log.Debugw("Finished updating images", "name", name, "containers", spec.Containers)
 }
 
-func updateEnvVarImages(spec *corev1.PodSpec, registry *v1alpha1.Registry, log *zap.SugaredLogger, name string) {
+func updateEnvVarImages(spec *corev1.PodSpec, imageTransformer ImageTransformer, log *zap.SugaredLogger, name string) {
 	containers := spec.Containers
 	for index := range containers {
 		container := &containers[index]
 		for envIndex := range container.Env {
 			env := &container.Env[envIndex]
-			if newImage, ok := registry.Override[env.Name]; ok {
+			if newImage, ok := imageTransformer.HandleImage(env.Name, "", false); ok {
 				env.Value = newImage
 			}
 		}
 	}
 }
 
-func updateCachingImage(registry *v1alpha1.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+func updateCachingImage(imageTransformer ImageTransformer, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
 	var image = &caching.Image{}
 	if err := scheme.Scheme.Convert(u, image, nil); err != nil {
 		log.Error(err, "Error converting Unstructured to Image", "unstructured", u, "image", image)
 		return err
 	}
 
-	log.Debugw("Updating Image", "name", u.GetName(), "registry", registry)
+	log.Debugw("Updating Image", "name", u.GetName(), "registry", imageTransformer)
 
-	updateImageSpec(image, registry, log)
+	updateImageSpec(image, imageTransformer, log)
 	if err := scheme.Scheme.Convert(image, u, nil); err != nil {
 		return err
 	}
@@ -174,38 +220,16 @@ func updateCachingImage(registry *v1alpha1.Registry, u *unstructured.Unstructure
 }
 
 // updateImageSpec updates the image of a with a new registry and tag
-func updateImageSpec(image *caching.Image, registry *v1alpha1.Registry, log *zap.SugaredLogger) {
-	if newImage := getNewImage(registry, image.Name, ""); newImage != "" {
+func updateImageSpec(image *caching.Image, imageTransformer ImageTransformer, log *zap.SugaredLogger) {
+	if newImage, _ := imageTransformer.HandleImage(image.Name, "", true); newImage != "" {
 		log.Debugf("Updating image from: %v, to: %v", image.Spec.Image, newImage)
 		image.Spec.Image = newImage
 	}
-	image.Spec.ImagePullSecrets = addImagePullSecrets(image.Spec.ImagePullSecrets, registry, log)
+	image.Spec.ImagePullSecrets = imageTransformer.HandleImagePullSecrets(image.Spec.ImagePullSecrets, log)
 	log.Debugw("Finished updating image", "image", image.GetName())
-}
-
-func getNewImage(registry *v1alpha1.Registry, containerName, parent string) string {
-	if image, ok := registry.Override[parent+delimiter+containerName]; ok {
-		return image
-	}
-	if image, ok := registry.Override[containerName]; ok {
-		return image
-	}
-	return replaceName(registry.Default, containerName)
 }
 
 func updateContainer(container *corev1.Container, newImage string, log *zap.SugaredLogger) {
 	log.Debugf("Updating container image from: %v, to: %v", container.Image, newImage)
 	container.Image = newImage
-}
-
-func replaceName(imageTemplate string, name string) string {
-	return strings.ReplaceAll(imageTemplate, containerNameVariable, name)
-}
-
-func addImagePullSecrets(imagePullSecrets []corev1.LocalObjectReference, registry *v1alpha1.Registry, log *zap.SugaredLogger) []corev1.LocalObjectReference {
-	if len(registry.ImagePullSecrets) > 0 {
-		log.Debugf("Adding ImagePullSecrets: %v", registry.ImagePullSecrets)
-		imagePullSecrets = append(imagePullSecrets, registry.ImagePullSecrets...)
-	}
-	return imagePullSecrets
 }

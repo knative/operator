@@ -17,6 +17,7 @@ limitations under the License.
 package common
 
 import (
+	"context"
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
@@ -25,8 +26,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	fake "k8s.io/client-go/kubernetes/fake"
 	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	fake "knative.dev/pkg/client/injection/kube/client/fake"
 )
 
 func TestCheckDeployments(t *testing.T) {
@@ -103,12 +104,11 @@ func TestCheckDeployments(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to generate manifest: %v", err)
 			}
-			kube := fake.NewSimpleClientset(test.inAPI...)
-
+			ctx, _ := fake.With(context.Background(), test.inAPI...)
 			ks := &v1alpha1.KnativeServing{}
 			ks.Status.InitializeConditions()
 
-			err = CheckDeployments(kube, &manifest, &ks.Status)
+			err = CheckDeployments(ctx, &manifest, ks)
 			if (err != nil) != test.wantError {
 				t.Fatalf("CheckDeployments() = %v, wantError: %v", err, test.wantError)
 			}

@@ -29,6 +29,7 @@ import (
 	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeeventing"
 	"knative.dev/operator/pkg/reconciler/common"
 	kec "knative.dev/operator/pkg/reconciler/knativeeventing/common"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
 )
@@ -88,6 +89,9 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 	ke.Status.InitializeConditions()
 	ke.Status.ObservedGeneration = ke.Generation
 
+	// TODO: I'm sure there's a more elegant way to do this
+	ctx = context.WithValue(ctx, kubeclient.Key{}, r.kubeClientSet)
+
 	logger.Infow("Reconciling KnativeEventing", "status", ke.Status)
 	if err := r.extension.Reconcile(ctx, ke); err != nil {
 		return err
@@ -96,7 +100,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 		common.AppendTarget,
 		r.transform,
 		common.Install,
-		r.checkDeployments,
+		common.CheckDeployments,
 		r.deleteObsoleteResources(ctx, ke),
 	}
 	manifest := r.manifest.Append()
@@ -111,12 +115,6 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	extra := []mf.Transformer{kec.DefaultBrokerConfigMapTransform(instance, logger)}
 	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
-}
-
-func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, ke v1alpha1.KComponent) error {
-	logger := logging.FromContext(ctx)
-	logger.Debug("Checking deployments")
-	return common.CheckDeployments(r.kubeClientSet, manifest, ke.GetStatus())
 }
 
 // deleteObsoleteResources returns a Stage after calculating the

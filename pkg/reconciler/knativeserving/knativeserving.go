@@ -101,7 +101,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 		r.transform,
 		common.Install,
 		common.CheckDeployments,
-		r.deleteObsoleteResources(ctx, ks),
+		common.DeleteObsoleteResources(ctx, ks, r.installed),
 	}
 	manifest := r.manifest.Append()
 	return stages.Execute(ctx, &manifest, ks)
@@ -120,24 +120,6 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
-}
-
-// deleteObsoleteResources returns a Stage after calculating the
-// installed manifest from the instance, but *before* any other stages
-// might mutate the instance's status.version.
-func (r *Reconciler) deleteObsoleteResources(ctx context.Context, instance v1alpha1.KComponent) common.Stage {
-	if common.TargetVersion(instance) == instance.GetStatus().GetVersion() {
-		return common.NoOp
-	}
-	logger := logging.FromContext(ctx)
-	installed, err := r.installed(ctx, instance)
-	if err != nil {
-		logger.Error("Unable to obtain the installed manifest; obsolete resources may linger", err)
-		return common.NoOp
-	}
-	return func(_ context.Context, manifest *mf.Manifest, _ v1alpha1.KComponent) error {
-		return installed.Filter(mf.None(mf.In(*manifest))).Delete()
-	}
 }
 
 func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error) {

@@ -17,10 +17,12 @@ limitations under the License.
 package common
 
 import (
+	"context"
 	"fmt"
 
 	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/pkg/logging"
 )
 
 var (
@@ -30,7 +32,10 @@ var (
 
 // Install applies the manifest resources for the given version and updates the given
 // status accordingly.
-func Install(manifest *mf.Manifest, version string, status v1alpha1.KComponentStatus) error {
+func Install(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+	logger := logging.FromContext(ctx)
+	logger.Debug("Installing manifest")
+	status := instance.GetStatus()
 	// The Operator needs a higher level of permissions if it 'bind's non-existent roles.
 	// To avoid this, we strictly order the manifest application as (Cluster)Roles, then
 	// (Cluster)RoleBindings, then the rest of the manifest.
@@ -47,7 +52,7 @@ func Install(manifest *mf.Manifest, version string, status v1alpha1.KComponentSt
 		return fmt.Errorf("failed to apply non rbac manifest: %w", err)
 	}
 	status.MarkInstallSucceeded()
-	status.SetVersion(version)
+	status.SetVersion(TargetVersion(instance))
 	return nil
 }
 

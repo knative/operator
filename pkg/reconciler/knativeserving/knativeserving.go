@@ -95,7 +95,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	stages := common.Stages{
 		common.AppendTarget,
 		r.transform,
-		r.install,
+		common.Install,
 		r.checkDeployments,
 		r.deleteObsoleteResources(ctx, ks),
 	}
@@ -116,13 +116,6 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
-}
-
-// Apply the manifest resources
-func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
-	logger := logging.FromContext(ctx)
-	logger.Debug("Installing manifest")
-	return common.Install(manifest, common.TargetVersion(instance), instance.GetStatus())
 }
 
 // Check for all deployments available

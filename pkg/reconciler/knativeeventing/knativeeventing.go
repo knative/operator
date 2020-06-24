@@ -95,7 +95,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 	stages := common.Stages{
 		common.AppendTarget,
 		r.transform,
-		r.install,
+		common.Install,
 		r.checkDeployments,
 		r.deleteObsoleteResources(ctx, ke),
 	}
@@ -111,12 +111,6 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	extra := []mf.Transformer{kec.DefaultBrokerConfigMapTransform(instance, logger)}
 	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
-}
-
-func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke v1alpha1.KComponent) error {
-	logger := logging.FromContext(ctx)
-	logger.Debug("Installing manifest")
-	return common.Install(manifest, common.TargetVersion(ke), ke.GetStatus())
 }
 
 func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, ke v1alpha1.KComponent) error {

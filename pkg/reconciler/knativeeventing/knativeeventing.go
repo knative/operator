@@ -50,7 +50,7 @@ type Reconciler struct {
 	// client & logger
 	manifest mf.Manifest
 	// Platform-specific behavior to affect the transform
-	platform common.Extension
+	extension common.Extension
 }
 
 // Check that our Reconciler implements controller.Reconciler
@@ -74,7 +74,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1alpha1.Knativ
 		}
 	}
 
-	if err := r.platform.Finalize(ctx, original); err != nil {
+	if err := r.extension.Finalize(ctx, original); err != nil {
 		logger.Error("Failed to finalize platform resources", err)
 	}
 	logger.Info("Deleting cluster-scoped resources")
@@ -94,7 +94,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 	ke.Status.ObservedGeneration = ke.Generation
 
 	logger.Infow("Reconciling KnativeEventing", "status", ke.Status)
-	if err := r.platform.Reconcile(ctx, ke); err != nil {
+	if err := r.extension.Reconcile(ctx, ke); err != nil {
 		return err
 	}
 	stages := common.Stages{
@@ -115,7 +115,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	logger := logging.FromContext(ctx)
 	instance := comp.(*v1alpha1.KnativeEventing)
 	extra := []mf.Transformer{kec.DefaultBrokerConfigMapTransform(instance, logger)}
-	extra = append(extra, r.platform.Transformers(instance)...)
+	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 

@@ -22,7 +22,6 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
-	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
 type TestExtension string
@@ -55,19 +54,27 @@ func TestExtensions(t *testing.T) {
 		platform: TestExtension("fail"),
 		length:   0,
 	}, {
-		name:     "no path",
+		name:     "nil path",
 		platform: nil,
+		length:   0,
+	}, {
+		name:     "no path",
+		platform: NoExtension(nil),
 		length:   0,
 	}}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			ctx := WithPlatform(context.Background(), test.platform)
-			ext := GetPlatform(ctx)
-			util.AssertEqual(t, ext, test.platform)
+			ext := test.platform
 			if ext != nil {
 				transformers := ext.Transformers(nil)
 				if len(transformers) != test.length {
+					t.Error("Unexpected result")
+				}
+				if ext.Reconcile(nil, nil) != nil {
+					t.Error("Unexpected result")
+				}
+				if ext.Finalize(nil, nil) != nil {
 					t.Error("Unexpected result")
 				}
 			}

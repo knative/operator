@@ -22,9 +22,6 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
-// NilException is a convenient null object
-var NilExtension = nilExtension{}
-
 // Extension enables platform-specific features
 type Extension interface {
 	Transformers(v1alpha1.KComponent) []mf.Transformer
@@ -36,8 +33,8 @@ type Extension interface {
 type ExtensionGenerator func(context.Context) Extension
 
 // NoPlatform "generates" a NilExtension
-func NoPlatform(context.Context) Extension {
-	return NilExtension
+func NoExtension(context.Context) Extension {
+	return nilExtension{}
 }
 
 type nilExtension struct{}
@@ -50,21 +47,4 @@ func (nilExtension) Reconcile(context.Context, v1alpha1.KComponent) error {
 }
 func (nilExtension) Finalize(context.Context, v1alpha1.KComponent) error {
 	return nil
-}
-
-// pfKey is used as the key for associating Platforms with the context.
-type pfKey struct{}
-
-// WithPlatform attaches the given Platform to the provided context.
-func WithPlatform(ctx context.Context, platform Extension) context.Context {
-	return context.WithValue(ctx, pfKey{}, platform)
-}
-
-// GetPlatforms extracts the Platforms from the context.
-func GetPlatform(ctx context.Context) Extension {
-	untyped := ctx.Value(pfKey{})
-	if untyped == nil {
-		return nil
-	}
-	return untyped.(Extension)
 }

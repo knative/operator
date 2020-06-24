@@ -50,7 +50,7 @@ type Reconciler struct {
 	// client & logger
 	manifest mf.Manifest
 	// Platform-specific behavior to affect the transform
-	platform common.Extension
+	extension common.Extension
 }
 
 // Check that our Reconciler implements controller.Reconciler
@@ -74,7 +74,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1alpha1.Knativ
 		}
 	}
 
-	if err := r.platform.Finalize(ctx, original); err != nil {
+	if err := r.extension.Finalize(ctx, original); err != nil {
 		logger.Error("Failed to finalize platform resources", err)
 	}
 	logger.Info("Deleting cluster-scoped resources")
@@ -94,7 +94,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	ks.Status.ObservedGeneration = ks.Generation
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
-	if err := r.platform.Reconcile(ctx, ks); err != nil {
+	if err := r.extension.Reconcile(ctx, ks); err != nil {
 		return err
 	}
 	stages := common.Stages{
@@ -120,7 +120,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 		ksc.HighAvailabilityTransform(instance, logger),
 		ksc.AggregationRuleTransform(manifest.Client),
 	}
-	extra = append(extra, r.platform.Transformers(instance)...)
+	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 

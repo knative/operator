@@ -39,7 +39,7 @@ import (
 // NewController initializes the controller and is called by the generated code
 // Registers eventhandlers to enqueue events
 func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
-	return NewExtendedController(common.NoPlatform)(ctx, cmw)
+	return NewExtendedController(common.NoExtension)(ctx, cmw)
 }
 
 // NewExtendedController returns a controller extended to a specific platform
@@ -65,7 +65,7 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 		c := &Reconciler{
 			kubeClientSet:     kubeClient,
 			operatorClientSet: operatorclient.Get(ctx),
-			platform:          generator(ctx),
+			extension:         generator(ctx),
 			manifest:          manifest,
 		}
 		impl := knsreconciler.NewImpl(ctx, c)

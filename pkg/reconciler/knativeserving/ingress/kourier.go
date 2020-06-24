@@ -23,7 +23,7 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
-var noKourier = ingressFilter("kourier")
+var kourierFilter = ingressFilter("kourier")
 
 func kourierTransformers(ctx context.Context, instance *v1alpha1.KnativeServing) []mf.Transformer {
 	return nil

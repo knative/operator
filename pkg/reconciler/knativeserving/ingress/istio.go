@@ -26,7 +26,7 @@ import (
 	"knative.dev/pkg/logging"
 )
 
-var noIstio = ingressFilter("istio")
+var istioFilter = ingressFilter("istio")
 
 func istioTransformers(ctx context.Context, instance *v1alpha1.KnativeServing) []mf.Transformer {
 	logger := logging.FromContext(ctx)

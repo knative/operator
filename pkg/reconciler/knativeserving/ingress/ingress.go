@@ -24,25 +24,32 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
+const providerLabel = "networking.knative.dev/ingress-provider"
+
 func ingressFilter(name string) mf.Predicate {
 	return func(u *unstructured.Unstructured) bool {
-		return u.GetLabels()["networking.knative.dev/ingress-provider"] != name
+		provider, hasLabel := u.GetLabels()[providerLabel]
+		if !hasLabel {
+			return true
+		}
+
+		return provider == name
 	}
 }
 
 func Filters(ks *v1alpha1.KnativeServing) mf.Predicate {
 	if ks.Spec.Ingress == nil {
-		return mf.All(noKourier)
+		return mf.Any(istioFilter)
 	}
 
 	var filters []mf.Predicate
 	if !ks.Spec.Ingress.Istio.Enabled {
-		filters = append(filters, noIstio)
+		filters = append(filters, istioFilter)
 	}
 	if !ks.Spec.Ingress.Kourier.Enabled {
-		filters = append(filters, noKourier)
+		filters = append(filters, kourierFilter)
 	}
-	return mf.All(filters...)
+	return mf.Any(filters...)
 }
 
 func Transformers(ctx context.Context, ks *v1alpha1.KnativeServing) []mf.Transformer {

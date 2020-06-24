@@ -109,16 +109,19 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	return stages.Execute(ctx, &manifest, ks)
 }
 
-// transform mutates the passed manifest to one with common and
-// platform transforms, plus any extras passed in
+// transform mutates the passed manifest to one with common, component
+// and platform transformations applied
 func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp v1alpha1.KComponent) error {
 	logger := logging.FromContext(ctx)
 	instance := comp.(*v1alpha1.KnativeServing)
-	return common.Transform(ctx, manifest, instance, r.platform,
+	extra := []mf.Transformer{
 		ksc.GatewayTransform(instance, logger),
 		ksc.CustomCertsTransform(instance, logger),
 		ksc.HighAvailabilityTransform(instance, logger),
-		ksc.AggregationRuleTransform(manifest.Client))
+		ksc.AggregationRuleTransform(manifest.Client),
+	}
+	extra = append(extra, r.platform.Transformers(instance)...)
+	return common.Transform(ctx, manifest, instance, extra...)
 }
 
 // Apply the manifest resources

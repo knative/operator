@@ -27,7 +27,7 @@ var NilExtension = nilExtension{}
 
 // Extension enables platform-specific features
 type Extension interface {
-	Transformers(v1alpha1.KComponent) ([]mf.Transformer, error)
+	Transformers(v1alpha1.KComponent) []mf.Transformer
 	Reconcile(context.Context, v1alpha1.KComponent) error
 	Finalize(context.Context, v1alpha1.KComponent) error
 }
@@ -42,8 +42,8 @@ func NoPlatform(context.Context) Extension {
 
 type nilExtension struct{}
 
-func (nilExtension) Transformers(v1alpha1.KComponent) ([]mf.Transformer, error) {
-	return nil, nil
+func (nilExtension) Transformers(v1alpha1.KComponent) []mf.Transformer {
+	return nil
 }
 func (nilExtension) Reconcile(context.Context, v1alpha1.KComponent) error {
 	return nil

@@ -35,23 +35,12 @@ func transformers(ctx context.Context, obj v1alpha1.KComponent) []mf.Transformer
 
 // Transform will mutate the passed-by-reference manifest with one
 // transformed by platform, common, and any extra passed in
-func Transform(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent, platform Extension, extra ...mf.Transformer) error {
+func Transform(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent, extra ...mf.Transformer) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Transforming manifest")
 
-	// common transforms
 	transformers := transformers(ctx, instance)
-
-	// component transforms
 	transformers = append(transformers, extra...)
-
-	// platform transforms
-	pfts, err := platform.Transformers(instance)
-	if err != nil {
-		instance.GetStatus().MarkInstallFailed(err.Error())
-		return err
-	}
-	transformers = append(transformers, pfts...)
 
 	m, err := manifest.Transform(transformers...)
 	if err != nil {

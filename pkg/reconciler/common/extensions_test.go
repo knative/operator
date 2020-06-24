@@ -18,7 +18,6 @@ package common
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
@@ -28,11 +27,11 @@ import (
 
 type TestExtension string
 
-func (t TestExtension) Transformers(v1alpha1.KComponent) ([]mf.Transformer, error) {
+func (t TestExtension) Transformers(v1alpha1.KComponent) []mf.Transformer {
 	if t == "fail" {
-		return nil, errors.New(string(t))
+		return nil
 	}
-	return []mf.Transformer{mf.InjectNamespace(string(t))}, nil
+	return []mf.Transformer{mf.InjectNamespace(string(t))}
 }
 
 func (t TestExtension) Reconcile(context.Context, v1alpha1.KComponent) error {
@@ -44,21 +43,21 @@ func (t TestExtension) Finalize(context.Context, v1alpha1.KComponent) error {
 
 func TestExtensions(t *testing.T) {
 	tests := []struct {
-		name      string
-		platform  Extension
-		wantError bool
+		name     string
+		platform Extension
+		length   int
 	}{{
-		name:      "happy path",
-		platform:  TestExtension("happy"),
-		wantError: false,
+		name:     "happy path",
+		platform: TestExtension("happy"),
+		length:   1,
 	}, {
-		name:      "sad path",
-		platform:  TestExtension("fail"),
-		wantError: true,
+		name:     "sad path",
+		platform: TestExtension("fail"),
+		length:   0,
 	}, {
-		name:      "no path",
-		platform:  nil,
-		wantError: false,
+		name:     "no path",
+		platform: nil,
+		length:   0,
 	}}
 
 	for _, test := range tests {
@@ -67,10 +66,9 @@ func TestExtensions(t *testing.T) {
 			ext := GetPlatform(ctx)
 			util.AssertEqual(t, ext, test.platform)
 			if ext != nil {
-				transformers, err := ext.Transformers(nil)
-				if !test.wantError {
-					util.AssertEqual(t, err, nil)
-					util.AssertEqual(t, len(transformers), 1)
+				transformers := ext.Transformers(nil)
+				if len(transformers) != test.length {
+					t.Error("Unexpected result")
 				}
 			}
 		})

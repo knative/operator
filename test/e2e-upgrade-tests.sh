@@ -124,9 +124,7 @@ function test_setup() {
   add_trap "kill $kail_pid || true" EXIT
 
   echo ">> Publish test images for eventing"
-  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/eventing "test/test_images/wathola-forwarder"
-  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/eventing "test/test_images/wathola-receiver"
-  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/eventing "test/test_images/wathola-sender"
+  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/eventing "test/test_images"
 
   cd ${OPERATOR_DIR}
 }

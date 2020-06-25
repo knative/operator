@@ -101,8 +101,8 @@ function istio_yaml() {
   echo "third_party/${istio_version}/istio-${suffix}.yaml"
 }
 
-# Download the repository of Knative. The purpose of this function is to download the source code
-# and retrieve the latest release for further use.
+# Download the repository of Knative. The purpose of this function is to download the source code of
+# knative component for further use, based on component name and branch name.
 # Parameter: $1 - component name, either serving or eventing, $2 - branch of the repository.
 function donwload_knative() {
   local component=$1

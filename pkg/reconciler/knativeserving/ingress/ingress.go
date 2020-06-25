@@ -43,10 +43,10 @@ func Filters(ks *v1alpha1.KnativeServing) mf.Predicate {
 	}
 
 	var filters []mf.Predicate
-	if !ks.Spec.Ingress.Istio.Enabled {
+	if ks.Spec.Ingress.Istio.Enabled {
 		filters = append(filters, istioFilter)
 	}
-	if !ks.Spec.Ingress.Kourier.Enabled {
+	if ks.Spec.Ingress.Kourier.Enabled {
 		filters = append(filters, kourierFilter)
 	}
 	return mf.Any(filters...)

@@ -22,25 +22,29 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
+// Extension enables platform-specific features
 type Extension interface {
-	Transformers(v1alpha1.KComponent) ([]mf.Transformer, error)
+	Transformers(v1alpha1.KComponent) []mf.Transformer
 	Reconcile(context.Context, v1alpha1.KComponent) error
 	Finalize(context.Context, v1alpha1.KComponent) error
 }
 
-// pfKey is used as the key for associating Platforms with the context.
-type pfKey struct{}
+// ExtensionGenerator creates an Extension from a Context
+type ExtensionGenerator func(context.Context) Extension
 
-// WithPlatform attaches the given Platform to the provided context.
-func WithPlatform(ctx context.Context, platform Extension) context.Context {
-	return context.WithValue(ctx, pfKey{}, platform)
+// NoPlatform "generates" a NilExtension
+func NoExtension(context.Context) Extension {
+	return nilExtension{}
 }
 
-// GetPlatforms extracts the Platforms from the context.
-func GetPlatform(ctx context.Context) Extension {
-	untyped := ctx.Value(pfKey{})
-	if untyped == nil {
-		return nil
-	}
-	return untyped.(Extension)
+type nilExtension struct{}
+
+func (nilExtension) Transformers(v1alpha1.KComponent) []mf.Transformer {
+	return nil
+}
+func (nilExtension) Reconcile(context.Context, v1alpha1.KComponent) error {
+	return nil
+}
+func (nilExtension) Finalize(context.Context, v1alpha1.KComponent) error {
+	return nil
 }

@@ -40,7 +40,7 @@ func TestCommonTransformers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to generate manifest: %v", err)
 	}
-	if err := Transform(context.Background(), &manifest, component, nil); err != nil {
+	if err := Transform(context.Background(), &manifest, component); err != nil {
 		t.Fatalf("Failed to transform manifest: %v", err)
 	}
 	resource := &manifest.Resources()[0]
@@ -51,14 +51,14 @@ func TestCommonTransformers(t *testing.T) {
 	}
 
 	// Transform with a platform extension
-	platform := TestExtension("fubar")
-	if err := Transform(context.Background(), &manifest, component, platform); err != nil {
+	ext := TestExtension("fubar")
+	if err := Transform(context.Background(), &manifest, component, ext.Transformers(component)...); err != nil {
 		t.Fatalf("Failed to transform manifest: %v", err)
 	}
 	resource = &manifest.Resources()[0]
 
 	// Verify namespace is transformed
-	if got, want := resource.GetNamespace(), string(platform); got != want {
+	if got, want := resource.GetNamespace(), string(ext); got != want {
 		t.Fatalf("GetNamespace() = %s, want %s", got, want)
 	}
 

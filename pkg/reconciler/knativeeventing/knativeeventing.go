@@ -50,7 +50,7 @@ type Reconciler struct {
 	// client & logger
 	manifest mf.Manifest
 	// Platform-specific behavior to affect the transform
-	platform common.Extension
+	extension common.Extension
 }
 
 // Check that our Reconciler implements controller.Reconciler
@@ -74,6 +74,9 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1alpha1.Knativ
 		}
 	}
 
+	if err := r.extension.Finalize(ctx, original); err != nil {
+		logger.Error("Failed to finalize platform resources", err)
+	}
 	logger.Info("Deleting cluster-scoped resources")
 	manifest, err := r.installed(ctx, original)
 	if err != nil {
@@ -91,6 +94,9 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 	ke.Status.ObservedGeneration = ke.Generation
 
 	logger.Infow("Reconciling KnativeEventing", "status", ke.Status)
+	if err := r.extension.Reconcile(ctx, ke); err != nil {
+		return err
+	}
 	stages := common.Stages{
 		common.AppendTarget,
 		r.transform,
@@ -103,13 +109,14 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 	return stages.Execute(ctx, &manifest, ke)
 }
 
-// transform mutates the passed manifest to one with common and
-// platform transforms, plus any extras passed in
+// transform mutates the passed manifest to one with common, component
+// and platform transformations applied
 func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp v1alpha1.KComponent) error {
 	logger := logging.FromContext(ctx)
 	instance := comp.(*v1alpha1.KnativeEventing)
-	return common.Transform(ctx, manifest, instance, r.platform,
-		kec.DefaultBrokerConfigMapTransform(instance, logger))
+	extra := []mf.Transformer{kec.DefaultBrokerConfigMapTransform(instance, logger)}
+	extra = append(extra, r.extension.Transformers(instance)...)
+	return common.Transform(ctx, manifest, instance, extra...)
 }
 
 // ensureFinalizerRemoval ensures that the obsolete "delete-knative-eventing-manifest" is removed from the resource.

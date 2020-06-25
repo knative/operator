@@ -26,7 +26,6 @@ import (
 	operatorclient "knative.dev/operator/pkg/client/injection/client"
 	knativeServinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeserving"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
-	"knative.dev/operator/pkg/reconciler"
 	"knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
@@ -49,11 +48,6 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 		deploymentInformer := deploymentinformer.Get(ctx)
 		kubeClient := kubeclient.Get(ctx)
 		logger := logging.FromContext(ctx)
-
-		// Clean up old non-unified operator resources before even starting the controller.
-		if err := reconciler.RemovePreUnifiedResources(kubeClient, "knative-serving-operator"); err != nil {
-			logger.Fatalw("Failed to remove old resources", zap.Error(err))
-		}
 
 		mfclient, err := mfc.NewClient(injection.GetConfig(ctx))
 		if err != nil {

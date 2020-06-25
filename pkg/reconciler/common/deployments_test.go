@@ -21,13 +21,13 @@ import (
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
+	fake "github.com/manifestival/manifestival/fake"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
-	fake "knative.dev/pkg/client/injection/kube/client/fake"
 )
 
 func TestCheckDeployments(t *testing.T) {
@@ -100,15 +100,15 @@ func TestCheckDeployments(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			manifest, err := mf.ManifestFrom(mf.Slice(test.inManifest))
+			client := fake.New(test.inAPI...)
+			manifest, err := mf.ManifestFrom(mf.Slice(test.inManifest), mf.UseClient(client))
 			if err != nil {
 				t.Fatalf("Failed to generate manifest: %v", err)
 			}
-			ctx, _ := fake.With(context.Background(), test.inAPI...)
 			ks := &v1alpha1.KnativeServing{}
 			ks.Status.InitializeConditions()
 
-			err = CheckDeployments(ctx, &manifest, ks)
+			err = CheckDeployments(context.TODO(), &manifest, ks)
 			if (err != nil) != test.wantError {
 				t.Fatalf("CheckDeployments() = %v, wantError: %v", err, test.wantError)
 			}

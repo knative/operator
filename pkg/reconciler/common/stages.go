@@ -78,8 +78,10 @@ func AppendInstalled(ctx context.Context, manifest *mf.Manifest, instance v1alph
 type ManifestFetcher func(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error)
 
 // DeleteObsoleteResources returns a Stage after calculating the
-// installed manifest from the instance, but *before* any other stages
-// might mutate the instance's status.version.
+// installed manifest from the instance. This is meant to be called
+// *before* executing the reconciliation stages so that the proper
+// manifest is captured in a closure before any stage might mutate the
+// instance status, e.g. Install.
 func DeleteObsoleteResources(ctx context.Context, instance v1alpha1.KComponent, fetch ManifestFetcher) Stage {
 	if TargetVersion(instance) == instance.GetStatus().GetVersion() {
 		return NoOp

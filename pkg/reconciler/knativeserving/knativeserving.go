@@ -29,7 +29,6 @@ import (
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
 	"knative.dev/operator/pkg/reconciler/common"
 	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
-	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
 )
@@ -88,9 +87,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	logger := logging.FromContext(ctx)
 	ks.Status.InitializeConditions()
 	ks.Status.ObservedGeneration = ks.Generation
-
-	// TODO: I'm sure there's a more elegant way to do this
-	ctx = context.WithValue(ctx, kubeclient.Key{}, r.kubeClientSet)
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 	if err := r.extension.Reconcile(ctx, ks); err != nil {

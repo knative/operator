@@ -26,7 +26,7 @@ readonly PREVIOUS_SERVING_RELEASE_VERSION="0.14.0"
 # different from PREVIOUS_OPERATOR_RELEASE_VERSION.
 readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.14.2"
 # This is the branch name of serving and eventing repo, where we run the upgrade tests.
-readonly KNATIVE_REPO_BRANCH="release-0.15"
+readonly KNATIVE_REPO_BRANCH=${PULL_BASE_REF}
 # Istio version we test with
 readonly ISTIO_VERSION="1.4-latest"
 # Test without Istio mesh enabled
@@ -176,4 +176,27 @@ function knative_teardown() {
   echo ">> Removing test eventing namespaces"
   kubectl delete all --all --ignore-not-found --now --timeout 60s -n $TEST_EVENTING_NAMESPACE
   kubectl delete --ignore-not-found --now --timeout 300s namespace $TEST_EVENTING_NAMESPACE
+}
+
+function wait_for_file() {
+  local file timeout waits
+  file="$1"
+  waits=300
+  timeout=$waits
+
+  echo "Waiting for existance of file: ${file}"
+
+  while [ ! -f "${file}" ]; do
+    # When the timeout is equal to zero, show an error and leave the loop.
+    if [ "${timeout}" == 0 ]; then
+      echo "ERROR: Timeout (${waits}s) while waiting for the file ${file}."
+      return 1
+    fi
+
+    sleep 1
+
+    # Decrease the timeout of one
+    ((timeout--))
+  done
+  return 0
 }

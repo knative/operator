@@ -35,6 +35,9 @@ export GO111MODULE=auto
 
 source $(dirname $0)/e2e-common.sh
 
+readonly EVENTING_READY_FILE="/tmp/prober-ready-eventing"
+readonly EVENTING_PROBER_FILE="/tmp/prober-signal-eventing"
+
 function download_install_previous_operator_release() {
   local full_url="https://github.com/knative/operator/releases/download/v${PREVIOUS_OPERATOR_RELEASE_VERSION}/operator.yaml"
 
@@ -194,10 +197,11 @@ cd ${KNATIVE_DIR}/eventing
 go_test_e2e -tags=preupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
 
 header "Starting prober test for eventing"
-rm -fv /tmp/prober-ready
-go_test_e2e -tags=probe -timeout="${TIMEOUT}" ./test/upgrade &
+# Remove this in case we failed to clean it up in an earlier test.
+rm -f ${EVENTING_PROBER_FILE}
+go_test_e2e -tags=probe -timeout="${TIMEOUT}" ./test/upgrade --pipefile="${EVENTING_PROBER_FILE}" --readyfile="${EVENTING_READY_FILE}" &
 PROBER_PID_EVENTING=$!
-echo "Prober PID Eventing is ${PROBER_PID_EVENTING}"
+echo "Prober PID Serving is ${PROBER_PID_EVENTING}"
 
 install_operator
 
@@ -241,6 +245,7 @@ echo "done" > /tmp/prober-signal
 header "Waiting for prober test for Knative Serving"
 wait ${PROBER_PID_SERVING} || fail_test "Prober failed"
 
+echo "done" > ${EVENTING_PROBER_FILE}
 header "Waiting for prober test for Knative Eventing"
 wait ${PROBER_PID_EVENTING} || fail_test "Prober failed"
 

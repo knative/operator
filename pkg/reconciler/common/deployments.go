@@ -31,10 +31,10 @@ import (
 // status with the status of the deployments.
 func CheckDeployments(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	status := instance.GetStatus()
-	status.MarkDeploymentsNotReady()
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
 		resource, err := manifest.Client.Get(&u)
 		if err != nil {
+			status.MarkDeploymentsNotReady()
 			if errors.IsNotFound(err) {
 				return nil
 			}
@@ -45,6 +45,7 @@ func CheckDeployments(ctx context.Context, manifest *mf.Manifest, instance v1alp
 			return err
 		}
 		if !isDeploymentAvailable(deployment) {
+			status.MarkDeploymentsNotReady()
 			return nil
 		}
 	}

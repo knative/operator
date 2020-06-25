@@ -32,7 +32,6 @@ import (
 func CheckDeployments(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	status := instance.GetStatus()
 	status.MarkDeploymentsNotReady()
-	deployment := &appsv1.Deployment{}
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
 		resource, err := manifest.Client.Get(&u)
 		if err != nil {
@@ -41,6 +40,7 @@ func CheckDeployments(ctx context.Context, manifest *mf.Manifest, instance v1alp
 			}
 			return err
 		}
+		deployment := &appsv1.Deployment{}
 		if err := scheme.Scheme.Convert(resource, deployment, nil); err != nil {
 			return err
 		}

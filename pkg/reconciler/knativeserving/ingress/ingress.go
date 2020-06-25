@@ -57,10 +57,10 @@ func Transformers(ctx context.Context, ks *v1alpha1.KnativeServing) []mf.Transfo
 		return istioTransformers(ctx, ks)
 	}
 	var transformers []mf.Transformer
-	if !ks.Spec.Ingress.Istio.Enabled {
+	if ks.Spec.Ingress.Istio.Enabled {
 		transformers = append(transformers, istioTransformers(ctx, ks)...)
 	}
-	if !ks.Spec.Ingress.Kourier.Enabled {
+	if ks.Spec.Ingress.Kourier.Enabled {
 		transformers = append(transformers, kourierTransformers(ctx, ks)...)
 	}
 	return transformers

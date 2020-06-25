@@ -22,7 +22,6 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 
@@ -32,10 +31,6 @@ import (
 	kec "knative.dev/operator/pkg/reconciler/knativeeventing/common"
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
-)
-
-const (
-	oldFinalizerName = "delete-knative-eventing-manifest"
 )
 
 // Reconciler implements controller.Reconciler for KnativeEventing resources.
@@ -100,7 +95,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 	stages := common.Stages{
 		common.AppendTarget,
 		r.transform,
-		r.ensureFinalizerRemoval,
 		r.install,
 		r.checkDeployments,
 		r.deleteObsoleteResources(ctx, ke),
@@ -117,24 +111,6 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	extra := []mf.Transformer{kec.DefaultBrokerConfigMapTransform(instance, logger)}
 	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
-}
-
-// ensureFinalizerRemoval ensures that the obsolete "delete-knative-eventing-manifest" is removed from the resource.
-func (r *Reconciler) ensureFinalizerRemoval(_ context.Context, _ *mf.Manifest, instance v1alpha1.KComponent) error {
-	patch, err := common.FinalizerRemovalPatch(instance, oldFinalizerName)
-	if err != nil {
-		return fmt.Errorf("failed to construct the patch: %w", err)
-	}
-	if patch == nil {
-		// Nothing to do here.
-		return nil
-	}
-
-	patcher := r.operatorClientSet.OperatorV1alpha1().KnativeEventings(instance.GetNamespace())
-	if _, err := patcher.Patch(instance.GetName(), types.MergePatchType, patch); err != nil {
-		return fmt.Errorf("failed to patch finalizer away: %w", err)
-	}
-	return nil
 }
 
 func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke v1alpha1.KComponent) error {

@@ -35,13 +35,15 @@ export GO111MODULE=auto
 
 source $(dirname $0)/e2e-common.sh
 
+readonly EVENTING_READY_FILE="/tmp/prober-ready-eventing"
+readonly EVENTING_PROBER_FILE="/tmp/prober-signal-eventing"
+
 function download_install_previous_operator_release() {
   local full_url="https://github.com/knative/operator/releases/download/v${PREVIOUS_OPERATOR_RELEASE_VERSION}/operator.yaml"
 
   wget "${full_url}" -O "${release_yaml}" \
       || fail_test "Unable to download latest Knative Operator release."
 
-  donwload_knative_serving ${SERVING_REPO_BRANCH}
   install_istio || fail_test "Istio installation failed"
   install_previous_operator_release
 }
@@ -84,6 +86,8 @@ EOF
 function knative_setup() {
   create_namespace
   download_install_previous_operator_release
+  donwload_knative "serving" ${KNATIVE_REPO_BRANCH}
+  donwload_knative "eventing" ${KNATIVE_REPO_BRANCH}
   create_custom_resource
   wait_until_pods_running ${TEST_NAMESPACE}
   wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
@@ -92,16 +96,16 @@ function knative_setup() {
 # Create test resources and images
 function test_setup() {
   if (( GENERATE_SERVING_YAML )); then
-    generate_latest_serving_manifest ${SERVING_REPO_BRANCH}
+    generate_latest_serving_manifest ${KNATIVE_REPO_BRANCH}
   fi
   echo ">> Creating test resources (test/config/) in Knative Serving repository"
-  cd ${KNATIVE_SERVING_DIR}/serving
+  cd ${KNATIVE_DIR}/serving
   ko apply ${KO_FLAGS} -f test/config/ || return 1
 
   echo ">> Uploading test images..."
   # We only need to build and publish two images among all the test images
-  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_SERVING_DIR}/serving "test/test_images/pizzaplanetv1"
-  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_SERVING_DIR}/serving "test/test_images/pizzaplanetv2"
+  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/serving "test/test_images/pizzaplanetv1"
+  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/serving "test/test_images/pizzaplanetv2"
 
   test_setup_logging
 
@@ -110,24 +114,39 @@ function test_setup() {
     wait_until_pods_running istio-system || return 1
     wait_until_service_has_external_ip istio-system istio-ingressgateway
   fi
+
+  # Install kail if needed.
+  if ! which kail >/dev/null; then
+    bash <(curl -sfL https://raw.githubusercontent.com/boz/kail/master/godownloader.sh) -b "$GOPATH/bin"
+  fi
+
+  # Capture all logs.
+  kail >${ARTIFACTS}/k8s.log.txt &
+  local kail_pid=$!
+  # Clean up kail so it doesn't interfere with job shutting down
+  add_trap "kill $kail_pid || true" EXIT
+
+  echo ">> Publish test images for eventing"
+  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/eventing "test/test_images"
+
   cd ${OPERATOR_DIR}
 }
 
 # This function either generate the manifest based on a branch or download the latest manifest for Knative Serving.
 # Parameter: $1 - branch name. If it is empty, download the manifest from nightly build.
 function generate_latest_serving_manifest() {
-  cd ${KNATIVE_SERVING_DIR}/serving
+  cd ${KNATIVE_DIR}/serving
   mkdir -p output
   local branch=$1
-  export YAML_OUTPUT_DIR=${KNATIVE_SERVING_DIR}/serving/output
+  export YAML_OUTPUT_DIR=${KNATIVE_DIR}/serving/output
   SERVING_YAML=${YAML_OUTPUT_DIR}/serving.yaml
   if [[ -n "${branch}" ]]; then
     git checkout ${branch}
     COMMIT_ID=$(git rev-parse --verify HEAD)
     echo ">> The latest commit ID of Knative Serving is ${COMMIT_ID}."
     # Generate the manifest
-    export YAML_OUTPUT_DIR=${KNATIVE_SERVING_DIR}/serving/output
-    ./hack/generate-yamls.sh ${KNATIVE_SERVING_DIR}/serving ${YAML_OUTPUT_DIR}/output.yaml
+    export YAML_OUTPUT_DIR=${KNATIVE_DIR}/serving/output
+    ./hack/generate-yamls.sh ${KNATIVE_DIR}/serving ${YAML_OUTPUT_DIR}/output.yaml
   else
     echo ">> Download the latest nightly build of Knative Serving."
     # Download the latest manifest
@@ -160,17 +179,29 @@ wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running preupgrade tests"
 
-cd ${KNATIVE_SERVING_DIR}/serving
+# Go to the knative serving repo
+cd ${KNATIVE_DIR}/serving
 go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade \
   --resolvabledomain="false" "--https" || fail_test
 
+header "Starting prober test for serving"
 # Remove this in case we failed to clean it up in an earlier test.
 rm -f /tmp/prober-signal
-
 go_test_e2e -tags=probe -timeout=${TIMEOUT} ./test/upgrade \
   --resolvabledomain="false" "--https" &
-PROBER_PID=$!
-echo "Prober PID is ${PROBER_PID}"
+PROBER_PID_SERVING=$!
+echo "Prober PID Serving is ${PROBER_PID_SERVING}"
+
+# Go to the knative eventing repo
+cd ${KNATIVE_DIR}/eventing
+go_test_e2e -tags=preupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
+
+header "Starting prober test for eventing"
+# Remove this in case we failed to clean it up in an earlier test.
+rm -f ${EVENTING_PROBER_FILE}
+go_test_e2e -tags=probe -timeout="${TIMEOUT}" ./test/upgrade --pipefile="${EVENTING_PROBER_FILE}" --readyfile="${EVENTING_READY_FILE}" &
+PROBER_PID_EVENTING=$!
+echo "Prober PID Serving is ${PROBER_PID_EVENTING}"
 
 install_operator
 
@@ -187,23 +218,36 @@ go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade \
 wait_until_pods_running ${TEST_NAMESPACE}
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
-header "Running tests under Knative Serving"
+header "Running postupgrade tests for Knative Serving"
 # Run the postupgrade tests under serving
-cd ${KNATIVE_SERVING_DIR}/serving
+cd ${KNATIVE_DIR}/serving
 go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
+
+header "Running postupgrade tests for Knative Eventing"
+cd ${KNATIVE_DIR}/eventing
+go_test_e2e -tags=postupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
 
 install_previous_operator_release
 wait_until_pods_running ${TEST_NAMESPACE}
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
-header "Running postdowngrade tests"
+header "Running postdowngrade tests for Knative Serving"
+cd ${KNATIVE_DIR}/serving
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \
   --resolvabledomain="false" || fail_test
 
+header "Running postdowngrade tests for Knative Eventing"
+cd ${KNATIVE_DIR}/eventing
+go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
+
 echo "done" > /tmp/prober-signal
 
-header "Waiting for prober test"
-wait ${PROBER_PID} || fail_test "Prober failed"
+header "Waiting for prober test for Knative Serving"
+wait ${PROBER_PID_SERVING} || fail_test "Prober failed"
+
+echo "done" > ${EVENTING_PROBER_FILE}
+header "Waiting for prober test for Knative Eventing"
+wait ${PROBER_PID_EVENTING} || fail_test "Prober failed"
 
 # Require that tests succeeded.
 (( failed )) && fail_test

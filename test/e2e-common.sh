@@ -25,8 +25,8 @@ readonly PREVIOUS_SERVING_RELEASE_VERSION="0.14.0"
 # The previous eventing release, installed by the operator at PREVIOUS_OPERATOR_RELEASE_VERSION. This can be
 # different from PREVIOUS_OPERATOR_RELEASE_VERSION.
 readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.14.2"
-# This is the branch name of serving repo, where we run the upgrade tests.
-SERVING_REPO_BRANCH=${PULL_BASE_REF}
+# This is the branch name of serving and eventing repo, where we run the upgrade tests.
+readonly KNATIVE_REPO_BRANCH=${PULL_BASE_REF}
 # Istio version we test with
 readonly ISTIO_VERSION="1.4-latest"
 # Test without Istio mesh enabled
@@ -35,11 +35,11 @@ readonly ISTIO_MESH=0
 readonly TEST_NAMESPACE="knative-serving"
 # Namespace used for tests
 readonly TEST_EVENTING_NAMESPACE="knative-eventing"
-# Boolean used to indicate whether to generate serving YAML based on the latest code in the branch SERVING_REPO_BRANCH.
+# Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_REPO_BRANCH.
 GENERATE_SERVING_YAML=0
 
-OPERATOR_DIR=$(dirname $0)/..
-KNATIVE_SERVING_DIR=${OPERATOR_DIR}/..
+readonly OPERATOR_DIR=$(dirname $(cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P))
+readonly KNATIVE_DIR=$(dirname ${OPERATOR_DIR})
 release_yaml="$(mktemp)"
 release_eventing_yaml="$(mktemp)"
 
@@ -101,16 +101,17 @@ function istio_yaml() {
   echo "third_party/${istio_version}/istio-${suffix}.yaml"
 }
 
-# Download the repository of Knative Serving. The purpose of this function is to download the source code of serving
-# and retrive the LATEST_SERVING_RELEASE_VERSION for further use.
-# Parameter: $1 - branch of the repository.
-function donwload_knative_serving() {
-  # Go the directory to download the source code of knative serving
-  cd ${KNATIVE_SERVING_DIR}
-  # Download the source code of knative serving
-  git clone https://github.com/knative/serving.git
-  cd serving
-  local branch=$1
+# Download the repository of Knative. The purpose of this function is to download the source code of
+# knative component for further use, based on component name and branch name.
+# Parameter: $1 - component name, either serving or eventing, $2 - branch of the repository.
+function donwload_knative() {
+  local component=$1
+  # Go the directory to download the source code of knative
+  cd ${KNATIVE_DIR}
+  # Download the source code of knative
+  git clone https://github.com/knative/${component}.git
+  cd ${component}
+  local branch=$2
   if [ -n "${branch}" ] ; then
     git fetch origin ${branch}:${branch}
     git checkout ${branch}
@@ -175,4 +176,27 @@ function knative_teardown() {
   echo ">> Removing test eventing namespaces"
   kubectl delete all --all --ignore-not-found --now --timeout 60s -n $TEST_EVENTING_NAMESPACE
   kubectl delete --ignore-not-found --now --timeout 300s namespace $TEST_EVENTING_NAMESPACE
+}
+
+function wait_for_file() {
+  local file timeout waits
+  file="$1"
+  waits=300
+  timeout=$waits
+
+  echo "Waiting for existance of file: ${file}"
+
+  while [ ! -f "${file}" ]; do
+    # When the timeout is equal to zero, show an error and leave the loop.
+    if [ "${timeout}" == 0 ]; then
+      echo "ERROR: Timeout (${waits}s) while waiting for the file ${file}."
+      return 1
+    fi
+
+    sleep 1
+
+    # Decrease the timeout of one
+    ((timeout--))
+  done
+  return 0
 }

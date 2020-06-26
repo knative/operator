@@ -17,6 +17,7 @@ limitations under the License.
 package common
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -47,10 +48,17 @@ func TestInstall(t *testing.T) {
 		t.Fatalf("Failed to generate manifest: %v", err)
 	}
 
-	status := &v1alpha1.KnativeServingStatus{
-		Version: "0.13-test",
+	instance := &v1alpha1.KnativeEventing{
+		Spec: v1alpha1.KnativeEventingSpec{
+			CommonSpec: v1alpha1.CommonSpec{
+				Version: version,
+			},
+		},
+		Status: v1alpha1.KnativeEventingStatus{
+			Version: "0.13-test",
+		},
 	}
-	if err := Install(&manifest, version, status); err != nil {
+	if err := Install(context.TODO(), &manifest, instance); err != nil {
 		t.Fatalf("Install() = %v, want no error", err)
 	}
 
@@ -58,12 +66,12 @@ func TestInstall(t *testing.T) {
 		t.Fatalf("Unexpected creates: %s", cmp.Diff(client.creates, want))
 	}
 
-	condition := status.GetCondition(v1alpha1.InstallSucceeded)
+	condition := instance.Status.GetCondition(v1alpha1.InstallSucceeded)
 	if condition == nil || condition.Status != corev1.ConditionTrue {
 		t.Fatalf("InstallSucceeded = %v, want %v", condition, corev1.ConditionTrue)
 	}
 
-	if got, want := status.GetVersion(), version; got != want {
+	if got, want := instance.GetStatus().GetVersion(), version; got != want {
 		t.Fatalf("GetVersion() = %s, want %s", got, want)
 	}
 }
@@ -80,19 +88,26 @@ func TestInstallError(t *testing.T) {
 		t.Fatalf("Failed to generate manifest: %v", err)
 	}
 
-	status := &v1alpha1.KnativeServingStatus{
-		Version: oldVersion,
+	instance := &v1alpha1.KnativeServing{
+		Spec: v1alpha1.KnativeServingSpec{
+			CommonSpec: v1alpha1.CommonSpec{
+				Version: version,
+			},
+		},
+		Status: v1alpha1.KnativeServingStatus{
+			Version: oldVersion,
+		},
 	}
-	if err := Install(&manifest, version, status); err == nil {
+	if err := Install(context.TODO(), &manifest, instance); err == nil {
 		t.Fatalf("Install() = nil, wanted an error")
 	}
 
-	condition := status.GetCondition(v1alpha1.InstallSucceeded)
+	condition := instance.Status.GetCondition(v1alpha1.InstallSucceeded)
 	if condition == nil || condition.Status != corev1.ConditionFalse {
 		t.Fatalf("InstallSucceeded = %v, want %v", condition, corev1.ConditionFalse)
 	}
 
-	if got, want := status.GetVersion(), oldVersion; got != want {
+	if got, want := instance.GetStatus().GetVersion(), oldVersion; got != want {
 		t.Fatalf("GetVersion() = %s, want %s", got, want)
 	}
 }

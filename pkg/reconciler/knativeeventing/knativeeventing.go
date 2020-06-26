@@ -95,9 +95,9 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 	stages := common.Stages{
 		common.AppendTarget,
 		r.transform,
-		r.install,
-		r.checkDeployments,
-		r.deleteObsoleteResources(ctx, ke),
+		common.Install,
+		common.CheckDeployments,
+		common.DeleteObsoleteResources(ctx, ke, r.installed),
 	}
 	manifest := r.manifest.Append()
 	return stages.Execute(ctx, &manifest, ke)
@@ -111,36 +111,6 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	extra := []mf.Transformer{kec.DefaultBrokerConfigMapTransform(instance, logger)}
 	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
-}
-
-func (r *Reconciler) install(ctx context.Context, manifest *mf.Manifest, ke v1alpha1.KComponent) error {
-	logger := logging.FromContext(ctx)
-	logger.Debug("Installing manifest")
-	return common.Install(manifest, common.TargetVersion(ke), ke.GetStatus())
-}
-
-func (r *Reconciler) checkDeployments(ctx context.Context, manifest *mf.Manifest, ke v1alpha1.KComponent) error {
-	logger := logging.FromContext(ctx)
-	logger.Debug("Checking deployments")
-	return common.CheckDeployments(r.kubeClientSet, manifest, ke.GetStatus())
-}
-
-// deleteObsoleteResources returns a Stage after calculating the
-// installed manifest from the instance, but *before* any other stages
-// might mutate the instance's status.version.
-func (r *Reconciler) deleteObsoleteResources(ctx context.Context, instance v1alpha1.KComponent) common.Stage {
-	if common.TargetVersion(instance) == instance.GetStatus().GetVersion() {
-		return common.NoOp
-	}
-	logger := logging.FromContext(ctx)
-	installed, err := r.installed(ctx, instance)
-	if err != nil {
-		logger.Error("Unable to obtain the installed manifest; obsolete resources may linger", err)
-		return common.NoOp
-	}
-	return func(_ context.Context, manifest *mf.Manifest, _ v1alpha1.KComponent) error {
-		return installed.Filter(mf.None(mf.In(*manifest))).Delete()
-	}
 }
 
 func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error) {

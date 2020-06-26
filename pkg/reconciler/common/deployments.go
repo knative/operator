@@ -17,25 +17,31 @@ limitations under the License.
 package common
 
 import (
+	"context"
+
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 // CheckDeployments checks all deployments in the given manifest and updates the given
 // status with the status of the deployments.
-func CheckDeployments(kube kubernetes.Interface, manifest *mf.Manifest, status v1alpha1.KComponentStatus) error {
+func CheckDeployments(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+	status := instance.GetStatus()
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
-		deployment, err := kube.AppsV1().Deployments(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
+		resource, err := manifest.Client.Get(&u)
 		if err != nil {
 			status.MarkDeploymentsNotReady()
 			if errors.IsNotFound(err) {
 				return nil
 			}
+			return err
+		}
+		deployment := &appsv1.Deployment{}
+		if err := scheme.Scheme.Convert(resource, deployment, nil); err != nil {
 			return err
 		}
 		if !isDeploymentAvailable(deployment) {

@@ -73,3 +73,26 @@ func AppendInstalled(ctx context.Context, manifest *mf.Manifest, instance v1alph
 	*manifest = manifest.Append(m)
 	return nil
 }
+
+// ManifestFetcher returns a manifest appropriate for the instance
+type ManifestFetcher func(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error)
+
+// DeleteObsoleteResources returns a Stage after calculating the
+// installed manifest from the instance. This is meant to be called
+// *before* executing the reconciliation stages so that the proper
+// manifest is captured in a closure before any stage might mutate the
+// instance status, e.g. Install.
+func DeleteObsoleteResources(ctx context.Context, instance v1alpha1.KComponent, fetch ManifestFetcher) Stage {
+	if TargetVersion(instance) == instance.GetStatus().GetVersion() {
+		return NoOp
+	}
+	logger := logging.FromContext(ctx)
+	installed, err := fetch(ctx, instance)
+	if err != nil {
+		logger.Error("Unable to obtain the installed manifest; obsolete resources may linger", err)
+		return NoOp
+	}
+	return func(_ context.Context, manifest *mf.Manifest, _ v1alpha1.KComponent) error {
+		return installed.Filter(mf.None(mf.In(*manifest))).Delete()
+	}
+}

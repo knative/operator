@@ -153,10 +153,6 @@ func componentURL(version string, instance v1alpha1.KComponent) string {
 	case *v1alpha1.KnativeEventing:
 		component = "eventing"
 		for _, value := range EventingYamlNames {
-			if strings.Contains(value, "%s") {
-				// Some eventing artifacts' names always contain the version with the patch number equal to 0
-				value = fmt.Sprintf(value, fmt.Sprintf("%s.0", semver.MajorMinor(sanitizeSemver(version))))
-			}
 			urlList = append(urlList, value)
 		}
 	}
@@ -166,15 +162,11 @@ func componentURL(version string, instance v1alpha1.KComponent) string {
 		return ""
 	}
 
-	result := fmt.Sprintf(URLLinkTemplate, component,
-		version, urlList[0])
-
-	for i := 1; i < len(urlList); i++ {
-		result = fmt.Sprintf("%s,"+URLLinkTemplate, result, component,
-			version, urlList[i])
+	urls := make([]string, 0, len(urlList))
+	for _, file := range urlList {
+		urls = append(urls, fmt.Sprintf(URLLinkTemplate, component, version, file))
 	}
-
-	return result
+	return strings.Join(urls, ",")
 }
 
 func manifestPath(version string, instance v1alpha1.KComponent) string {

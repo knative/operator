@@ -66,17 +66,16 @@ func TestRetrieveManifestPath(t *testing.T) {
 		name:      "Valid Knative Serving Version locally unavailable",
 		component: &v1alpha1.KnativeServing{},
 		version:   "0.15.1",
-		expected: "https://github.com/knative/serving/releases/download/v0.15.1/serving-crds.yaml," +
+		expected: "https://github.com/knative/serving/releases/download/v0.15.1/serving-upgrade.yaml," +
+			"https://github.com/knative/serving/releases/download/v0.15.1/serving-crds.yaml," +
 			"https://github.com/knative/serving/releases/download/v0.15.1/serving-core.yaml," +
-			"https://github.com/knative/serving/releases/download/v0.15.1/serving-hpa.yaml," +
-			"https://github.com/knative/serving/releases/download/v0.15.1/serving-storage-version-migration.yaml",
+			"https://github.com/knative/serving/releases/download/v0.15.1/serving-hpa.yaml",
 	}, {
 		name:      "Valid Knative Eventing Version locally unavailable",
 		component: &v1alpha1.KnativeEventing{},
 		version:   "0.15.1",
-		expected: "https://github.com/knative/eventing/releases/download/v0.15.1/eventing.yaml," +
-			"https://github.com/knative/eventing/releases/download/v0.15.1/upgrade-to-v0.15.0.yaml," +
-			"https://github.com/knative/eventing/releases/download/v0.15.1/storage-version-migration-v0.15.0.yaml",
+		expected: "https://github.com/knative/eventing/releases/download/v0.15.1/eventing-upgrade.yaml," +
+			"https://github.com/knative/eventing/releases/download/v0.15.1/eventing.yaml",
 	}}
 
 	for _, test := range testManifestsRemote {

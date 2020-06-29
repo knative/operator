@@ -43,10 +43,10 @@ var (
 	cache = map[string]mf.Manifest{}
 
 	// ServingYamlNames is the string array containing all the artifacts to download for Knative serving
-	ServingYamlNames = []string{"serving-crds.yaml", "serving-core.yaml", "serving-hpa.yaml", "serving-storage-version-migration.yaml"}
+	ServingYamlNames = []string{"serving-upgrade.yaml", "serving-crds.yaml", "serving-core.yaml", "serving-hpa.yaml"}
 
 	// EventingYamlNames is the string array containing all the artifacts to download for Knative eventing
-	EventingYamlNames = []string{"eventing.yaml", "upgrade-to-%s.yaml", "storage-version-migration-%s.yaml"}
+	EventingYamlNames = []string{"eventing-upgrade.yaml", "eventing.yaml"}
 )
 
 // TargetVersion returns the version of the manifest to be installed

@@ -152,9 +152,7 @@ func componentURL(version string, instance v1alpha1.KComponent) string {
 		urlList = ServingYamlNames
 	case *v1alpha1.KnativeEventing:
 		component = "eventing"
-		for _, value := range EventingYamlNames {
-			urlList = append(urlList, value)
-		}
+		urlList = EventingYamlNames
 	}
 
 	// Create the comma-separated string as the URL to retrieve the manifest

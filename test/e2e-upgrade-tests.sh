@@ -79,7 +79,7 @@ apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
 metadata:
   name: knative-eventing
-  namespace: ${TEST_EVENTING_NAMESPACE}
+  namespace: ${TEST_NAMESPACE}
 EOF
 }
 

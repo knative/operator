@@ -12,11 +12,10 @@ Before running the integration, please make sure you have installed
 install custom resource for operator or knative-serving installed in your
 cluster.
 
-Ensure required namespaces exist:
+Ensure required testing namespace exists:
 
 ```bash
-kubectl create namespace knative-serving
-kubectl create namespace knative-eventing
+kubectl create namespace knative-operator-testing
 ```
 
 To run all integration tests:

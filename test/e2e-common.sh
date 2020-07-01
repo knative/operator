@@ -32,7 +32,7 @@ readonly ISTIO_VERSION="1.4-latest"
 # Test without Istio mesh enabled
 readonly ISTIO_MESH=0
 # Namespace used for tests
-readonly TEST_NAMESPACE="knative-serving"
+readonly TEST_NAMESPACE="knative-serving-operator-test"
 # Namespace used for tests
 readonly TEST_EVENTING_NAMESPACE="knative-eventing"
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_REPO_BRANCH.
@@ -42,6 +42,15 @@ readonly OPERATOR_DIR=$(dirname $(cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)
 readonly KNATIVE_DIR=$(dirname ${OPERATOR_DIR})
 release_yaml="$(mktemp)"
 release_eventing_yaml="$(mktemp)"
+
+TMP_DIR=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
+readonly TMP_DIR
+
+readonly KNATIVE_DEFAULT_NAMESPACE="knative-serving"
+
+# This the namespace used to install Knative.
+export SYSTEM_NAMESPACE
+SYSTEM_NAMESPACE=${TEST_NAMESPACE}
 
 # Add function call to trap
 # Parameters: $1 - Function to call

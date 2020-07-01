@@ -146,22 +146,22 @@ func componentDir(instance v1alpha1.KComponent) string {
 
 func componentURL(version string, instance v1alpha1.KComponent) string {
 	component := "serving"
-	urlList := []string{}
+	var fileNameList []string
 	switch instance.(type) {
 	case *v1alpha1.KnativeServing:
-		urlList = ServingYamlNames
+		fileNameList = ServingYamlNames
 	case *v1alpha1.KnativeEventing:
 		component = "eventing"
-		urlList = EventingYamlNames
+		fileNameList = EventingYamlNames
 	}
 
 	// Create the comma-separated string as the URL to retrieve the manifest
-	if len(urlList) == 0 {
+	if len(fileNameList) == 0 {
 		return ""
 	}
 
-	urls := make([]string, 0, len(urlList))
-	for _, file := range urlList {
+	urls := make([]string, 0, len(fileNameList))
+	for _, file := range fileNameList {
 		urls = append(urls, fmt.Sprintf(URLLinkTemplate, component, version, file))
 	}
 	return strings.Join(urls, ",")

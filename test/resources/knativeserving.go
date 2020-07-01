@@ -23,6 +23,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
@@ -120,11 +121,11 @@ func getTestKSOperatorCRSpec() v1alpha1.KnativeServingSpec {
 	}
 }
 
-func stringInList(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
+func deploymentInList(a string, deploymentList []appsv1.Deployment) *appsv1.Deployment {
+	for _, deployment := range deploymentList {
+		if deployment.Name == a {
+			return &deployment
 		}
 	}
-	return false
+	return nil
 }

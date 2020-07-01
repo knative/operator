@@ -90,7 +90,6 @@ function knative_setup() {
   donwload_knative "eventing" ${KNATIVE_REPO_BRANCH}
   create_custom_resource
   wait_until_pods_running ${TEST_NAMESPACE}
-  wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 }
 
 # Create test resources and images
@@ -100,7 +99,12 @@ function test_setup() {
   fi
   echo ">> Creating test resources (test/config/) in Knative Serving repository"
   cd ${KNATIVE_DIR}/serving
-  ko apply ${KO_FLAGS} -f test/config/ || return 1
+  local SERVING_TEST_CONFIG_DIR=${TMP_DIR}/serving/test/config
+  mkdir -p ${SERVING_TEST_CONFIG_DIR}
+  cp -r test/config/* ${SERVING_TEST_CONFIG_DIR}
+  find ${SERVING_TEST_CONFIG_DIR} -type f -name "*.yaml" -exec sed -i "s/${KNATIVE_DEFAULT_NAMESPACE}/${TEST_NAMESPACE}/g" {} +
+
+  ko apply ${KO_FLAGS} -f ${SERVING_TEST_CONFIG_DIR} || return 1
 
   echo ">> Uploading test images..."
   # We only need to build and publish two images among all the test images
@@ -175,7 +179,6 @@ go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
 
 header "Listing all the pods of the previous release"
 wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running preupgrade tests"
 
@@ -216,7 +219,6 @@ cd ${OPERATOR_DIR}
 go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade \
   --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
 wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running postupgrade tests for Knative Serving"
 # Run the postupgrade tests under serving
@@ -229,7 +231,6 @@ go_test_e2e -tags=postupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
 
 install_previous_operator_release
 wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running postdowngrade tests for Knative Serving"
 cd ${KNATIVE_DIR}/serving

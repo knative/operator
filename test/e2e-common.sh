@@ -26,13 +26,17 @@ readonly PREVIOUS_SERVING_RELEASE_VERSION="0.14.0"
 # different from PREVIOUS_OPERATOR_RELEASE_VERSION.
 readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.14.2"
 # This is the branch name of serving and eventing repo, where we run the upgrade tests.
-readonly KNATIVE_REPO_BRANCH=${PULL_BASE_REF}
+readonly KNATIVE_REPO_BRANCH="release-0.15" # ${PULL_BASE_REF}
 # Istio version we test with
 readonly ISTIO_VERSION="1.4-latest"
 # Test without Istio mesh enabled
 readonly ISTIO_MESH=0
 # Namespace used for tests
 readonly TEST_NAMESPACE="knative-operator-testing"
+# This the namespace used to install Knative.
+export SYSTEM_NAMESPACE
+SYSTEM_NAMESPACE=${TEST_NAMESPACE}
+
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_REPO_BRANCH.
 GENERATE_SERVING_YAML=0
 
@@ -40,6 +44,11 @@ readonly OPERATOR_DIR=$(dirname $(cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)
 readonly KNATIVE_DIR=$(dirname ${OPERATOR_DIR})
 release_yaml="$(mktemp)"
 release_eventing_yaml="$(mktemp)"
+
+TMP_DIR=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
+readonly TMP_DIR
+
+readonly KNATIVE_DEFAULT_NAMESPACE="knative-serving"
 
 # Add function call to trap
 # Parameters: $1 - Function to call
@@ -144,7 +153,6 @@ function create_namespace() {
   echo ">> Creating test namespaces"
   # All the custom resources and Knative Serving resources are created under this TEST_NAMESPACE.
   kubectl create namespace $TEST_NAMESPACE
-  kubectl create namespace $TEST_EVENTING_NAMESPACE
 }
 
 function install_operator() {
@@ -162,7 +170,7 @@ function knative_teardown() {
   echo ">> Bringing down Serving"
   kubectl delete -n $TEST_NAMESPACE KnativeServing --all
   echo ">> Bringing down Eventing"
-  kubectl delete -n $TEST_EVENTING_NAMESPACE KnativeEventing --all
+  kubectl delete -n $TEST_NAMESPACE KnativeEventing --all
   echo ">> Bringing down Istio"
   kubectl delete --ignore-not-found=true -f "${INSTALL_ISTIO_YAML}" || return 1
   kubectl delete --ignore-not-found=true clusterrolebinding cluster-admin-binding
@@ -171,9 +179,6 @@ function knative_teardown() {
   echo ">> Removing test namespaces"
   kubectl delete all --all --ignore-not-found --now --timeout 60s -n $TEST_NAMESPACE
   kubectl delete --ignore-not-found --now --timeout 300s namespace $TEST_NAMESPACE
-  echo ">> Removing test eventing namespaces"
-  kubectl delete all --all --ignore-not-found --now --timeout 60s -n $TEST_EVENTING_NAMESPACE
-  kubectl delete --ignore-not-found --now --timeout 300s namespace $TEST_EVENTING_NAMESPACE
 }
 
 function wait_for_file() {

@@ -76,22 +76,21 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 	if err != nil {
 		return false, err
 	}
-	if len(dpList.Items) != len(expectedDeployments) {
-		logf("The expected number of deployments is %v, and got %v.", len(expectedDeployments), len(dpList.Items))
-		return false, nil
-	}
-	for _, deployment := range dpList.Items {
-		if !stringInList(deployment.Name, expectedDeployments) {
-			logf("The deployment %v is not found in the expected list of deployment.", deployment.Name)
+
+	for _, deploymentName := range expectedDeployments {
+		dep := deploymentInList(deploymentName, dpList.Items)
+		if dep == nil {
+			logf("The deployment %v is not found.", deploymentName)
 			return false, nil
 		}
-		for _, c := range deployment.Status.Conditions {
+		for _, c := range dep.Status.Conditions {
 			if c.Type == v1.DeploymentAvailable && c.Status != corev1.ConditionTrue {
-				logf("The deployment %v is not ready.", deployment.Name)
+				logf("The deployment %v is not ready.", dep.Name)
 				return false, nil
 			}
 		}
 	}
+
 	return true, nil
 }
 

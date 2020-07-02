@@ -21,8 +21,10 @@ import (
 	"os"
 	"testing"
 
-	mf "github.com/manifestival/manifestival"
-	fake "github.com/manifestival/manifestival/fake"
+	. "github.com/manifestival/manifestival"
+	"github.com/manifestival/manifestival/pkg/fake"
+	. "github.com/manifestival/manifestival/pkg/filter"
+	. "github.com/manifestival/manifestival/pkg/sources"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
@@ -31,7 +33,7 @@ import (
 func TestStagesExecute(t *testing.T) {
 	os.Setenv(KoEnvKey, "testdata/kodata")
 	defer os.Unsetenv(KoEnvKey)
-	manifest, _ := mf.ManifestFrom(mf.Slice{})
+	manifest, _ := ManifestFrom(Slice{})
 	stages := Stages{AppendTarget, AppendInstalled}
 	util.AssertEqual(t, len(manifest.Resources()), 0)
 	stages.Execute(context.TODO(), &manifest, &v1alpha1.KnativeServing{})
@@ -42,7 +44,7 @@ func TestDeleteObsoleteResources(t *testing.T) {
 	os.Setenv(KoEnvKey, "testdata/kodata")
 	defer os.Unsetenv(KoEnvKey)
 	client := fake.New()
-	manifest, err := mf.NewManifest("testdata/manifest.yaml", mf.UseClient(client))
+	manifest, err := NewManifest("testdata/manifest.yaml", UseClient(client))
 	if err != nil {
 		t.Error(err)
 	}
@@ -51,7 +53,7 @@ func TestDeleteObsoleteResources(t *testing.T) {
 		t.Error(err)
 	}
 	// Grab the ConfigMaps, ensure we have at least 1
-	cms := manifest.Filter(mf.ByKind("ConfigMap")).Resources()
+	cms := manifest.Filter(ByKind("ConfigMap")).Resources()
 	if len(cms) == 0 {
 		t.Error("Where'd all the ConfigMaps go?!")
 	}
@@ -62,10 +64,10 @@ func TestDeleteObsoleteResources(t *testing.T) {
 		}
 	}
 	stage := DeleteObsoleteResources(context.TODO(), &v1alpha1.KnativeServing{},
-		func(context.Context, v1alpha1.KComponent) (*mf.Manifest, error) {
+		func(context.Context, v1alpha1.KComponent) (*Manifest, error) {
 			return &manifest, nil
 		})
-	nocms := manifest.Filter(mf.None(mf.ByKind("ConfigMap")))
+	nocms := manifest.Filter(Not(ByKind("ConfigMap")))
 	stage(context.TODO(), &nocms, nil)
 	// Now verify all the ConfigMaps are gone
 	for _, cm := range cms {

@@ -20,19 +20,20 @@ import (
 	"context"
 	"fmt"
 
-	mf "github.com/manifestival/manifestival"
+	. "github.com/manifestival/manifestival"
+	. "github.com/manifestival/manifestival/pkg/filter"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/logging"
 )
 
 var (
-	role        mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
-	rolebinding mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
+	role        Predicate = Any(ByKind("ClusterRole"), ByKind("Role"))
+	rolebinding Predicate = Any(ByKind("ClusterRoleBinding"), ByKind("RoleBinding"))
 )
 
 // Install applies the manifest resources for the given version and updates the given
 // status accordingly.
-func Install(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func Install(ctx context.Context, manifest *Manifest, instance v1alpha1.KComponent) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
 	status := instance.GetStatus()
@@ -47,7 +48,7 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComp
 		status.MarkInstallFailed(err.Error())
 		return fmt.Errorf("failed to apply (cluster)rolebindings: %w", err)
 	}
-	if err := manifest.Filter(mf.None(role, rolebinding)).Apply(); err != nil {
+	if err := manifest.Filter(Not(Any(role, rolebinding))).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())
 		return fmt.Errorf("failed to apply non rbac manifest: %w", err)
 	}
@@ -57,12 +58,12 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComp
 }
 
 // Uninstall removes all resources except CRDs, which are never deleted automatically.
-func Uninstall(manifest *mf.Manifest) error {
-	if err := manifest.Filter(mf.NoCRDs, mf.None(role, rolebinding)).Delete(); err != nil {
+func Uninstall(manifest *Manifest) error {
+	if err := manifest.Filter(NoCRDs, Not(Any(role, rolebinding))).Delete(); err != nil {
 		return fmt.Errorf("failed to remove non-crd/non-rbac resources: %w", err)
 	}
 	// Delete Roles last, as they may be useful for human operators to clean up.
-	if err := manifest.Filter(mf.Any(role, rolebinding)).Delete(); err != nil {
+	if err := manifest.Filter(Any(role, rolebinding)).Delete(); err != nil {
 		return fmt.Errorf("failed to remove rbac: %w", err)
 	}
 	return nil

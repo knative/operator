@@ -1,9 +1,8 @@
-package manifestival
+package sources
 
 import (
 	"io"
 
-	"github.com/manifestival/manifestival/sources"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -33,11 +32,11 @@ var _ Source = Slice([]unstructured.Unstructured{})
 var _ Source = reader{} // see Reader(io.Reader)
 
 func (p Path) Parse() ([]unstructured.Unstructured, error) {
-	return sources.Parse(string(p), false)
+	return Parse(string(p), false)
 }
 
 func (r Recursive) Parse() ([]unstructured.Unstructured, error) {
-	return sources.Parse(string(r), true)
+	return Parse(string(r), true)
 }
 
 func (s Slice) Parse() ([]unstructured.Unstructured, error) {
@@ -45,7 +44,7 @@ func (s Slice) Parse() ([]unstructured.Unstructured, error) {
 }
 
 func (r reader) Parse() ([]unstructured.Unstructured, error) {
-	return sources.Decode(r.real)
+	return Decode(r.real)
 }
 
 type reader struct {

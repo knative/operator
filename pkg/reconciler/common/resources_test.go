@@ -20,7 +20,8 @@ import (
 	"reflect"
 	"testing"
 
-	mf "github.com/manifestival/manifestival"
+	. "github.com/manifestival/manifestival"
+	. "github.com/manifestival/manifestival/pkg/filter"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -278,7 +279,7 @@ func TestResourceRequirementsTransform(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.Input.Name, func(t *testing.T) {
-			manifest, err := mf.NewManifest("testdata/manifest.yaml")
+			manifest, err := NewManifest("testdata/manifest.yaml")
 			if err != nil {
 				t.Fatalf("Failed to create manifest: %v", err)
 			}
@@ -286,7 +287,7 @@ func TestResourceRequirementsTransform(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to transform manifest: %v", err)
 			}
-			for _, u := range actual.Filter(mf.ByKind("Deployment")).Resources() {
+			for _, u := range actual.Filter(ByKind("Deployment")).Resources() {
 				deployment := &appsv1.Deployment{}
 				if err := scheme.Scheme.Convert(&u, deployment, nil); err != nil {
 					t.Fatalf("Failed to convert unstructured to deployment: %v", err)

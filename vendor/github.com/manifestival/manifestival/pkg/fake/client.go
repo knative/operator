@@ -3,7 +3,7 @@ package fake
 import (
 	"fmt"
 
-	mf "github.com/manifestival/manifestival"
+	mf "github.com/manifestival/manifestival/pkg/client"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -60,7 +60,7 @@ func New(objs ...runtime.Object) Client {
 				v, found := store[key(u)]
 				if !found {
 					gvk := u.GroupVersionKind()
-					gr := schema.GroupResource{gvk.Group, gvk.Kind}
+					gr := schema.GroupResource{Group: gvk.Group, Resource: gvk.Kind}
 					return nil, errors.NewNotFound(gr, u.GetName())
 				}
 				return v, nil

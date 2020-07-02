@@ -20,7 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	mf "github.com/manifestival/manifestival"
+	. "github.com/manifestival/manifestival"
+	. "github.com/manifestival/manifestival/pkg/transform"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
@@ -43,7 +44,7 @@ type Reconciler struct {
 	// manifests are immutable, and any created during reconcile are
 	// expected to be appended to this one, obviating the passing of
 	// client & logger
-	manifest mf.Manifest
+	manifest Manifest
 	// Platform-specific behavior to affect the transform
 	extension common.Extension
 }
@@ -105,15 +106,15 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 
 // transform mutates the passed manifest to one with common, component
 // and platform transformations applied
-func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp v1alpha1.KComponent) error {
+func (r *Reconciler) transform(ctx context.Context, manifest *Manifest, comp v1alpha1.KComponent) error {
 	logger := logging.FromContext(ctx)
 	instance := comp.(*v1alpha1.KnativeEventing)
-	extra := []mf.Transformer{kec.DefaultBrokerConfigMapTransform(instance, logger)}
+	extra := []Transformer{kec.DefaultBrokerConfigMapTransform(instance, logger)}
 	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 
-func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error) {
+func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent) (*Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
 	stages := common.Stages{common.AppendInstalled, r.transform}

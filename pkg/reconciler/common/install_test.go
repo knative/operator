@@ -22,7 +22,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	mf "github.com/manifestival/manifestival"
+	. "github.com/manifestival/manifestival"
+	. "github.com/manifestival/manifestival/pkg/client"
+	. "github.com/manifestival/manifestival/pkg/sources"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -43,7 +45,7 @@ func TestInstall(t *testing.T) {
 	want := []unstructured.Unstructured{role, clusterRole, roleBinding, clusterRoleBinding, deployment}
 
 	client := &fakeClient{}
-	manifest, err := mf.ManifestFrom(mf.Slice(in), mf.UseClient(client))
+	manifest, err := ManifestFrom(Slice(in), UseClient(client))
 	if err != nil {
 		t.Fatalf("Failed to generate manifest: %v", err)
 	}
@@ -81,9 +83,9 @@ func TestInstallError(t *testing.T) {
 	version := "v0.14-test"
 
 	client := &fakeClient{err: errors.New("test")}
-	manifest, err := mf.ManifestFrom(mf.Slice([]unstructured.Unstructured{
+	manifest, err := ManifestFrom(Slice([]unstructured.Unstructured{
 		*NamespacedResource("apps/v1", "Deployment", "test", "test-deployment"),
-	}), mf.UseClient(client))
+	}), UseClient(client))
 	if err != nil {
 		t.Fatalf("Failed to generate manifest: %v", err)
 	}
@@ -128,7 +130,7 @@ func TestUninstall(t *testing.T) {
 	want := []unstructured.Unstructured{deployment, clusterRoleBinding, clusterRole, roleBinding, role}
 
 	client := &fakeClient{resourcesExist: true}
-	manifest, err := mf.ManifestFrom(mf.Slice(in), mf.UseClient(client))
+	manifest, err := ManifestFrom(Slice(in), UseClient(client))
 	if err != nil {
 		t.Fatalf("Failed to generate manifest: %v", err)
 	}
@@ -157,17 +159,17 @@ func (f *fakeClient) Get(obj *unstructured.Unstructured) (*unstructured.Unstruct
 	return resource, f.err
 }
 
-func (f *fakeClient) Delete(obj *unstructured.Unstructured, options ...mf.DeleteOption) error {
+func (f *fakeClient) Delete(obj *unstructured.Unstructured, options ...DeleteOption) error {
 	f.deletes = append(f.deletes, *obj)
 	return f.err
 }
 
-func (f *fakeClient) Create(obj *unstructured.Unstructured, options ...mf.ApplyOption) error {
+func (f *fakeClient) Create(obj *unstructured.Unstructured, options ...ApplyOption) error {
 	obj.SetAnnotations(nil) // Deleting the extra annotation. Irrelevant for the test.
 	f.creates = append(f.creates, *obj)
 	return f.err
 }
 
-func (f *fakeClient) Update(obj *unstructured.Unstructured, options ...mf.ApplyOption) error {
+func (f *fakeClient) Update(obj *unstructured.Unstructured, options ...ApplyOption) error {
 	return f.err
 }

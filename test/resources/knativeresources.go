@@ -31,7 +31,8 @@ import (
 
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 
-	mf "github.com/manifestival/manifestival"
+	. "github.com/manifestival/manifestival"
+	. "github.com/manifestival/manifestival/pkg/filter"
 	"knative.dev/operator/pkg/reconciler/common"
 
 	v1 "k8s.io/api/apps/v1"
@@ -97,14 +98,14 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 
 // GetExpectedDeployments will return an array of deployment resources based on the version for the knative
 // component.
-func GetExpectedDeployments(t *testing.T, instance v1alpha1.KComponent) (mf.Manifest, []string) {
+func GetExpectedDeployments(t *testing.T, instance v1alpha1.KComponent) (Manifest, []string) {
 	manifest, err := common.InstalledManifest(instance)
 	if err != nil {
 		t.Fatalf("Failed to get the manifest for Knative: %v", err)
 	}
 
 	deployments := []string{}
-	for _, resource := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
+	for _, resource := range manifest.Filter(ByKind("Deployment")).Resources() {
 		deployments = append(deployments, resource.GetName())
 	}
 	return manifest, removeDuplications(deployments)

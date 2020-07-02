@@ -17,17 +17,18 @@ import (
 	"context"
 
 	mf "github.com/manifestival/manifestival"
+	mft "github.com/manifestival/manifestival/pkg/transform"
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/logging"
 )
 
 // transformers that are common to all components.
-func transformers(ctx context.Context, obj v1alpha1.KComponent) []mf.Transformer {
+func transformers(ctx context.Context, obj v1alpha1.KComponent) []mft.Transformer {
 	logger := logging.FromContext(ctx)
-	return []mf.Transformer{
-		mf.InjectOwner(obj),
-		mf.InjectNamespace(obj.GetNamespace()),
+	return []mft.Transformer{
+		mft.InjectOwner(obj),
+		mft.InjectNamespace(obj.GetNamespace()),
 		ImageTransform(obj.GetSpec().GetRegistry(), logger),
 		ConfigMapTransform(obj.GetSpec().GetConfig(), logger),
 		ResourceRequirementsTransform(obj.GetSpec().GetResources(), logger)}
@@ -35,7 +36,7 @@ func transformers(ctx context.Context, obj v1alpha1.KComponent) []mf.Transformer
 
 // Transform will mutate the passed-by-reference manifest with one
 // transformed by platform, common, and any extra passed in
-func Transform(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent, extra ...mf.Transformer) error {
+func Transform(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent, extra ...mft.Transformer) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Transforming manifest")
 

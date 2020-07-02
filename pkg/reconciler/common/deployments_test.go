@@ -20,8 +20,9 @@ import (
 	"context"
 	"testing"
 
-	mf "github.com/manifestival/manifestival"
-	fake "github.com/manifestival/manifestival/fake"
+	. "github.com/manifestival/manifestival"
+	"github.com/manifestival/manifestival/pkg/fake"
+	. "github.com/manifestival/manifestival/pkg/sources"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -101,7 +102,7 @@ func TestCheckDeployments(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := fake.New(test.inAPI...)
-			manifest, err := mf.ManifestFrom(mf.Slice(test.inManifest), mf.UseClient(client))
+			manifest, err := ManifestFrom(Slice(test.inManifest), UseClient(client))
 			if err != nil {
 				t.Fatalf("Failed to generate manifest: %v", err)
 			}

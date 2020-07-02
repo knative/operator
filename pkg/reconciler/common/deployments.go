@@ -19,7 +19,8 @@ package common
 import (
 	"context"
 
-	mf "github.com/manifestival/manifestival"
+	. "github.com/manifestival/manifestival"
+	. "github.com/manifestival/manifestival/pkg/filter"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -29,9 +30,9 @@ import (
 
 // CheckDeployments checks all deployments in the given manifest and updates the given
 // status with the status of the deployments.
-func CheckDeployments(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func CheckDeployments(ctx context.Context, manifest *Manifest, instance v1alpha1.KComponent) error {
 	status := instance.GetStatus()
-	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
+	for _, u := range manifest.Filter(ByKind("Deployment")).Resources() {
 		resource, err := manifest.Client.Get(&u)
 		if err != nil {
 			status.MarkDeploymentsNotReady()

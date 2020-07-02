@@ -18,7 +18,7 @@ package common
 import (
 	"context"
 
-	mf "github.com/manifestival/manifestival"
+	mf "github.com/manifestival/manifestival/pkg/transform"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 

@@ -22,6 +22,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
+	mfs "github.com/manifestival/manifestival/pkg/sources"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -36,7 +37,7 @@ func TestCommonTransformers(t *testing.T) {
 		},
 	}
 	in := []unstructured.Unstructured{*NamespacedResource("test/v1", "TestCR", "another-ns", "test-resource")}
-	manifest, err := mf.ManifestFrom(mf.Slice(in))
+	manifest, err := mf.ManifestFrom(mfs.Slice(in))
 	if err != nil {
 		t.Fatalf("Failed to generate manifest: %v", err)
 	}

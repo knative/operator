@@ -25,7 +25,6 @@ See [CHANGELOG.md](CHANGELOG.md)
   * [Apply](#apply)
   * [Delete](#delete)
   * [DryRun](#dryrun)
-* [Development](#development)
 
 
 ## Creating Manifests
@@ -37,6 +36,10 @@ their [Append], [Filter] and [Transform] functions.
 The typical way to create a manifest is by calling `NewManifest`
 
 ```go
+import (
+    . "github.com/manifestival/manifestival"
+)
+
 manifest, err := NewManifest("/path/to/file.yaml")
 ```
 
@@ -60,6 +63,10 @@ directory of files, a URL, or a comma-delimited list of any of those
 things, all of which will be combined into a single manifest.
 
 ```go
+import (
+	. "github.com/manifestival/manifestival/pkg/sources"
+)
+
 // Single file
 m, err := ManifestFrom(Path("/path/to/file.yaml"))
 
@@ -113,19 +120,23 @@ whether the resource should be included in the filtered results.
 There are a few built-in predicates and some helper functions for
 creating your own:
 
-* `All` effectively AND's its arguments together
-* `Any` OR's its arguments together
-* `None` negates its arguments, returning false if any return true
-* `ByName`, `ByKind`, `ByLabel`, and `ByGVK` filter resources by their
-  respective attributes.
+* `All` returns true iff all its predicates return true
+* `Any` returns true iff any of its predicates return true
+* `Not` negates its argument, returning false if its predicate returns true
+* `ByName`, `ByKind`, `ByLabel`, `ByAnnotation`, and `ByGVK` filter
+  resources by their respective attributes.
 
 ```go
+import (
+	. "github.com/manifestival/manifestival/pkg/filter"
+)
+
 clusterRBAC := Any(ByKind("ClusterRole"), ByKind("ClusterRoleBinding"))
 namespaceRBAC := Any(ByKind("Role"), ByKind("RoleBinding"))
 rbac := Any(clusterRBAC, namespaceRBAC)
 
 theRBAC := manifest.Filter(rbac)
-theRest := manifest.Filter(None(rbac))
+theRest := manifest.Filter(Not(rbac))
 
 // Find all resources named "controller" w/label 'foo=bar' that aren't CRD's
 m := manifest.Filter(ByLabel("foo", "bar"), ByName("controller"), NoCRDs)
@@ -133,9 +144,11 @@ m := manifest.Filter(ByLabel("foo", "bar"), ByName("controller"), NoCRDs)
 
 Because the `Predicate` receives the resource by reference, any
 changes you make to it will be reflected in the returned `Manifest`,
-but _not_ in the one being filtered. Since errors are not in the
-`Predicate` interface, you should limit changes to those that won't
-error. For more complex mutations, use `Transform` instead.
+but _not_ in the one being filtered -- manifests are immutable. Since
+errors are not in the `Predicate` interface, you should limit changes
+to those that won't error. For more complex mutations, use `Transform`
+instead.
+
 
 ### Transform
 
@@ -149,6 +162,10 @@ There are a few useful transformers provided, including
 clarify:
 
 ```go
+import (
+	. "github.com/manifestival/manifestival/pkg/transform"
+)
+
 func updateDeployment(resource *unstructured.Unstructured) error {
     if resource.GetKind() != "Deployment" {
         return nil
@@ -215,6 +232,10 @@ The [fake] package includes a fake `Client` with stubs you can easily
 override in your unit tests. For example,
 
 ```go
+import (
+	"github.com/manifestival/manifestival/pkg/fake"
+)
+
 func verifySomething(t *testing.T, expected *unstructured.Unstructured) {
     client := fake.Client{
         Stubs{
@@ -259,9 +280,9 @@ m, _ := NewManifest(path, UseLogger(log.WithName("manifestival")), UseClient(c))
 [Apply] will persist every resource in the manifest to the cluster. It
 will invoke either `Create` or `Update` depending on whether the
 resource already exists. And if it does exist, the same 3-way
-strategic merge patch used by `kubectl` will be applied. And the same
-annotation used by `kubectl` to record the resource's previous
-configuration will be updated, too.
+[strategic merge patch] used by `kubectl apply` will be applied. And
+the same annotation used by `kubectl` to record the resource's
+previous configuration will be updated, too.
 
 The following functional options are supported, all of which map to
 either the k8s `metav1.CreateOptions` and `metav1.UpdateOptions`
@@ -293,14 +314,6 @@ applying the manifest without modifying the live system. Each item in
 the returned list is valid content for the `kubectl patch` command.
 
 
-## Development
-
-You know the drill...
-
-    dep ensure -v
-    go test -v ./...
-
-
 [Resources]: https://godoc.org/github.com/manifestival/manifestival#Manifest.Resources
 [Source]: https://godoc.org/github.com/manifestival/manifestival#Source
 [Manifestival]: https://godoc.org/github.com/manifestival/manifestival#Manifestival
@@ -315,3 +328,4 @@ You know the drill...
 [Transformer]: https://godoc.org/github.com/manifestival/manifestival#Transformer
 [logr.Logger]: https://github.com/go-logr/logr
 [fake]: https://godoc.org/github.com/manifestival/manifestival/fake
+[strategic merge patch]: https://kubernetes.io/docs/tasks/manage-kubernetes-objects/declarative-config/#merge-patch-calculation

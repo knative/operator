@@ -73,6 +73,8 @@ github.com/emicklei/go-restful
 github.com/emicklei/go-restful/log
 # github.com/evanphx/json-patch v4.5.0+incompatible
 github.com/evanphx/json-patch
+# github.com/evanphx/json-patch/v5 v5.0.0
+github.com/evanphx/json-patch/v5
 # github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 ## explicit
 github.com/ghodss/yaml
@@ -146,16 +148,21 @@ github.com/json-iterator/go
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/manifestival/client-go-client v0.2.2
+# github.com/manifestival/client-go-client v0.2.3-0.20200702021906-81b28e615067
 ## explicit
 github.com/manifestival/client-go-client
-# github.com/manifestival/manifestival v0.5.1-0.20200526175228-b0136214e13f
+github.com/manifestival/client-go-client/pkg/dynamic
+# github.com/manifestival/manifestival v0.5.1-0.20200701230301-50ed53668b31
 ## explicit
 github.com/manifestival/manifestival
-github.com/manifestival/manifestival/fake
-github.com/manifestival/manifestival/overlay
-github.com/manifestival/manifestival/patch
-github.com/manifestival/manifestival/sources
+github.com/manifestival/manifestival/pkg/client
+github.com/manifestival/manifestival/pkg/dry
+github.com/manifestival/manifestival/pkg/fake
+github.com/manifestival/manifestival/pkg/filter
+github.com/manifestival/manifestival/pkg/overlay
+github.com/manifestival/manifestival/pkg/patch
+github.com/manifestival/manifestival/pkg/sources
+github.com/manifestival/manifestival/pkg/transform
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd

@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 
 	"github.com/ghodss/yaml"
-	mf "github.com/manifestival/manifestival"
+	"github.com/manifestival/manifestival/pkg/transform"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,7 +33,7 @@ import (
 )
 
 // DefaultBrokerConfigMapTransform updates the default broker configMap with the value defined in the spec
-func DefaultBrokerConfigMapTransform(instance *eventingv1alpha1.KnativeEventing, log *zap.SugaredLogger) mf.Transformer {
+func DefaultBrokerConfigMapTransform(instance *eventingv1alpha1.KnativeEventing, log *zap.SugaredLogger) transform.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "ConfigMap" && u.GetName() == eventingconfig.DefaultsConfigName {
 			var configMap = &corev1.ConfigMap{}

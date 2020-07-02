@@ -17,7 +17,7 @@ limitations under the License.
 package common
 
 import (
-	mf "github.com/manifestival/manifestival"
+	mf "github.com/manifestival/manifestival/pkg/transform"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )

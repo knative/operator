@@ -19,6 +19,7 @@ import (
 	"github.com/go-logr/zapr"
 	mfc "github.com/manifestival/client-go-client"
 	mf "github.com/manifestival/manifestival"
+	mfs "github.com/manifestival/manifestival/pkg/sources"
 	"go.uber.org/zap"
 	"k8s.io/client-go/tools/cache"
 
@@ -54,7 +55,7 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 			logger.Fatalw("Error creating client from injected config", zap.Error(err))
 		}
 		mflogger := zapr.NewLogger(logger.Named("manifestival").Desugar())
-		manifest, _ := mf.ManifestFrom(mf.Slice{}, mf.UseClient(mfclient), mf.UseLogger(mflogger))
+		manifest, _ := mf.ManifestFrom(mfs.Slice{}, mf.UseClient(mfclient), mf.UseLogger(mflogger))
 
 		c := &Reconciler{
 			kubeClientSet:     kubeClient,

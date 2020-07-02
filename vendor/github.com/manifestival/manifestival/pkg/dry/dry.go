@@ -1,10 +1,11 @@
-package manifestival
+package dry
 
 import (
 	"encoding/json"
 
-	jsonpatch "github.com/evanphx/json-patch"
-	"github.com/manifestival/manifestival/patch"
+	jsonpatch "github.com/evanphx/json-patch/v5"
+	"github.com/manifestival/manifestival/pkg/client"
+	"github.com/manifestival/manifestival/pkg/patch"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -16,9 +17,9 @@ type MergePatch map[string]interface{}
 
 // DryRun returns a list of merge patches, either strategic or
 // RFC-7386 for unregistered types, that show the effects of applying
-// the manifest.
-func (m Manifest) DryRun() ([]MergePatch, error) {
-	diffs, err := m.diff()
+// the resources.
+func DryRun(resources []unstructured.Unstructured, c client.Client) ([]MergePatch, error) {
+	diffs, err := diff(resources, c)
 	if err != nil {
 		return nil, err
 	}
@@ -31,11 +32,12 @@ func (m Manifest) DryRun() ([]MergePatch, error) {
 	return result, nil
 }
 
-// diff loads the resources in the manifest and computes their difference
-func (m Manifest) diff() ([][]byte, error) {
-	result := make([][]byte, 0, len(m.resources))
-	for _, spec := range m.resources {
-		original, err := m.Client.Get(&spec)
+// diff loads the resources and computes their difference from the
+// live system
+func diff(resources []unstructured.Unstructured, c client.Client) ([][]byte, error) {
+	result := make([][]byte, 0, len(resources))
+	for _, spec := range resources {
+		original, err := c.Get(&spec)
 		if err != nil {
 			if errors.IsNotFound(err) {
 				// this resource will be created when applied

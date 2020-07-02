@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/manifestival/client-go-client.svg?branch=master)](https://travis-ci.org/manifestival/client-go-client)
+
 # client-go-client
 
 A [client-go](https://github.com/kubernetes/client-go) implementation

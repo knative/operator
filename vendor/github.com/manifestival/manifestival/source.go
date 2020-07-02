@@ -3,7 +3,7 @@ package manifestival
 import (
 	"io"
 
-	"github.com/manifestival/manifestival/sources"
+	"github.com/manifestival/manifestival/internal/sources"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 

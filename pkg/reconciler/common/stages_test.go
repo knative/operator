@@ -65,7 +65,7 @@ func TestDeleteObsoleteResources(t *testing.T) {
 		func(context.Context, v1alpha1.KComponent) (*mf.Manifest, error) {
 			return &manifest, nil
 		})
-	nocms := manifest.Filter(mf.None(mf.ByKind("ConfigMap")))
+	nocms := manifest.Filter(mf.Not(mf.ByKind("ConfigMap")))
 	stage(context.TODO(), &nocms, nil)
 	// Now verify all the ConfigMaps are gone
 	for _, cm := range cms {

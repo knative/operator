@@ -60,7 +60,7 @@ func New(objs ...runtime.Object) Client {
 				v, found := store[key(u)]
 				if !found {
 					gvk := u.GroupVersionKind()
-					gr := schema.GroupResource{gvk.Group, gvk.Kind}
+					gr := schema.GroupResource{Group: gvk.Group, Resource: gvk.Kind}
 					return nil, errors.NewNotFound(gr, u.GetName())
 				}
 				return v, nil

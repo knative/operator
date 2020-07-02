@@ -85,12 +85,9 @@ func (i Overwrite) ApplyWith(opts *ApplyOptions) {
 	opts.Overwrite = bool(i)
 }
 func (f FieldManager) ApplyWith(opts *ApplyOptions) {
-	// TODO: The FM was introduced in k8s 1.14, but not ready to
-	// abandon pre-1.14 users yet. Uncomment when ready.
-
-	// fm := string(f)
-	// opts.ForCreate.FieldManager = fm
-	// opts.ForUpdate.FieldManager = fm
+	fm := string(f)
+	opts.ForCreate.FieldManager = fm
+	opts.ForUpdate.FieldManager = fm
 }
 
 func (dryRunAll) DeleteWith(opts *DeleteOptions) {

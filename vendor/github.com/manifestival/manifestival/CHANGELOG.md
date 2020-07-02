@@ -5,6 +5,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Changed
+
+- Migrated from [dep](https://github.com/golang/dep) to [go
+  modules](https://blog.golang.org/using-go-modules)
+  [#47](https://github.com/manifestival/manifestival/pull/47)
+- Restored `FieldManager` option for creates and updates, essentially
+  reverting [#17](https://github.com/manifestival/manifestival/issues/17).
+  [#26](https://github.com/manifestival/manifestival/issues/26)
+- Fixed the `InjectNamespace` transformer to properly update the
+  `spec.conversion` field in a `CustomResourceDefinition`
+  [#55](https://github.com/manifestival/manifestival/issues/55)
+- `None` was removed and replaced with `Not`, which only accepts a single
+  predicate.
+- `Any` and `All` now require at least one predicate since it wasn't
+  clear how they should behave without one.
+
 ### Added
 
 - Introduced `Append` to the `Manifestival` interface. This enables
@@ -21,6 +37,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - New filter `Predicate`, `In`, that returns true if a resource is in
   a given manifest, uniquely identified by GVK, namespace, and name
   [#50](https://github.com/manifestival/manifestival/pull/50)
+- New filter `Predicate`, `ByAnnotation`, that does for annotations
+  what `ByLabel` did for labels!
+  [#52](https://github.com/manifestival/manifestival/pull/52)
 
 ### Removed
 

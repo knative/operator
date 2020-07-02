@@ -74,6 +74,6 @@ func TestKnativeServingPostUpgrade(t *testing.T) {
 			t.Fatalf("Failed to get KnativeServing manifest: %v", err)
 		}
 		resources.AssertKnativeObsoleteResource(t, clients, names.Namespace,
-			preManifest.Filter(mf.None(mf.In(targetManifest))).Resources())
+			preManifest.Filter(mf.Not(mf.In(targetManifest))).Resources())
 	})
 }

@@ -22,7 +22,7 @@ import (
 	"os"
 	"testing"
 
-	mf "github.com/manifestival/manifestival"
+	mf "github.com/manifestival/manifestival/pkg/filter"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 
 	"knative.dev/operator/pkg/reconciler/common"
@@ -74,6 +74,6 @@ func TestKnativeEventingUpgrade(t *testing.T) {
 			t.Fatalf("Failed to get KnativeEventing manifest: %v", err)
 		}
 		resources.AssertKnativeObsoleteResource(t, clients, names.Namespace,
-			preManifest.Filter(mf.None(mf.In(targetManifest))).Resources())
+			preManifest.Filter(mf.Not(mf.In(targetManifest.Resources()))).Resources())
 	})
 }

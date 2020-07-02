@@ -19,20 +19,20 @@ package common
 import (
 	"context"
 
-	. "github.com/manifestival/manifestival"
-	. "github.com/manifestival/manifestival/pkg/filter"
+	mf "github.com/manifestival/manifestival"
+	mff "github.com/manifestival/manifestival/pkg/filter"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/logging"
 )
 
 // Stage represents a step in the reconcile process
-type Stage func(context.Context, *Manifest, v1alpha1.KComponent) error
+type Stage func(context.Context, *mf.Manifest, v1alpha1.KComponent) error
 
 // Stages are a list of steps
 type Stages []Stage
 
 // Execute each stage in sequence until one returns an error
-func (stages Stages) Execute(ctx context.Context, manifest *Manifest, instance v1alpha1.KComponent) error {
+func (stages Stages) Execute(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	for _, stage := range stages {
 		if err := stage(ctx, manifest, instance); err != nil {
 			return err
@@ -42,13 +42,13 @@ func (stages Stages) Execute(ctx context.Context, manifest *Manifest, instance v
 }
 
 // NoOp does nothing
-func NoOp(context.Context, *Manifest, v1alpha1.KComponent) error {
+func NoOp(context.Context, *mf.Manifest, v1alpha1.KComponent) error {
 	return nil
 }
 
 // AppendTarget mutates the passed manifest by appending one
 // appropriate for the passed KComponent
-func AppendTarget(ctx context.Context, manifest *Manifest, instance v1alpha1.KComponent) error {
+func AppendTarget(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	m, err := TargetManifest(instance)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func AppendTarget(ctx context.Context, manifest *Manifest, instance v1alpha1.KCo
 // AppendInstalled mutates the passed manifest by appending one
 // appropriate for the passed KComponent, which may not be the one
 // corresponding to status.version
-func AppendInstalled(ctx context.Context, manifest *Manifest, instance v1alpha1.KComponent) error {
+func AppendInstalled(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	logger := logging.FromContext(ctx)
 	m, err := InstalledManifest(instance)
 	if err != nil {
@@ -76,7 +76,7 @@ func AppendInstalled(ctx context.Context, manifest *Manifest, instance v1alpha1.
 }
 
 // ManifestFetcher returns a manifest appropriate for the instance
-type ManifestFetcher func(ctx context.Context, instance v1alpha1.KComponent) (*Manifest, error)
+type ManifestFetcher func(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error)
 
 // DeleteObsoleteResources returns a Stage after calculating the
 // installed manifest from the instance. This is meant to be called
@@ -93,7 +93,7 @@ func DeleteObsoleteResources(ctx context.Context, instance v1alpha1.KComponent, 
 		logger.Error("Unable to obtain the installed manifest; obsolete resources may linger", err)
 		return NoOp
 	}
-	return func(_ context.Context, manifest *Manifest, _ v1alpha1.KComponent) error {
-		return installed.Filter(Not(In(manifest.Resources()))).Delete()
+	return func(_ context.Context, manifest *mf.Manifest, _ v1alpha1.KComponent) error {
+		return installed.Filter(mff.Not(mff.In(manifest.Resources()))).Delete()
 	}
 }

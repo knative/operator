@@ -1,0 +1,149 @@
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-eventing-post-install-job-role
+  labels:
+    eventing.knative.dev/release: "v0.15.2"
+rules:
+- # Storage version upgrader needs to be able to patch CRDs.
+  apiGroups:
+  - "apiextensions.k8s.io"
+  resources:
+  - "customresourcedefinitions"
+  - "customresourcedefinitions/status"
+  verbs:
+  - "get"
+  - "list"
+  - "update"
+  - "patch"
+  - "watch"
+- # Our own resources we care about.
+  apiGroups:
+  - "eventing.knative.dev"
+  resources:
+  - "triggers"
+  - "eventtypes"
+  - "eventtypes/status"
+  verbs: &everything
+  - "get"
+  - "list"
+  - "create"
+  - "update"
+  - "delete"
+  - "patch"
+  - "watch"
+- apiGroups:
+  - "messaging.knative.dev"
+  resources:
+  - "channels"
+  - "subscriptions"
+  - "inmemorychannels"
+  verbs: *everything
+- # Flow resources and statuses we care about.
+  apiGroups:
+  - "flows.knative.dev"
+  resources:
+  - "sequences"
+  - "parallels"
+  verbs: *everything
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: knative-eventing-post-install-job
+  namespace: knative-eventing
+  labels:
+    eventing.knative.dev/release: "v0.15.2"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-eventing-post-install-job-role-binding
+  labels:
+    eventing.knative.dev/release: "v0.15.2"
+subjects:
+- kind: ServiceAccount
+  name: knative-eventing-post-install-job
+  namespace: knative-eventing
+roleRef:
+  kind: ClusterRole
+  name: knative-eventing-post-install-job-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: storage-version-migration
+  namespace: knative-eventing
+  labels:
+    app: "storage-version-migration"
+    serving.knative.dev/release: devel
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: "storage-version-migration"
+    spec:
+      serviceAccountName: knative-eventing-post-install-job
+      restartPolicy: OnFailure
+      containers:
+      - name: migrate
+        # This is the Go import path for the binary that is containerized
+        # and substituted here.
+        image: gcr.io/knative-releases/knative.dev/eventing/vendor/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:9ca91a8320d0c705c600264cbfff1883f02ef93e61042e88be3fadd21fc31212
+        args:
+        - "parallels.flows.knative.dev"
+        - "sequences.flows.knative.dev"
+        - "eventtypes.eventing.knative.dev"
+        - "triggers.eventing.knative.dev"
+        - "channels.messaging.knative.dev"
+        - "inmemorychannels.messaging.knative.dev"
+        - "subscriptions.messaging.knative.dev"
+
+---

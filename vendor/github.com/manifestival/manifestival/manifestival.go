@@ -5,8 +5,8 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/testing"
-	"github.com/manifestival/manifestival/overlay"
-	"github.com/manifestival/manifestival/patch"
+	"github.com/manifestival/manifestival/internal/overlay"
+	"github.com/manifestival/manifestival/internal/patch"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -38,6 +38,23 @@ type Manifest struct {
 }
 
 var _ Manifestival = &Manifest{}
+
+// Option follows the "functional object" idiom
+type Option func(*Manifest)
+
+// UseLogger will cause manifestival to log its actions
+func UseLogger(log logr.Logger) Option {
+	return func(m *Manifest) {
+		m.log = log
+	}
+}
+
+// UseClient enables interaction with the k8s API server
+func UseClient(client Client) Option {
+	return func(m *Manifest) {
+		m.Client = client
+	}
+}
 
 // NewManifest creates a Manifest from a comma-separated set of YAML
 // files, directories, or URLs. It's equivalent to
@@ -132,7 +149,6 @@ func (m Manifest) apply(spec *unstructured.Unstructured, opts ...ApplyOption) er
 		}
 		return m.update(current, spec, opts...)
 	}
-	return nil
 }
 
 // update a single resource

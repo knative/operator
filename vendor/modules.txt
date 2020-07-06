@@ -72,6 +72,8 @@ github.com/emicklei/go-restful
 github.com/emicklei/go-restful/log
 # github.com/evanphx/json-patch v4.5.0+incompatible
 github.com/evanphx/json-patch
+# github.com/evanphx/json-patch/v5 v5.0.0
+github.com/evanphx/json-patch/v5
 # github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 github.com/ghodss/yaml
 # github.com/go-logr/logr v0.1.0
@@ -141,13 +143,14 @@ github.com/json-iterator/go
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/manifestival/client-go-client v0.2.2
+# github.com/manifestival/client-go-client v0.2.3-0.20200702141517-e255fbf14f6f
 github.com/manifestival/client-go-client
-# github.com/manifestival/manifestival v0.5.1-0.20200526175228-b0136214e13f
+github.com/manifestival/client-go-client/pkg/dynamic
+# github.com/manifestival/manifestival v0.5.1-0.20200702141132-93669fa9179b
 github.com/manifestival/manifestival
-github.com/manifestival/manifestival/overlay
-github.com/manifestival/manifestival/patch
-github.com/manifestival/manifestival/sources
+github.com/manifestival/manifestival/internal/overlay
+github.com/manifestival/manifestival/internal/patch
+github.com/manifestival/manifestival/internal/sources
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
@@ -712,7 +715,7 @@ k8s.io/gengo/parser
 k8s.io/gengo/types
 # k8s.io/klog v1.0.0
 k8s.io/klog
-# k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a
+# k8s.io/kube-openapi v0.0.0-20200204173128-addea2498afe
 k8s.io/kube-openapi/cmd/openapi-gen
 k8s.io/kube-openapi/cmd/openapi-gen/args
 k8s.io/kube-openapi/pkg/common

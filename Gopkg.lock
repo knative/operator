@@ -392,15 +392,18 @@
   version = "v0.7.0"
 
 [[projects]]
-  digest = "1:dd895309ca7dbb6f5ef345c76f4e1dfe23accbcdaacde852bfcdabba1f754e5b"
+  branch = "master"
+  digest = "1:8ca5b6e27d33f5e2163bd3b177f02fda3dc5ecf27ef9e4c287f0658ebe4e823f"
   name = "github.com/manifestival/client-go-client"
-  packages = ["."]
+  packages = [
+    ".",
+    "pkg/dynamic",
+  ]
   pruneopts = "NUT"
-  revision = "c2f50cd3164d79466429c02e5599dfe61a40cc8e"
-  version = "v0.2.0"
+  revision = "e255fbf14f6f9848d8dd518c3c59ee2a8c011d5d"
 
 [[projects]]
-  digest = "1:da23b74834c2eb31b3d27cfdf799877bb2d6cd875f0465cbc47cd871c8ed5e74"
+  digest = "1:d3894cba27f0722a2ebe4de48ed7e22bfab3b60ebfccd072b1d238fc45aee7de"
   name = "github.com/manifestival/manifestival"
   packages = [
     ".",
@@ -409,8 +412,7 @@
     "sources",
   ]
   pruneopts = "NUT"
-  revision = "1922f5c7b1398ce037fb80405e4ecee9f6fe6bd0"
-  version = "v0.5.0"
+  revision = "b0136214e13fada595b572a69f064906ae6f2a43"
 
 [[projects]]
   digest = "1:5985ef4caf91ece5d54817c11ea25f182697534f8ae6521eadcd628c142ac4b6"
@@ -443,14 +445,6 @@
   pruneopts = "NUT"
   revision = "c29478e51bfb2e9c93e0e9f5e015e5993a490399"
   version = "v0.2.2"
-
-[[projects]]
-  digest = "1:a9c110560d6c7ae97fe37ca11a1eb711c41cd154121b36bee7284289d8d21739"
-  name = "github.com/operator-framework/operator-sdk"
-  packages = ["pkg/restmapper"]
-  pruneopts = "NUT"
-  revision = "e35ec7b722ba095e6438f63fafb9e7326870b486"
-  version = "v0.15.1"
 
 [[projects]]
   digest = "1:4047c378584616813d610c9f993bf90dd0d07aed8d94bd3bc299cd35ececdcba"
@@ -1363,7 +1357,7 @@
 
 [[projects]]
   branch = "release-0.14"
-  digest = "1:f806eb7e5629d594362dc18905d092888b1d56fbfe026a597d25b86e846f2d53"
+  digest = "1:8b6fc008c0812bf9aa046747c03366415274bfb66475aa201701c904fac5fb18"
   name = "knative.dev/pkg"
   packages = [
     "apis",
@@ -1412,7 +1406,7 @@
     "webhook/certificates/resources",
   ]
   pruneopts = "T"
-  revision = "2a1db869228ceaca9df34790b49cdf4893a5d39d"
+  revision = "7b6bb61326aec4bb26625da0d24a1ac3d1122950"
 
 [[projects]]
   branch = "release-0.14"
@@ -1424,6 +1418,14 @@
   ]
   pruneopts = "UT"
   revision = "9fa5882b65c5fe7e177bb74874e9a5ac87b84e98"
+
+[[projects]]
+  digest = "1:7b86843b8914c647ffe2b7f1e67ca50456c1772434ab314300c53b85ca13c59a"
+  name = "sigs.k8s.io/controller-runtime"
+  packages = ["pkg/client/apiutil"]
+  pruneopts = "NUT"
+  revision = "1c83ff6f06bc764c95dd69b0f743740c064c4bf6"
+  version = "v0.6.0"
 
 [[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"

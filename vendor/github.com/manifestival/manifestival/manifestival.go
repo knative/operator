@@ -23,6 +23,8 @@ type Manifestival interface {
 	Transform(fns ...Transformer) (Manifest, error)
 	// Filters resources in a Manifest; Predicates are AND'd
 	Filter(fns ...Predicate) Manifest
+	// Append the resources from other Manifests to create a new one
+	Append(mfs ...Manifest) Manifest
 	// Show how applying the manifest would change the cluster
 	DryRun() ([]MergePatch, error)
 }
@@ -37,8 +39,9 @@ type Manifest struct {
 
 var _ Manifestival = &Manifest{}
 
-// NewManifest creates a Manifest from a comma-separated set of yaml
-// files, directories, or URLs
+// NewManifest creates a Manifest from a comma-separated set of YAML
+// files, directories, or URLs. It's equivalent to
+// `ManifestFrom(Path(pathname))`
 func NewManifest(pathname string, opts ...Option) (Manifest, error) {
 	return ManifestFrom(Path(pathname), opts...)
 }
@@ -52,6 +55,18 @@ func ManifestFrom(src Source, opts ...Option) (m Manifest, err error) {
 	m.log.Info("Parsing manifest")
 	m.resources, err = src.Parse()
 	return
+}
+
+// Append creates a new Manifest by appending the resources from other
+// Manifests onto this one. No equality checking is done, so for any
+// resources sharing the same GVK+name, the last one will "win".
+func (m Manifest) Append(mfs ...Manifest) Manifest {
+	result := m
+	result.resources = m.Resources() // deep copies
+	for _, mf := range mfs {
+		result.resources = append(result.resources, mf.Resources()...)
+	}
+	return result
 }
 
 // Resources returns a deep copy of the Manifest resources

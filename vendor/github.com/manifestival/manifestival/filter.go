@@ -1,8 +1,11 @@
 package manifestival
 
 import (
+	"fmt"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // Predicate returns true if u should be included in result
@@ -25,6 +28,7 @@ func (m Manifest) Filter(preds ...Predicate) Manifest {
 	return result
 }
 
+// All returns true iff all predicates are true
 func All(preds ...Predicate) Predicate {
 	return func(u *unstructured.Unstructured) bool {
 		for _, p := range preds {
@@ -36,6 +40,7 @@ func All(preds ...Predicate) Predicate {
 	}
 }
 
+// Any returns true iff any of the predicates are true
 func Any(preds ...Predicate) Predicate {
 	return func(u *unstructured.Unstructured) bool {
 		for _, p := range preds {
@@ -103,5 +108,20 @@ func ByLabels(labels map[string]string) Predicate {
 func ByGVK(gvk schema.GroupVersionKind) Predicate {
 	return func(u *unstructured.Unstructured) bool {
 		return u.GroupVersionKind() == gvk
+	}
+}
+
+// In(m) returns a Predicate that tests for membership in m, using
+// "gvk|namespace/name" as a unique identifier
+func In(manifest Manifest) Predicate {
+	key := func(u *unstructured.Unstructured) string {
+		return fmt.Sprintf("%s|%s/%s", u.GroupVersionKind(), u.GetNamespace(), u.GetName())
+	}
+	index := sets.NewString()
+	for _, u := range manifest.resources {
+		index.Insert(key(&u))
+	}
+	return func(u *unstructured.Unstructured) bool {
+		return index.Has(key(u))
 	}
 }

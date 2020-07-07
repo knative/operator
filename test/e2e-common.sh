@@ -54,6 +54,9 @@ SYSTEM_NAMESPACE=${TEST_NAMESPACE}
 export TEST_EVENTING_NAMESPACE
 TEST_EVENTING_NAMESPACE=${TEST_NAMESPACE}
 
+# This environment variable is the CR name for knativeserving and knativeeventing.
+export TEST_RESOURCE="knative"
+
 # Add function call to trap
 # Parameters: $1 - Function to call
 #             $2...$n - Signals for trap

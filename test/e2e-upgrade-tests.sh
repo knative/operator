@@ -60,7 +60,7 @@ function create_custom_resource() {
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeServing
 metadata:
-  name: knative-serving
+  name: ${TEST_RESOURCE}
   namespace: ${TEST_NAMESPACE}
 spec:
   config:
@@ -78,7 +78,7 @@ EOF
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
 metadata:
-  name: knative-eventing
+  name: ${TEST_RESOURCE}
   namespace: ${TEST_NAMESPACE}
 EOF
 }

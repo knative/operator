@@ -18,17 +18,17 @@
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
 # The previous operator release.
-readonly PREVIOUS_OPERATOR_RELEASE_VERSION="0.14.2"
+readonly PREVIOUS_OPERATOR_RELEASE_VERSION="0.15.2"
 # The previous serving release, installed by the operator at PREVIOUS_OPERATOR_RELEASE_VERSION. This can be
 # different from PREVIOUS_OPERATOR_RELEASE_VERSION.
-readonly PREVIOUS_SERVING_RELEASE_VERSION="0.14.0"
+readonly PREVIOUS_SERVING_RELEASE_VERSION="0.15.2"
 # The previous eventing release, installed by the operator at PREVIOUS_OPERATOR_RELEASE_VERSION. This can be
 # different from PREVIOUS_OPERATOR_RELEASE_VERSION.
-readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.14.2"
+readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.15.2"
 # This is the branch name of serving and eventing repo, where we run the upgrade tests.
 readonly KNATIVE_REPO_BRANCH=${PULL_BASE_REF}
 # Istio version we test with
-readonly ISTIO_VERSION="1.4-latest"
+readonly ISTIO_VERSION="1.5-latest"
 # Test without Istio mesh enabled
 readonly ISTIO_MESH=0
 # This environment variable is the namespace used to run the test cases in operator.

@@ -56,6 +56,10 @@ function install_previous_operator_release() {
 
 function create_custom_resource() {
   echo ">> Creating the custom resource of Knative Serving:"
+}
+
+function create_custom_resource1() {
+  echo ">> Creating the custom resource of Knative Serving:"
   cat <<EOF | kubectl apply -f -
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeServing
@@ -89,7 +93,7 @@ function knative_setup() {
   donwload_knative "serving" ${KNATIVE_REPO_BRANCH}
   donwload_knative "eventing" ${KNATIVE_REPO_BRANCH}
   create_custom_resource
-  wait_until_pods_running ${TEST_NAMESPACE}
+  #wait_until_pods_running ${TEST_NAMESPACE}
 }
 
 # Create test resources and images

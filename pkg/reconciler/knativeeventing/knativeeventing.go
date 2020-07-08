@@ -23,6 +23,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -30,6 +31,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
 
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -123,6 +125,7 @@ func (r *Reconciler) reconcile(ctx context.Context, ke *eventingv1alpha1.Knative
 		r.ensureFinalizer,
 		r.initStatus,
 		r.install,
+		r.checkJobs,
 		r.checkDeployments,
 		r.deleteObsoleteResources,
 	}
@@ -182,6 +185,50 @@ func (r *Reconciler) install(manifest *mf.Manifest, ke *eventingv1alpha1.Knative
 	}
 	ke.Status.Version = version.EventingVersion
 	ke.Status.MarkInstallationReady()
+	return nil
+}
+
+func (r *Reconciler) checkJobs(manifest *mf.Manifest, ke *eventingv1alpha1.KnativeEventing) error {
+	r.Logger.Debug("Checking jobs")
+	defer r.updateStatus(ke)
+
+	failed := func(j *batchv1.Job) bool {
+		for _, c := range j.Status.Conditions {
+			if c.Type == batchv1.JobFailed && c.Status == corev1.ConditionFalse {
+				return true
+			}
+		}
+		return false
+	}
+
+	for _, u := range manifest.Filter(mf.ByKind("Job")).Resources() {
+		existing, err := r.KubeClientSet.BatchV1().Jobs(u.GetNamespace()).Get(u.GetName(), metav1.GetOptions{})
+		if err != nil {
+			ke.Status.MarkEventingNotReady("Job check", err.Error())
+			if errors.IsNotFound(err) {
+				return nil
+			}
+			return err
+		}
+
+		if failed(existing) {
+			var expected = &batchv1.Job{}
+			err := scheme.Scheme.Convert(u, expected, nil)
+			if err != nil {
+				r.Logger.Error(err, "Error converting Unstructured to Job", "unstructured", u)
+				return err
+			}
+
+			if equality.Semantic.DeepEqual(existing.Spec, expected.Spec) == false {
+				r.Logger.Info(err, "Deleting failed Job due to image change", "job", existing)
+				if err := r.KubeClientSet.BatchV1().Jobs(u.GetNamespace()).Delete(u.GetName(), &metav1.DeleteOptions{}); err != nil {
+					ke.Status.MarkEventingFailed("Job check", err.Error())
+					return err
+				}
+			}
+		}
+	}
+
 	return nil
 }
 

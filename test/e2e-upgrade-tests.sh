@@ -38,6 +38,9 @@ source $(dirname $0)/e2e-common.sh
 readonly EVENTING_READY_FILE="/tmp/prober-ready-eventing"
 readonly EVENTING_PROBER_FILE="/tmp/prober-signal-eventing"
 
+# TODO: remove when components can coexist in same namespace
+export TEST_EVENTING_NAMESPACE=knative-eventing
+
 function download_install_previous_operator_release() {
   local full_url="https://github.com/knative/operator/releases/download/v${PREVIOUS_OPERATOR_RELEASE_VERSION}/operator.yaml"
 
@@ -100,7 +103,9 @@ function test_setup() {
   fi
   echo ">> Creating test resources (test/config/) in Knative Serving repository"
   cd ${KNATIVE_DIR}/serving
-  ko apply ${KO_FLAGS} -f test/config/ || return 1
+  for i in $(ls test/config/*.yaml); do
+    sed s/knative-serving/${TEST_NAMESPACE}/ $i | ko apply ${KO_FLAGS} -f -
+  done || return 1
 
   echo ">> Uploading test images..."
   # We only need to build and publish two images among all the test images
@@ -175,7 +180,6 @@ go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
 
 header "Listing all the pods of the previous release"
 wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running preupgrade tests"
 

@@ -76,22 +76,37 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 	if err != nil {
 		return false, err
 	}
-	if len(dpList.Items) != len(expectedDeployments) {
-		logf("The expected number of deployments is %v, and got %v.", len(expectedDeployments), len(dpList.Items))
-		return false, nil
-	}
-	for _, deployment := range dpList.Items {
-		if !stringInList(deployment.Name, expectedDeployments) {
-			logf("The deployment %v is not found in the expected list of deployment.", deployment.Name)
-			return false, nil
-		}
-		for _, c := range deployment.Status.Conditions {
-			if c.Type == v1.DeploymentAvailable && c.Status != corev1.ConditionTrue {
-				logf("The deployment %v is not ready.", deployment.Name)
-				return false, nil
+
+	findDeployment := func(name string, deployments []v1.Deployment) *v1.Deployment {
+		for _, deployment := range deployments {
+			if deployment.Name == name {
+				return &deployment
 			}
 		}
+		return nil
 	}
+
+	isReady := func(d *v1.Deployment) bool {
+		for _, c := range d.Status.Conditions {
+			if c.Type == v1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
+				return true
+			}
+		}
+		return false
+	}
+
+	for _, name := range expectedDeployments {
+		dep := findDeployment(name, dpList.Items)
+		if dep == nil {
+			logf("The deployment %v is not found.", name)
+			return false, nil
+		}
+		if !isReady(dep) {
+			logf("The deployment %v is not ready.", dep.Name)
+			return false, nil
+		}
+	}
+
 	return true, nil
 }
 

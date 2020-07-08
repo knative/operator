@@ -108,7 +108,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp v1alpha1.KComponent) error {
 	logger := logging.FromContext(ctx)
 	instance := comp.(*v1alpha1.KnativeEventing)
-	extra := []mf.Transformer{kec.DefaultBrokerConfigMapTransform(instance, logger)}
+	extra := []mf.Transformer{
+		kec.DefaultBrokerConfigMapTransform(instance, logger),
+		kec.JobTransform(logger),
+	}
 	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
 }

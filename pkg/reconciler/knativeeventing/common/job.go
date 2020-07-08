@@ -17,6 +17,9 @@ limitations under the License.
 package common
 
 import (
+	"fmt"
+	"strings"
+
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	batchv1 "k8s.io/api/batch/v1"
@@ -26,17 +29,17 @@ import (
 )
 
 const (
-	// StorageVersionMigration is the name of the job to be updated
+	// StorageVersionMigration is the prefix of the job name to be updated
 	StorageVersionMigration = "storage-version-migration"
 
-	// StorageVersionMigrationEventing is the name that the job name STORAGE_VERSION_MIGRATION will change into.
+	// StorageVersionMigrationEventing is the label name that the job STORAGE_VERSION_MIGRATION will change into.
 	StorageVersionMigrationEventing = "storage-version-migration-eventing"
 )
 
 // JobTransform updates the job with the expected value for the key app in the label
 func JobTransform(log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Job" && u.GetName() == StorageVersionMigration {
+		if u.GetKind() == "Job" {
 			var job = &batchv1.Job{}
 			err := scheme.Scheme.Convert(u, job, nil)
 			if err != nil {
@@ -66,17 +69,27 @@ func JobTransform(log *zap.SugaredLogger) mf.Transformer {
 
 func updateJobNameLabel(job *batchv1.Job) error {
 	// Change the job name
-	job.SetName(StorageVersionMigrationEventing)
+	jobName := job.GetName()
+	if strings.HasPrefix(jobName, StorageVersionMigration) && !strings.HasPrefix(jobName,
+		StorageVersionMigrationEventing) {
+		suffix := jobName[len(StorageVersionMigration):]
+		name := fmt.Sprintf("%s%s", StorageVersionMigrationEventing, suffix)
+		job.SetName(name)
+	}
 
 	// Change the labels in metadata
 	labels := job.GetLabels()
-	labels["app"] = StorageVersionMigrationEventing
-	job.SetLabels(labels)
+	if labels["app"] == StorageVersionMigration {
+		labels["app"] = StorageVersionMigrationEventing
+		job.SetLabels(labels)
+	}
 
 	// Change the labels in spec.template.metadata
 	labels = job.Spec.Template.GetLabels()
-	labels["app"] = StorageVersionMigrationEventing
-	job.Spec.Template.SetLabels(labels)
+	if labels["app"] == StorageVersionMigration {
+		labels["app"] = StorageVersionMigrationEventing
+		job.SetLabels(labels)
+	}
 
 	return nil
 }

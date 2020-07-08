@@ -35,8 +35,12 @@ func TestJobTransform(t *testing.T) {
 		expected batchv1.Job
 	}{{
 		name:     "ChangeNameAndLabels",
-		job:      makeJob(STORAGE_VERSION_MIGRATION),
-		expected: makeJob(STORAGE_VERSION_MIGRATION_EVENTING),
+		job:      makeJob(StorageVersionMigration, StorageVersionMigration),
+		expected: makeJob(StorageVersionMigrationEventing, StorageVersionMigrationEventing),
+	}, {
+		name:     "ChangeNameWithSuffixAndLabels",
+		job:      makeJob(StorageVersionMigration+"-v0.16", StorageVersionMigration),
+		expected: makeJob(StorageVersionMigrationEventing+"-v0.16", StorageVersionMigrationEventing),
 	}}
 
 	for _, tt := range tests {
@@ -48,13 +52,14 @@ func TestJobTransform(t *testing.T) {
 			var job = &batchv1.Job{}
 			err := scheme.Scheme.Convert(&unstructuredJob, job, nil)
 			util.AssertEqual(t, err, nil)
+			util.AssertDeepEqual(t, job.Name, tt.expected.Name)
 			util.AssertDeepEqual(t, job.GetObjectMeta(), tt.expected.GetObjectMeta())
 			util.AssertDeepEqual(t, job.Spec, tt.expected.Spec)
 		})
 	}
 }
 
-func makeJob(name string) batchv1.Job {
+func makeJob(name, labelName string) batchv1.Job {
 	return batchv1.Job{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Job",
@@ -62,12 +67,12 @@ func makeJob(name string) batchv1.Job {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   name,
-			Labels: map[string]string{"app": name},
+			Labels: map[string]string{"app": labelName},
 		},
 		Spec: batchv1.JobSpec{
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"app": name},
+					Labels: map[string]string{"app": labelName},
 				},
 			},
 		},

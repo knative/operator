@@ -26,18 +26,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
-)
-
-const (
-	// StorageVersionMigration is the prefix of the job name to be updated
-	StorageVersionMigration = "storage-version-migration"
-
-	// StorageVersionMigrationEventing is the label name that the job STORAGE_VERSION_MIGRATION will change into.
-	StorageVersionMigrationEventing = "storage-version-migration-eventing"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 // JobTransform updates the job with the expected value for the key app in the label
-func JobTransform(log *zap.SugaredLogger) mf.Transformer {
+func JobTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Job" {
 			var job = &batchv1.Job{}
@@ -47,7 +40,7 @@ func JobTransform(log *zap.SugaredLogger) mf.Transformer {
 				return err
 			}
 
-			err = updateJobNameLabel(job)
+			err = updateJobName(obj, job)
 			if err != nil {
 				log.Error(err, "Error updating the job", "name", job.Name, "job", job)
 				return err
@@ -67,28 +60,31 @@ func JobTransform(log *zap.SugaredLogger) mf.Transformer {
 	}
 }
 
-func updateJobNameLabel(job *batchv1.Job) error {
+func updateJobName(instance v1alpha1.KComponent, job *batchv1.Job) error {
+	component := ""
+	switch instance.(type) {
+	case *v1alpha1.KnativeServing:
+		component = "serving"
+	case *v1alpha1.KnativeEventing:
+		component = "eventing"
+	}
+	version := TargetVersion(instance)
+
 	// Change the job name
 	jobName := job.GetName()
-	if strings.HasPrefix(jobName, StorageVersionMigration) && !strings.HasPrefix(jobName,
-		StorageVersionMigrationEventing) {
-		suffix := jobName[len(StorageVersionMigration):]
-		name := fmt.Sprintf("%s%s", StorageVersionMigrationEventing, suffix)
-		job.SetName(name)
+	if jobName == "" {
+		jobName = job.GetGenerateName()
 	}
 
-	// Change the labels in metadata
-	labels := job.GetLabels()
-	if labels["app"] == StorageVersionMigration {
-		labels["app"] = StorageVersionMigrationEventing
-		job.SetLabels(labels)
-	}
+	suffix := fmt.Sprintf("-%s-%s", component, version)
 
-	// Change the labels in spec.template.metadata
-	labels = job.Spec.Template.GetLabels()
-	if labels["app"] == StorageVersionMigration {
-		labels["app"] = StorageVersionMigrationEventing
-		job.SetLabels(labels)
+	if !strings.HasSuffix(jobName, suffix) {
+		if strings.HasSuffix(jobName, component) {
+			jobName = fmt.Sprintf("%s-%s", jobName, version)
+		} else {
+			jobName = fmt.Sprintf("%s%s", jobName, suffix)
+		}
+		job.SetName(jobName)
 	}
 
 	return nil

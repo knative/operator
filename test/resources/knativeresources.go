@@ -25,7 +25,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"testing"
 	"time"
 
 	"knative.dev/pkg/apis"
@@ -40,7 +39,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/operator/test"
 	"knative.dev/pkg/test/logging"
 )
@@ -113,17 +111,12 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 
 // GetExpectedDeployments will return an array of deployment resources based on the version for the knative
 // component.
-func GetExpectedDeployments(t *testing.T, instance v1alpha1.KComponent) (mf.Manifest, []string) {
-	manifest, err := common.TargetManifest(instance)
-	if err != nil {
-		t.Fatalf("Failed to get the manifest for Knative: %v", err)
-	}
-
+func GetExpectedDeployments(manifest mf.Manifest) []string {
 	deployments := []string{}
 	for _, resource := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
 		deployments = append(deployments, resource.GetName())
 	}
-	return manifest, removeDuplications(deployments)
+	return removeDuplications(deployments)
 }
 
 // SetKodataDir will set the env var KO_DATA_PATH into the path of the kodata of this repository.

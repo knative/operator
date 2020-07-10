@@ -52,7 +52,11 @@ func TestKnativeServingPostUpgrade(t *testing.T) {
 		// TODO: We only verify the deployment, but we need to add other resources as well, like ServiceAccount, ClusterRoleBinding, etc.
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
-		targetManifest, expectedDeployments := resources.GetExpectedDeployments(t, &v1alpha1.KnativeServing{})
+		targetManifest, err := common.TargetManifest(&v1alpha1.KnativeServing{})
+		if err != nil {
+			t.Fatalf("Failed to get the manifest for Knative: %v", err)
+		}
+		expectedDeployments := resources.GetExpectedDeployments(targetManifest)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 		resources.AssertKSOperatorCRReadyStatus(t, clients, names)

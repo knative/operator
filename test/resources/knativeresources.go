@@ -24,6 +24,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -180,7 +181,11 @@ func IsKnativeObsoleteResourceGone(clients *test.Clients, namespace string, obsR
 			// This is a namespaced resource
 			_, err = clients.Dynamic.Resource(gvr).Namespace(namespace).Get(resource.GetName(), metav1.GetOptions{})
 		} else {
-			// This is a clustered resource
+			// Verify all clustered resources, except CRDs and webhooks.
+			switch strings.ToLower(resource.GetKind()) {
+			case "customresourcedefinition", "validatingwebhookconfiguration", "mutatingwebhookconfiguration":
+				continue
+			}
 			_, err = clients.Dynamic.Resource(gvr).Get(resource.GetName(), metav1.GetOptions{})
 		}
 		if !apierrs.IsNotFound(err) {

@@ -18,13 +18,13 @@
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
 # The previous operator release.
-readonly PREVIOUS_OPERATOR_RELEASE_VERSION="0.15.2"
+readonly PREVIOUS_OPERATOR_RELEASE_VERSION="0.15.3"
 # The previous serving release, installed by the operator at PREVIOUS_OPERATOR_RELEASE_VERSION. This can be
 # different from PREVIOUS_OPERATOR_RELEASE_VERSION.
 readonly PREVIOUS_SERVING_RELEASE_VERSION="0.15.2"
 # The previous eventing release, installed by the operator at PREVIOUS_OPERATOR_RELEASE_VERSION. This can be
 # different from PREVIOUS_OPERATOR_RELEASE_VERSION.
-readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.15.2"
+readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.15.3"
 # This is the branch name of serving and eventing repo, where we run the upgrade tests.
 readonly KNATIVE_REPO_BRANCH=${PULL_BASE_REF}
 # Istio version we test with
@@ -35,6 +35,7 @@ readonly ISTIO_MESH=0
 export TEST_NAMESPACE="${TEST_NAMESPACE:-knative-operator-testing}"
 export SYSTEM_NAMESPACE=${TEST_NAMESPACE}           # knative-serving
 export TEST_EVENTING_NAMESPACE=${TEST_NAMESPACE}    # knative-eventing
+export TEST_RESOURCE="knative"    # knative-eventing
 
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_REPO_BRANCH.
 GENERATE_SERVING_YAML=0

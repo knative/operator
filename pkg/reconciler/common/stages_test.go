@@ -24,6 +24,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	fake "github.com/manifestival/manifestival/fake"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
@@ -61,12 +62,12 @@ func TestDeleteObsoleteResources(t *testing.T) {
 			t.Error(err)
 		}
 	}
-	stage := DeleteObsoleteResources(context.TODO(), &v1alpha1.KnativeServing{},
+	deleteObsoleteResources := DeleteObsoleteResources(context.TODO(), &v1alpha1.KnativeServing{},
 		func(context.Context, v1alpha1.KComponent) (*mf.Manifest, error) {
 			return &manifest, nil
 		})
 	nocms := manifest.Filter(mf.Not(mf.ByKind("ConfigMap")))
-	stage(context.TODO(), &nocms, nil)
+	deleteObsoleteResources(context.TODO(), &nocms, nil)
 	// Now verify all the ConfigMaps are gone
 	for _, cm := range cms {
 		if _, err := manifest.Client.Get(&cm); !errors.IsNotFound(err) {
@@ -79,5 +80,18 @@ func TestDeleteObsoleteResources(t *testing.T) {
 			t.Error(err)
 		}
 	}
-
+	// Now verify CRD's don't get deleted
+	v1crds, _ := manifest.Transform(func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "CustomResourceDefinition" {
+			u.SetAPIVersion("apiextensions.k8s.io/v1")
+		}
+		return nil
+	})
+	deleteObsoleteResources(context.TODO(), &v1crds, nil)
+	// And verify the old ones are still there
+	for _, cm := range manifest.Filter(mf.CRDs).Resources() {
+		if _, err := manifest.Client.Get(&cm); err != nil {
+			t.Error(err)
+		}
+	}
 }

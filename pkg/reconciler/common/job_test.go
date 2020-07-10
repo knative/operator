@@ -21,7 +21,6 @@ import (
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 
-	"go.uber.org/zap"
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -50,7 +49,7 @@ func TestJobTransform(t *testing.T) {
 					Version: "0.15.2",
 				},
 			}},
-		job:      createJob(StorageVersionMigration),
+		job:      createJob(StorageVersionMigration, ""),
 		expected: StorageVersionMigration + "-serving-0.15.2",
 	}, {
 		name: "ChangeNameForEventingJob",
@@ -60,34 +59,34 @@ func TestJobTransform(t *testing.T) {
 					Version: "0.16.0",
 				},
 			}},
-		job:      createJob(StorageVersionMigration),
+		job:      createJob(StorageVersionMigration, ""),
 		expected: StorageVersionMigration + "-eventing-0.16.0",
 	}, {
-		name: "ChangeNameWithServingForServingJob",
+		name: "ChangeNameWithGeneratedNameForServingJob",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
 					Version: "0.15.2",
 				},
 			}},
-		job:      createJob(StorageVersionMigrationServing),
+		job:      createJob("", StorageVersionMigration),
 		expected: StorageVersionMigrationServing + "-0.15.2",
 	}, {
-		name: "ChangeNameWithEventingForEventingJob",
+		name: "ChangeNameWithGeneratedNameForEventingJob",
 		component: &v1alpha1.KnativeEventing{
 			Spec: v1alpha1.KnativeEventingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
 					Version: "0.16.0",
 				},
 			}},
-		job:      createJob(StorageVersionMigrationEventing),
+		job:      createJob("", StorageVersionMigration),
 		expected: StorageVersionMigrationEventing + "-0.16.0",
 	}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			unstructuredJob := util.MakeUnstructured(t, &tt.job)
-			transform := JobTransform(tt.component, zap.NewNop().Sugar())
+			transform := JobTransform(tt.component)
 			transform(&unstructuredJob)
 
 			var job = &batchv1.Job{}
@@ -98,14 +97,15 @@ func TestJobTransform(t *testing.T) {
 	}
 }
 
-func createJob(name string) batchv1.Job {
+func createJob(name, gen string) batchv1.Job {
 	return batchv1.Job{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Job",
 			APIVersion: "batch/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
+			Name:         name,
+			GenerateName: gen + "-",
 		},
 	}
 }

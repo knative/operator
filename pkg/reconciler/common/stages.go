@@ -93,6 +93,6 @@ func DeleteObsoleteResources(ctx context.Context, instance v1alpha1.KComponent, 
 		return NoOp
 	}
 	return func(_ context.Context, manifest *mf.Manifest, _ v1alpha1.KComponent) error {
-		return installed.Filter(mf.Not(mf.In(*manifest))).Delete()
+		return installed.Filter(mf.NoCRDs, mf.Not(mf.In(*manifest))).Delete()
 	}
 }

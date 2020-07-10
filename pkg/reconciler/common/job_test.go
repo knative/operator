@@ -29,9 +29,7 @@ import (
 )
 
 const (
-	StorageVersionMigration         = "storage-version-migration"
-	StorageVersionMigrationEventing = "storage-version-migration-eventing"
-	StorageVersionMigrationServing  = "storage-version-migration-serving"
+	StorageVersionMigration = "storage-version-migration"
 )
 
 func TestJobTransform(t *testing.T) {
@@ -70,7 +68,7 @@ func TestJobTransform(t *testing.T) {
 				},
 			}},
 		job:      createJob("", StorageVersionMigration),
-		expected: StorageVersionMigrationServing + "-0.15.2",
+		expected: StorageVersionMigration + "-serving-0.15.2",
 	}, {
 		name: "ChangeNameWithGeneratedNameForEventingJob",
 		component: &v1alpha1.KnativeEventing{
@@ -80,7 +78,7 @@ func TestJobTransform(t *testing.T) {
 				},
 			}},
 		job:      createJob("", StorageVersionMigration),
-		expected: StorageVersionMigrationEventing + "-0.16.0",
+		expected: StorageVersionMigration + "-eventing-0.16.0",
 	}}
 
 	for _, tt := range tests {

@@ -28,7 +28,7 @@ var (
 
 // KnativeServing is the Schema for the knativeservings API
 // +genclient
-// +genreconciler
+// +genreconciler:krshapedlogic=false
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type KnativeServing struct {
 	metav1.TypeMeta   `json:",inline"`

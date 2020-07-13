@@ -72,5 +72,8 @@ func EnsureKnativeEventingExists(clients eventingv1alpha1.KnativeEventingInterfa
 
 // IsKnativeEventingReady will check the status conditions of the KnativeEventing and return true if the KnativeEventing is ready.
 func IsKnativeEventingReady(s *v1alpha1.KnativeEventing, err error) (bool, error) {
-	return s.Status.IsReady(), err
+	if s.Spec.Version == "" {
+		return s.Status.IsReady(), err
+	}
+	return s.Status.IsReady() && s.Spec.Version == s.Status.Version, err
 }

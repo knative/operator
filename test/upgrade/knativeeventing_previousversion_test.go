@@ -1,4 +1,4 @@
-// +build preupgrade
+// +build preupgrade postdowngrade
 
 /*
 Copyright 2020 The Knative Authors
@@ -32,8 +32,9 @@ import (
 	"knative.dev/pkg/test/logstream"
 )
 
-// TestKnativeEventingPreUpgrade verifies the KnativeEventing creation, before upgraded to the latest HEAD at master.
-func TestKnativeEventingPreUpgrade(t *testing.T) {
+// TestKnativeEventingPreviousVersion verifies the KnativeEventing creation in previous version.
+// This test case is called before upgrading and after donwgrading.
+func TestKnativeEventingPreviousVersion(t *testing.T) {
 	cancel := logstream.Start(t)
 	defer cancel()
 	clients := client.Setup(t)
@@ -48,7 +49,7 @@ func TestKnativeEventingPreUpgrade(t *testing.T) {
 		t.Fatalf("KnativeEventing %q failed to create: %v", names.KnativeEventing, err)
 	}
 
-	// Verify if resources match the requirement for the previous release before upgrade
+	// Verify if resources match the requirement for the previous version before upgrade or after downgrade
 	t.Run("verify resources", func(t *testing.T) {
 		resources.AssertKEOperatorCRReadyStatus(t, clients, names)
 		keventing, err := clients.KnativeEventing().Get(names.KnativeEventing, metav1.GetOptions{})

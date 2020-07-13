@@ -59,6 +59,9 @@ spec:
         spec:
           description: Spec defines the desired state of KnativeEventing
           properties:
+            version:
+              description: The version of Knative Eventing to be installed
+              type: string
             config:
               additionalProperties:
                 additionalProperties:

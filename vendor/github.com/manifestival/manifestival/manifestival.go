@@ -131,9 +131,9 @@ func (m Manifest) apply(spec *unstructured.Unstructured, opts ...ApplyOption) er
 	}
 	if current == nil {
 		m.logResource("Creating", spec)
+		annotate(spec, "manifestival", resourceCreated)
 		current = spec.DeepCopy()
 		annotate(current, v1.LastAppliedConfigAnnotation, lastApplied(current))
-		annotate(current, "manifestival", resourceCreated)
 		return m.Client.Create(current, opts...)
 	} else {
 		diff, err := patch.New(current, spec)
@@ -177,6 +177,10 @@ func (m Manifest) delete(spec *unstructured.Unstructured, opts ...DeleteOption) 
 // get collects a full resource body (or `nil`) from a partial
 // resource supplied in `spec`
 func (m Manifest) get(spec *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+	if spec.GetName() == "" && spec.GetGenerateName() != "" {
+		// expected to be created; never fetched
+		return nil, nil
+	}
 	result, err := m.Client.Get(spec)
 	if err != nil {
 		result = nil

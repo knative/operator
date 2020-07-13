@@ -5,6 +5,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+
+- Support for generated names: if `metadata.generateName` is set and
+  `metadata.name` is *not* set on any resource in a manifest, that resource will
+  always be _created_ when the manifest is _applied_. [#65](https://github.com/manifestival/manifestival/issues/65)
+
+### Changed
+
+- Fixed the `In` predicate to not incorporate the API version in its comparison
+  of manifest resources. Only Group, Kind, Namespace, and Name are used to test
+  for equality. [#67](https://github.com/manifestival/manifestival/issues/67)
+
+### Removed
+
+
+## [0.6.0] - 2020-07-07
+
 ### Changed
 
 - Migrated from [dep](https://github.com/golang/dep) to [go
@@ -16,10 +33,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Fixed the `InjectNamespace` transformer to properly update the
   `spec.conversion` field in a `CustomResourceDefinition`
   [#55](https://github.com/manifestival/manifestival/issues/55)
-- `None` was removed and replaced with `Not`, which only accepts a single
-  predicate.
-- `Any` and `All` now require at least one predicate since it wasn't
-  clear how they should behave without one.
+- Predicate changes: `None` was removed and replaced with `Not`, which
+  only accepts a single predicate. `Any` and `All` now require at
+  least one predicate since it wasn't clear how they should behave
+  without one. [#56](https://github.com/manifestival/manifestival/pull/56)
+- Fixed bug where manifestival wasn't deleting namespaces it created.
+  (It should never delete a namespace it didn't create)
+  [#61](https://github.com/manifestival/manifestival/issues/61)
 
 ### Added
 
@@ -40,6 +60,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - New filter `Predicate`, `ByAnnotation`, that does for annotations
   what `ByLabel` did for labels!
   [#52](https://github.com/manifestival/manifestival/pull/52)
+- Defaulting the `FieldManager` for create/updates to "manifestival"
+  to help reconcile changes in `metadata.managedFields`, in
+  anticipation of server-side apply. [#64](https://github.com/manifestival/manifestival/pull/64)
 
 ### Removed
 
@@ -208,7 +231,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 [controller-runtime]: https://github.com/manifestival/controller-runtime-client
 [client-go]: https://github.com/manifestival/client-go-client
-[unreleased]: https://github.com/manifestival/manifestival/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/manifestival/manifestival/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/manifestival/manifestival/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/manifestival/manifestival/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/manifestival/manifestival/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/manifestival/manifestival/compare/v0.3.0...v0.3.1

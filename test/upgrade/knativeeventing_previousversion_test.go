@@ -33,7 +33,7 @@ import (
 )
 
 // TestKnativeEventingPreviousVersion verifies the KnativeEventing creation in previous version.
-// This test case is called before upgrading and after donwgrading.
+// This test case is called before upgrading and after downgrading.
 func TestKnativeEventingPreviousVersion(t *testing.T) {
 	cancel := logstream.Start(t)
 	defer cancel()
@@ -61,6 +61,40 @@ func TestKnativeEventingPreviousVersion(t *testing.T) {
 		// Based on the status.version, get the deployment resources.
 		defer os.Unsetenv(common.KoEnvKey)
 		_, expectedDeployments := resources.GetExpectedDeployments(t, keventing)
+		util.AssertEqual(t, len(expectedDeployments) > 0, true)
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
+	})
+}
+
+// TestKnativeServingPreviousVersion verifies the KnativeServing creation in previous version.
+// This test case is called before upgrading and after downgrading.
+func TestKnativeServingPreviousVersion(t *testing.T) {
+	cancel := logstream.Start(t)
+	defer cancel()
+	clients := client.Setup(t)
+
+	names := test.ResourceNames{
+		KnativeServing: test.OperatorName,
+		Namespace:      test.ServingOperatorNamespace,
+	}
+
+	// Create a KnativeServing
+	if _, err := resources.EnsureKnativeServingExists(clients.KnativeServing(), names); err != nil {
+		t.Fatalf("KnativeServing %q failed to create: %v", names.KnativeServing, err)
+	}
+
+	// Verify if resources match the requirement for the previous version before upgrade or after downgrade
+	t.Run("verify resources", func(t *testing.T) {
+		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
+		ks, err := clients.KnativeServing().Get(names.KnativeServing, metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("Failed to get KnativeServing CR: %v", err)
+		}
+		resources.SetKodataDir()
+		defer os.Unsetenv(common.KoEnvKey)
+		// Based on the status.version, get the deployment resources.
+		defer os.Unsetenv(common.KoEnvKey)
+		_, expectedDeployments := resources.GetExpectedDeployments(t, ks)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
 	})

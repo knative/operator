@@ -278,6 +278,10 @@ downgrade_to_previous_version
 wait_until_pods_running ${TEST_NAMESPACE}
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
+header "Running postdowngrade tests"
+cd ${OPERATOR_DIR}
+go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
+
 header "Running postdowngrade tests for Knative Serving"
 cd ${KNATIVE_DIR}/serving
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \

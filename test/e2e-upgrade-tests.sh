@@ -57,13 +57,56 @@ function install_previous_operator_release() {
   wait_until_pods_running default || fail_test "Operator did not come up"
 }
 
+function downgrade_to_previous_version {
+  header "Downgrading Knative Serving and Knative Eventing to the previous versions"
+  create_serving_resource ${PREVIOUS_SERVING_RELEASE_VERSION}
+  create_eventing_resource ${PREVIOUS_EVENTING_RELEASE_VERSION}
+}
+
+function create_serving_resource() {
+  local version=$1
+  echo ">> Creating the custom resource of Knative Serving:"
+  cat <<EOF | kubectl apply -f -
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeServing
+metadata:
+  name: ${TEST_RESOURCE}
+  namespace: ${TEST_NAMESPACE}
+spec:
+  version: ${version}
+  config:
+    defaults:
+      revision-timeout-seconds: "300"  # 5 minutes
+    autoscaler:
+      stable-window: "60s"
+    deployment:
+      registriesSkippingTagResolving: "ko.local,dev.local"
+    logging:
+      loglevel.controller: "debug"
+EOF
+}
+
+function create_eventing_resource() {
+  local version=$1
+  echo ">> Creating the custom resource of Knative Eventing:"
+  cat <<-EOF | kubectl apply -f -
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeEventing
+metadata:
+  name: ${TEST_RESOURCE}
+  namespace: ${TEST_EVENTING_NAMESPACE}
+spec:
+  version: ${version}
+EOF
+}
+
 function create_custom_resource() {
   echo ">> Creating the custom resource of Knative Serving:"
   cat <<EOF | kubectl apply -f -
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeServing
 metadata:
-  name: knative-serving
+  name: ${TEST_RESOURCE}
   namespace: ${TEST_NAMESPACE}
 spec:
   config:
@@ -81,7 +124,7 @@ EOF
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
 metadata:
-  name: knative-eventing
+  name: ${TEST_RESOURCE}
   namespace: ${TEST_EVENTING_NAMESPACE}
 EOF
 }
@@ -231,7 +274,7 @@ header "Running postupgrade tests for Knative Eventing"
 cd ${KNATIVE_DIR}/eventing
 go_test_e2e -tags=postupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
 
-install_previous_operator_release
+downgrade_to_previous_version
 wait_until_pods_running ${TEST_NAMESPACE}
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 

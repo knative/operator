@@ -36,6 +36,9 @@ export TEST_NAMESPACE="${TEST_NAMESPACE:-knative-operator-testing}"
 export SYSTEM_NAMESPACE=${TEST_NAMESPACE}           # knative-serving
 export TEST_EVENTING_NAMESPACE=${TEST_NAMESPACE}    # knative-eventing
 
+# Both of serving and eventing CR will take this name
+export TEST_RESOURCE="knative"
+
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_REPO_BRANCH.
 GENERATE_SERVING_YAML=0
 

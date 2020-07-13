@@ -131,10 +131,10 @@ func ByGVK(gvk schema.GroupVersionKind) Predicate {
 }
 
 // In(m) returns a Predicate that tests for membership in m, using
-// "gvk|namespace/name" as a unique identifier
+// "gk|ns/name" as a unique identifier
 func In(manifest Manifest) Predicate {
 	key := func(u *unstructured.Unstructured) string {
-		return fmt.Sprintf("%s|%s/%s", u.GroupVersionKind(), u.GetNamespace(), u.GetName())
+		return fmt.Sprintf("%s|%s/%s", u.GroupVersionKind().GroupKind(), u.GetNamespace(), u.GetName())
 	}
 	index := sets.NewString()
 	for _, u := range manifest.resources {

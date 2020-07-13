@@ -221,11 +221,11 @@ override in your unit tests. For example,
 ```go
 func verifySomething(t *testing.T, expected *unstructured.Unstructured) {
     client := fake.Client{
-        Stubs{
+        fake.Stubs{
             Create: func(u *unstructured.Unstructured) error {
                 if !reflect.DeepEqual(u, expected) {
-    				t.Error("You did it wrong!")
-    			}
+                    t.Error("You did it wrong!")
+                }
                 return nil
             },
         },

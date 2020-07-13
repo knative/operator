@@ -152,7 +152,7 @@ github.com/mailru/easyjson/jwriter
 ## explicit
 github.com/manifestival/client-go-client
 github.com/manifestival/client-go-client/pkg/dynamic
-# github.com/manifestival/manifestival v0.5.1-0.20200702141132-93669fa9179b
+# github.com/manifestival/manifestival v0.6.1-0.20200713203452-583e95ddeeb0
 ## explicit
 github.com/manifestival/manifestival
 github.com/manifestival/manifestival/fake

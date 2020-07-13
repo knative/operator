@@ -9,7 +9,7 @@ require (
 	github.com/google/go-cmp v0.4.0
 	github.com/grpc-ecosystem/grpc-gateway v1.12.2 // indirect
 	github.com/manifestival/client-go-client v0.2.3-0.20200702141517-e255fbf14f6f
-	github.com/manifestival/manifestival v0.5.1-0.20200702141132-93669fa9179b
+	github.com/manifestival/manifestival v0.6.1-0.20200713203452-583e95ddeeb0
 	github.com/pkg/errors v0.9.1
 	go.uber.org/zap v1.14.1
 	golang.org/x/mod v0.3.0

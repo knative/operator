@@ -135,6 +135,9 @@ spec:
           type: object
         status:
           properties:
+            observedGeneration:
+              description: The generation last processed by the controller
+              type: integer
             conditions:
               description: The latest available observations of a resource's current
                 state.

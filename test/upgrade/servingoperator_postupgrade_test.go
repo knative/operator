@@ -30,14 +30,11 @@ import (
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
-	"knative.dev/pkg/test/logstream"
 )
 
 // TestKnativeServingPostUpgrade verifies the KnativeServing creation, deployment recreation, and KnativeServing deletion
 // after the operator upgrades with the latest generated manifest of Knative Serving.
 func TestKnativeServingPostUpgrade(t *testing.T) {
-	cancel := logstream.Start(t)
-	defer cancel()
 	clients := client.Setup(t)
 
 	names := test.ResourceNames{

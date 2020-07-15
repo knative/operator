@@ -24,13 +24,10 @@ import (
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
-	"knative.dev/pkg/test/logstream"
 )
 
 // TestKnativeEventingDeployment verifies the KnativeEventing creation, deployment recreation, and KnativeEventing deletion.
 func TestKnativeEventingDeployment(t *testing.T) {
-	cancel := logstream.Start(t)
-	defer cancel()
 	clients := client.Setup(t)
 
 	names := test.ResourceNames{

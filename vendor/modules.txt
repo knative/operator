@@ -759,10 +759,8 @@ knative.dev/pkg/reconciler
 knative.dev/pkg/signals
 knative.dev/pkg/system
 knative.dev/pkg/test
-knative.dev/pkg/test/helpers
 knative.dev/pkg/test/ingress
 knative.dev/pkg/test/logging
-knative.dev/pkg/test/logstream
 knative.dev/pkg/test/monitoring
 knative.dev/pkg/test/spoof
 knative.dev/pkg/test/zipkin

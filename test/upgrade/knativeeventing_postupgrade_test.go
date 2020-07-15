@@ -30,14 +30,11 @@ import (
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
-	"knative.dev/pkg/test/logstream"
 )
 
 // TestKnativeEventingUpgrade verifies the KnativeEventing creation, deployment recreation, and KnativeEventing deletion
 // after upgraded to the latest HEAD at master, with the latest generated manifest of KnativeEventing.
 func TestKnativeEventingUpgrade(t *testing.T) {
-	cancel := logstream.Start(t)
-	defer cancel()
 	clients := client.Setup(t)
 
 	names := test.ResourceNames{

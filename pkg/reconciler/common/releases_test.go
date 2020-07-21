@@ -139,3 +139,93 @@ func TestListReleases(t *testing.T) {
 		})
 	}
 }
+
+func TestIsUpDowngradeEligible(t *testing.T) {
+	koPath := "testdata/kodata"
+	tests := []struct {
+		name      string
+		component v1alpha1.KComponent
+		expected  bool
+	}{{
+		name: "knative-serving without status.version",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.14.2",
+				},
+			},
+		},
+		expected: true,
+	}, {
+		name: "knative-serving upgrading one minor version",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.14.2",
+				},
+			},
+			Status: v1alpha1.KnativeServingStatus{
+				Version: "0.13.0",
+			},
+		},
+		expected: true,
+	}, {
+		name: "knative-serving upgrading across multiple minor versions",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.15.0",
+				},
+			},
+			Status: v1alpha1.KnativeServingStatus{
+				Version: "0.13.0",
+			},
+		},
+		expected: false,
+	}, {
+		name: "knative-serving upgrading to the latest version across multiple minor versions",
+		component: &v1alpha1.KnativeServing{
+			Status: v1alpha1.KnativeServingStatus{
+				Version: "0.13.0",
+			},
+		},
+		// The latest version is 0.15.0
+		expected: false,
+	}, {
+		name: "knative-serving upgrading to the latest version",
+		component: &v1alpha1.KnativeServing{
+			Status: v1alpha1.KnativeServingStatus{
+				Version: "0.14.0",
+			},
+		},
+		// The latest version is 0.15.0
+		expected: true,
+	}, {
+		name:      "knative-serving with latest version and empty status.version",
+		component: &v1alpha1.KnativeServing{},
+		expected:  true,
+	}, {
+		name: "knative-serving with the same status.version and spec.version",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.15.0",
+				},
+			},
+			Status: v1alpha1.KnativeServingStatus{
+				Version: "0.15.0",
+			},
+		},
+		expected: true,
+	}}
+
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result := IsUpDowngradeEligible(test.component)
+			util.AssertEqual(t, result, test.expected)
+		})
+	}
+}

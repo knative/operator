@@ -33,6 +33,9 @@ const (
 	// DeploymentsAvailable is a Condition indicating whether or not the Deployments of
 	// the respective component have come up successfully.
 	DeploymentsAvailable apis.ConditionType = "DeploymentsAvailable"
+	// VersionMigrationEligible is a Condition indicating whether or not the current version of
+	// Knative component is eligible to upgrade or downgrade to the specified version.
+	VersionMigrationEligible apis.ConditionType = "VersionMigrationEligible"
 )
 
 // KComponent is a common interface for accessing meta, spec and status of all known types.
@@ -71,6 +74,12 @@ type KComponentStatus interface {
 	// MarkDeploymentsNotReady marks the DeploymentsAvailable status as false and calls out
 	// it's waiting for deployments.
 	MarkDeploymentsNotReady()
+
+	// MarkVersionMigrationEligible marks the VersionMigrationEligible status as true.
+	MarkVersionMigrationEligible()
+	// MarkVersionMigrationNotEligible marks the VersionMigrationEligible status as false with
+	// the given message.
+	MarkVersionMigrationNotEligible(msg string)
 
 	// MarkDependenciesInstalled marks the DependenciesInstalled status as true.
 	MarkDependenciesInstalled()

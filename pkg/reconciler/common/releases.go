@@ -85,13 +85,12 @@ func IsUpDowngradeEligible(instance v1alpha1.KComponent) bool {
 		return false
 	}
 
-	var err error
-	currentMinor, err := strconv.Atoi(strings.TrimPrefix(semver.MajorMinor(current), currentMajor+"."))
+	currentMinor, err := strconv.Atoi(strings.Split(current, ".")[1])
 	if err != nil {
 		return false
 	}
 
-	targetMinor, err := strconv.Atoi(strings.TrimPrefix(semver.MajorMinor(target), targetMajor+"."))
+	targetMinor, err := strconv.Atoi(strings.Split(target, ".")[1])
 	if err != nil {
 		return false
 	}

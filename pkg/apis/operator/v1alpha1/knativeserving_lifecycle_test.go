@@ -140,3 +140,11 @@ func TestKnativeServingExternalDependency(t *testing.T) {
 	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
 	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
 }
+
+func TestKnativeServingVersionMigrationNotEligible(t *testing.T) {
+	ks := &KnativeServingStatus{}
+	ks.InitializeConditions()
+
+	ks.MarkVersionMigrationNotEligible("Version migration not eligible.")
+	apistest.CheckConditionFailed(ks, VersionMigrationEligible, t)
+}

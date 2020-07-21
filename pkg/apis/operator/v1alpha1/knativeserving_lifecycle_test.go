@@ -43,6 +43,8 @@ func TestKnativeServingHappyPath(t *testing.T) {
 	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
 	apistest.CheckConditionOngoing(ks, InstallSucceeded, t)
 
+	ks.MarkVersionMigrationEligible()
+
 	// Install succeeds.
 	ks.MarkInstallSucceeded()
 	// Dependencies are assumed successful too.
@@ -76,6 +78,8 @@ func TestKnativeServingErrorPath(t *testing.T) {
 	apistest.CheckConditionOngoing(ks, DependenciesInstalled, t)
 	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
 	apistest.CheckConditionOngoing(ks, InstallSucceeded, t)
+
+	ks.MarkVersionMigrationEligible()
 
 	// Install fails.
 	ks.MarkInstallFailed("test")

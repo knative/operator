@@ -28,6 +28,7 @@ var (
 		DependenciesInstalled,
 		DeploymentsAvailable,
 		InstallSucceeded,
+		VersionMigrationEligible,
 	)
 )
 
@@ -70,9 +71,22 @@ func (es *KnativeEventingStatus) MarkInstallFailed(msg string) {
 		"Install failed with message: %s", msg)
 }
 
-// MarkDeploymentsAvailable marks the DeploymentsAvailable status as true.
+// MarkDeploymentsAvailable marks the VersionMigrationEligble status as true.
 func (es *KnativeEventingStatus) MarkDeploymentsAvailable() {
 	eventingCondSet.Manage(es).MarkTrue(DeploymentsAvailable)
+}
+
+// MarkVersionMigrationEligible marks the VersionMigrationEligible status as false with given message.
+func (es *KnativeEventingStatus) MarkVersionMigrationEligible() {
+	eventingCondSet.Manage(es).MarkTrue(VersionMigrationEligible)
+}
+
+// MarkVersionMigrationNotEligible marks the DeploymentsAvailable status as true.
+func (es *KnativeEventingStatus) MarkVersionMigrationNotEligible(msg string) {
+	eventingCondSet.Manage(es).MarkFalse(
+		VersionMigrationEligible,
+		"Error",
+		"Version migration is not eligible with message: %s", msg)
 }
 
 // MarkDeploymentsNotReady marks the DeploymentsAvailable status as false and calls out

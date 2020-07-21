@@ -28,6 +28,7 @@ var (
 		DependenciesInstalled,
 		DeploymentsAvailable,
 		InstallSucceeded,
+		VersionMigrationEligible,
 	)
 )
 
@@ -67,6 +68,19 @@ func (is *KnativeServingStatus) MarkInstallFailed(msg string) {
 		InstallSucceeded,
 		"Error",
 		"Install failed with message: %s", msg)
+}
+
+// MarkVersionMigrationEligible marks the VersionMigrationEligible status as false with given message.
+func (is *KnativeServingStatus) MarkVersionMigrationEligible() {
+	servingCondSet.Manage(is).MarkTrue(VersionMigrationEligible)
+}
+
+// MarkVersionMigrationNotEligible marks the DeploymentsAvailable status as true.
+func (is *KnativeServingStatus) MarkVersionMigrationNotEligible(msg string) {
+	servingCondSet.Manage(is).MarkFalse(
+		VersionMigrationEligible,
+		"Error",
+		"Version migration is not eligible with message: %s", msg)
 }
 
 // MarkDeploymentsAvailable marks the DeploymentsAvailable status as true.

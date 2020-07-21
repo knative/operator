@@ -91,9 +91,12 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 	logger.Infow("Reconciling KnativeEventing", "status", ke.Status)
 
 	if !common.IsUpDowngradeEligible(ke) {
-		logger.Errorf("It is not supported to upgrade or downgrade across multiple MINOR versions. The "+
+		msg := fmt.Errorf("It is not supported to upgrade or downgrade across multiple MINOR versions. The "+
 			"installed KnativeEventing version is %v.", ke.Status.Version)
+		ke.Status.MarkVersionMigrationNotEligible(msg.Error())
 		return nil
+	} else {
+		ke.Status.MarkVersionMigrationEligible()
 	}
 
 	if err := r.extension.Reconcile(ctx, ke); err != nil {

@@ -29,7 +29,7 @@ var eventingCondSet = apis.NewLivingConditionSet(
 
 // GroupVersionKind returns SchemeGroupVersion of an KnativeEventing
 func (e *KnativeEventing) GroupVersionKind() schema.GroupVersionKind {
-	return SchemeGroupVersion.WithKind(Kind)
+	return SchemeGroupVersion.WithKind(KindKnativeEventing)
 }
 
 // GetCondition returns the current condition of a given condition type

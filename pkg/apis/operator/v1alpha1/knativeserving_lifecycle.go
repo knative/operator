@@ -28,7 +28,7 @@ var conditions = apis.NewLivingConditionSet(
 
 // GroupVersionKind returns SchemeGroupVersion of a KnativeServing
 func (ks *KnativeServing) GroupVersionKind() schema.GroupVersionKind {
-	return SchemeGroupVersion.WithKind(Kind)
+	return SchemeGroupVersion.WithKind(KindKnativeServing)
 }
 
 func (is *KnativeServingStatus) IsReady() bool {

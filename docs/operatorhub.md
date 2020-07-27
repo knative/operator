@@ -9,7 +9,7 @@ following:
 - Test locally
 - Send a PR to https://github.com/operator-framework/
 - Once that passes the Prow tests and gets approved by the OperatorHub people,
-  send a PR to `knative/eventing` so that we also have the metadata handy in
+  send a PR to `knative/operator` so that we also have the metadata handy in
   this repository
 
 ## Instructions for metadata files:

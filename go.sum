@@ -842,6 +842,8 @@ github.com/manifestival/manifestival v0.5.1-0.20200702141132-93669fa9179b/go.mod
 github.com/manifestival/manifestival v0.6.1-0.20200713203452-583e95ddeeb0 h1:0HnrNIteTVujCCSHXhuyWHS98/fMmAn00Qum7JNe9jw=
 github.com/manifestival/manifestival v0.6.1-0.20200713203452-583e95ddeeb0/go.mod h1:3Qq9cnPy7sv7FVhg2Kvw0ebb35R4OdctS4UjTjHlHm4=
 github.com/maratori/testpackage v1.0.1/go.mod h1:ddKdw+XG0Phzhx8BFDTKgpWP4i7MpApTE5fXSKAqwDU=
+github.com/manifestival/manifestival v0.6.1-0.20200803172850-17489fb53356 h1:dtKnX/Ds9nxuzSmVb6a8uckRadhRqN2Y9/jyY2zHHbI=
+github.com/manifestival/manifestival v0.6.1-0.20200803172850-17489fb53356/go.mod h1:3Qq9cnPy7sv7FVhg2Kvw0ebb35R4OdctS4UjTjHlHm4=
 github.com/markbates/inflect v1.0.4/go.mod h1:1fR9+pO2KHEO9ZRtto13gDwwZaAKstQzferVeWqbgNs=
 github.com/marstr/guid v1.1.0/go.mod h1:74gB1z2wpxxInTG6yaqA7KrtM0NZ+RbrcqDvYHefzho=
 github.com/matoous/godox v0.0.0-20190911065817-5d6d842e92eb/go.mod h1:1BELzlh859Sh1c6+90blK8lbYy0kwQf1bYlBhBysy1s=

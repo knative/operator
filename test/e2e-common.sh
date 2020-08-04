@@ -20,7 +20,7 @@ source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 # The previous serving release, installed by the operator.
 readonly PREVIOUS_SERVING_RELEASE_VERSION="0.15.2"
 # The previous eventing release, installed by the operator.
-readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.15.3"
+readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.15.4"
 # This is the branch name of serving and eventing repo, where we run the upgrade tests.
 readonly KNATIVE_REPO_BRANCH="release-0.16"
 # Istio version we test with

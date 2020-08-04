@@ -10,12 +10,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Support for generated names: if `metadata.generateName` is set and
   `metadata.name` is *not* set on any resource in a manifest, that resource will
   always be _created_ when the manifest is _applied_. [#65](https://github.com/manifestival/manifestival/issues/65)
+- Support for CRD apiextensions.k8s.io/v1: CRD v1/v1beta has a difference 
+  in the specification on the conversion webhook field, which needs to be 
+  compatible in the InjectNamespace function.
 
 ### Changed
 
 - Fixed the `In` predicate to not incorporate the API version in its comparison
   of manifest resources. Only Group, Kind, Namespace, and Name are used to test
   for equality. [#67](https://github.com/manifestival/manifestival/issues/67)
+- After experimenting with dynamically constructing `Any` and `All`
+  predicates, we decided to partially revert
+  [#56](https://github.com/manifestival/manifestival/pull/56): `Any`
+  and `All` no longer require at least one argument as it has become
+  clear that `All()` should match `Everything` and `Any()` should
+  match `Nothing`. [#69](https://github.com/manifestival/manifestival/issues/69)
 
 ### Removed
 

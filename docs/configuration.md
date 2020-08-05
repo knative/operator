@@ -82,12 +82,12 @@ deployment container specs via three optional sub-fields: `override`,
 
 ### spec.registry.override
 
-The optional `override` field is a mapping of deployment container
-names to docker image names.
+The optional `override` field is a mapping of container names to
+docker image names.
 
-If the container names are not unique across all of your deployments,
-you can prefix the container name with the deployment name and a
-slash, e.g. `deployment/container`.
+If the container name is not unique across all of the deployments,
+damemonsets and jobs, you can prefix the container name with the
+"parent's" name and a slash, e.g. `deployment/container`.
 
 Because some container specs map environment variables to image names,
 those are permitted as keys in the `override` map as well.

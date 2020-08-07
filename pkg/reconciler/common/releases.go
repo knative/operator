@@ -39,15 +39,7 @@ const (
 	URLLinkTemplate = "https://github.com/knative/%s/releases/download/v%s/%s"
 )
 
-var (
-	cache = map[string]mf.Manifest{}
-
-	// ServingYamlNames is the string array containing all the artifacts to download for Knative serving
-	ServingYamlNames = []string{"serving-upgrade.yaml", "serving-crds.yaml", "serving-core.yaml", "serving-hpa.yaml"}
-
-	// EventingYamlNames is the string array containing all the artifacts to download for Knative eventing
-	EventingYamlNames = []string{"eventing-upgrade.yaml", "eventing.yaml"}
-)
+var cache = map[string]mf.Manifest{}
 
 // TargetVersion returns the version of the manifest to be installed
 // per the spec in the component. If spec.version is empty, the latest
@@ -72,7 +64,7 @@ func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 	current := instance.GetStatus().GetVersion()
 	if current != "" {
-		return fetch(manifestPath(current, instance))
+		return fetch(installedManifestPath(current, instance))
 	}
 	return TargetManifest(instance)
 }
@@ -145,39 +137,47 @@ func componentDir(instance v1alpha1.KComponent) string {
 }
 
 func componentURL(version string, instance v1alpha1.KComponent) string {
-	component := "serving"
-	var fileNameList []string
-	switch instance.(type) {
-	case *v1alpha1.KnativeServing:
-		fileNameList = ServingYamlNames
-	case *v1alpha1.KnativeEventing:
-		component = "eventing"
-		fileNameList = EventingYamlNames
-	}
-
+	manifests := instance.GetSpec().GetManifests()
 	// Create the comma-separated string as the URL to retrieve the manifest
-	if len(fileNameList) == 0 {
+	if len(manifests) == 0 {
 		return ""
 	}
 
-	urls := make([]string, 0, len(fileNameList))
-	for _, file := range fileNameList {
-		urls = append(urls, fmt.Sprintf(URLLinkTemplate, component, version, file))
+	urls := make([]string, 0, len(manifests))
+	for _, manifest := range manifests {
+		urls = append(urls, manifest.Url)
 	}
 	return strings.Join(urls, ",")
 }
 
 func manifestPath(version string, instance v1alpha1.KComponent) string {
+	if !semver.IsValid(sanitizeSemver(version)) {
+		return ""
+	}
+
+	if manifestPath := componentURL(version, instance); manifestPath != "" {
+		return manifestPath
+	}
+
 	localPath := filepath.Join(componentDir(instance), version)
 	if _, err := os.Stat(localPath); !os.IsNotExist(err) {
 		return localPath
 	}
 
-	if !semver.IsValid(sanitizeSemver(version)) {
-		return ""
+	return ""
+}
+
+func installedManifestPath(version string, instance v1alpha1.KComponent) string {
+	if manifestsPath := instance.GetStatus().GetManifests(); manifestsPath != "" {
+		return manifestsPath
 	}
 
-	return componentURL(version, instance)
+	localPath := filepath.Join(componentDir(instance), version)
+	if _, err := os.Stat(localPath); !os.IsNotExist(err) {
+		return localPath
+	}
+
+	return ""
 }
 
 // sanitizeSemver always adds `v` in front of the version.

@@ -25,6 +25,13 @@ import (
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
+const (
+	SERVING_CORE      = "https://github.com/knative/serving/releases/download/v0.16.0/serving-core.yaml"
+	SERVING_HPA       = "https://github.com/knative/serving/releases/download/v0.16.0/serving-hpa.yaml"
+	EVENTING_CORE     = "https://github.com/knative/eventing/releases/download/v0.16.0/eventing-core.yaml"
+	IN_MEMORY_CHANNEL = "https://github.com/knative/eventing/releases/download/v0.16.0/in-memory-channel.yaml"
+)
+
 func TestRetrieveManifestPath(t *testing.T) {
 	koPath := "testdata/kodata"
 	os.Setenv(KoEnvKey, koPath)
@@ -45,6 +52,36 @@ func TestRetrieveManifestPath(t *testing.T) {
 		component: &v1alpha1.KnativeEventing{},
 		version:   "0.14.2",
 		expected:  koPath + "/knative-eventing/0.14.2",
+	}, {
+		name: "Valid Knative Serving URLs",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: SERVING_CORE,
+					}, v1alpha1.Manifest{
+						Url: SERVING_HPA,
+					}},
+				},
+			},
+		},
+		version:  "0.16.0",
+		expected: SERVING_CORE + "," + SERVING_HPA,
+	}, {
+		name: "Valid Knative Eventing URLs",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: EVENTING_CORE,
+					}, v1alpha1.Manifest{
+						Url: IN_MEMORY_CHANNEL,
+					}},
+				},
+			},
+		},
+		version:  "0.16.0",
+		expected: EVENTING_CORE + "," + IN_MEMORY_CHANNEL,
 	}}
 
 	for _, test := range tests {
@@ -54,34 +91,6 @@ func TestRetrieveManifestPath(t *testing.T) {
 			manifest, err := mf.NewManifest(manifestPath)
 			util.AssertEqual(t, err, nil)
 			util.AssertEqual(t, len(manifest.Resources()) > 0, true)
-		})
-	}
-
-	testManifestsRemote := []struct {
-		component v1alpha1.KComponent
-		version   string
-		name      string
-		expected  string
-	}{{
-		name:      "Valid Knative Serving Version locally unavailable",
-		component: &v1alpha1.KnativeServing{},
-		version:   "0.15.1",
-		expected: "https://github.com/knative/serving/releases/download/v0.15.1/serving-upgrade.yaml," +
-			"https://github.com/knative/serving/releases/download/v0.15.1/serving-crds.yaml," +
-			"https://github.com/knative/serving/releases/download/v0.15.1/serving-core.yaml," +
-			"https://github.com/knative/serving/releases/download/v0.15.1/serving-hpa.yaml",
-	}, {
-		name:      "Valid Knative Eventing Version locally unavailable",
-		component: &v1alpha1.KnativeEventing{},
-		version:   "0.15.1",
-		expected: "https://github.com/knative/eventing/releases/download/v0.15.1/eventing-upgrade.yaml," +
-			"https://github.com/knative/eventing/releases/download/v0.15.1/eventing.yaml",
-	}}
-
-	for _, test := range testManifestsRemote {
-		t.Run(test.name, func(t *testing.T) {
-			manifestPath := manifestPath(test.version, test.component)
-			util.AssertEqual(t, manifestPath, test.expected)
 		})
 	}
 

@@ -1,5 +1,6 @@
 # Knative Operator
 
+
 The Knative Operator defines custom resources for the
 [Knative](https://knative.dev/) components,
 [serving](config/300-serving.yaml) and

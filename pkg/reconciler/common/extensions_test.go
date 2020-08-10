@@ -59,7 +59,7 @@ func TestExtensions(t *testing.T) {
 		length:   0,
 	}, {
 		name:     "no path",
-		platform: NoExtension(nil),
+		platform: NoExtension(context.TODO()),
 		length:   0,
 	}}
 
@@ -71,10 +71,10 @@ func TestExtensions(t *testing.T) {
 				if len(transformers) != test.length {
 					t.Error("Unexpected result")
 				}
-				if ext.Reconcile(nil, nil) != nil {
+				if ext.Reconcile(context.TODO(), nil) != nil {
 					t.Error("Unexpected result")
 				}
-				if ext.Finalize(nil, nil) != nil {
+				if ext.Finalize(context.TODO(), nil) != nil {
 					t.Error("Unexpected result")
 				}
 			}

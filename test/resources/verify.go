@@ -72,10 +72,11 @@ func KSOperatorCRVerifyConfiguration(t *testing.T, clients *test.Clients, names 
 }
 
 func verifyDefaultConfig(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConfigMapName string, clients *test.Clients, names test.ResourceNames) {
-	ks, err := clients.KnativeServing().Update(ks)
+	_, err := clients.KnativeServing().Update(ks)
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
+
 	// Verify the relevant configmaps have been updated
 	err = WaitForConfigMap(defaultsConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
 		return m["revision-timeout-seconds"] == "200"
@@ -99,11 +100,13 @@ func verifySingleKeyDeletion(t *testing.T, loggingConfigKey string, loggingConfi
 	if err != nil || ks.Spec.Config[loggingConfigKey]["loglevel.autoscaler"] == "" {
 		t.Fatalf("Existing KS operator CR lacks proper key: %v", ks.Spec.Config)
 	}
+
 	delete(ks.Spec.Config[loggingConfigKey], "loglevel.autoscaler")
-	ks, err = clients.KnativeServing().Update(ks)
+	_, err = clients.KnativeServing().Update(ks)
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
+
 	// Verify the relevant configmap has been updated
 	err = WaitForConfigMap(loggingConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
 		_, autoscalerKeyExists := m["loglevel.autoscaler"]
@@ -120,11 +123,13 @@ func verifyEmptyKey(t *testing.T, defaultsConfigKey string, defaultsConfigMapNam
 	if err != nil {
 		t.Fatalf("Existing KS operator CR gone: %s", names.KnativeServing)
 	}
+
 	ks.Spec.Config[defaultsConfigKey] = map[string]string{}
-	ks, err = clients.KnativeServing().Update(ks)
+	_, err = clients.KnativeServing().Update(ks)
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
+
 	// Verify the relevant configmap has been updated and does not contain any keys except "_example"
 	err = WaitForConfigMap(defaultsConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
 		_, exampleExists := m["_example"]

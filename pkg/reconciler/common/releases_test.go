@@ -26,10 +26,13 @@ import (
 )
 
 const (
-	SERVING_CORE      = "https://github.com/knative/serving/releases/download/v0.16.0/serving-core.yaml"
-	SERVING_HPA       = "https://github.com/knative/serving/releases/download/v0.16.0/serving-hpa.yaml"
-	EVENTING_CORE     = "https://github.com/knative/eventing/releases/download/v0.16.0/eventing-core.yaml"
-	IN_MEMORY_CHANNEL = "https://github.com/knative/eventing/releases/download/v0.16.0/in-memory-channel.yaml"
+	VERSION              = "0.16.0"
+	SERVING_CORE         = "https://github.com/knative/serving/releases/download/v" + VERSION + "/serving-core.yaml"
+	SERVING_HPA          = "https://github.com/knative/serving/releases/download/v" + VERSION + "/serving-hpa.yaml"
+	EVENTING_CORE        = "https://github.com/knative/eventing/releases/download/v" + VERSION + "/eventing-core.yaml"
+	IN_MEMORY_CHANNEL    = "https://github.com/knative/eventing/releases/download/v" + VERSION + "/in-memory-channel.yaml"
+	SERVING_VERSION_CORE = "https://github.com/knative/serving/releases/download/v${version}/serving-core.yaml"
+	SERVING_VERSION_HPA  = "https://github.com/knative/serving/releases/download/v${version}/serving-hpa.yaml"
 )
 
 func TestRetrieveManifestPath(t *testing.T) {
@@ -65,7 +68,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 				},
 			},
 		},
-		version:  "0.16.0",
+		version:  VERSION,
 		expected: SERVING_CORE + "," + SERVING_HPA,
 	}, {
 		name: "Valid Knative Eventing URLs",
@@ -80,8 +83,23 @@ func TestRetrieveManifestPath(t *testing.T) {
 				},
 			},
 		},
-		version:  "0.16.0",
+		version:  VERSION,
 		expected: EVENTING_CORE + "," + IN_MEMORY_CHANNEL,
+	}, {
+		name: "Valid Knative Serving URLs with the version parameter",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: SERVING_VERSION_CORE,
+					}, v1alpha1.Manifest{
+						Url: SERVING_VERSION_HPA,
+					}},
+				},
+			},
+		},
+		version:  VERSION,
+		expected: SERVING_CORE + "," + SERVING_HPA,
 	}}
 
 	for _, test := range tests {

@@ -192,6 +192,6 @@ type ResourceRequirementsOverride struct {
 
 // Manifest enables the user to specify the links to the manifests' URLs
 type Manifest struct {
-	// The link of the manifest url
-	Url string `json:"url"`
+	// The link of the manifest URL
+	Url string `json:"URL"`
 }

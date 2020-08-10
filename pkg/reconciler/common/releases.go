@@ -39,7 +39,10 @@ const (
 	URLLinkTemplate = "https://github.com/knative/%s/releases/download/v%s/%s"
 )
 
-var cache = map[string]mf.Manifest{}
+var (
+	cache           = map[string]mf.Manifest{}
+	versionVariable = "${version}"
+)
 
 // TargetVersion returns the version of the manifest to be installed
 // per the spec in the component. If spec.version is empty, the latest
@@ -145,7 +148,8 @@ func componentURL(version string, instance v1alpha1.KComponent) string {
 
 	urls := make([]string, 0, len(manifests))
 	for _, manifest := range manifests {
-		urls = append(urls, manifest.Url)
+		url := strings.ReplaceAll(manifest.Url, versionVariable, version)
+		urls = append(urls, url)
 	}
 	return strings.Join(urls, ",")
 }

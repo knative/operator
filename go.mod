@@ -8,7 +8,7 @@ require (
 	github.com/go-logr/zapr v0.1.1
 	github.com/google/go-cmp v0.5.1
 	github.com/manifestival/client-go-client v0.2.3-0.20200702141517-e255fbf14f6f
-	github.com/manifestival/manifestival v0.6.1-0.20200713203452-583e95ddeeb0
+	github.com/manifestival/manifestival v0.6.1-0.20200803172850-17489fb53356
 	github.com/pkg/errors v0.9.1
 	go.uber.org/zap v1.15.0
 	golang.org/x/mod v0.3.0
@@ -30,7 +30,6 @@ require (
 
 replace (
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
-
 	k8s.io/api => k8s.io/api v0.17.6
 	k8s.io/apimachinery => k8s.io/apimachinery v0.17.6
 	k8s.io/client-go => k8s.io/client-go v0.17.6

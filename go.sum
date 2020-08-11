@@ -839,8 +839,8 @@ github.com/manifestival/client-go-client v0.2.3-0.20200702141517-e255fbf14f6f h1
 github.com/manifestival/client-go-client v0.2.3-0.20200702141517-e255fbf14f6f/go.mod h1:BISQjOz8kvcqMkGHFTRzO0hVEYolWScep7w1WT2bsV0=
 github.com/manifestival/manifestival v0.5.1-0.20200702141132-93669fa9179b h1:Je0eQ3VqreYrRlD7CZtYvYEPNPiALqZq7+V3tNDhGn0=
 github.com/manifestival/manifestival v0.5.1-0.20200702141132-93669fa9179b/go.mod h1:3Qq9cnPy7sv7FVhg2Kvw0ebb35R4OdctS4UjTjHlHm4=
-github.com/manifestival/manifestival v0.6.1-0.20200713203452-583e95ddeeb0 h1:0HnrNIteTVujCCSHXhuyWHS98/fMmAn00Qum7JNe9jw=
-github.com/manifestival/manifestival v0.6.1-0.20200713203452-583e95ddeeb0/go.mod h1:3Qq9cnPy7sv7FVhg2Kvw0ebb35R4OdctS4UjTjHlHm4=
+github.com/manifestival/manifestival v0.6.1-0.20200803172850-17489fb53356 h1:dtKnX/Ds9nxuzSmVb6a8uckRadhRqN2Y9/jyY2zHHbI=
+github.com/manifestival/manifestival v0.6.1-0.20200803172850-17489fb53356/go.mod h1:3Qq9cnPy7sv7FVhg2Kvw0ebb35R4OdctS4UjTjHlHm4=
 github.com/maratori/testpackage v1.0.1/go.mod h1:ddKdw+XG0Phzhx8BFDTKgpWP4i7MpApTE5fXSKAqwDU=
 github.com/markbates/inflect v1.0.4/go.mod h1:1fR9+pO2KHEO9ZRtto13gDwwZaAKstQzferVeWqbgNs=
 github.com/marstr/guid v1.1.0/go.mod h1:74gB1z2wpxxInTG6yaqA7KrtM0NZ+RbrcqDvYHefzho=

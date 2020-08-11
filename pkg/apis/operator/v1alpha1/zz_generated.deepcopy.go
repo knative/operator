@@ -240,6 +240,11 @@ func (in *KnativeEventingSpec) DeepCopy() *KnativeEventingSpec {
 func (in *KnativeEventingStatus) DeepCopyInto(out *KnativeEventingStatus) {
 	*out = *in
 	in.Status.DeepCopyInto(&out.Status)
+	if in.Manifests != nil {
+		in, out := &in.Manifests, &out.Manifests
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
@@ -343,6 +348,11 @@ func (in *KnativeServingSpec) DeepCopy() *KnativeServingSpec {
 func (in *KnativeServingStatus) DeepCopyInto(out *KnativeServingStatus) {
 	*out = *in
 	in.Status.DeepCopyInto(&out.Status)
+	if in.Manifests != nil {
+		in, out := &in.Manifests, &out.Manifests
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

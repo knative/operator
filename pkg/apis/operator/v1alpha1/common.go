@@ -59,7 +59,7 @@ type KComponentSpec interface {
 	GetResources() []ResourceRequirementsOverride
 	// GetVersion gets the version to be installed
 	GetVersion() string
-	// GetManifests gets the list of manifests to be installed
+	// GetManifests gets the list of manifests, which should ultimately be installed
 	GetManifests() []Manifest
 }
 

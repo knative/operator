@@ -27,12 +27,12 @@ import (
 
 const (
 	VERSION              = "0.16.0"
-	SERVING_CORE         = "file://knative/serving/releases/download/v" + VERSION + "/serving-core.yaml"
-	SERVING_HPA          = "file://knative/serving/releases/download/v" + VERSION + "/serving-hpa.yaml"
-	EVENTING_CORE        = "file://knative/eventing/releases/download/v" + VERSION + "/eventing-core.yaml"
-	IN_MEMORY_CHANNEL    = "file://knative/eventing/releases/download/v" + VERSION + "/in-memory-channel.yaml"
-	SERVING_VERSION_CORE = "file://knative/serving/releases/download/v${version}/serving-core.yaml"
-	SERVING_VERSION_HPA  = "file://knative/serving/releases/download/v${version}/serving-hpa.yaml"
+	SERVING_CORE         = "testdata/kodata/knative-serving/" + VERSION + "/serving-core.yaml"
+	SERVING_HPA          = "testdata/kodata/knative-serving/" + VERSION + "/serving-hpa.yaml"
+	EVENTING_CORE        = "testdata/kodata/knative-eventing/" + VERSION + "/eventing-core.yaml"
+	IN_MEMORY_CHANNEL    = "testdata/kodata/knative-eventing/" + VERSION + "/in-memory-channel.yaml"
+	SERVING_VERSION_CORE = "testdata/kodata/knative-serving/${version}/serving-core.yaml"
+	SERVING_VERSION_HPA  = "testdata/kodata/knative-serving/${version}/serving-hpa.yaml"
 )
 
 func TestRetrieveManifestPath(t *testing.T) {
@@ -55,24 +55,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 		component: &v1alpha1.KnativeEventing{},
 		version:   "0.14.2",
 		expected:  koPath + "/knative-eventing/0.14.2",
-	}}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			manifestPath := manifestPath(test.version, test.component)
-			util.AssertEqual(t, manifestPath, test.expected)
-			manifest, err := mf.NewManifest(manifestPath)
-			util.AssertEqual(t, err, nil)
-			util.AssertEqual(t, len(manifest.Resources()) > 0, true)
-		})
-	}
-
-	manifestURLTests := []struct {
-		component v1alpha1.KComponent
-		version   string
-		name      string
-		expected  string
-	}{{
+	}, {
 		name: "Valid Knative Serving URLs",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
@@ -119,10 +102,13 @@ func TestRetrieveManifestPath(t *testing.T) {
 		expected: SERVING_CORE + "," + SERVING_HPA,
 	}}
 
-	for _, test := range manifestURLTests {
+	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			manifestPath := manifestPath(test.version, test.component)
 			util.AssertEqual(t, manifestPath, test.expected)
+			manifest, err := mf.NewManifest(manifestPath)
+			util.AssertEqual(t, err, nil)
+			util.AssertEqual(t, len(manifest.Resources()) > 0, true)
 		})
 	}
 

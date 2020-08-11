@@ -162,7 +162,7 @@ github.com/mailru/easyjson/jwriter
 ## explicit
 github.com/manifestival/client-go-client
 github.com/manifestival/client-go-client/pkg/dynamic
-# github.com/manifestival/manifestival v0.6.1-0.20200713203452-583e95ddeeb0
+# github.com/manifestival/manifestival v0.6.1-0.20200803172850-17489fb53356
 ## explicit
 github.com/manifestival/manifestival
 github.com/manifestival/manifestival/fake
@@ -899,7 +899,6 @@ sigs.k8s.io/controller-runtime/pkg/client/apiutil
 # sigs.k8s.io/yaml v1.2.0
 ## explicit
 sigs.k8s.io/yaml
-# github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 # k8s.io/api => k8s.io/api v0.17.6
 # k8s.io/apimachinery => k8s.io/apimachinery v0.17.6
 # k8s.io/client-go => k8s.io/client-go v0.17.6

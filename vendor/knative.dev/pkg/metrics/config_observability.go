@@ -18,6 +18,7 @@ package metrics
 
 import (
 	"os"
+	"strings"
 	texttemplate "text/template"
 
 	corev1 "k8s.io/api/core/v1"
@@ -29,10 +30,10 @@ const (
 	DefaultLogURLTemplate = "http://localhost:8001/api/v1/namespaces/knative-monitoring/services/kibana-logging/proxy/app/kibana#/discover?_a=(query:(match:(kubernetes.labels.knative-dev%2FrevisionUID:(query:'${REVISION_UID}',type:phrase))))"
 
 	// The following is used to set the default metrics backend
-	DefaultRequestMetricsBackend = "prometheus"
+	defaultRequestMetricsBackend = "prometheus"
 
 	// The env var name for config-observability
-	ConfigMapNameEnv = "CONFIG_OBSERVABILITY_NAME"
+	configMapNameEnv = "CONFIG_OBSERVABILITY_NAME"
 )
 
 // ObservabilityConfig contains the configuration defined in the observability ConfigMap.
@@ -59,12 +60,15 @@ type ObservabilityConfig struct {
 	// EnableProfiling indicates whether it is allowed to retrieve runtime profiling data from
 	// the pods via an HTTP server in the format expected by the pprof visualization tool.
 	EnableProfiling bool
+
+	// EnableRequestLog enables activator/queue-proxy to write request logs.
+	EnableRequestLog bool
 }
 
 func defaultConfig() *ObservabilityConfig {
 	return &ObservabilityConfig{
 		LoggingURLTemplate:    DefaultLogURLTemplate,
-		RequestMetricsBackend: DefaultRequestMetricsBackend,
+		RequestMetricsBackend: defaultRequestMetricsBackend,
 	}
 }
 
@@ -83,6 +87,17 @@ func NewObservabilityConfigFromConfigMap(configMap *corev1.ConfigMap) (*Observab
 		return nil, err
 	}
 
+	if raw, ok := configMap.Data["logging.enable-request-log"]; ok {
+		if strings.EqualFold(raw, "true") && oc.RequestLogTemplate != "" {
+			oc.EnableRequestLog = true
+		}
+	} else if oc.RequestLogTemplate != "" {
+		// TODO: remove this after 0.17 cuts, this is meant only for smooth transition to the new flag.
+		// Once 0.17 cuts we should set a proper default value and users will need to set the flag explicitly
+		// to enable request logging.
+		oc.EnableRequestLog = true
+	}
+
 	if oc.RequestLogTemplate != "" {
 		// Verify that we get valid templates.
 		if _, err := texttemplate.New("requestLog").Parse(oc.RequestLogTemplate); err != nil {
@@ -95,7 +110,7 @@ func NewObservabilityConfigFromConfigMap(configMap *corev1.ConfigMap) (*Observab
 
 // ConfigMapName gets the name of the metrics ConfigMap
 func ConfigMapName() string {
-	cm := os.Getenv(ConfigMapNameEnv)
+	cm := os.Getenv(configMapNameEnv)
 	if cm == "" {
 		return "config-observability"
 	}

@@ -62,7 +62,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 				CommonSpec: v1alpha1.CommonSpec{
 					Manifests: []v1alpha1.Manifest{{
 						Url: SERVING_CORE,
-					}, v1alpha1.Manifest{
+					}, {
 						Url: SERVING_HPA,
 					}},
 				},
@@ -77,7 +77,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 				CommonSpec: v1alpha1.CommonSpec{
 					Manifests: []v1alpha1.Manifest{{
 						Url: EVENTING_CORE,
-					}, v1alpha1.Manifest{
+					}, {
 						Url: IN_MEMORY_CHANNEL,
 					}},
 				},
@@ -92,7 +92,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 				CommonSpec: v1alpha1.CommonSpec{
 					Manifests: []v1alpha1.Manifest{{
 						Url: SERVING_VERSION_CORE,
-					}, v1alpha1.Manifest{
+					}, {
 						Url: SERVING_VERSION_HPA,
 					}},
 				},
@@ -145,11 +145,11 @@ func TestGetLatestRelease(t *testing.T) {
 	}{{
 		name:      "serving",
 		component: &v1alpha1.KnativeServing{},
-		expected:  "0.15.0",
+		expected:  VERSION,
 	}, {
 		name:      "eventing",
 		component: &v1alpha1.KnativeEventing{},
-		expected:  "0.15.0",
+		expected:  VERSION,
 	}}
 
 	os.Setenv(KoEnvKey, koPath)
@@ -172,11 +172,11 @@ func TestListReleases(t *testing.T) {
 	}{{
 		name:      "knative-serving",
 		component: &v1alpha1.KnativeServing{},
-		expected:  []string{"0.15.0", "0.14.0"},
+		expected:  []string{"0.16.0", "0.15.0", "0.14.0"},
 	}, {
 		name:      "knative-eventing",
 		component: &v1alpha1.KnativeEventing{},
-		expected:  []string{"0.15.0", "0.14.2"},
+		expected:  []string{"0.16.0", "0.15.0", "0.14.2"},
 	}}
 
 	os.Setenv(KoEnvKey, koPath)
@@ -245,10 +245,10 @@ func TestIsUpDowngradeEligible(t *testing.T) {
 		name: "knative-serving upgrading to the latest version",
 		component: &v1alpha1.KnativeServing{
 			Status: v1alpha1.KnativeServingStatus{
-				Version: "0.14.0",
+				Version: "0.15.0",
 			},
 		},
-		// The latest version is 0.15.0
+		// The latest version is 0.16.0
 		expected: true,
 	}, {
 		name:      "knative-serving with latest version and empty status.version",

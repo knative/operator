@@ -36,7 +36,7 @@ func TestStagesExecute(t *testing.T) {
 	stages := Stages{AppendTarget, AppendInstalled}
 	util.AssertEqual(t, len(manifest.Resources()), 0)
 	stages.Execute(context.TODO(), &manifest, &v1alpha1.KnativeServing{})
-	util.AssertEqual(t, len(manifest.Resources()), 2)
+	util.AssertEqual(t, len(manifest.Resources()), 4)
 }
 
 func TestDeleteObsoleteResources(t *testing.T) {

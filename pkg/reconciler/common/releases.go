@@ -34,9 +34,6 @@ import (
 const (
 	// KoEnvKey is the key of the environment variable to specify the path to the ko data directory
 	KoEnvKey = "KO_DATA_PATH"
-
-	// URLLinkTemplate is the template of the URL used to access the released artifacts of Knative
-	URLLinkTemplate = "https://github.com/knative/%s/releases/download/v%s/%s"
 )
 
 var (

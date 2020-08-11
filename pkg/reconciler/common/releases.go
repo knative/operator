@@ -34,12 +34,13 @@ import (
 const (
 	// KoEnvKey is the key of the environment variable to specify the path to the ko data directory
 	KoEnvKey = "KO_DATA_PATH"
+	// VersionVariable is a string, which can be replaced with the value of spec.version
+	VersionVariable = "${version}"
+	// COMMA is the character comma
+	COMMA = ","
 )
 
-var (
-	cache           = map[string]mf.Manifest{}
-	versionVariable = "${version}"
-)
+var cache = map[string]mf.Manifest{}
 
 // TargetVersion returns the version of the manifest to be installed
 // per the spec in the component. If spec.version is empty, the latest
@@ -139,16 +140,16 @@ func componentDir(instance v1alpha1.KComponent) string {
 func componentURL(version string, instance v1alpha1.KComponent) string {
 	manifests := instance.GetSpec().GetManifests()
 	// Create the comma-separated string as the URL to retrieve the manifest
-	if len(manifests) == 0 {
-		return ""
-	}
-
 	urls := make([]string, 0, len(manifests))
 	for _, manifest := range manifests {
-		url := strings.ReplaceAll(manifest.Url, versionVariable, version)
+		url := strings.ReplaceAll(manifest.Url, VersionVariable, version)
 		urls = append(urls, url)
 	}
-	return strings.Join(urls, ",")
+	return strings.Join(urls, COMMA)
+}
+
+func createManifestsPath(path string) []string {
+	return strings.Split(path, COMMA)
 }
 
 func manifestPath(version string, instance v1alpha1.KComponent) string {
@@ -169,8 +170,8 @@ func manifestPath(version string, instance v1alpha1.KComponent) string {
 }
 
 func installedManifestPath(version string, instance v1alpha1.KComponent) string {
-	if manifestsPath := instance.GetStatus().GetManifests(); manifestsPath != "" {
-		return manifestsPath
+	if manifests := instance.GetStatus().GetManifests(); len(manifests) != 0 {
+		return strings.Join(manifests, COMMA)
 	}
 
 	localPath := filepath.Join(componentDir(instance), version)

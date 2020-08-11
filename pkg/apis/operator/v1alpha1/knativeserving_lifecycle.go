@@ -131,11 +131,11 @@ func (is *KnativeServingStatus) SetVersion(version string) {
 }
 
 // GetManifests gets the url links of the manifests.
-func (is *KnativeServingStatus) GetManifests() string {
+func (is *KnativeServingStatus) GetManifests() []string {
 	return is.Manifests
 }
 
 // SetVersion sets the url links of the manifests.
-func (is *KnativeServingStatus) SetManifests(manifests string) {
+func (is *KnativeServingStatus) SetManifests(manifests []string) {
 	is.Manifests = manifests
 }

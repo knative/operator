@@ -132,11 +132,11 @@ func (es *KnativeEventingStatus) SetVersion(version string) {
 }
 
 // GetManifests gets the url links of the manifests.
-func (es *KnativeEventingStatus) GetManifests() string {
+func (es *KnativeEventingStatus) GetManifests() []string {
 	return es.Manifests
 }
 
 // SetVersion sets the url links of the manifests.
-func (es *KnativeEventingStatus) SetManifests(manifests string) {
+func (es *KnativeEventingStatus) SetManifests(manifests []string) {
 	es.Manifests = manifests
 }

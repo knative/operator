@@ -68,7 +68,7 @@ type KnativeEventingStatus struct {
 
 	// The url links of the manifests, separated by comma
 	// +optional
-	Manifests string `json:"manifests,omitempty"`
+	Manifests []string `json:"manifests,omitempty"`
 }
 
 // KnativeEventingList contains a list of KnativeEventing

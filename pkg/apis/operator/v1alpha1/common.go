@@ -98,9 +98,9 @@ type KComponentStatus interface {
 	SetVersion(version string)
 
 	// GetManifests gets the url links of the manifests
-	GetManifests() string
+	GetManifests() []string
 	// SetManifests sets the url links of the manifests
-	SetManifests(manifests string)
+	SetManifests(manifests []string)
 
 	// IsReady return true if all conditions are satisfied
 	IsReady() bool

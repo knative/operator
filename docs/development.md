@@ -1,15 +1,15 @@
 # Knative Operator Development
 
-Most of the same tools required for [Knative Serving
-development](https://github.com/knative/serving/blob/master/DEVELOPMENT.md)
+Most of the same tools required for
+[Knative Serving development](https://github.com/knative/serving/blob/master/DEVELOPMENT.md)
 are required for the operator, too.
 
-You'll probably need to [install
-Istio](https://knative.dev/docs/install/installing-istio/). For the
-e2e tests to pass, you only need its CRD's.
+You'll probably need to
+[install Istio](https://knative.dev/docs/install/installing-istio/). For the e2e
+tests to pass, you only need its CRD's.
 
-You should clone this repo to `$GOPATH/src/knative.dev/operator`. All
-commands below are relative to that path.
+You should clone this repo to `$GOPATH/src/knative.dev/operator`. All commands
+below are relative to that path.
 
 To install the operator:
 

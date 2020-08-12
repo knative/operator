@@ -151,13 +151,17 @@ func UpdateExporter(ops ExporterOptions, logger *zap.SugaredLogger) error {
 	if isNewExporterRequired(newConfig) {
 		logger.Info("Flushing the existing exporter before setting up the new exporter.")
 		flushGivenExporter(curMetricsExporter)
-		e, err := newMetricsExporter(newConfig, logger)
+		e, f, err := newMetricsExporter(newConfig, logger)
 		if err != nil {
-			logger.Errorf("Failed to update a new metrics exporter based on metric config %v. error: %v", newConfig, err)
+			logger.Errorw("Failed to update a new metrics exporter based on metric config", newConfig, zap.Error(err))
 			return err
 		}
 		existingConfig := curMetricsConfig
 		curMetricsExporter = e
+		if err := setFactory(f); err != nil {
+			logger.Errorw("Failed to update metrics factory when loading metric config", newConfig, zap.Error(err))
+			return err
+		}
 		logger.Infof("Successfully updated the metrics exporter; old config: %v; new config %v", existingConfig, newConfig)
 	}
 
@@ -176,16 +180,16 @@ func isNewExporterRequired(newConfig *metricsConfig) bool {
 
 	// If the OpenCensus address has changed, restart the exporter.
 	// TODO(evankanderson): Should we just always restart the opencensus agent?
-	if newConfig.backendDestination == OpenCensus {
+	if newConfig.backendDestination == openCensus {
 		return newConfig.collectorAddress != cc.collectorAddress || newConfig.requireSecure != cc.requireSecure
 	}
 
-	return newConfig.backendDestination == Stackdriver && newConfig.stackdriverClientConfig != cc.stackdriverClientConfig
+	return newConfig.backendDestination == stackdriver && newConfig.stackdriverClientConfig != cc.stackdriverClientConfig
 }
 
 // newMetricsExporter gets a metrics exporter based on the config.
 // This function must be called with the metricsMux reader (or writer) locked.
-func newMetricsExporter(config *metricsConfig, logger *zap.SugaredLogger) (view.Exporter, error) {
+func newMetricsExporter(config *metricsConfig, logger *zap.SugaredLogger) (view.Exporter, ResourceExporterFactory, error) {
 	// If there is a Prometheus Exporter server running, stop it.
 	resetCurPromSrv()
 
@@ -195,24 +199,20 @@ func newMetricsExporter(config *metricsConfig, logger *zap.SugaredLogger) (view.
 		se.StopMetricsExporter()
 	}
 
-	var err error
-	var e view.Exporter
-	switch config.backendDestination {
-	case OpenCensus:
-		e, err = newOpenCensusExporter(config, logger)
-	case Stackdriver:
-		e, err = newStackdriverExporter(config, logger)
-	case Prometheus:
-		e, err = newPrometheusExporter(config, logger)
-	case None:
-		e, err = nil, nil
-	default:
-		err = fmt.Errorf("unsupported metrics backend %v", config.backendDestination)
+	factory := map[metricsBackend]func(*metricsConfig, *zap.SugaredLogger) (view.Exporter, ResourceExporterFactory, error){
+		stackdriver: newStackdriverExporter,
+		openCensus:  newOpenCensusExporter,
+		prometheus:  newPrometheusExporter,
+		none: func(*metricsConfig, *zap.SugaredLogger) (view.Exporter, ResourceExporterFactory, error) {
+			return nil, nil, nil
+		},
 	}
-	if err != nil {
-		return nil, err
+
+	ff := factory[config.backendDestination]
+	if ff == nil {
+		return nil, nil, fmt.Errorf("unsuppored metrics backend %v", config.backendDestination)
 	}
-	return e, nil
+	return ff(config, logger)
 }
 
 func getCurMetricsExporter() view.Exporter {
@@ -240,12 +240,7 @@ func setCurMetricsConfig(c *metricsConfig) {
 }
 
 func setCurMetricsConfigUnlocked(c *metricsConfig) {
-	if c != nil {
-		view.SetReportingPeriod(c.reportingPeriod)
-	} else {
-		// Setting to 0 enables the default behavior.
-		view.SetReportingPeriod(0)
-	}
+	setReportingPeriod(c)
 	curMetricsConfig = c
 }
 
@@ -254,6 +249,7 @@ func setCurMetricsConfigUnlocked(c *metricsConfig) {
 // Return value indicates whether the exporter is flushable or not.
 func FlushExporter() bool {
 	e := getCurMetricsExporter()
+	flushResourceExporters()
 	return flushGivenExporter(e)
 }
 

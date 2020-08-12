@@ -235,6 +235,11 @@ install_previous_operator_release
 wait_until_pods_running ${TEST_NAMESPACE}
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
+header "Running postdowngrade tests for Knative Operator"
+cd ${OPERATOR_DIR}
+go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/downgrade \
+  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
+
 header "Running postdowngrade tests for Knative Serving"
 cd ${KNATIVE_DIR}/serving
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \

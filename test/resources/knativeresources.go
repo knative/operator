@@ -54,21 +54,21 @@ const (
 
 // WaitForKnativeDeploymentState polls the status of the Knative deployments every `interval`
 // until `inState` returns `true` indicating the deployments match the desired deployments.
-func WaitForKnativeDeploymentState(clients *test.Clients, namespace string, expectedDeployments []string, logf logging.FormatLogger,
-	inState func(deps *v1.DeploymentList, expectedDeployments []string, err error, logf logging.FormatLogger) (bool, error)) error {
+func WaitForKnativeDeploymentState(clients *test.Clients, namespace string, version string, expectedDeployments []string, logf logging.FormatLogger,
+	inState func(deps *v1.DeploymentList, expectedDeployments []string, version string, err error, logf logging.FormatLogger) (bool, error)) error {
 	span := logging.GetEmitableSpan(context.Background(), fmt.Sprintf("WaitForKnativeDeploymentState/%s/%s", expectedDeployments, "KnativeDeploymentIsReady"))
 	defer span.End()
 
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 		dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
-		return inState(dpList, expectedDeployments, err, logf)
+		return inState(dpList, expectedDeployments, version, err, logf)
 	})
 
 	return waitErr
 }
 
 // IsKnativeDeploymentReady will check the status conditions of the deployments and return true if the deployments meet the desired status.
-func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []string, err error,
+func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []string, version string, err error,
 	logf logging.FormatLogger) (bool, error) {
 	if err != nil {
 		return false, err
@@ -84,11 +84,18 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 	}
 
 	isReady := func(d *v1.Deployment) bool {
-		for _, c := range d.Status.Conditions {
-			if c.Type == v1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
-				return true
+		for _, val := range d.GetObjectMeta().GetLabels() {
+			// Check if the version matches. As long as we find a value equals to the version, we can determine
+			// the deployment is for the specific version.
+			if val == fmt.Sprintf("v%s", version) {
+				for _, c := range d.Status.Conditions {
+					if c.Type == v1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
+						return true
+					}
+				}
 			}
 		}
+
 		return false
 	}
 

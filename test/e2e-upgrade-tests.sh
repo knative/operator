@@ -41,23 +41,58 @@ readonly EVENTING_PROBER_FILE="/tmp/prober-signal-eventing"
 # TODO: remove when components can coexist in same namespace
 export TEST_EVENTING_NAMESPACE=knative-eventing
 
-function download_install_previous_operator_release() {
-  local full_url="https://github.com/knative/operator/releases/download/v${PREVIOUS_OPERATOR_RELEASE_VERSION}/operator.yaml"
-
-  wget "${full_url}" -O "${release_yaml}" \
-      || fail_test "Unable to download latest Knative Operator release."
-
-  install_istio || fail_test "Istio installation failed"
-  install_previous_operator_release
-}
-
 function install_previous_operator_release() {
-  header "Installing Knative operator of the previous public release"
-  kubectl apply -f "${release_yaml}" || fail_test "Knative Operator previous release installation failed"
-  wait_until_pods_running default || fail_test "Operator did not come up"
+  install_istio || fail_test "Istio installation failed"
+  install_operator
+  install_previous_knative
 }
 
-function create_custom_resource() {
+function install_previous_knative() {
+  header "Create the custom resources for Knative of the previous version"
+  create_knative_serving ${PREVIOUS_SERVING_RELEASE_VERSION}
+  create_knative_eventing ${PREVIOUS_EVENTING_RELEASE_VERSION}
+  wait_until_pods_running ${TEST_NAMESPACE}
+  wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
+}
+
+function create_knative_serving() {
+  version=${1}
+  echo ">> Creating the custom resource of Knative Serving:"
+  cat <<EOF | kubectl apply -f -
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeServing
+metadata:
+  name: knative-serving
+  namespace: ${TEST_NAMESPACE}
+spec:
+  version: ${version}
+  config:
+    defaults:
+      revision-timeout-seconds: "300"  # 5 minutes
+    autoscaler:
+      stable-window: "60s"
+    deployment:
+      registriesSkippingTagResolving: "ko.local,dev.local"
+    logging:
+      loglevel.controller: "debug"
+EOF
+}
+
+function create_knative_eventing() {
+  version=${1}
+  echo ">> Creating the custom resource of Knative Eventing:"
+  cat <<-EOF | kubectl apply -f -
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+  namespace: ${TEST_EVENTING_NAMESPACE}
+spec:
+  version: ${version}
+EOF
+}
+
+function create_latest_custom_resource() {
   echo ">> Creating the custom resource of Knative Serving:"
   cat <<EOF | kubectl apply -f -
 apiVersion: operator.knative.dev/v1alpha1
@@ -88,12 +123,9 @@ EOF
 
 function knative_setup() {
   create_namespace
-  download_install_previous_operator_release
+  install_previous_operator_release
   donwload_knative "serving" ${KNATIVE_REPO_BRANCH}
   donwload_knative "eventing" ${KNATIVE_REPO_BRANCH}
-  create_custom_resource
-  wait_until_pods_running ${TEST_NAMESPACE}
-  wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 }
 
 # Create test resources and images
@@ -207,7 +239,7 @@ go_test_e2e -tags=probe -timeout="${TIMEOUT}" ./test/upgrade --pipefile="${EVENT
 PROBER_PID_EVENTING=$!
 echo "Prober PID Serving is ${PROBER_PID_EVENTING}"
 
-install_operator
+create_latest_custom_resource
 
 # If we got this far, the operator installed Knative of the latest source code.
 header "Running tests for Knative Operator"
@@ -231,9 +263,14 @@ header "Running postupgrade tests for Knative Eventing"
 cd ${KNATIVE_DIR}/eventing
 go_test_e2e -tags=postupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
 
-install_previous_operator_release
+install_previous_knative
 wait_until_pods_running ${TEST_NAMESPACE}
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
+
+header "Running postdowngrade tests for Knative Operator"
+cd ${OPERATOR_DIR}
+go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/downgrade \
+  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
 
 header "Running postdowngrade tests for Knative Serving"
 cd ${KNATIVE_DIR}/serving

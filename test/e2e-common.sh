@@ -17,13 +17,9 @@
 # This script provides helper methods to perform cluster actions.
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
-# The previous operator release.
-readonly PREVIOUS_OPERATOR_RELEASE_VERSION="0.15.3"
-# The previous serving release, installed by the operator at PREVIOUS_OPERATOR_RELEASE_VERSION. This can be
-# different from PREVIOUS_OPERATOR_RELEASE_VERSION.
+# The previous serving release, installed by the operator.
 readonly PREVIOUS_SERVING_RELEASE_VERSION="0.15.2"
-# The previous eventing release, installed by the operator at PREVIOUS_OPERATOR_RELEASE_VERSION. This can be
-# different from PREVIOUS_OPERATOR_RELEASE_VERSION.
+# The previous eventing release, installed by the operator.
 readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.15.3"
 # This is the branch name of serving and eventing repo, where we run the upgrade tests.
 readonly KNATIVE_REPO_BRANCH="release-0.16"

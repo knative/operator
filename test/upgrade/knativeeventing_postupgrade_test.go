@@ -53,13 +53,15 @@ func TestKnativeEventingUpgrade(t *testing.T) {
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
 		// Based on the latest release version, get the deployment resources.
-		targetManifest, err := common.TargetManifest(&v1alpha1.KnativeEventing{})
+		ke := &v1alpha1.KnativeEventing{}
+		targetManifest, err := common.TargetManifest(ke)
 		if err != nil {
 			t.Fatalf("Failed to get the manifest for Knative: %v", err)
 		}
 		expectedDeployments := resources.GetExpectedDeployments(targetManifest)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
-		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(ke),
+			expectedDeployments)
 
 		instance := &v1alpha1.KnativeEventing{
 			Spec: v1alpha1.KnativeEventingSpec{

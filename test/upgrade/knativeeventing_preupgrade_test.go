@@ -53,7 +53,6 @@ func TestKnativeEventingPreUpgrade(t *testing.T) {
 			t.Fatalf("Failed to get KnativeEventing CR: %v", err)
 		}
 		resources.SetKodataDir()
-		defer os.Unsetenv(common.KoEnvKey)
 		// Based on the status.version, get the deployment resources.
 		defer os.Unsetenv(common.KoEnvKey)
 		manifest, err := common.InstalledManifest(keventing)
@@ -62,6 +61,7 @@ func TestKnativeEventingPreUpgrade(t *testing.T) {
 		}
 		expectedDeployments := resources.GetExpectedDeployments(manifest)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
-		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, expectedDeployments)
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, keventing.GetStatus().GetVersion(),
+			expectedDeployments)
 	})
 }

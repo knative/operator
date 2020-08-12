@@ -257,8 +257,8 @@ func AssertKnativeObsoleteResource(t *testing.T, clients *test.Clients, namespac
 }
 
 // AssertKnativeDeploymentStatus verifies if the Knative deployments reach the READY status.
-func AssertKnativeDeploymentStatus(t *testing.T, clients *test.Clients, namespace string, expectedDeployments []string) {
-	if err := WaitForKnativeDeploymentState(clients, namespace, expectedDeployments, t.Logf,
+func AssertKnativeDeploymentStatus(t *testing.T, clients *test.Clients, namespace string, version string, expectedDeployments []string) {
+	if err := WaitForKnativeDeploymentState(clients, namespace, version, expectedDeployments, t.Logf,
 		IsKnativeDeploymentReady); err != nil {
 		t.Fatalf("Knative Serving deployments failed to meet the expected deployments: %v", err)
 	}

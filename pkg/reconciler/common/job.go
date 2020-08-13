@@ -20,24 +20,50 @@ import (
 	"fmt"
 
 	mf "github.com/manifestival/manifestival"
+	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
+
+const istioAnnotationName = "sidecar.istio.io/inject"
 
 // JobTransform updates the job with the expected value for the key app in the label
 func JobTransform(obj v1alpha1.KComponent) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Job" {
+			job := &batchv1.Job{}
+			if err := scheme.Scheme.Convert(u, job, nil); err != nil {
+				return err
+			}
+
 			component := "serving"
 			if _, ok := obj.(*v1alpha1.KnativeEventing); ok {
 				component = "eventing"
 			}
-			if u.GetName() == "" {
-				u.SetName(fmt.Sprintf("%s%s-%s", u.GetGenerateName(), component, TargetVersion(obj)))
+			if job.GetName() == "" {
+				job.SetName(fmt.Sprintf("%s%s-%s", job.GetGenerateName(), component, TargetVersion(obj)))
 			} else {
-				u.SetName(fmt.Sprintf("%s-%s-%s", u.GetName(), component, TargetVersion(obj)))
+				job.SetName(fmt.Sprintf("%s-%s-%s", job.GetName(), component, TargetVersion(obj)))
 			}
+
+			addIstioIgnoreAnnotation(job)
+			return scheme.Scheme.Convert(job, u, nil)
 		}
+
 		return nil
+	}
+}
+
+func addIstioIgnoreAnnotation(job *batchv1.Job) {
+	annotations := job.Spec.Template.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	istioAnnotation := annotations[istioAnnotationName]
+	if istioAnnotation == "" {
+		annotations[istioAnnotationName] = "false"
+		job.Spec.Template.SetAnnotations(annotations)
 	}
 }

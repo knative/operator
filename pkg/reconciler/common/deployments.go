@@ -50,6 +50,7 @@ func CheckDeployments(ctx context.Context, manifest *mf.Manifest, instance v1alp
 		}
 	}
 	status.MarkDeploymentsAvailable()
+	status.SetVersion(TargetVersion(instance))
 	return nil
 }
 

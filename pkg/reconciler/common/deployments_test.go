@@ -105,7 +105,13 @@ func TestCheckDeployments(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to generate manifest: %v", err)
 			}
-			ks := &v1alpha1.KnativeServing{}
+			ks := &v1alpha1.KnativeServing{
+				Spec: v1alpha1.KnativeServingSpec{
+					CommonSpec: v1alpha1.CommonSpec{
+						Version: "0.16.0",
+					},
+				},
+			}
 			ks.Status.InitializeConditions()
 
 			err = CheckDeployments(context.TODO(), &manifest, ks)
@@ -117,6 +123,7 @@ func TestCheckDeployments(t *testing.T) {
 			if condition == nil || condition.Status != test.wantStatus {
 				t.Fatalf("DeploymentAvailable = %v, want %v", condition, test.wantStatus)
 			}
+
 		})
 	}
 }

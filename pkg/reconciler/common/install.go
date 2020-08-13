@@ -52,7 +52,6 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComp
 		return fmt.Errorf("failed to apply non rbac manifest: %w", err)
 	}
 	status.MarkInstallSucceeded()
-	status.SetVersion(TargetVersion(instance))
 	return nil
 }
 

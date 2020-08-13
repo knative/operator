@@ -70,10 +70,6 @@ func TestInstall(t *testing.T) {
 	if condition == nil || condition.Status != corev1.ConditionTrue {
 		t.Fatalf("InstallSucceeded = %v, want %v", condition, corev1.ConditionTrue)
 	}
-
-	if got, want := instance.GetStatus().GetVersion(), version; got != want {
-		t.Fatalf("GetVersion() = %s, want %s", got, want)
-	}
 }
 
 func TestInstallError(t *testing.T) {
@@ -105,10 +101,6 @@ func TestInstallError(t *testing.T) {
 	condition := instance.Status.GetCondition(v1alpha1.InstallSucceeded)
 	if condition == nil || condition.Status != corev1.ConditionFalse {
 		t.Fatalf("InstallSucceeded = %v, want %v", condition, corev1.ConditionFalse)
-	}
-
-	if got, want := instance.GetStatus().GetVersion(), oldVersion; got != want {
-		t.Fatalf("GetVersion() = %s, want %s", got, want)
 	}
 }
 

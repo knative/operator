@@ -845,7 +845,7 @@ knative.dev/caching/pkg/apis/caching/v1alpha1
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/eventing
-# knative.dev/pkg v0.0.0-20200811233205-6b7eccba3b9c
+# knative.dev/pkg v0.0.0-20200812224206-44c860147a87
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck/ducktypes

@@ -22,7 +22,6 @@ import (
 	"os"
 	"testing"
 
-	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 
 	"knative.dev/operator/pkg/reconciler/common"
@@ -52,7 +51,7 @@ func TestKnativeEventingPostDowngrade(t *testing.T) {
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
 
-		targetManifest, err := common.TargetManifest(&v1alpha1.KnativeEventing{})
+		_, err := common.TargetManifest(&v1alpha1.KnativeEventing{})
 		if err != nil {
 			t.Fatalf("Failed to get the manifest for Knative: %v", err)
 		}
@@ -74,8 +73,6 @@ func TestKnativeEventingPostDowngrade(t *testing.T) {
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, test.OperatorFlags.PreviousEventingVersion,
 			expectedDeployments)
-		resources.AssertKnativeObsoleteResource(t, clients, names.Namespace,
-			targetManifest.Filter(mf.Not(mf.In(preManifest))).Resources())
 	})
 }
 
@@ -99,7 +96,7 @@ func TestKnativeServingPostDowngrade(t *testing.T) {
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
 
-		targetManifest, err := common.TargetManifest(&v1alpha1.KnativeServing{})
+		_, err := common.TargetManifest(&v1alpha1.KnativeServing{})
 		if err != nil {
 			t.Fatalf("Failed to get the manifest for Knative: %v", err)
 		}
@@ -121,7 +118,5 @@ func TestKnativeServingPostDowngrade(t *testing.T) {
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, test.OperatorFlags.PreviousServingVersion,
 			expectedDeployments)
-		resources.AssertKnativeObsoleteResource(t, clients, names.Namespace,
-			targetManifest.Filter(mf.Not(mf.In(preManifest))).Resources())
 	})
 }

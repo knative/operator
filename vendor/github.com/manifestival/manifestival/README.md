@@ -112,9 +112,14 @@ whether the resource should be included in the filtered results.
 There are a few built-in predicates and some helper functions for
 creating your own:
 
-* `All` returns true iff *all* its predicates return true
-* `Any` returns true iff *any* of its predicates return true
-* `Not` negates its argument, returning false if its predicate returns true
+* `All` returns a `Predicate` that returns true unless any of its
+  arguments returns false
+* `Everything` is equivalent to `All()`
+* `Any` returns a `Predicate` that returns false unless any of its
+  arguments returns true
+* `Nothing` is equivalent to `Any()`
+* `Not` negates its argument, returning false if its argument returns
+  true
 * `ByName`, `ByKind`, `ByLabel`, `ByAnnotation`, and `ByGVK` filter
   resources by their respective attributes.
 * `CRDs` and its complement `NoCRDs` are handy filters for

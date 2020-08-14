@@ -891,7 +891,7 @@ knative.dev/pkg/tracing/propagation/tracecontextb3
 knative.dev/pkg/version
 knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
-# knative.dev/test-infra v0.0.0-20200811195106-afcd1747545f
+# knative.dev/test-infra v0.0.0-20200813220834-388e55a496cf
 ## explicit
 knative.dev/test-infra/scripts
 # sigs.k8s.io/controller-runtime v0.6.1

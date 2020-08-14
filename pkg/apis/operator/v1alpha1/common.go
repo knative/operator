@@ -59,6 +59,8 @@ type KComponentSpec interface {
 	GetResources() []ResourceRequirementsOverride
 	// GetVersion gets the version to be installed
 	GetVersion() string
+	// GetManifests gets the list of manifests, which should ultimately be installed
+	GetManifests() []Manifest
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -95,6 +97,11 @@ type KComponentStatus interface {
 	// SetVersion sets the currently installed version of the component.
 	SetVersion(version string)
 
+	// GetManifests gets the url links of the manifests
+	GetManifests() []string
+	// SetManifests sets the url links of the manifests
+	SetManifests(manifests []string)
+
 	// IsReady return true if all conditions are satisfied
 	IsReady() bool
 }
@@ -117,6 +124,10 @@ type CommonSpec struct {
 	// Override containers' resource requirements
 	// +optional
 	Version string `json:"version,omitempty"`
+
+	// A means to specify the manifests to install
+	// +optional
+	Manifests []Manifest `json:"manifests,omitempty"`
 }
 
 // GetConfig implements KComponentSpec.
@@ -137,6 +148,11 @@ func (c *CommonSpec) GetResources() []ResourceRequirementsOverride {
 // GetVersion implements KComponentSpec.
 func (c *CommonSpec) GetVersion() string {
 	return c.Version
+}
+
+// GetManifests implements KComponentSpec.
+func (c *CommonSpec) GetManifests() []Manifest {
+	return c.Manifests
 }
 
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first
@@ -172,4 +188,10 @@ type ResourceRequirementsOverride struct {
 	Container string `json:"container"`
 	// The desired ResourceRequirements
 	corev1.ResourceRequirements
+}
+
+// Manifest enables the user to specify the links to the manifests' URLs
+type Manifest struct {
+	// The link of the manifest URL
+	Url string `json:"URL"`
 }

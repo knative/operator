@@ -73,6 +73,10 @@ type KnativeServingStatus struct {
 	// The version of the installed release
 	// +optional
 	Version string `json:"version,omitempty"`
+
+	// The url links of the manifests, separated by comma
+	// +optional
+	Manifests []string `json:"manifests,omitempty"`
 }
 
 // KnativeServingList contains a list of KnativeServing

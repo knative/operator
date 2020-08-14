@@ -32,7 +32,12 @@ import (
 )
 
 const (
+	// KoEnvKey is the key of the environment variable to specify the path to the ko data directory
 	KoEnvKey = "KO_DATA_PATH"
+	// VersionVariable is a string, which can be replaced with the value of spec.version
+	VersionVariable = "${version}"
+	// COMMA is the character comma
+	COMMA = ","
 )
 
 var cache = map[string]mf.Manifest{}
@@ -60,7 +65,7 @@ func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 	current := instance.GetStatus().GetVersion()
 	if current != "" {
-		return fetch(manifestPath(current, instance))
+		return fetch(installedManifestPath(current, instance))
 	}
 	return TargetManifest(instance)
 }
@@ -132,9 +137,49 @@ func componentDir(instance v1alpha1.KComponent) string {
 	return ""
 }
 
+func componentURL(version string, instance v1alpha1.KComponent) string {
+	manifests := instance.GetSpec().GetManifests()
+	// Create the comma-separated string as the URL to retrieve the manifest
+	urls := make([]string, 0, len(manifests))
+	for _, manifest := range manifests {
+		url := strings.ReplaceAll(manifest.Url, VersionVariable, version)
+		urls = append(urls, url)
+	}
+	return strings.Join(urls, COMMA)
+}
+
+func createManifestsPath(path string) []string {
+	return strings.Split(path, COMMA)
+}
+
 func manifestPath(version string, instance v1alpha1.KComponent) string {
-	// TODO: check if file exists and if not, construct URL instead
-	return filepath.Join(componentDir(instance), version)
+	if !semver.IsValid(sanitizeSemver(version)) {
+		return ""
+	}
+
+	if manifestPath := componentURL(version, instance); manifestPath != "" {
+		return manifestPath
+	}
+
+	localPath := filepath.Join(componentDir(instance), version)
+	if _, err := os.Stat(localPath); !os.IsNotExist(err) {
+		return localPath
+	}
+
+	return ""
+}
+
+func installedManifestPath(version string, instance v1alpha1.KComponent) string {
+	if manifests := instance.GetStatus().GetManifests(); len(manifests) != 0 {
+		return strings.Join(manifests, COMMA)
+	}
+
+	localPath := filepath.Join(componentDir(instance), version)
+	if _, err := os.Stat(localPath); !os.IsNotExist(err) {
+		return localPath
+	}
+
+	return ""
 }
 
 // sanitizeSemver always adds `v` in front of the version.

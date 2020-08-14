@@ -25,8 +25,20 @@ import (
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
+const (
+	VERSION              = "0.16.0"
+	SERVING_CORE         = "testdata/kodata/knative-serving/" + VERSION + "/serving-core.yaml"
+	SERVING_HPA          = "testdata/kodata/knative-serving/" + VERSION + "/serving-hpa.yaml"
+	EVENTING_CORE        = "testdata/kodata/knative-eventing/" + VERSION + "/eventing-core.yaml"
+	IN_MEMORY_CHANNEL    = "testdata/kodata/knative-eventing/" + VERSION + "/in-memory-channel.yaml"
+	SERVING_VERSION_CORE = "testdata/kodata/knative-serving/${version}/serving-core.yaml"
+	SERVING_VERSION_HPA  = "testdata/kodata/knative-serving/${version}/serving-hpa.yaml"
+)
+
 func TestRetrieveManifestPath(t *testing.T) {
 	koPath := "testdata/kodata"
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
 
 	tests := []struct {
 		component v1alpha1.KComponent
@@ -43,10 +55,53 @@ func TestRetrieveManifestPath(t *testing.T) {
 		component: &v1alpha1.KnativeEventing{},
 		version:   "0.14.2",
 		expected:  koPath + "/knative-eventing/0.14.2",
+	}, {
+		name: "Valid Knative Serving URLs",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: SERVING_CORE,
+					}, {
+						Url: SERVING_HPA,
+					}},
+				},
+			},
+		},
+		version:  VERSION,
+		expected: SERVING_CORE + "," + SERVING_HPA,
+	}, {
+		name: "Valid Knative Eventing URLs",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: EVENTING_CORE,
+					}, {
+						Url: IN_MEMORY_CHANNEL,
+					}},
+				},
+			},
+		},
+		version:  VERSION,
+		expected: EVENTING_CORE + "," + IN_MEMORY_CHANNEL,
+	}, {
+		name: "Valid Knative Serving URLs with the version parameter",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: SERVING_VERSION_CORE,
+					}, {
+						Url: SERVING_VERSION_HPA,
+					}},
+				},
+			},
+		},
+		version:  VERSION,
+		expected: SERVING_CORE + "," + SERVING_HPA,
 	}}
 
-	os.Setenv(KoEnvKey, koPath)
-	defer os.Unsetenv(KoEnvKey)
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			manifestPath := manifestPath(test.version, test.component)
@@ -66,12 +121,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 		name:      "Invalid Knative Serving Version",
 		component: &v1alpha1.KnativeServing{},
 		version:   "invalid-version",
-		expected:  koPath + "/knative-serving/invalid-version",
-	}, {
-		name:      "Invalid Knative component name",
-		component: nil,
-		version:   "0.14.2",
-		expected:  "0.14.2",
+		expected:  "",
 	}}
 
 	for _, test := range invalidPathTests {
@@ -95,11 +145,11 @@ func TestGetLatestRelease(t *testing.T) {
 	}{{
 		name:      "serving",
 		component: &v1alpha1.KnativeServing{},
-		expected:  "0.15.0",
+		expected:  VERSION,
 	}, {
 		name:      "eventing",
 		component: &v1alpha1.KnativeEventing{},
-		expected:  "0.15.0",
+		expected:  VERSION,
 	}}
 
 	os.Setenv(KoEnvKey, koPath)
@@ -122,11 +172,11 @@ func TestListReleases(t *testing.T) {
 	}{{
 		name:      "knative-serving",
 		component: &v1alpha1.KnativeServing{},
-		expected:  []string{"0.15.0", "0.14.0"},
+		expected:  []string{"0.16.0", "0.15.0", "0.14.0"},
 	}, {
 		name:      "knative-eventing",
 		component: &v1alpha1.KnativeEventing{},
-		expected:  []string{"0.15.0", "0.14.2"},
+		expected:  []string{"0.16.0", "0.15.0", "0.14.2"},
 	}}
 
 	os.Setenv(KoEnvKey, koPath)
@@ -195,10 +245,10 @@ func TestIsUpDowngradeEligible(t *testing.T) {
 		name: "knative-serving upgrading to the latest version",
 		component: &v1alpha1.KnativeServing{
 			Status: v1alpha1.KnativeServingStatus{
-				Version: "0.14.0",
+				Version: "0.15.0",
 			},
 		},
-		// The latest version is 0.15.0
+		// The latest version is 0.16.0
 		expected: true,
 	}, {
 		name:      "knative-serving with latest version and empty status.version",

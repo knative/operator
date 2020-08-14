@@ -65,6 +65,10 @@ type KnativeEventingStatus struct {
 	// The version of the installed release
 	// +optional
 	Version string `json:"version,omitempty"`
+
+	// The url links of the manifests, separated by comma
+	// +optional
+	Manifests []string `json:"manifests,omitempty"`
 }
 
 // KnativeEventingList contains a list of KnativeEventing

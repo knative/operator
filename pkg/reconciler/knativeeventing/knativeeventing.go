@@ -100,6 +100,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 	}
 
 	if err := r.extension.Reconcile(ctx, ke); err != nil {
+		ke.Status.MarkInstallFailed(err.Error())
 		return err
 	}
 	stages := common.Stages{

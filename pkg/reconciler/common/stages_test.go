@@ -18,6 +18,7 @@ package common
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
@@ -37,6 +38,19 @@ func TestStagesExecute(t *testing.T) {
 	util.AssertEqual(t, len(manifest.Resources()), 0)
 	stages.Execute(context.TODO(), &manifest, &v1alpha1.KnativeServing{})
 	util.AssertEqual(t, len(manifest.Resources()), 4)
+}
+
+func TestStageFailure(t *testing.T) {
+	os.Setenv(KoEnvKey, "testdata/kodata")
+	defer os.Unsetenv(KoEnvKey)
+	manifest, _ := mf.ManifestFrom(mf.Slice{})
+	installFailed := func(context.Context, *mf.Manifest, v1alpha1.KComponent) error {
+		return fmt.Errorf("Install failed")
+	}
+	stages := Stages{AppendTarget, installFailed}
+	resource := &v1alpha1.KnativeServing{}
+	stages.Execute(context.Background(), &manifest, resource)
+	util.AssertEqual(t, resource.Status.IsReady(), false)
 }
 
 func TestDeleteObsoleteResources(t *testing.T) {

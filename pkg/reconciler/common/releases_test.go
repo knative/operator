@@ -32,8 +32,8 @@ const (
 	SERVING_HPA          = "testdata/kodata/knative-serving/" + VERSION + "/serving-hpa.yaml"
 	EVENTING_CORE        = "testdata/kodata/knative-eventing/" + VERSION + "/eventing-core.yaml"
 	IN_MEMORY_CHANNEL    = "testdata/kodata/knative-eventing/" + VERSION + "/in-memory-channel.yaml"
-	SERVING_VERSION_CORE = "testdata/kodata/knative-serving/${version}/serving-core.yaml"
-	SERVING_VERSION_HPA  = "testdata/kodata/knative-serving/${version}/serving-hpa.yaml"
+	SERVING_VERSION_CORE = "testdata/kodata/knative-serving/${VERSION}/serving-core.yaml"
+	SERVING_VERSION_HPA  = "testdata/kodata/knative-serving/${VERSION}/serving-hpa.yaml"
 )
 
 func TestRetrieveManifestPath(t *testing.T) {
@@ -293,9 +293,9 @@ func TestTargetManifest(t *testing.T) {
 				CommonSpec: v1alpha1.CommonSpec{
 					Version: "0.16.0",
 					Manifests: []v1alpha1.Manifest{{
-						Url: "testdata/kodata/knative-serving/${version}/serving-core.yaml",
+						Url: "testdata/kodata/knative-serving/${VERSION}/serving-core.yaml",
 					}, {
-						Url: "testdata/kodata/knative-serving/${version}/serving-hpa.yaml",
+						Url: "testdata/kodata/knative-serving/${VERSION}/serving-hpa.yaml",
 					}},
 				},
 			},
@@ -308,9 +308,9 @@ func TestTargetManifest(t *testing.T) {
 				CommonSpec: v1alpha1.CommonSpec{
 					Version: "0.16.0",
 					Manifests: []v1alpha1.Manifest{{
-						Url: "testdata/invalid_kodata/knative-serving/${version}_unmatched_version/serving-core.yaml",
+						Url: "testdata/invalid_kodata/knative-serving/${VERSION}_unmatched_version/serving-core.yaml",
 					}, {
-						Url: "testdata/invalid_kodata/knative-serving/${version}_unmatched_version/serving-hpa.yaml",
+						Url: "testdata/invalid_kodata/knative-serving/${VERSION}_unmatched_version/serving-hpa.yaml",
 					}},
 				},
 			},

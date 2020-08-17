@@ -308,9 +308,9 @@ func TestTargetManifest(t *testing.T) {
 				CommonSpec: v1alpha1.CommonSpec{
 					Version: "0.16.0",
 					Manifests: []v1alpha1.Manifest{{
-						Url: "testdata/kodata/knative-serving/${version}_unmatched_version/serving-core.yaml",
+						Url: "testdata/invalid_kodata/knative-serving/${version}_unmatched_version/serving-core.yaml",
 					}, {
-						Url: "testdata/kodata/knative-serving/${version}_unmatched_version/serving-hpa.yaml",
+						Url: "testdata/invalid_kodata/knative-serving/${version}_unmatched_version/serving-hpa.yaml",
 					}},
 				},
 			},
@@ -331,21 +331,6 @@ func TestTargetManifest(t *testing.T) {
 			},
 		},
 		expectedError: nil,
-	}, {
-		name: "knative-serving with spec.manifests unmatched but no spec.version",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
-					Manifests: []v1alpha1.Manifest{{
-						Url: "testdata/kodata/knative-serving/0.16.0_unmatched_version/serving-core.yaml",
-					}, {
-						Url: "testdata/kodata/knative-serving/0.16.0_unmatched_version/serving-hpa.yaml",
-					}},
-				},
-			},
-		},
-		expectedError: fmt.Errorf("The version of the manifests %s does not match the target "+
-			"version of the operator CR %s. The resource name is %s.", "v0.16.2", "v0.16.0", "knative-serving"),
 	}}
 
 	koPath := "testdata/kodata"

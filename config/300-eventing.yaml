@@ -62,6 +62,15 @@ spec:
             version:
               description: The version of Knative Eventing to be installed
               type: string
+            manifests:
+              description: A list of eventing manifests, which will be installed by the operator
+              type: array
+              items:
+                type: object
+                properties:
+                  URL:
+                    description: The link of the manifest URL
+                    type: string
             config:
               additionalProperties:
                 additionalProperties:
@@ -179,6 +188,11 @@ spec:
             version:
               description: The version of the installed release
               type: string
+            manifests:
+              description: The list of eventing manifests, which have been installed by the operator
+              type: array
+              items:
+                type: string
           type: object
   version: v1alpha1
   versions:

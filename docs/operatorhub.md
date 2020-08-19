@@ -5,7 +5,7 @@
 The process to publish a version on [OperatorHub](https://operatorhub.io/) is as
 following:
 
-- Prepare the files in `knative/eventing` repository
+- Prepare the files in `knative/operator` repository
 - Test locally
 - Send a PR to https://github.com/operator-framework/
 - Once that passes the Prow tests and gets approved by the OperatorHub people,

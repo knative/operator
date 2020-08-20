@@ -66,15 +66,6 @@ metadata:
   namespace: ${TEST_NAMESPACE}
 spec:
   version: ${version}
-  config:
-    defaults:
-      revision-timeout-seconds: "300"  # 5 minutes
-    autoscaler:
-      stable-window: "60s"
-    deployment:
-      registriesSkippingTagResolving: "ko.local,dev.local"
-    logging:
-      loglevel.controller: "debug"
 EOF
 }
 
@@ -100,16 +91,6 @@ kind: KnativeServing
 metadata:
   name: knative-serving
   namespace: ${TEST_NAMESPACE}
-spec:
-  config:
-    defaults:
-      revision-timeout-seconds: "300"  # 5 minutes
-    autoscaler:
-      stable-window: "60s"
-    deployment:
-      registriesSkippingTagResolving: "ko.local,dev.local"
-    logging:
-      loglevel.controller: "debug"
 EOF
   echo ">> Creating the custom resource of Knative Eventing:"
   cat <<-EOF | kubectl apply -f -

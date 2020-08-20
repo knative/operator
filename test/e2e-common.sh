@@ -22,7 +22,7 @@ readonly PREVIOUS_SERVING_RELEASE_VERSION="0.16.0"
 # The previous eventing release, installed by the operator.
 readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.16.1"
 # This is the branch name of serving and eventing repo, where we run the upgrade tests.
-readonly KNATIVE_REPO_BRANCH=${PULL_BASE_REF}
+readonly KNATIVE_REPO_BRANCH="release-0.17" #${PULL_BASE_REF}
 # Istio version we test with
 readonly ISTIO_VERSION="1.5-latest"
 # Test without Istio mesh enabled

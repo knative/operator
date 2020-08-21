@@ -147,11 +147,10 @@ spec:
                         type: string
                         pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
             sinkBindingSelectionMode:
-              description: Specifies the NamespaceSelector and ObjectSelector for the sinkbinding webhook.
-                If `inclusion` is selected, namespaces/objects labelled as `bindings.knative.dev/include:true`
-                will be considered by the sinkbinding webhook;
-                If `exclusion` is selected, namespaces/objects labelled as `bindings.knative.dev/exclude:true`
-                will NOT be considered by the sinkbinding webhook.
+              description: Specifies the selection mode for the sinkbinding webhook.
+                If the value is `inclusion`, only namespaces/objects labelled as `bindings.knative.dev/include:true`
+                will be considered. If `exclusion` is selected, only `bindings.knative.dev/exclude:true` label
+                is checked and these will NOT be considered.
                 The default is `exclusion`.
               type: string
           type: object

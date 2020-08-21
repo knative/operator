@@ -27,11 +27,13 @@ import (
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
-// SinkBindingSelectionModeTransform updates the eventing-webhook's SINK_BINDING_SELECTION_MODE env var with the value in the spec
+const SinkBindingSelectionModeEnvVarKey = "SINK_BINDING_SELECTION_MODE"
+
+// SinkBindingSelectionModeTransform sets the eventing-webhook's SINK_BINDING_SELECTION_MODE env var to the value in the spec
 func SinkBindingSelectionModeTransform(instance *eventingv1alpha1.KnativeEventing, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" && u.GetName() == "eventing-webhook" {
-			var deployment = &appsv1.Deployment{}
+			deployment := &appsv1.Deployment{}
 			err := scheme.Scheme.Convert(u, deployment, nil)
 			if err != nil {
 				log.Error(err, "Error converting Unstructured to Deployment", "unstructured", u, "deployment", deployment)
@@ -48,14 +50,14 @@ func SinkBindingSelectionModeTransform(instance *eventingv1alpha1.KnativeEventin
 				c := &deployment.Spec.Template.Spec.Containers[i]
 				for j := range c.Env {
 					envVar := &c.Env[j]
-					if envVar.Name == "SINK_BINDING_SELECTION_MODE" {
+					if envVar.Name == SinkBindingSelectionModeEnvVarKey {
 						envVar.Value = sinkBindingSelectionMode
 						found = true
 						break
 					}
 				}
 				if !found {
-					c.Env = append(c.Env, corev1.EnvVar{Name: "SINK_BINDING_SELECTION_MODE", Value: sinkBindingSelectionMode})
+					c.Env = append(c.Env, corev1.EnvVar{Name: SinkBindingSelectionModeEnvVarKey, Value: sinkBindingSelectionMode})
 				}
 			}
 

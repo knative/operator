@@ -39,6 +39,7 @@ These are the configurable fields in each resource:
       - [imagePullSecrets](#specregistryimagepullsecrets)
     - [resources](#specresources)
     - [defaultBrokerClass](#specdefaultbrokerclass)
+    - [sinkBindingSelectionMode](#specsinkbindingselectionmode)
 
 ## spec.config
 
@@ -297,4 +298,22 @@ metadata:
   namespace: knative-eventing
 spec:
   defaultBrokerClass: MTChannelBasedBroker
+```
+
+## spec.sinkBindingSelectionMode
+
+Specifies the NamespaceSelector and ObjectSelector for the sinkbinding webhook.
+If `inclusion` is selected, namespaces/objects labelled as `bindings.knative.dev/include:true`
+will be considered by the sinkbinding webhook. If `exclusion` is selected, namespaces/objects
+labelled as `bindings.knative.dev/exclude:true` will NOT be considered by the sinkbinding webhook.
+The default is `exclusion`.
+
+```
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+  namespace: knative-eventing
+spec:
+  sinkBindingSelectionMode: exclusion
 ```

@@ -146,6 +146,13 @@ spec:
                       ephemeral-storage:
                         type: string
                         pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+            sinkBindingSelectionMode:
+              description: Specifies the selection mode for the sinkbinding webhook.
+                If the value is `inclusion`, only namespaces/objects labelled as `bindings.knative.dev/include:true`
+                will be considered. If `exclusion` is selected, only `bindings.knative.dev/exclude:true` label
+                is checked and these will NOT be considered.
+                The default is `exclusion`.
+              type: string
           type: object
         status:
           properties:

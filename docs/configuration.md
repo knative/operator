@@ -303,10 +303,9 @@ spec:
 ## spec.sinkBindingSelectionMode
 
 Specifies the NamespaceSelector and ObjectSelector for the sinkbinding webhook.
-If `inclusion` is selected, namespaces/objects labled as `bindings.knative.dev/include:true`
-will be considered by the sinkbinding webhook;
-If `exclusion` is selected, namespaces/objects labled as `bindings.knative.dev/exclude:true`
-will NOT be considered by the sinkbinding webhook.
+If `inclusion` is selected, namespaces/objects labelled as `bindings.knative.dev/include:true`
+will be considered by the sinkbinding webhook. If `exclusion` is selected, namespaces/objects
+labelled as `bindings.knative.dev/exclude:true` will NOT be considered by the sinkbinding webhook.
 The default is `exclusion`.
 
 ```

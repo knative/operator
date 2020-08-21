@@ -43,10 +43,10 @@ func SinkBindingSelectionModeTransform(instance *eventingv1alpha1.KnativeEventin
 				sinkBindingSelectionMode = "exclusion"
 			}
 
-			for i, _ := range deployment.Spec.Template.Spec.Containers {
+			for i := range deployment.Spec.Template.Spec.Containers {
 				found := false
 				c := &deployment.Spec.Template.Spec.Containers[i]
-				for j, _ := range c.Env {
+				for j := range c.Env {
 					envVar := &c.Env[j]
 					if envVar.Name == "SINK_BINDING_SELECTION_MODE" {
 						envVar.Value = sinkBindingSelectionMode

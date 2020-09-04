@@ -51,10 +51,10 @@ Also run OLM console as it provides a nice and easy way to install operators
 with OLM. Instructions available
 [here](https://github.com/operator-framework/operator-lifecycle-manager#user-interface).
 
-Make sure you don't have any `catalogsource` and `operatorsource` CRs on your cluster
-after installation. There are some default ones created for operators available on
-OperatorHub, but these might get mixed with the operator versions we are going to
-install from source.  
+Make sure you don't have any `catalogsource` and `operatorsource` CRs on your
+cluster after installation. There are some default ones created for operators
+available on OperatorHub, but these might get mixed with the operator versions
+we are going to install from source.
 
 ### Testing a fresh installation
 
@@ -67,22 +67,35 @@ install from source.
 
 ### Testing an upgrade
 
-- Change the `currentCSV` field in `deploy/olm-catalog-knative-operator/knative-operator.package.yaml` file to the previous version for the current channel
-- Create another channel in that file with a `currentCSV` value of the current version
-- Do the steps above as you are installing a fresh installation with the old version. Make sure you select the channel for the previous version when installing the operator.
-- Change the operator subscription channel on the console using _Installed Operators -> Knative Operator -> Subscription -> Channel_
+- Change the `currentCSV` field in
+  `deploy/olm-catalog-knative-operator/knative-operator.package.yaml` file to
+  the previous version for the current channel
+- Create another channel in that file with a `currentCSV` value of the current
+  version
+- Do the steps above as you are installing a fresh installation with the old
+  version. Make sure you select the channel for the previous version when
+  installing the operator.
+- Change the operator subscription channel on the console using _Installed
+  Operators -> Knative Operator -> Subscription -> Channel_
 - Approve the `InstallPlan`
-- The operator will upgrade to the latest version and it should reconcile the KnativeServing and KnativeEventing CRDs
+- The operator will upgrade to the latest version and it should reconcile the
+  KnativeServing and KnativeEventing CRDs
 
 ## PR to OperatorHub
 
 - Clone https://github.com/operator-framework/
-- Copy and paste the new directory under `deploy/olm-catalog-knative-operator/` into `upstream-community-operators/knative-operator/` in `operator-framework` repository
-- Also copy paste `deploy/olm-catalog-knative-operator/knative-operator.package.yaml` into `upstream-community-operators/knative-operator/knative-operator.package.yaml` in `operator-framework` repository
+- Copy and paste the new directory under `deploy/olm-catalog-knative-operator/`
+  into `upstream-community-operators/knative-operator/` in `operator-framework`
+  repository
+- Also copy paste
+  `deploy/olm-catalog-knative-operator/knative-operator.package.yaml` into
+  `upstream-community-operators/knative-operator/knative-operator.package.yaml`
+  in `operator-framework` repository
 
 ## PR to this repo
 
-Wait until the PR in OperatorHub is merged as OperatorSDK team will validate the created files.
+Wait until the PR in OperatorHub is merged as OperatorSDK team will validate the
+created files.
 
 ## Outcome
 

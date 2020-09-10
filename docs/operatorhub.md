@@ -40,7 +40,7 @@ following:
 ## Testing locally
 
 You need to install OLM on your cluster. There are instructions to install OLM
-from master available at
+from HEAD available at
 <https://github.com/operator-framework/operator-lifecycle-manager/blob/master/doc/install/install.md>.
 
 For installing stable releases, visit the

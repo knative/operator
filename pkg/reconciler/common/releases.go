@@ -204,7 +204,7 @@ func createManifestsPath(instance v1alpha1.KComponent) []string {
 		return strings.Split(manifestPath(TargetVersion(instance), instance), COMMA)
 	}
 
-	return make([]string, 0, 0)
+	return nil
 }
 
 func manifestPath(version string, instance v1alpha1.KComponent) string {

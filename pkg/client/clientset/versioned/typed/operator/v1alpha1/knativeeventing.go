@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,15 +38,15 @@ type KnativeEventingsGetter interface {
 
 // KnativeEventingInterface has methods to work with KnativeEventing resources.
 type KnativeEventingInterface interface {
-	Create(*v1alpha1.KnativeEventing) (*v1alpha1.KnativeEventing, error)
-	Update(*v1alpha1.KnativeEventing) (*v1alpha1.KnativeEventing, error)
-	UpdateStatus(*v1alpha1.KnativeEventing) (*v1alpha1.KnativeEventing, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.KnativeEventing, error)
-	List(opts v1.ListOptions) (*v1alpha1.KnativeEventingList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.KnativeEventing, err error)
+	Create(ctx context.Context, knativeEventing *v1alpha1.KnativeEventing, opts v1.CreateOptions) (*v1alpha1.KnativeEventing, error)
+	Update(ctx context.Context, knativeEventing *v1alpha1.KnativeEventing, opts v1.UpdateOptions) (*v1alpha1.KnativeEventing, error)
+	UpdateStatus(ctx context.Context, knativeEventing *v1alpha1.KnativeEventing, opts v1.UpdateOptions) (*v1alpha1.KnativeEventing, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.KnativeEventing, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.KnativeEventingList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.KnativeEventing, err error)
 	KnativeEventingExpansion
 }
 
@@ -64,20 +65,20 @@ func newKnativeEventings(c *OperatorV1alpha1Client, namespace string) *knativeEv
 }
 
 // Get takes name of the knativeEventing, and returns the corresponding knativeEventing object, and an error if there is any.
-func (c *knativeEventings) Get(name string, options v1.GetOptions) (result *v1alpha1.KnativeEventing, err error) {
+func (c *knativeEventings) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.KnativeEventing, err error) {
 	result = &v1alpha1.KnativeEventing{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("knativeeventings").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of KnativeEventings that match those selectors.
-func (c *knativeEventings) List(opts v1.ListOptions) (result *v1alpha1.KnativeEventingList, err error) {
+func (c *knativeEventings) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.KnativeEventingList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -88,13 +89,13 @@ func (c *knativeEventings) List(opts v1.ListOptions) (result *v1alpha1.KnativeEv
 		Resource("knativeeventings").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested knativeEventings.
-func (c *knativeEventings) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *knativeEventings) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -105,87 +106,90 @@ func (c *knativeEventings) Watch(opts v1.ListOptions) (watch.Interface, error) {
 		Resource("knativeeventings").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a knativeEventing and creates it.  Returns the server's representation of the knativeEventing, and an error, if there is any.
-func (c *knativeEventings) Create(knativeEventing *v1alpha1.KnativeEventing) (result *v1alpha1.KnativeEventing, err error) {
+func (c *knativeEventings) Create(ctx context.Context, knativeEventing *v1alpha1.KnativeEventing, opts v1.CreateOptions) (result *v1alpha1.KnativeEventing, err error) {
 	result = &v1alpha1.KnativeEventing{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("knativeeventings").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(knativeEventing).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a knativeEventing and updates it. Returns the server's representation of the knativeEventing, and an error, if there is any.
-func (c *knativeEventings) Update(knativeEventing *v1alpha1.KnativeEventing) (result *v1alpha1.KnativeEventing, err error) {
+func (c *knativeEventings) Update(ctx context.Context, knativeEventing *v1alpha1.KnativeEventing, opts v1.UpdateOptions) (result *v1alpha1.KnativeEventing, err error) {
 	result = &v1alpha1.KnativeEventing{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("knativeeventings").
 		Name(knativeEventing.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(knativeEventing).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *knativeEventings) UpdateStatus(knativeEventing *v1alpha1.KnativeEventing) (result *v1alpha1.KnativeEventing, err error) {
+func (c *knativeEventings) UpdateStatus(ctx context.Context, knativeEventing *v1alpha1.KnativeEventing, opts v1.UpdateOptions) (result *v1alpha1.KnativeEventing, err error) {
 	result = &v1alpha1.KnativeEventing{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("knativeeventings").
 		Name(knativeEventing.Name).
 		SubResource("status").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(knativeEventing).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the knativeEventing and deletes it. Returns an error if one occurs.
-func (c *knativeEventings) Delete(name string, options *v1.DeleteOptions) error {
+func (c *knativeEventings) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("knativeeventings").
 		Name(name).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *knativeEventings) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *knativeEventings) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("knativeeventings").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // Patch applies the patch and returns the patched knativeEventing.
-func (c *knativeEventings) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.KnativeEventing, err error) {
+func (c *knativeEventings) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.KnativeEventing, err error) {
 	result = &v1alpha1.KnativeEventing{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("knativeeventings").
-		SubResource(subresources...).
 		Name(name).
+		SubResource(subresources...).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }

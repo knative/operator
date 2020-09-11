@@ -19,6 +19,7 @@ limitations under the License.
 package e2e
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -48,7 +49,7 @@ func TestKnativeEventingPreUpgrade(t *testing.T) {
 	// Verify if resources match the requirement for the previous release before upgrade
 	t.Run("verify resources", func(t *testing.T) {
 		resources.AssertKEOperatorCRReadyStatus(t, clients, names)
-		keventing, err := clients.KnativeEventing().Get(names.KnativeEventing, metav1.GetOptions{})
+		keventing, err := clients.KnativeEventing().Get(context.TODO(), names.KnativeEventing, metav1.GetOptions{})
 		if err != nil {
 			t.Fatalf("Failed to get KnativeEventing CR: %v", err)
 		}

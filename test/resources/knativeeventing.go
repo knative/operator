@@ -43,7 +43,7 @@ func WaitForKnativeEventingState(clients eventingv1alpha1.KnativeEventingInterfa
 
 	var lastState *v1alpha1.KnativeEventing
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		state, err := clients.Get(name, metav1.GetOptions{})
+		state, err := clients.Get(context.TODO(), name, metav1.GetOptions{})
 		lastState = state
 		return inState(lastState, err)
 	})
@@ -57,7 +57,7 @@ func WaitForKnativeEventingState(clients eventingv1alpha1.KnativeEventingInterfa
 // EnsureKnativeEventingExists creates a KnativeEventingServing with the name names.KnativeEventing under the namespace names.Namespace.
 func EnsureKnativeEventingExists(clients eventingv1alpha1.KnativeEventingInterface, names test.ResourceNames) (*v1alpha1.KnativeEventing, error) {
 	// If this function is called by the upgrade tests, we only create the custom resource, if it does not exist.
-	ke, err := clients.Get(names.KnativeEventing, metav1.GetOptions{})
+	ke, err := clients.Get(context.TODO(), names.KnativeEventing, metav1.GetOptions{})
 	if apierrs.IsNotFound(err) {
 		ke := &v1alpha1.KnativeEventing{
 			ObjectMeta: metav1.ObjectMeta{
@@ -65,7 +65,7 @@ func EnsureKnativeEventingExists(clients eventingv1alpha1.KnativeEventingInterfa
 				Namespace: names.Namespace,
 			},
 		}
-		return clients.Create(ke)
+		return clients.Create(context.TODO(), ke, metav1.CreateOptions{})
 	}
 	return ke, err
 }

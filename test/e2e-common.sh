@@ -101,15 +101,20 @@ function istio_yaml() {
 
 # Download the repository of Knative. The purpose of this function is to download the source code of
 # knative component for further use, based on component name and branch name.
-# Parameter: $1 - component name, either serving or eventing, $2 - branch of the repository.
-function donwload_knative() {
-  local component=$1
+# Parameters:
+#  $1 - component repo name, either knative/serving or knative/eventing,
+#  $2 - component name,
+#  $3 - branch of the repository.
+function download_knative() {
+  local component_repo component_name
+  component_repo=$1
+  component_name=$2
   # Go the directory to download the source code of knative
   cd ${KNATIVE_DIR}
   # Download the source code of knative
-  git clone https://github.com/knative/${component}.git
-  cd ${component}
-  local branch=$2
+  git clone "https://github.com/${component_repo}.git" "${component_name}"
+  cd "${component_name}"
+  local branch=$3
   if [ -n "${branch}" ] ; then
     git fetch origin ${branch}:${branch}
     git checkout ${branch}

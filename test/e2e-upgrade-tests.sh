@@ -40,6 +40,7 @@ readonly EVENTING_PROBER_FILE="/tmp/prober-signal-eventing"
 
 # TODO: remove when components can coexist in same namespace
 export TEST_EVENTING_NAMESPACE=knative-eventing
+export E2E_UPGRADE_TESTS_SERVING_USE=true
 
 function install_previous_operator_release() {
   install_istio || fail_test "Istio installation failed"
@@ -105,8 +106,8 @@ EOF
 function knative_setup() {
   create_namespace
   install_previous_operator_release
-  donwload_knative "serving" ${KNATIVE_REPO_BRANCH}
-  donwload_knative "eventing" ${KNATIVE_REPO_BRANCH}
+  download_knative "${KNATIVE_SERVING_REPO:-knative/serving}" serving "${KNATIVE_REPO_BRANCH}"
+  download_knative "${KNATIVE_EVENTING_REPO:-knative/eventing}" eventing "${KNATIVE_REPO_BRANCH}"
 }
 
 # Create test resources and images

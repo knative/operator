@@ -3,6 +3,7 @@ module knative.dev/operator
 go 1.14
 
 require (
+	cloud.google.com/go v0.65.0 // indirect
 	github.com/emicklei/go-restful v2.11.1+incompatible // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-logr/zapr v0.1.1
@@ -11,8 +12,14 @@ require (
 	github.com/manifestival/manifestival v0.6.1
 	github.com/pkg/errors v0.9.1
 	go.uber.org/zap v1.15.0
+	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/mod v0.3.0
+	golang.org/x/sys v0.0.0-20200828081204-131dc92a58d5 // indirect
+	golang.org/x/tools v0.0.0-20200828013309-97019fc2e64b // indirect
+	google.golang.org/genproto v0.0.0-20200828030656-73b5761be4c5 // indirect
+	google.golang.org/grpc v1.31.1 // indirect
 	gopkg.in/yaml.v2 v2.3.0
+	honnef.co/go/tools v0.0.1-2020.1.5 // indirect
 	istio.io/api v0.0.0-20191115173247-e1a1952e5b81
 	istio.io/client-go v0.0.0-20191120150049-26c62a04cdbc
 	istio.io/gogo-genproto v0.0.0-20191029161641-f7d19ec0141d // indirect
@@ -22,8 +29,8 @@ require (
 	k8s.io/code-generator v0.18.8
 	knative.dev/caching v0.0.0-20200122154023-853d6022845c
 	knative.dev/eventing v0.14.0
-	knative.dev/pkg v0.0.0-20200831162708-14fb2347fb77
-	knative.dev/test-infra v0.0.0-20200828171708-f68cb78c80a9
+	knative.dev/pkg v0.0.0-20200911145400-2d4efecc6bc1
+	knative.dev/test-infra v0.0.0-20200909211651-72eb6ae3c773
 	sigs.k8s.io/yaml v1.2.0
 )
 

@@ -1,4 +1,5 @@
 # cloud.google.com/go v0.65.0
+## explicit
 cloud.google.com/go/compute/metadata
 cloud.google.com/go/container/apiv1
 cloud.google.com/go/monitoring/apiv3
@@ -239,6 +240,7 @@ go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
 # golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
+## explicit
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 golang.org/x/lint
@@ -267,6 +269,7 @@ golang.org/x/oauth2/jwt
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
 # golang.org/x/sys v0.0.0-20200828081204-131dc92a58d5
+## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
@@ -281,6 +284,7 @@ golang.org/x/text/width
 # golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
 golang.org/x/time/rate
 # golang.org/x/tools v0.0.0-20200828013309-97019fc2e64b
+## explicit
 golang.org/x/tools/go/analysis
 golang.org/x/tools/go/analysis/passes/inspect
 golang.org/x/tools/go/ast/astutil
@@ -330,6 +334,7 @@ google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/socket
 google.golang.org/appengine/urlfetch
 # google.golang.org/genproto v0.0.0-20200828030656-73b5761be4c5
+## explicit
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/distribution
@@ -344,6 +349,7 @@ google.golang.org/genproto/googleapis/rpc/status
 google.golang.org/genproto/googleapis/type/calendarperiod
 google.golang.org/genproto/protobuf/field_mask
 # google.golang.org/grpc v1.31.1
+## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff
@@ -442,6 +448,7 @@ gopkg.in/inf.v0
 ## explicit
 gopkg.in/yaml.v2
 # honnef.co/go/tools v0.0.1-2020.1.5
+## explicit
 honnef.co/go/tools/arg
 honnef.co/go/tools/cmd/staticcheck
 honnef.co/go/tools/code
@@ -818,7 +825,7 @@ knative.dev/caching/pkg/apis/caching/v1alpha1
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/eventing
-# knative.dev/pkg v0.0.0-20200831162708-14fb2347fb77
+# knative.dev/pkg v0.0.0-20200911145400-2d4efecc6bc1
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck/ducktypes
@@ -864,7 +871,7 @@ knative.dev/pkg/tracing/propagation/tracecontextb3
 knative.dev/pkg/version
 knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
-# knative.dev/test-infra v0.0.0-20200828171708-f68cb78c80a9
+# knative.dev/test-infra v0.0.0-20200909211651-72eb6ae3c773
 ## explicit
 knative.dev/test-infra/scripts
 # sigs.k8s.io/controller-runtime v0.6.2

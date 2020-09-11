@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+### Changed
+
+### Removed
+
+
+## [0.6.1] - 2020-08-19
+
+### Added
+
 - Support for generated names: if `metadata.generateName` is set and
   `metadata.name` is *not* set on any resource in a manifest, that resource will
   always be _created_ when the manifest is _applied_. [#65](https://github.com/manifestival/manifestival/issues/65)
@@ -25,8 +34,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   and `All` no longer require at least one argument as it has become
   clear that `All()` should match `Everything` and `Any()` should
   match `Nothing`. [#69](https://github.com/manifestival/manifestival/issues/69)
-
-### Removed
 
 
 ## [0.6.0] - 2020-07-07
@@ -240,7 +247,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 [controller-runtime]: https://github.com/manifestival/controller-runtime-client
 [client-go]: https://github.com/manifestival/client-go-client
-[Unreleased]: https://github.com/manifestival/manifestival/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/manifestival/manifestival/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/manifestival/manifestival/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/manifestival/manifestival/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/manifestival/manifestival/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/manifestival/manifestival/compare/v0.3.1...v0.4.0

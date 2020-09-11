@@ -156,11 +156,11 @@ github.com/konsorten/go-windows-terminal-sequences
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/manifestival/client-go-client v0.2.3-0.20200702141517-e255fbf14f6f
+# github.com/manifestival/client-go-client v0.4.0
 ## explicit
 github.com/manifestival/client-go-client
 github.com/manifestival/client-go-client/pkg/dynamic
-# github.com/manifestival/manifestival v0.6.1-0.20200803172850-17489fb53356
+# github.com/manifestival/manifestival v0.6.1
 ## explicit
 github.com/manifestival/manifestival
 github.com/manifestival/manifestival/fake
@@ -310,32 +310,6 @@ golang.org/x/tools/internal/typesinternal
 # golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
-# gonum.org/v1/gonum v0.0.0-20190710053202-4340aa3071a0
-## explicit
-gonum.org/v1/gonum/blas
-gonum.org/v1/gonum/blas/blas64
-gonum.org/v1/gonum/blas/cblas128
-gonum.org/v1/gonum/blas/gonum
-gonum.org/v1/gonum/floats
-gonum.org/v1/gonum/graph
-gonum.org/v1/gonum/graph/internal/linear
-gonum.org/v1/gonum/graph/internal/ordered
-gonum.org/v1/gonum/graph/internal/set
-gonum.org/v1/gonum/graph/internal/uid
-gonum.org/v1/gonum/graph/iterator
-gonum.org/v1/gonum/graph/simple
-gonum.org/v1/gonum/graph/topo
-gonum.org/v1/gonum/graph/traverse
-gonum.org/v1/gonum/internal/asm/c128
-gonum.org/v1/gonum/internal/asm/c64
-gonum.org/v1/gonum/internal/asm/f32
-gonum.org/v1/gonum/internal/asm/f64
-gonum.org/v1/gonum/internal/cmplx64
-gonum.org/v1/gonum/internal/math32
-gonum.org/v1/gonum/lapack
-gonum.org/v1/gonum/lapack/gonum
-gonum.org/v1/gonum/lapack/lapack64
-gonum.org/v1/gonum/mat
 # google.golang.org/api v0.30.0
 google.golang.org/api/internal
 google.golang.org/api/iterator
@@ -506,7 +480,7 @@ istio.io/client-go/pkg/apis/networking/v1alpha3
 # istio.io/gogo-genproto v0.0.0-20191029161641-f7d19ec0141d
 ## explicit
 istio.io/gogo-genproto/googleapis/google/api
-# k8s.io/api v0.18.7-rc.0 => k8s.io/api v0.17.6
+# k8s.io/api v0.18.8 => k8s.io/api v0.18.8
 ## explicit
 k8s.io/api/admission/v1
 k8s.io/api/admissionregistration/v1
@@ -549,10 +523,10 @@ k8s.io/api/settings/v1alpha1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apiextensions-apiserver v0.18.4
+# k8s.io/apiextensions-apiserver v0.18.6
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
-# k8s.io/apimachinery v0.19.0 => k8s.io/apimachinery v0.17.6
+# k8s.io/apimachinery v0.19.0 => k8s.io/apimachinery v0.18.8
 ## explicit
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
@@ -601,7 +575,7 @@ k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible => k8s.io/client-go v0.17.6
+# k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible => k8s.io/client-go v0.18.8
 ## explicit
 k8s.io/client-go/discovery
 k8s.io/client-go/discovery/fake
@@ -774,7 +748,7 @@ k8s.io/client-go/util/jsonpath
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/code-generator v0.18.6 => k8s.io/code-generator v0.17.6
+# k8s.io/code-generator v0.18.8 => k8s.io/code-generator v0.18.8
 ## explicit
 k8s.io/code-generator
 k8s.io/code-generator/cmd/client-gen
@@ -840,7 +814,7 @@ k8s.io/utils/trace
 ## explicit
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.14.1-0.20200428210242-f355830c4d70
+# knative.dev/eventing v0.14.0
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/eventing
@@ -893,13 +867,15 @@ knative.dev/pkg/webhook/certificates/resources
 # knative.dev/test-infra v0.0.0-20200828171708-f68cb78c80a9
 ## explicit
 knative.dev/test-infra/scripts
-# sigs.k8s.io/controller-runtime v0.6.1
+# sigs.k8s.io/controller-runtime v0.6.2
 sigs.k8s.io/controller-runtime/pkg/client/apiutil
+# sigs.k8s.io/structured-merge-diff/v3 v3.0.1-0.20200706213357-43c19bbb7fba
+sigs.k8s.io/structured-merge-diff/v3/value
 # sigs.k8s.io/yaml v1.2.0
 ## explicit
 sigs.k8s.io/yaml
 # github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
-# k8s.io/api => k8s.io/api v0.17.6
-# k8s.io/apimachinery => k8s.io/apimachinery v0.17.6
-# k8s.io/client-go => k8s.io/client-go v0.17.6
-# k8s.io/code-generator => k8s.io/code-generator v0.17.6
+# k8s.io/api => k8s.io/api v0.18.8
+# k8s.io/apimachinery => k8s.io/apimachinery v0.18.8
+# k8s.io/client-go => k8s.io/client-go v0.18.8
+# k8s.io/code-generator => k8s.io/code-generator v0.18.8

@@ -31,7 +31,7 @@ import (
 	"knative.dev/operator/test/resources"
 )
 
-// TestKnativeEventingPreUpgrade verifies the KnativeEventing creation, before upgraded to the latest HEAD at master.
+// TestKnativeEventingPreUpgrade verifies the KnativeEventing creation, before upgraded to the latest HEAD.
 func TestKnativeEventingPreUpgrade(t *testing.T) {
 	clients := client.Setup(t)
 

@@ -234,7 +234,7 @@ spec:
 
 By default, Knative Serving runs a single instance of each controller. This
 field allows you to configure the number of replicas for the following
-master-elected controllers: `controller`, `autoscaler-hpa`, and
+leader-elected controllers: `controller`, `autoscaler-hpa`, and
 `networking-istio`, as well as the `HorizontalPodAutoscaler` resources for the
 data plane (`activator`):
 

@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,15 +38,15 @@ type KnativeServingsGetter interface {
 
 // KnativeServingInterface has methods to work with KnativeServing resources.
 type KnativeServingInterface interface {
-	Create(*v1alpha1.KnativeServing) (*v1alpha1.KnativeServing, error)
-	Update(*v1alpha1.KnativeServing) (*v1alpha1.KnativeServing, error)
-	UpdateStatus(*v1alpha1.KnativeServing) (*v1alpha1.KnativeServing, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.KnativeServing, error)
-	List(opts v1.ListOptions) (*v1alpha1.KnativeServingList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.KnativeServing, err error)
+	Create(ctx context.Context, knativeServing *v1alpha1.KnativeServing, opts v1.CreateOptions) (*v1alpha1.KnativeServing, error)
+	Update(ctx context.Context, knativeServing *v1alpha1.KnativeServing, opts v1.UpdateOptions) (*v1alpha1.KnativeServing, error)
+	UpdateStatus(ctx context.Context, knativeServing *v1alpha1.KnativeServing, opts v1.UpdateOptions) (*v1alpha1.KnativeServing, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.KnativeServing, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.KnativeServingList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.KnativeServing, err error)
 	KnativeServingExpansion
 }
 
@@ -64,20 +65,20 @@ func newKnativeServings(c *OperatorV1alpha1Client, namespace string) *knativeSer
 }
 
 // Get takes name of the knativeServing, and returns the corresponding knativeServing object, and an error if there is any.
-func (c *knativeServings) Get(name string, options v1.GetOptions) (result *v1alpha1.KnativeServing, err error) {
+func (c *knativeServings) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.KnativeServing, err error) {
 	result = &v1alpha1.KnativeServing{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("knativeservings").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of KnativeServings that match those selectors.
-func (c *knativeServings) List(opts v1.ListOptions) (result *v1alpha1.KnativeServingList, err error) {
+func (c *knativeServings) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.KnativeServingList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -88,13 +89,13 @@ func (c *knativeServings) List(opts v1.ListOptions) (result *v1alpha1.KnativeSer
 		Resource("knativeservings").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested knativeServings.
-func (c *knativeServings) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *knativeServings) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -105,87 +106,90 @@ func (c *knativeServings) Watch(opts v1.ListOptions) (watch.Interface, error) {
 		Resource("knativeservings").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a knativeServing and creates it.  Returns the server's representation of the knativeServing, and an error, if there is any.
-func (c *knativeServings) Create(knativeServing *v1alpha1.KnativeServing) (result *v1alpha1.KnativeServing, err error) {
+func (c *knativeServings) Create(ctx context.Context, knativeServing *v1alpha1.KnativeServing, opts v1.CreateOptions) (result *v1alpha1.KnativeServing, err error) {
 	result = &v1alpha1.KnativeServing{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("knativeservings").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(knativeServing).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a knativeServing and updates it. Returns the server's representation of the knativeServing, and an error, if there is any.
-func (c *knativeServings) Update(knativeServing *v1alpha1.KnativeServing) (result *v1alpha1.KnativeServing, err error) {
+func (c *knativeServings) Update(ctx context.Context, knativeServing *v1alpha1.KnativeServing, opts v1.UpdateOptions) (result *v1alpha1.KnativeServing, err error) {
 	result = &v1alpha1.KnativeServing{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("knativeservings").
 		Name(knativeServing.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(knativeServing).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *knativeServings) UpdateStatus(knativeServing *v1alpha1.KnativeServing) (result *v1alpha1.KnativeServing, err error) {
+func (c *knativeServings) UpdateStatus(ctx context.Context, knativeServing *v1alpha1.KnativeServing, opts v1.UpdateOptions) (result *v1alpha1.KnativeServing, err error) {
 	result = &v1alpha1.KnativeServing{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("knativeservings").
 		Name(knativeServing.Name).
 		SubResource("status").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(knativeServing).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the knativeServing and deletes it. Returns an error if one occurs.
-func (c *knativeServings) Delete(name string, options *v1.DeleteOptions) error {
+func (c *knativeServings) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("knativeservings").
 		Name(name).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *knativeServings) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *knativeServings) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("knativeservings").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // Patch applies the patch and returns the patched knativeServing.
-func (c *knativeServings) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.KnativeServing, err error) {
+func (c *knativeServings) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.KnativeServing, err error) {
 	result = &v1alpha1.KnativeServing{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("knativeservings").
-		SubResource(subresources...).
 		Name(name).
+		SubResource(subresources...).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }

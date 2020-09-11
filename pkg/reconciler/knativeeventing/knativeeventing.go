@@ -57,7 +57,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1alpha1.Knativ
 	logger := logging.FromContext(ctx)
 
 	// List all KnativeEventings to determine if cluster-scoped resources should be deleted.
-	kes, err := r.operatorClientSet.OperatorV1alpha1().KnativeEventings("").List(metav1.ListOptions{})
+	kes, err := r.operatorClientSet.OperatorV1alpha1().KnativeEventings("").List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to list all KnativeEventings: %w", err)
 	}

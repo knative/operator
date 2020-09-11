@@ -60,7 +60,7 @@ func WaitForKnativeDeploymentState(clients *test.Clients, namespace string, vers
 	defer span.End()
 
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
+		dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(namespace).List(context.TODO(), metav1.ListOptions{})
 		return inState(dpList, expectedDeployments, version, err, logf)
 	})
 
@@ -185,7 +185,7 @@ func IsKnativeObsoleteResourceGone(clients *test.Clients, namespace string, obsR
 			case "job":
 				continue
 			}
-			_, err = clients.Dynamic.Resource(gvr).Namespace(namespace).Get(resource.GetName(), metav1.GetOptions{})
+			_, err = clients.Dynamic.Resource(gvr).Namespace(namespace).Get(context.TODO(), resource.GetName(), metav1.GetOptions{})
 		} else {
 			// TODO(#1): If APIVersion is the only different field between two resources with
 			// one being v1 and the other being v1beta1, the dynamic client can access both of
@@ -195,7 +195,7 @@ func IsKnativeObsoleteResourceGone(clients *test.Clients, namespace string, obsR
 			case "customresourcedefinition", "validatingwebhookconfiguration", "mutatingwebhookconfiguration":
 				continue
 			}
-			_, err = clients.Dynamic.Resource(gvr).Get(resource.GetName(), metav1.GetOptions{})
+			_, err = clients.Dynamic.Resource(gvr).Get(context.TODO(), resource.GetName(), metav1.GetOptions{})
 		}
 		if !apierrs.IsNotFound(err) {
 			logf("The resource %v still exists.", resource.GetName())

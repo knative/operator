@@ -47,7 +47,7 @@ func WaitForKnativeServingState(clients servingv1alpha1.KnativeServingInterface,
 
 	var lastState *v1alpha1.KnativeServing
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		lastState, err := clients.Get(name, metav1.GetOptions{})
+		lastState, err := clients.Get(context.TODO(), name, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
 
@@ -60,7 +60,7 @@ func WaitForKnativeServingState(clients servingv1alpha1.KnativeServingInterface,
 // EnsureKnativeServingExists creates a KnativeServing with the name names.KnativeServing under the namespace names.Namespace, if it does not exist.
 func EnsureKnativeServingExists(clients servingv1alpha1.KnativeServingInterface, names test.ResourceNames) (*v1alpha1.KnativeServing, error) {
 	// If this function is called by the upgrade tests, we only create the custom resource, if it does not exist.
-	ks, err := clients.Get(names.KnativeServing, metav1.GetOptions{})
+	ks, err := clients.Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 	if apierrs.IsNotFound(err) {
 		ks := &v1alpha1.KnativeServing{
 			ObjectMeta: metav1.ObjectMeta{
@@ -68,7 +68,7 @@ func EnsureKnativeServingExists(clients servingv1alpha1.KnativeServingInterface,
 				Namespace: names.Namespace,
 			},
 		}
-		return clients.Create(ks)
+		return clients.Create(context.TODO(), ks, metav1.CreateOptions{})
 	}
 	return ks, err
 }
@@ -77,7 +77,7 @@ func EnsureKnativeServingExists(clients servingv1alpha1.KnativeServingInterface,
 func WaitForConfigMap(name string, client *kubernetes.Clientset, fn func(map[string]string) bool) error {
 	ns, cm, _ := cache.SplitMetaNamespaceKey(name)
 	return wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		cm, err := client.CoreV1().ConfigMaps(ns).Get(cm, metav1.GetOptions{})
+		cm, err := client.CoreV1().ConfigMaps(ns).Get(context.TODO(), cm, metav1.GetOptions{})
 		if err != nil {
 			return false, err
 		}

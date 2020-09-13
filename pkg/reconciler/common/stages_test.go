@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
+	"knative.dev/pkg/apis"
 )
 
 func TestStagesExecute(t *testing.T) {
@@ -51,6 +52,22 @@ func TestStageFailure(t *testing.T) {
 	resource := &v1alpha1.KnativeServing{}
 	stages.Execute(context.Background(), &manifest, resource)
 	util.AssertEqual(t, resource.Status.IsReady(), false)
+	util.AssertEqual(t, resource.Status.GetCondition(apis.ConditionReady).Message, "Internal error: Install failed")
+}
+
+func TestStageFailureWithSignalling(t *testing.T) {
+	os.Setenv(KoEnvKey, "testdata/kodata")
+	defer os.Unsetenv(KoEnvKey)
+	manifest, _ := mf.ManifestFrom(mf.Slice{})
+	installFailed := func(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+		instance.GetStatus().MarkInstallFailed("ha")
+		return fmt.Errorf("Install failed")
+	}
+	stages := Stages{AppendTarget, installFailed}
+	resource := &v1alpha1.KnativeServing{}
+	stages.Execute(context.Background(), &manifest, resource)
+	util.AssertEqual(t, resource.Status.IsReady(), false)
+	util.AssertEqual(t, resource.Status.GetCondition(apis.ConditionReady).Message, "Install failed with message: ha")
 }
 
 func TestDeleteObsoleteResources(t *testing.T) {

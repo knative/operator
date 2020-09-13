@@ -106,15 +106,14 @@ func DeleteObsoleteResources(ctx context.Context, instance v1alpha1.KComponent, 
 // not change the existing error reporting. This exists to ensure that errors
 // are reported to the user even if the underlying functions do not explicitly
 // set conditions on the instance.
-func SetErrorConditionIfIndeterminate(err error, instance v1alpha1.KComponentStatus) {
+func SetErrorConditionIfIndeterminate(err error, instance v1alpha1.KComponent) {
 	if !instance.GetStatus().GetCondition(apis.ConditionReady).IsFalse() {
 		instance.GetStatus().SetConditions(apis.Conditions{
 			apis.Condition{
-				Type: apis.ConditionReady,
-				Status: v1.ConditionFalse,
-				Reason: "StageError",
-				Message: err.Error(),
-			}
-		})
+				Type:    apis.ConditionReady,
+				Status:  v1.ConditionFalse,
+				Reason:  "StageError",
+				Message: "Internal error: " + err.Error(),
+			}})
 	}
 }

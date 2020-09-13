@@ -20,7 +20,9 @@ import (
 	"context"
 
 	mf "github.com/manifestival/manifestival"
+	v1 "k8s.io/api/core/v1"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/pkg/apis"
 	"knative.dev/pkg/logging"
 )
 
@@ -34,7 +36,7 @@ type Stages []Stage
 func (stages Stages) Execute(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	for _, stage := range stages {
 		if err := stage(ctx, manifest, instance); err != nil {
-			instance.GetStatus().MarkInstallFailed(err.Error())
+			SetErrorConditionIfIndeterminate(err, instance)
 			return err
 		}
 	}
@@ -51,7 +53,7 @@ func NoOp(context.Context, *mf.Manifest, v1alpha1.KComponent) error {
 func AppendTarget(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	m, err := TargetManifest(instance)
 	if err != nil {
-		instance.GetStatus().MarkInstallFailed(err.Error())
+		SetErrorConditionIfIndeterminate(err, instance)
 		return err
 	}
 	*manifest = manifest.Append(m)
@@ -96,5 +98,23 @@ func DeleteObsoleteResources(ctx context.Context, instance v1alpha1.KComponent, 
 	}
 	return func(_ context.Context, manifest *mf.Manifest, _ v1alpha1.KComponent) error {
 		return installed.Filter(mf.NoCRDs, mf.Not(mf.In(*manifest))).Delete()
+	}
+}
+
+// SetErrorConditionIfIndeterminate marks the instance's Conditions as not Ready
+// if no existing error has been signaled. If Ready is already False, it does
+// not change the existing error reporting. This exists to ensure that errors
+// are reported to the user even if the underlying functions do not explicitly
+// set conditions on the instance.
+func SetErrorConditionIfIndeterminate(err error, instance v1alpha1.KComponentStatus) {
+	if !instance.GetStatus().GetCondition(apis.ConditionReady).IsFalse() {
+		instance.GetStatus().SetConditions(apis.Conditions{
+			apis.Condition{
+				Type: apis.ConditionReady,
+				Status: v1.ConditionFalse,
+				Reason: "StageError",
+				Message: err.Error(),
+			}
+		})
 	}
 }

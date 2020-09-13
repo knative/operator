@@ -65,6 +65,10 @@ type KComponentSpec interface {
 
 // KComponentStatus is a common interface for status mutations of all known types.
 type KComponentStatus interface {
+	// Inherit Condition methods from apis.
+	apis.ConditionAccessor
+	apis.ConditionsAccessor
+
 	// MarkInstallSucceeded marks the InstallationSucceeded status as true.
 	MarkInstallSucceeded()
 	// MarkInstallFailed marks the InstallationSucceeded status as false with the given

@@ -103,7 +103,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	}
 
 	if err := r.extension.Reconcile(ctx, ks); err != nil {
-		ks.Status.MarkInstallFailed(err.Error())
+		common.SetErrorConditionIfIndeterminate(err, ks)
 		return err
 	}
 	stages := common.Stages{

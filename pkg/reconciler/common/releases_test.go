@@ -17,6 +17,7 @@ limitations under the License.
 package common
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -31,8 +32,8 @@ const (
 	SERVING_HPA          = "testdata/kodata/knative-serving/" + VERSION + "/serving-hpa.yaml"
 	EVENTING_CORE        = "testdata/kodata/knative-eventing/" + VERSION + "/eventing-core.yaml"
 	IN_MEMORY_CHANNEL    = "testdata/kodata/knative-eventing/" + VERSION + "/in-memory-channel.yaml"
-	SERVING_VERSION_CORE = "testdata/kodata/knative-serving/${version}/serving-core.yaml"
-	SERVING_VERSION_HPA  = "testdata/kodata/knative-serving/${version}/serving-hpa.yaml"
+	SERVING_VERSION_CORE = "testdata/kodata/knative-serving/${VERSION}/serving-core.yaml"
+	SERVING_VERSION_HPA  = "testdata/kodata/knative-serving/${VERSION}/serving-hpa.yaml"
 )
 
 func TestRetrieveManifestPath(t *testing.T) {
@@ -276,6 +277,72 @@ func TestIsUpDowngradeEligible(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			result := IsUpDowngradeEligible(test.component)
 			util.AssertEqual(t, result, test.expected)
+		})
+	}
+}
+
+func TestTargetManifest(t *testing.T) {
+	tests := []struct {
+		name          string
+		component     v1alpha1.KComponent
+		expectedError error
+	}{{
+		name: "knative-serving with spec.manifests matched",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.0",
+					Manifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/knative-serving/${VERSION}/serving-core.yaml",
+					}, {
+						Url: "testdata/kodata/knative-serving/${VERSION}/serving-hpa.yaml",
+					}},
+				},
+			},
+		},
+		expectedError: nil,
+	}, {
+		name: "knative-serving with spec.manifests unmatched",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.0",
+					Manifests: []v1alpha1.Manifest{{
+						Url: "testdata/invalid_kodata/knative-serving/${VERSION}_unmatched_version/serving-core.yaml",
+					}, {
+						Url: "testdata/invalid_kodata/knative-serving/${VERSION}_unmatched_version/serving-hpa.yaml",
+					}},
+				},
+			},
+		},
+		expectedError: fmt.Errorf("The version of the manifests %s does not match the target "+
+			"version of the operator CR %s. The resource name is %s.", "v0.16.2", "v0.16.0", "knative-serving"),
+	}, {
+		name: "knative-serving with spec.manifests matched but no spec.version",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/knative-serving/0.16.0/serving-core.yaml",
+					}, {
+						Url: "testdata/kodata/knative-serving/0.16.0/serving-hpa.yaml",
+					}},
+				},
+			},
+		},
+		expectedError: nil,
+	}}
+
+	koPath := "testdata/kodata"
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := TargetManifest(test.component)
+			if err != test.expectedError {
+				util.AssertEqual(t, err.Error(), test.expectedError.Error())
+			}
 		})
 	}
 }

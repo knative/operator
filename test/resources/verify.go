@@ -17,6 +17,7 @@ limitations under the License.
 package resources
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -48,7 +49,7 @@ func KSOperatorCRVerifyConfiguration(t *testing.T, clients *test.Clients, names 
 	loggingConfigMapName := fmt.Sprintf("%s/config-%s", names.Namespace, LoggingConfigKey)
 	defaultsConfigMapName := fmt.Sprintf("%s/config-%s", names.Namespace, DefaultsConfigKey)
 	// Get the existing KS without any spec
-	ks, err := clients.KnativeServing().Get(names.KnativeServing, metav1.GetOptions{})
+	ks, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("The operator does not have an existing KS operator CR: %s", names.KnativeServing)
 	}
@@ -72,7 +73,7 @@ func KSOperatorCRVerifyConfiguration(t *testing.T, clients *test.Clients, names 
 }
 
 func verifyDefaultConfig(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConfigMapName string, clients *test.Clients, names test.ResourceNames) {
-	_, err := clients.KnativeServing().Update(ks)
+	_, err := clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
@@ -96,13 +97,13 @@ func verifyLoggingConfig(t *testing.T, loggingConfigMapName string, clients *tes
 }
 
 func verifySingleKeyDeletion(t *testing.T, loggingConfigKey string, loggingConfigMapName string, clients *test.Clients, names test.ResourceNames) {
-	ks, err := clients.KnativeServing().Get(names.KnativeServing, metav1.GetOptions{})
+	ks, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 	if err != nil || ks.Spec.Config[loggingConfigKey]["loglevel.autoscaler"] == "" {
 		t.Fatalf("Existing KS operator CR lacks proper key: %v", ks.Spec.Config)
 	}
 
 	delete(ks.Spec.Config[loggingConfigKey], "loglevel.autoscaler")
-	_, err = clients.KnativeServing().Update(ks)
+	_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
@@ -119,13 +120,13 @@ func verifySingleKeyDeletion(t *testing.T, loggingConfigKey string, loggingConfi
 }
 
 func verifyEmptyKey(t *testing.T, defaultsConfigKey string, defaultsConfigMapName string, clients *test.Clients, names test.ResourceNames) {
-	ks, err := clients.KnativeServing().Get(names.KnativeServing, metav1.GetOptions{})
+	ks, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("Existing KS operator CR gone: %s", names.KnativeServing)
 	}
 
 	ks.Spec.Config[defaultsConfigKey] = map[string]string{}
-	_, err = clients.KnativeServing().Update(ks)
+	_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
@@ -141,12 +142,12 @@ func verifyEmptyKey(t *testing.T, defaultsConfigKey string, defaultsConfigMapNam
 }
 
 func verifyEmptySpec(t *testing.T, loggingConfigMapName string, clients *test.Clients, names test.ResourceNames) {
-	ks, err := clients.KnativeServing().Get(names.KnativeServing, metav1.GetOptions{})
+	ks, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("Existing KS operator CR gone: %s", names.KnativeServing)
 	}
 	ks.Spec = v1alpha1.KnativeServingSpec{}
-	if _, err := clients.KnativeServing().Update(ks); err != nil {
+	if _, err := clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{}); err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
 	err = WaitForConfigMap(loggingConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
@@ -160,7 +161,7 @@ func verifyEmptySpec(t *testing.T, loggingConfigMapName string, clients *test.Cl
 
 // DeleteAndVerifyDeployments verify whether all the deployments for knative serving are able to recreate, when they are deleted.
 func DeleteAndVerifyDeployments(t *testing.T, clients *test.Clients, names test.ResourceNames) {
-	dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(names.Namespace).List(metav1.ListOptions{})
+	dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("Failed to get any deployment under the namespace %q: %v",
 			test.ServingOperatorNamespace, err)
@@ -171,13 +172,12 @@ func DeleteAndVerifyDeployments(t *testing.T, clients *test.Clients, names test.
 	}
 	// Delete the first deployment and verify the operator recreates it
 	deployment := dpList.Items[0]
-	if err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Delete(deployment.Name,
-		&metav1.DeleteOptions{}); err != nil {
+	if err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Delete(context.TODO(), deployment.Name, metav1.DeleteOptions{}); err != nil {
 		t.Fatalf("Failed to delete deployment %s/%s: %v", deployment.Namespace, deployment.Name, err)
 	}
 
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		dep, err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Get(deployment.Name, metav1.GetOptions{})
+		dep, err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Get(context.TODO(), deployment.Name, metav1.GetOptions{})
 		if err != nil {
 			// If the deployment is not found, we continue to wait for the availability.
 			if apierrs.IsNotFound(err) {
@@ -201,11 +201,11 @@ func DeleteAndVerifyDeployments(t *testing.T, clients *test.Clients, names test.
 
 // KSOperatorCRDelete deletes tha KnativeServing to see if all resources will be deleted
 func KSOperatorCRDelete(t *testing.T, clients *test.Clients, names test.ResourceNames) {
-	if err := clients.KnativeServing().Delete(names.KnativeServing, &metav1.DeleteOptions{}); err != nil {
+	if err := clients.KnativeServing().Delete(context.TODO(), names.KnativeServing, metav1.DeleteOptions{}); err != nil {
 		t.Fatalf("KnativeServing %q failed to delete: %v", names.KnativeServing, err)
 	}
 	err := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		_, err := clients.KnativeServing().Get(names.KnativeServing, metav1.GetOptions{})
+		_, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 		if apierrs.IsNotFound(err) {
 			return true, nil
 		}
@@ -238,7 +238,7 @@ func KSOperatorCRDelete(t *testing.T, clients *test.Clients, names test.Resource
 }
 
 func verifyNoKSOperatorCR(clients *test.Clients) error {
-	servings, err := clients.KnativeServingAll().List(metav1.ListOptions{})
+	servings, err := clients.KnativeServingAll().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -274,7 +274,7 @@ func AssertKEOperatorCRReadyStatus(t *testing.T, clients *test.Clients, names te
 
 // DeleteAndVerifyEventingDeployments verify whether all the deployments for knative eventing are able to recreate, when they are deleted.
 func DeleteAndVerifyEventingDeployments(t *testing.T, clients *test.Clients, names test.ResourceNames) {
-	dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(names.Namespace).List(metav1.ListOptions{})
+	dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("Failed to get any deployment under the namespace %q: %v",
 			test.EventingOperatorNamespace, err)
@@ -285,13 +285,12 @@ func DeleteAndVerifyEventingDeployments(t *testing.T, clients *test.Clients, nam
 	}
 	// Delete the first deployment and verify the operator recreates it
 	deployment := dpList.Items[0]
-	if err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Delete(deployment.Name,
-		&metav1.DeleteOptions{}); err != nil {
+	if err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Delete(context.TODO(), deployment.Name, metav1.DeleteOptions{}); err != nil {
 		t.Fatalf("Failed to delete deployment %s/%s: %v", deployment.Namespace, deployment.Name, err)
 	}
 
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		dep, err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Get(deployment.Name, metav1.GetOptions{})
+		dep, err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Get(context.TODO(), deployment.Name, metav1.GetOptions{})
 		if err != nil {
 			// If the deployment is not found, we continue to wait for the availability.
 			if apierrs.IsNotFound(err) {
@@ -315,11 +314,11 @@ func DeleteAndVerifyEventingDeployments(t *testing.T, clients *test.Clients, nam
 
 // KEOperatorCRDelete deletes tha KnativeEventing to see if all resources will be deleted
 func KEOperatorCRDelete(t *testing.T, clients *test.Clients, names test.ResourceNames) {
-	if err := clients.KnativeEventing().Delete(names.KnativeEventing, &metav1.DeleteOptions{}); err != nil {
+	if err := clients.KnativeEventing().Delete(context.TODO(), names.KnativeEventing, metav1.DeleteOptions{}); err != nil {
 		t.Fatalf("KnativeEventing %q failed to delete: %v", names.KnativeEventing, err)
 	}
 	err := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		_, err := clients.KnativeEventing().Get(names.KnativeEventing, metav1.GetOptions{})
+		_, err := clients.KnativeEventing().Get(context.TODO(), names.KnativeEventing, metav1.GetOptions{})
 		if apierrs.IsNotFound(err) {
 			return true, nil
 		}
@@ -351,7 +350,7 @@ func KEOperatorCRDelete(t *testing.T, clients *test.Clients, names test.Resource
 }
 
 func verifyNoKnativeEventings(clients *test.Clients) error {
-	eventings, err := clients.KnativeEventingAll().List(metav1.ListOptions{})
+	eventings, err := clients.KnativeEventingAll().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

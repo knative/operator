@@ -20,6 +20,7 @@ limitations under the License.
 package test
 
 import (
+	"context"
 	"os"
 	"os/signal"
 
@@ -41,7 +42,7 @@ func CleanupOnInterrupt(cleanup func()) {
 // TearDown will delete created names using clients.
 func TearDown(clients *Clients, names ResourceNames) {
 	if clients != nil && clients.Operator != nil {
-		clients.KnativeServing().Delete(names.KnativeServing, &metav1.DeleteOptions{})
-		clients.KnativeEventing().Delete(names.KnativeEventing, &metav1.DeleteOptions{})
+		clients.KnativeServing().Delete(context.TODO(), names.KnativeServing, metav1.DeleteOptions{})
+		clients.KnativeEventing().Delete(context.TODO(), names.KnativeEventing, metav1.DeleteOptions{})
 	}
 }

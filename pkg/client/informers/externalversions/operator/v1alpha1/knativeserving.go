@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	time "time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -61,13 +62,13 @@ func NewFilteredKnativeServingInformer(client versioned.Interface, namespace str
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OperatorV1alpha1().KnativeServings(namespace).List(options)
+				return client.OperatorV1alpha1().KnativeServings(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OperatorV1alpha1().KnativeServings(namespace).Watch(options)
+				return client.OperatorV1alpha1().KnativeServings(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&operatorv1alpha1.KnativeServing{},

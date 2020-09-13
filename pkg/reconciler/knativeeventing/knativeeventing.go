@@ -57,7 +57,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1alpha1.Knativ
 	logger := logging.FromContext(ctx)
 
 	// List all KnativeEventings to determine if cluster-scoped resources should be deleted.
-	kes, err := r.operatorClientSet.OperatorV1alpha1().KnativeEventings("").List(metav1.ListOptions{})
+	kes, err := r.operatorClientSet.OperatorV1alpha1().KnativeEventings("").List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to list all KnativeEventings: %w", err)
 	}
@@ -119,7 +119,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp v1alpha1.KComponent) error {
 	logger := logging.FromContext(ctx)
 	instance := comp.(*v1alpha1.KnativeEventing)
-	extra := []mf.Transformer{kec.DefaultBrokerConfigMapTransform(instance, logger)}
+	extra := []mf.Transformer{
+		kec.DefaultBrokerConfigMapTransform(instance, logger),
+		kec.SinkBindingSelectionModeTransform(instance, logger),
+	}
 	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
 }

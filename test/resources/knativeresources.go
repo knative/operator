@@ -60,7 +60,7 @@ func WaitForKnativeDeploymentState(clients *test.Clients, namespace string, vers
 	defer span.End()
 
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
+		dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(namespace).List(context.TODO(), metav1.ListOptions{})
 		return inState(dpList, expectedDeployments, version, err, logf)
 	})
 
@@ -84,10 +84,14 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 	}
 
 	isReady := func(d *v1.Deployment) bool {
-		for _, val := range d.GetObjectMeta().GetLabels() {
+		for key, val := range d.GetObjectMeta().GetLabels() {
 			// Check if the version matches. As long as we find a value equals to the version, we can determine
-			// the deployment is for the specific version.
-			if val == fmt.Sprintf("v%s", version) {
+			// the deployment is for the specific version. The key "networking.knative.dev/ingress-provider" is
+			// used to indicate the network ingress resource.
+			// Currently, the network ingress resource is still specified together with the knative serving.
+			// It is possible that network ingress resource is not using the same version as knative serving.
+			// This is the reason why we skip the version checking for network ingress resource.
+			if val == fmt.Sprintf("v%s", version) || key == "networking.knative.dev/ingress-provider" {
 				for _, c := range d.Status.Conditions {
 					if c.Type == v1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
 						return true
@@ -181,7 +185,7 @@ func IsKnativeObsoleteResourceGone(clients *test.Clients, namespace string, obsR
 			case "job":
 				continue
 			}
-			_, err = clients.Dynamic.Resource(gvr).Namespace(namespace).Get(resource.GetName(), metav1.GetOptions{})
+			_, err = clients.Dynamic.Resource(gvr).Namespace(namespace).Get(context.TODO(), resource.GetName(), metav1.GetOptions{})
 		} else {
 			// TODO(#1): If APIVersion is the only different field between two resources with
 			// one being v1 and the other being v1beta1, the dynamic client can access both of
@@ -191,7 +195,7 @@ func IsKnativeObsoleteResourceGone(clients *test.Clients, namespace string, obsR
 			case "customresourcedefinition", "validatingwebhookconfiguration", "mutatingwebhookconfiguration":
 				continue
 			}
-			_, err = clients.Dynamic.Resource(gvr).Get(resource.GetName(), metav1.GetOptions{})
+			_, err = clients.Dynamic.Resource(gvr).Get(context.TODO(), resource.GetName(), metav1.GetOptions{})
 		}
 		if !apierrs.IsNotFound(err) {
 			logf("The resource %v still exists.", resource.GetName())

@@ -33,7 +33,7 @@ import (
 )
 
 // TestKnativeEventingUpgrade verifies the KnativeEventing creation, deployment recreation, and KnativeEventing deletion
-// after upgraded to the latest HEAD at master, with the latest generated manifest of KnativeEventing.
+// after upgraded to the latest HEAD, with the latest generated manifest of KnativeEventing.
 func TestKnativeEventingUpgrade(t *testing.T) {
 	clients := client.Setup(t)
 

@@ -35,7 +35,7 @@ const (
 	// KoEnvKey is the key of the environment variable to specify the path to the ko data directory
 	KoEnvKey = "KO_DATA_PATH"
 	// VersionVariable is a string, which can be replaced with the value of spec.version
-	VersionVariable = "${version}"
+	VersionVariable = "${VERSION}"
 	// COMMA is the character comma
 	COMMA = ","
 )
@@ -48,6 +48,10 @@ var cache = map[string]mf.Manifest{}
 func TargetVersion(instance v1alpha1.KComponent) string {
 	target := instance.GetSpec().GetVersion()
 	if target == "" {
+		// If spec.version is not set and spec.manifests are set, we leave the target version empty.
+		if len(instance.GetSpec().GetManifests()) != 0 {
+			return ""
+		}
 		return latestRelease(instance)
 	}
 	return target
@@ -55,7 +59,7 @@ func TargetVersion(instance v1alpha1.KComponent) string {
 
 // TargetManifest returns the manifest for the TargetVersion
 func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
-	return fetch(manifestPath(TargetVersion(instance), instance))
+	return versionValidation(TargetVersion(instance), instance)
 }
 
 // InstalledManifest returns the version currently installed, which is
@@ -64,10 +68,10 @@ func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 // So we return the target manifest if status.version is empty.
 func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 	current := instance.GetStatus().GetVersion()
-	if current != "" {
-		return fetch(installedManifestPath(current, instance))
+	if len(instance.GetStatus().GetManifests()) == 0 && current == "" {
+		return TargetManifest(instance)
 	}
-	return TargetManifest(instance)
+	return fetch(installedManifestPath(current, instance))
 }
 
 // IsUpDowngradeEligible returns the bool indicate whether the installed manifest is able to upgrade or downgrade to
@@ -106,6 +110,53 @@ func IsUpDowngradeEligible(instance v1alpha1.KComponent) bool {
 	}
 
 	return false
+}
+
+func getVersionKey(instance v1alpha1.KComponent) string {
+	switch instance.(type) {
+	case *v1alpha1.KnativeServing:
+		return "serving.knative.dev/release"
+	case *v1alpha1.KnativeEventing:
+		return "eventing.knative.dev/release"
+	}
+	return ""
+}
+
+func versionValidation(version string, instance v1alpha1.KComponent) (mf.Manifest, error) {
+	manifestsPath := componentURL(version, instance)
+	if manifestsPath == "" {
+		// The spec.manifests are empty. There is no need to check whether the versions match.
+		return fetch(manifestPath(version, instance))
+	}
+
+	manifests, err := fetch(manifestsPath)
+	if err != nil {
+		// If we cannot access the manifests, there is no need to check whether the versions match.
+		return manifests, err
+	}
+
+	if len(manifests.Resources()) == 0 {
+		// If we cannot find any resources in the manifests, we need to return an error.
+		return manifests, fmt.Errorf("There is no resource available in the target manifests %s.", manifestsPath)
+	}
+
+	if version == "" {
+		// If target version is empty, there is no need to check whether the versions match.
+		return manifests, nil
+	}
+
+	targetVersion := sanitizeSemver(version)
+	key := getVersionKey(instance)
+	for _, u := range manifests.Resources() {
+		// Check the labels of the resources one by one to see if the version matches the target version.
+		manifestVersion := u.GetLabels()[key]
+		if targetVersion != manifestVersion && manifestVersion != "" {
+			return mf.Manifest{}, fmt.Errorf("The version of the manifests %s does not match the target "+
+				"version of the operator CR %s. The resource name is %s.", manifestVersion, targetVersion, u.GetName())
+		}
+	}
+
+	return manifests, nil
 }
 
 func abs(x int) int {
@@ -148,8 +199,12 @@ func componentURL(version string, instance v1alpha1.KComponent) string {
 	return strings.Join(urls, COMMA)
 }
 
-func createManifestsPath(path string) []string {
-	return strings.Split(path, COMMA)
+func createManifestsPath(instance v1alpha1.KComponent) []string {
+	if len(instance.GetSpec().GetManifests()) > 0 {
+		return strings.Split(manifestPath(TargetVersion(instance), instance), COMMA)
+	}
+
+	return make([]string, 0, 0)
 }
 
 func manifestPath(version string, instance v1alpha1.KComponent) string {

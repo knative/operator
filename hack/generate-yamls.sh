@@ -52,6 +52,12 @@ rm -fr ${YAML_OUTPUT_DIR}/*.yaml
 # Generated Knative Operator component YAML files
 readonly OPERATOR_YAML=${YAML_OUTPUT_DIR}/operator.yaml
 
+if [[ -n "${TAG}" ]]; then
+  LABEL_YAML_CMD=(sed -e "s|operator.knative.dev/release: devel|operator.knative.dev/release: \"${TAG}\"|")
+else
+  LABEL_YAML_CMD=(cat)
+fi
+
 # Flags for all ko commands
 KO_YAML_FLAGS="-P"
 [[ "${KO_DOCKER_REPO}" != gcr.io/* ]] && KO_YAML_FLAGS=""
@@ -63,7 +69,7 @@ export KO_DOCKER_REPO
 cd "${YAML_REPO_ROOT}"
 
 echo "Building Knative Operator"
-ko resolve ${KO_YAML_FLAGS} -f config/ > "${OPERATOR_YAML}"
+ko resolve ${KO_YAML_FLAGS} -f config/ | "${LABEL_YAML_CMD[@]}" > "${OPERATOR_YAML}"
 
 # List generated YAML files. We have only one operator.yaml so far.
 

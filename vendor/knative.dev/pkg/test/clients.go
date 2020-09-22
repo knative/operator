@@ -19,7 +19,6 @@ limitations under the License.
 package test
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
@@ -39,8 +38,8 @@ type KubeClient struct {
 }
 
 // NewSpoofingClient returns a spoofing client to make requests
-func NewSpoofingClient(ctx context.Context, client *KubeClient, logf logging.FormatLogger, domain string, resolvable bool, opts ...spoof.TransportOption) (*spoof.SpoofingClient, error) {
-	return spoof.New(ctx, client.Kube, logf, domain, resolvable, Flags.IngressEndpoint, Flags.SpoofRequestInterval, Flags.SpoofRequestTimeout, opts...)
+func NewSpoofingClient(client *KubeClient, logf logging.FormatLogger, domain string, resolvable bool, opts ...spoof.TransportOption) (*spoof.SpoofingClient, error) {
+	return spoof.New(client.Kube, logf, domain, resolvable, Flags.IngressEndpoint, Flags.SpoofRequestInterval, Flags.SpoofRequestTimeout, opts...)
 }
 
 // NewKubeClient instantiates and returns several clientsets required for making request to the
@@ -71,8 +70,8 @@ func BuildClientConfig(kubeConfigPath string, clusterName string) (*rest.Config,
 }
 
 // UpdateConfigMap updates the config map for specified @name with values
-func (client *KubeClient) UpdateConfigMap(ctx context.Context, name string, configName string, values map[string]string) error {
-	configMap, err := client.GetConfigMap(name).Get(ctx, configName, metav1.GetOptions{})
+func (client *KubeClient) UpdateConfigMap(name string, configName string, values map[string]string) error {
+	configMap, err := client.GetConfigMap(name).Get(configName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -81,7 +80,7 @@ func (client *KubeClient) UpdateConfigMap(ctx context.Context, name string, conf
 		configMap.Data[key] = value
 	}
 
-	_, err = client.GetConfigMap(name).Update(ctx, configMap, metav1.UpdateOptions{})
+	_, err = client.GetConfigMap(name).Update(configMap)
 	return err
 }
 
@@ -91,15 +90,15 @@ func (client *KubeClient) GetConfigMap(name string) k8styped.ConfigMapInterface 
 }
 
 // CreatePod will create a Pod
-func (client *KubeClient) CreatePod(ctx context.Context, pod *corev1.Pod) (*corev1.Pod, error) {
+func (client *KubeClient) CreatePod(pod *corev1.Pod) (*corev1.Pod, error) {
 	pods := client.Kube.CoreV1().Pods(pod.GetNamespace())
-	return pods.Create(ctx, pod, metav1.CreateOptions{})
+	return pods.Create(pod)
 }
 
 // PodLogs returns Pod logs for given Pod and Container in the namespace
-func (client *KubeClient) PodLogs(ctx context.Context, podName, containerName, namespace string) ([]byte, error) {
+func (client *KubeClient) PodLogs(podName, containerName, namespace string) ([]byte, error) {
 	pods := client.Kube.CoreV1().Pods(namespace)
-	podList, err := pods.List(ctx, metav1.ListOptions{})
+	podList, err := pods.List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +108,7 @@ func (client *KubeClient) PodLogs(ctx context.Context, podName, containerName, n
 		if strings.Contains(pod.Name, podName) {
 			result := pods.GetLogs(pod.Name, &corev1.PodLogOptions{
 				Container: containerName,
-			}).Do(ctx)
+			}).Do()
 			return result.Raw()
 		}
 	}

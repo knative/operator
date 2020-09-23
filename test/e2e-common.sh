@@ -139,10 +139,10 @@ function install_istio() {
   echo ">> Bringing up Istio"
   echo ">> Running Istio CRD installer"
   kubectl apply -f "${INSTALL_ISTIO_CRD_YAML}" || return 1
-  wait_until_batch_job_complete istio-system || return 1
 
   echo ">> Running Istio"
   kubectl apply -f "${INSTALL_ISTIO_YAML}" || return 1
+  wait_until_batch_job_complete istio-system || return 1
 }
 
 function create_namespace() {

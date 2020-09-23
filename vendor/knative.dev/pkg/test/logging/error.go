@@ -50,14 +50,15 @@ func keysAndValuesToSpewedMap(args ...interface{}) map[string]string {
 	return m
 }
 
-// Error implements `error` interface
+// Implement `error` interface
 func (e structuredError) Error() string {
 	// TODO(coryrc): accept zap.Field entries?
 	if e.print {
 		// %v for fmt.Sprintf does print keys sorted
 		return fmt.Sprintf("Error: %s\nContext:\n%v", e.msg, keysAndValuesToSpewedMap(e.keysAndValues...))
+	} else {
+		return e.msg
 	}
-	return e.msg
 }
 
 // GetValues gives you the structured key values in a plist

@@ -45,9 +45,7 @@ func AsString(key string, target *string) ParseFunc {
 func AsBool(key string, target *bool) ParseFunc {
 	return func(data map[string]string) error {
 		if raw, ok := data[key]; ok {
-			val, err := strconv.ParseBool(raw)
-			*target = val // If err != nil — this is always false.
-			return err
+			*target = strings.EqualFold(raw, "true")
 		}
 		return nil
 	}

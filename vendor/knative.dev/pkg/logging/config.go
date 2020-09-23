@@ -108,7 +108,7 @@ func newLoggerFromConfig(configJSON string, levelOverride string, opts []zap.Opt
 	}
 
 	logger.Info("Successfully created the logger.")
-	logger.Info("Logging level set to: " + loggingCfg.Level.String())
+	logger.Sugar().Infof("Logging level set to %v", loggingCfg.Level)
 	return logger, loggingCfg.Level, nil
 }
 
@@ -232,10 +232,11 @@ func UpdateLevelFromConfigMap(logger *zap.SugaredLogger, atomicLevel zap.AtomicL
 
 // ConfigMapName gets the name of the logging ConfigMap
 func ConfigMapName() string {
-	if cm := os.Getenv(configMapNameEnv); cm != "" {
-		return cm
+	cm := os.Getenv(configMapNameEnv)
+	if cm == "" {
+		return "config-logging"
 	}
-	return "config-logging"
+	return cm
 }
 
 // JsonToLoggingConfig converts a json string of a Config.

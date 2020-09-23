@@ -142,7 +142,6 @@ function install_istio() {
 
   echo ">> Running Istio"
   kubectl apply -f "${INSTALL_ISTIO_YAML}" || return 1
-  wait_until_batch_job_complete istio-system || return 1
 }
 
 function create_namespace() {

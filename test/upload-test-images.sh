@@ -16,7 +16,7 @@
 
 set -o errexit
 
-# This fucntion is used to build and publish the test images.
+# This function is used to build and publish the test images.
 # $1 - the first parameter is a string, specifying a path of the root directory of the project to run the ko command.
 # $2 - the second parameter is a string, speficying a sub-directory, where the images are built, under the root directory.
 # $3 - the third parameter is a string, speficying the tag of the images.

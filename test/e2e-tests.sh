@@ -37,7 +37,7 @@ function install_eventing_operator() {
 }
 
 function knative_setup() {
-  donwload_knative_serving
+  download_knative_serving
   install_istio || fail_test "Istio installation failed"
   create_namespace
   install_operator

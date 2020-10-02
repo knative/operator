@@ -18,11 +18,13 @@
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
 # The previous serving release, installed by the operator.
-readonly PREVIOUS_SERVING_RELEASE_VERSION="0.16.0"
+readonly PREVIOUS_SERVING_RELEASE_VERSION="0.17.3"
 # The previous eventing release, installed by the operator.
-readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.16.1"
+readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.17.5"
 # This is the branch name of serving and eventing repo, where we run the upgrade tests.
-readonly KNATIVE_REPO_BRANCH="release-0.17" #${PULL_BASE_REF}
+readonly KNATIVE_REPO_BRANCH="release-0.18" #${PULL_BASE_REF}
+# The istio branch version for Knative.
+readonly KNATIVE_ISTIO_BRANCH_VERSION="0.16.0"
 # Istio version we test with
 readonly ISTIO_VERSION="1.5-latest"
 # Test without Istio mesh enabled
@@ -124,10 +126,10 @@ function download_knative() {
 
 # Install Istio.
 function install_istio() {
-  local base_url="https://raw.githubusercontent.com/knative/serving/v${PREVIOUS_SERVING_RELEASE_VERSION}"
+  local base_url="https://raw.githubusercontent.com/knative/serving/v${KNATIVE_ISTIO_BRANCH_VERSION}"
   local istio_version="istio-${ISTIO_VERSION}"
   if [[ ${istio_version} == *-latest ]] ; then
-    istio_version=$(curl https://raw.githubusercontent.com/knative/serving/v${PREVIOUS_SERVING_RELEASE_VERSION}/third_party/${istio_version})
+    istio_version=$(curl https://raw.githubusercontent.com/knative/serving/v${KNATIVE_ISTIO_BRANCH_VERSION}/third_party/${istio_version})
   fi
   INSTALL_ISTIO_CRD_YAML="${base_url}/$(istio_crds_yaml $istio_version)"
   INSTALL_ISTIO_YAML="${base_url}/$(istio_yaml $istio_version $ISTIO_MESH)"

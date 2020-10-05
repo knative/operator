@@ -28,7 +28,7 @@ readonly NET_ISTIO_BRANCH=${KNATIVE_REPO_BRANCH}
 # Istio version we test with
 readonly ISTIO_VERSION="stable"
 # Test without Istio mesh enabled
-readonly ISTIO_MESH=0
+readonly ISTIO_MESH=1
 # Namespaces used for tests
 export TEST_NAMESPACE="${TEST_NAMESPACE:-knative-operator-testing}"
 export SYSTEM_NAMESPACE=${TEST_NAMESPACE}           # knative-serving

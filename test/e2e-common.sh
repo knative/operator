@@ -23,10 +23,10 @@ readonly PREVIOUS_SERVING_RELEASE_VERSION="0.17.3"
 readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.17.5"
 # This is the branch name of serving and eventing repo, where we run the upgrade tests.
 readonly KNATIVE_REPO_BRANCH="release-0.18" #${PULL_BASE_REF}
-# The istio branch version for Knative.
-readonly KNATIVE_ISTIO_BRANCH_VERSION="0.16.0"
+# The branch of the net-istio repository.
+readonly NET_ISTIO_BRANCH=${KNATIVE_REPO_BRANCH}
 # Istio version we test with
-readonly ISTIO_VERSION="1.5-latest"
+readonly ISTIO_VERSION="stable"
 # Test without Istio mesh enabled
 readonly ISTIO_MESH=0
 # Namespaces used for tests
@@ -79,28 +79,6 @@ function test_setup() {
   test_setup_logging
 }
 
-# Choose a correct istio-crds.yaml file.
-# - $1 specifies Istio version.
-function istio_crds_yaml() {
-  local istio_version="$1"
-  echo "third_party/${istio_version}/istio-crds.yaml"
-}
-
-# Choose a correct istio.yaml file.
-# - $1 specifies Istio version.
-# - $2 specifies whether we should use mesh.
-function istio_yaml() {
-  local istio_version="$1"
-  local istio_mesh=$2
-  local suffix=""
-  if [[ $istio_mesh -eq 0 ]]; then
-    suffix="ci-no-mesh"
-  else
-    suffix="ci-mesh"
-  fi
-  echo "third_party/${istio_version}/istio-${suffix}.yaml"
-}
-
 # Download the repository of Knative. The purpose of this function is to download the source code of
 # knative component for further use, based on component name and branch name.
 # Parameters:
@@ -126,24 +104,31 @@ function download_knative() {
 
 # Install Istio.
 function install_istio() {
-  local base_url="https://raw.githubusercontent.com/knative/serving/v${KNATIVE_ISTIO_BRANCH_VERSION}"
-  local istio_version="istio-${ISTIO_VERSION}"
-  if [[ ${istio_version} == *-latest ]] ; then
-    istio_version=$(curl https://raw.githubusercontent.com/knative/serving/v${KNATIVE_ISTIO_BRANCH_VERSION}/third_party/${istio_version})
+  if [[ -z "${ISTIO_VERSION}" ]]; then
+    readonly ISTIO_VERSION="stable"
   fi
-  INSTALL_ISTIO_CRD_YAML="${base_url}/$(istio_crds_yaml $istio_version)"
-  INSTALL_ISTIO_YAML="${base_url}/$(istio_yaml $istio_version $ISTIO_MESH)"
+
+  # And checkout the setup script based on that commit.
+  local NET_ISTIO_DIR=$(mktemp -d)
+  (
+    cd $NET_ISTIO_DIR \
+      && git init \
+      && git remote add origin https://github.com/knative-sandbox/net-istio.git \
+      && git fetch --depth 1 origin $NET_ISTIO_BRANCH \
+      && git checkout FETCH_HEAD
+  )
+
+  ISTIO_PROFILE="istio-ci"
+  if [[ $ISTIO_MESH -eq 0 ]]; then
+    ISTIO_PROFILE+="-no"
+  fi
+  ISTIO_PROFILE+="-mesh"
+  ISTIO_PROFILE+=".yaml"
 
   echo ">> Installing Istio"
-  echo "Istio CRD YAML: ${INSTALL_ISTIO_CRD_YAML}"
-  echo "Istio YAML: ${INSTALL_ISTIO_YAML}"
-
-  echo ">> Bringing up Istio"
-  echo ">> Running Istio CRD installer"
-  kubectl apply -f "${INSTALL_ISTIO_CRD_YAML}" || return 1
-
-  echo ">> Running Istio"
-  kubectl apply -f "${INSTALL_ISTIO_YAML}" || return 1
+  echo "Istio version: ${ISTIO_VERSION}"
+  echo "Istio profile: ${ISTIO_PROFILE}"
+  ${NET_ISTIO_DIR}/third_party/istio-${ISTIO_VERSION}/install-istio.sh ${ISTIO_PROFILE}
 }
 
 function create_namespace() {

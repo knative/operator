@@ -137,8 +137,12 @@ rules:
   - list
   - watch
 - apiGroups:
+  - security.istio.io
   - apps
+  - policy
   resources:
+  - poddisruptionbudgets
+  - peerauthentications
   - deployments
   - daemonsets
   - replicasets
@@ -149,6 +153,7 @@ rules:
   - get
   - list
   - watch
+  - update
 - apiGroups:
   - apiregistration.k8s.io
   resources:

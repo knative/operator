@@ -41,6 +41,8 @@ readonly EVENTING_PROBER_FILE="/tmp/prober-signal-eventing"
 # TODO: remove when components can coexist in same namespace
 export TEST_EVENTING_NAMESPACE=knative-eventing
 export E2E_UPGRADE_TESTS_SERVING_USE=true
+# FIXME(ksuszyns): remove when knative/operator#297 is fixed
+export E2E_UPGRADE_TESTS_SERVING_SCALETOZERO=false
 
 function install_previous_operator_release() {
   install_istio || fail_test "Istio installation failed"

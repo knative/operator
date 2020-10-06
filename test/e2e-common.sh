@@ -126,6 +126,7 @@ function download_knative() {
 
 # Install Istio.
 function install_istio() {
+  echo ">> Installing Istio: still use the old way to install istio for release-0.18"
   local base_url="https://raw.githubusercontent.com/knative/serving/v${KNATIVE_ISTIO_BRANCH_VERSION}"
   local istio_version="istio-${ISTIO_VERSION}"
   if [[ ${istio_version} == *-latest ]] ; then

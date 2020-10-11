@@ -71,7 +71,7 @@ func (es *KnativeEventingStatus) MarkInstallFailed(msg string) {
 		"Install failed with message: %s", msg)
 }
 
-// MarkDeploymentsAvailable marks the VersionMigrationEligble status as true.
+// MarkDeploymentsAvailable marks the VersionMigrationEligible status as true.
 func (es *KnativeEventingStatus) MarkDeploymentsAvailable() {
 	eventingCondSet.Manage(es).MarkTrue(DeploymentsAvailable)
 }

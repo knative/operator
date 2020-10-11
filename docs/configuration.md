@@ -81,7 +81,7 @@ container specs via three optional sub-fields: `override`, `default`, and
 The optional `override` field is a mapping of container names to docker image
 names.
 
-If the container name is not unique across all of the deployments, damemonsets
+If the container name is not unique across all of the deployments, daemonsets
 and jobs, you can prefix the container name with the "parent's" name and a
 slash, e.g. `deployment/container`.
 

@@ -371,7 +371,7 @@ data:
     # giving up; 10 seconds is the value used by core kubernetes controllers.
     renewDeadline: "10s"
     # retryPeriod is how long the leader election client waits between tries of
-    # actions; 2 seconds is the value used by core kuberntes controllers.
+    # actions; 2 seconds is the value used by core kubernetes controllers.
     retryPeriod: "2s"
     # enabledComponents is a comma-delimited list of component names for which
     # leader election is enabled. Valid values are:

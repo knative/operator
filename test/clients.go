@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// This file contains an object which encapsulates k8s clients which are useful for e2e tests.
-
 package test
+
+// This file contains an object which encapsulates k8s clients which are useful for e2e tests.
 
 import (
 	"k8s.io/client-go/dynamic"

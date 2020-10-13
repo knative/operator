@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,10 +31,10 @@ import (
 
 // Clients holds instances of interfaces for making requests to Knative Serving.
 type Clients struct {
-	Kube kubernetes.Interface
-	Dynamic    dynamic.Interface
-	Operator   operatorv1alpha1.OperatorV1alpha1Interface
-	Config     *rest.Config
+	Kube     kubernetes.Interface
+	Dynamic  dynamic.Interface
+	Operator operatorv1alpha1.OperatorV1alpha1Interface
+	Config   *rest.Config
 }
 
 // NewClients instantiates and returns several clientsets required for making request to the
@@ -68,7 +68,6 @@ func NewClients(configPath string, clusterName string) (*Clients, error) {
 	clients.Config = cfg
 	return clients, nil
 }
-
 
 func buildClientConfig(kubeConfigPath string, clusterName string) (*rest.Config, error) {
 	overrides := clientcmd.ConfigOverrides{}

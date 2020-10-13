@@ -14,7 +14,6 @@ require (
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/mod v0.3.0
 	gopkg.in/yaml.v2 v2.3.0
-	honnef.co/go/tools v0.0.1-2020.1.5 // indirect
 	istio.io/api v0.0.0-20191115173247-e1a1952e5b81
 	istio.io/client-go v0.0.0-20191120150049-26c62a04cdbc
 	istio.io/gogo-genproto v0.0.0-20191029161641-f7d19ec0141d // indirect
@@ -22,10 +21,10 @@ require (
 	k8s.io/apimachinery v0.19.0
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.18.8
-	knative.dev/caching v0.0.0-20200122154023-853d6022845c
-	knative.dev/eventing v0.14.0
-	knative.dev/pkg v0.0.0-20200922164940-4bf40ad82aab
-	knative.dev/test-infra v0.0.0-20200921012245-37f1a12adbd3
+	knative.dev/caching v0.0.0-20201013020830-6396f6b3272b
+	knative.dev/eventing v0.18.1-0.20201013161731-d5d4f4239bc8
+	knative.dev/pkg v0.0.0-20201013114130-602db5ee124d
+	knative.dev/test-infra v0.0.0-20201013201130-6e77a9a2cb70
 	sigs.k8s.io/yaml v1.2.0
 )
 
@@ -36,4 +35,7 @@ replace (
 	k8s.io/apimachinery => k8s.io/apimachinery v0.18.8
 	k8s.io/client-go => k8s.io/client-go v0.18.8
 	k8s.io/code-generator => k8s.io/code-generator v0.18.8
+
+	// DO NOT SUBMIT
+	knative.dev/pkg => ../pkg
 )

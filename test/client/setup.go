@@ -24,15 +24,13 @@ import (
 	// https://github.com/kubernetes/client-go/issues/242
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
+	injectiontest "knative.dev/pkg/injection/test"
 	"knative.dev/operator/test"
-	pkgTest "knative.dev/pkg/test"
 )
 
 // Setup creates the client objects needed in the e2e tests.
 func Setup(t *testing.T) *test.Clients {
-	clients, err := test.NewClients(
-		pkgTest.Flags.Kubeconfig,
-		pkgTest.Flags.Cluster)
+	clients, err := test.NewClientsFromCtx(injectiontest.InjectionContext())
 	if err != nil {
 		t.Fatalf("Couldn't initialize clients: %v", err)
 	}

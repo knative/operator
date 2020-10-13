@@ -13,50 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 set -o errexit
 set -o nounset
 set -o pipefail
 
-export GO111MODULE=on
-export GOFLAGS=-mod=vendor
-
-# This controls the release branch we track.
-VERSION="release-0.15"
-
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/library.sh
 
-cd "${REPO_ROOT_DIR}"
-
-# The list of dependencies that we track at HEAD and periodically
-# float forward in this repository.
-FLOATING_DEPS=(
-  "knative.dev/pkg@release-0.18"
-  "knative.dev/test-infra@release-0.18"
-)
-
-# Parse flags to determine any we should pass to dep.
-GO_GET=0
-while [[ $# -ne 0 ]]; do
-  parameter=$1
-  case ${parameter} in
-    --upgrade) GO_GET=1 ;;
-    *) abort "unknown option ${parameter}" ;;
-  esac
-  shift
-done
-readonly GO_GET
-
-if (( GO_GET )); then
-  go get -d "${FLOATING_DEPS[@]}"
-fi
-
-go mod tidy
-go mod vendor
-
-find vendor/ -name 'OWNERS' -delete
-find vendor/ -name '*_test.go' -delete
-
-update_licenses third_party/VENDOR-LICENSE "./..."
-
-remove_broken_symlinks ./vendor
+go_update_deps "$@"

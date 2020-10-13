@@ -20,18 +20,18 @@ package test
 
 import (
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/operator/pkg/client/clientset/versioned"
 	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
-	"knative.dev/pkg/test"
 )
 
 // Clients holds instances of interfaces for making requests to Knative Serving.
 type Clients struct {
-	KubeClient *test.KubeClient
+	Kube kubernetes.Interface
 	Dynamic    dynamic.Interface
 	Operator   operatorv1alpha1.OperatorV1alpha1Interface
 	Config     *rest.Config
@@ -50,7 +50,7 @@ func NewClients(configPath string, clusterName string) (*Clients, error) {
 	cfg.QPS = 100
 	cfg.Burst = 200
 
-	clients.KubeClient, err = test.NewKubeClient(configPath, clusterName)
+	clients.Kube, err = kubernetes.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -68,6 +68,7 @@ func NewClients(configPath string, clusterName string) (*Clients, error) {
 	clients.Config = cfg
 	return clients, nil
 }
+
 
 func buildClientConfig(kubeConfigPath string, clusterName string) (*rest.Config, error) {
 	overrides := clientcmd.ConfigOverrides{}

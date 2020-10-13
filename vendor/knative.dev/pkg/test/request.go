@@ -57,7 +57,7 @@ func Retrying(rc spoof.ResponseChecker, codes ...int) spoof.ResponseChecker {
 		for _, code := range codes {
 			if resp.StatusCode == code {
 				// Returning (false, nil) causes SpoofingClient.Poll to retry.
-				// sc.logger.Infof("Retrying for code %v", resp.StatusCode)
+				// sc.logger.Info("Retrying for code ", resp.StatusCode)
 				return false, nil
 			}
 		}
@@ -171,7 +171,7 @@ func WaitForEndpointState(
 	resolvable bool,
 	opts ...interface{}) (*spoof.Response, error) {
 	return WaitForEndpointStateWithTimeout(ctx, kubeClient, logf, url, inState,
-		desc, resolvable, Flags.SpoofRequestTimeout, opts...)
+		desc, resolvable, Flags().SpoofRequestTimeout, opts...)
 }
 
 // WaitForEndpointStateWithTimeout will poll an endpoint until inState indicates the state is achieved

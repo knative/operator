@@ -79,7 +79,7 @@ func verifyDefaultConfig(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConf
 	}
 
 	// Verify the relevant configmaps have been updated
-	err = WaitForConfigMap(defaultsConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
+	err = WaitForConfigMap(defaultsConfigMapName, clients.KubeClient, func(m map[string]string) bool {
 		return m["revision-timeout-seconds"] == "200"
 	})
 	if err != nil {
@@ -88,7 +88,7 @@ func verifyDefaultConfig(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConf
 }
 
 func verifyLoggingConfig(t *testing.T, loggingConfigMapName string, clients *test.Clients, names test.ResourceNames) {
-	err := WaitForConfigMap(loggingConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
+	err := WaitForConfigMap(loggingConfigMapName, clients.KubeClient, func(m map[string]string) bool {
 		return m["loglevel.controller"] == "debug" && m["loglevel.autoscaler"] == "debug"
 	})
 	if err != nil {
@@ -109,7 +109,7 @@ func verifySingleKeyDeletion(t *testing.T, loggingConfigKey string, loggingConfi
 	}
 
 	// Verify the relevant configmap has been updated
-	err = WaitForConfigMap(loggingConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
+	err = WaitForConfigMap(loggingConfigMapName, clients.KubeClient, func(m map[string]string) bool {
 		_, autoscalerKeyExists := m["loglevel.autoscaler"]
 		// deleted key/value pair should be removed from the target config map
 		return m["loglevel.controller"] == "debug" && !autoscalerKeyExists
@@ -132,7 +132,7 @@ func verifyEmptyKey(t *testing.T, defaultsConfigKey string, defaultsConfigMapNam
 	}
 
 	// Verify the relevant configmap has been updated and does not contain any keys except "_example"
-	err = WaitForConfigMap(defaultsConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
+	err = WaitForConfigMap(defaultsConfigMapName, clients.KubeClient, func(m map[string]string) bool {
 		_, exampleExists := m["_example"]
 		return len(m) == 1 && exampleExists
 	})
@@ -150,7 +150,7 @@ func verifyEmptySpec(t *testing.T, loggingConfigMapName string, clients *test.Cl
 	if _, err := clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{}); err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
-	err = WaitForConfigMap(loggingConfigMapName, clients.KubeClient.Kube, func(m map[string]string) bool {
+	err = WaitForConfigMap(loggingConfigMapName, clients.KubeClient, func(m map[string]string) bool {
 		_, exists := m["loglevel.controller"]
 		return !exists
 	})
@@ -161,7 +161,7 @@ func verifyEmptySpec(t *testing.T, loggingConfigMapName string, clients *test.Cl
 
 // DeleteAndVerifyDeployments verify whether all the deployments for knative serving are able to recreate, when they are deleted.
 func DeleteAndVerifyDeployments(t *testing.T, clients *test.Clients, names test.ResourceNames) {
-	dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
+	dpList, err := clients.KubeClient.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("Failed to get any deployment under the namespace %q: %v",
 			test.ServingOperatorNamespace, err)
@@ -172,12 +172,12 @@ func DeleteAndVerifyDeployments(t *testing.T, clients *test.Clients, names test.
 	}
 	// Delete the first deployment and verify the operator recreates it
 	deployment := dpList.Items[0]
-	if err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Delete(context.TODO(), deployment.Name, metav1.DeleteOptions{}); err != nil {
+	if err := clients.KubeClient.AppsV1().Deployments(deployment.Namespace).Delete(context.TODO(), deployment.Name, metav1.DeleteOptions{}); err != nil {
 		t.Fatalf("Failed to delete deployment %s/%s: %v", deployment.Namespace, deployment.Name, err)
 	}
 
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		dep, err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Get(context.TODO(), deployment.Name, metav1.GetOptions{})
+		dep, err := clients.KubeClient.AppsV1().Deployments(deployment.Namespace).Get(context.TODO(), deployment.Name, metav1.GetOptions{})
 		if err != nil {
 			// If the deployment is not found, we continue to wait for the availability.
 			if apierrs.IsNotFound(err) {
@@ -274,7 +274,7 @@ func AssertKEOperatorCRReadyStatus(t *testing.T, clients *test.Clients, names te
 
 // DeleteAndVerifyEventingDeployments verify whether all the deployments for knative eventing are able to recreate, when they are deleted.
 func DeleteAndVerifyEventingDeployments(t *testing.T, clients *test.Clients, names test.ResourceNames) {
-	dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
+	dpList, err := clients.KubeClient.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("Failed to get any deployment under the namespace %q: %v",
 			test.EventingOperatorNamespace, err)
@@ -285,12 +285,12 @@ func DeleteAndVerifyEventingDeployments(t *testing.T, clients *test.Clients, nam
 	}
 	// Delete the first deployment and verify the operator recreates it
 	deployment := dpList.Items[0]
-	if err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Delete(context.TODO(), deployment.Name, metav1.DeleteOptions{}); err != nil {
+	if err := clients.KubeClient.AppsV1().Deployments(deployment.Namespace).Delete(context.TODO(), deployment.Name, metav1.DeleteOptions{}); err != nil {
 		t.Fatalf("Failed to delete deployment %s/%s: %v", deployment.Namespace, deployment.Name, err)
 	}
 
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		dep, err := clients.KubeClient.Kube.AppsV1().Deployments(deployment.Namespace).Get(context.TODO(), deployment.Name, metav1.GetOptions{})
+		dep, err := clients.KubeClient.AppsV1().Deployments(deployment.Namespace).Get(context.TODO(), deployment.Name, metav1.GetOptions{})
 		if err != nil {
 			// If the deployment is not found, we continue to wait for the availability.
 			if apierrs.IsNotFound(err) {

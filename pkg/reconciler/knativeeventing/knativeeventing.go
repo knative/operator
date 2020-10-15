@@ -95,9 +95,8 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 			"installed KnativeEventing version is %v.", ke.Status.Version)
 		ke.Status.MarkVersionMigrationNotEligible(msg.Error())
 		return nil
-	} else {
-		ke.Status.MarkVersionMigrationEligible()
 	}
+	ke.Status.MarkVersionMigrationEligible()
 
 	if err := r.extension.Reconcile(ctx, ke); err != nil {
 		return err

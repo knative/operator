@@ -156,7 +156,7 @@ metadata:
   labels:
     serving.knative.dev/release: "v0.17.3"
   annotations:
-    knative.dev/example-checksum: "7b6520ae"
+    knative.dev/example-checksum: "84771098"
 data:
   _example: |
     ################################
@@ -1075,7 +1075,7 @@ metadata:
   labels:
     serving.knative.dev/release: "v0.17.3"
   annotations:
-    knative.dev/example-checksum: "11674c15"
+    knative.dev/example-checksum: "67e5d2ff"
 data:
   _example: |
     ################################

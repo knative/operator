@@ -156,7 +156,7 @@ metadata:
   labels:
     serving.knative.dev/release: "v0.16.0"
   annotations:
-    knative.dev/example-checksum: "088ba8b3"
+    knative.dev/example-checksum: "544cba62"
 data:
   _example: |
     ################################

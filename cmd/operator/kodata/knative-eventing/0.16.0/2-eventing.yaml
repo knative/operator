@@ -341,7 +341,7 @@ metadata:
     eventing.knative.dev/release: "v0.16.0"
     knative.dev/example-checksum: "43edfe90"
   annotations:
-    knative.dev/example-checksum: f7320456
+    knative.dev/example-checksum: 71a0eb3b
 data:
   _example: |
     ################################

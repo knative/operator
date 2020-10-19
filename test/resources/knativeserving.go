@@ -22,7 +22,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pkg/errors"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
@@ -52,7 +51,7 @@ func WaitForKnativeServingState(clients servingv1alpha1.KnativeServingInterface,
 	})
 
 	if waitErr != nil {
-		return lastState, errors.Wrapf(waitErr, "knativeserving %s is not in desired state, got: %+v", name, lastState)
+		return lastState, fmt.Errorf("knativeserving %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
 	}
 	return lastState, nil
 }

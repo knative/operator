@@ -27,7 +27,7 @@ const (
 	// DependenciesInstalled is a Condition indicating that potential dependencies have
 	// been installed correctly.
 	DependenciesInstalled apis.ConditionType = "DependenciesInstalled"
-	// InstallSucceeded is a Condition indiciating that the installation of the component
+	// InstallSucceeded is a Condition indicating that the installation of the component
 	// itself has been successful.
 	InstallSucceeded apis.ConditionType = "InstallSucceeded"
 	// DeploymentsAvailable is a Condition indicating whether or not the Deployments of

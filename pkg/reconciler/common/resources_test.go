@@ -273,6 +273,7 @@ func TestResourceRequirementsTransform(t *testing.T) {
 		Input    servingv1alpha1.KnativeServing
 		Expected map[string]v1.ResourceRequirements
 	}{}
+
 	if err := yaml.Unmarshal(testdata, &tests); err != nil {
 		t.Fatalf("Failed to unmarshal tests: %v", err)
 	}

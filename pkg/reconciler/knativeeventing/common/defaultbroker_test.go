@@ -20,11 +20,11 @@ import (
 	"testing"
 
 	"go.uber.org/zap"
-	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/client-go/kubernetes/scheme"
+	"sigs.k8s.io/yaml"
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"

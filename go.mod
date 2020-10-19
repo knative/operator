@@ -14,9 +14,6 @@ require (
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/mod v0.3.0
 	gopkg.in/yaml.v2 v2.3.0
-	istio.io/api v0.0.0-20191115173247-e1a1952e5b81
-	istio.io/client-go v0.0.0-20191120150049-26c62a04cdbc
-	istio.io/gogo-genproto v0.0.0-20191029161641-f7d19ec0141d // indirect
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.19.0
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible

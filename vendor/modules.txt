@@ -98,12 +98,8 @@ github.com/go-openapi/spec
 # github.com/go-openapi/swag v0.19.7
 github.com/go-openapi/swag
 # github.com/gogo/protobuf v1.3.1
-github.com/gogo/protobuf/gogoproto
-github.com/gogo/protobuf/jsonpb
 github.com/gogo/protobuf/proto
-github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 github.com/gogo/protobuf/sortkeys
-github.com/gogo/protobuf/types
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
 # github.com/golang/protobuf v1.4.2
@@ -422,15 +418,6 @@ gopkg.in/inf.v0
 # gopkg.in/yaml.v2 v2.3.0
 ## explicit
 gopkg.in/yaml.v2
-# istio.io/api v0.0.0-20191115173247-e1a1952e5b81
-## explicit
-istio.io/api/networking/v1alpha3
-# istio.io/client-go v0.0.0-20191120150049-26c62a04cdbc
-## explicit
-istio.io/client-go/pkg/apis/networking/v1alpha3
-# istio.io/gogo-genproto v0.0.0-20191029161641-f7d19ec0141d
-## explicit
-istio.io/gogo-genproto/googleapis/google/api
 # k8s.io/api v0.18.8 => k8s.io/api v0.18.8
 ## explicit
 k8s.io/api/admission/v1

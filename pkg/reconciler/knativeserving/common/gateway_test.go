@@ -18,18 +18,11 @@ package common
 import (
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/client-go/kubernetes/scheme"
-
-	istiov1alpha3 "istio.io/api/networking/v1alpha3"
-	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
-
-func init() {
-	v1alpha3.AddToScheme(scheme.Scheme)
-}
 
 func TestGatewayTransform(t *testing.T) {
 	tests := []struct {
@@ -100,39 +93,33 @@ func TestGatewayTransform(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			unstructuredGateway := makeUnstructuredGateway(t, tt.gatewayName, tt.in)
+			gateway := makeUnstructuredGateway(t, tt.gatewayName, tt.in)
 			instance := &servingv1alpha1.KnativeServing{
 				Spec: servingv1alpha1.KnativeServingSpec{
 					KnativeIngressGateway: tt.knativeIngressGateway,
 					ClusterLocalGateway:   tt.clusterLocalGateway,
 				},
 			}
-			gatewayTransform := GatewayTransform(instance, log)
-			gatewayTransform(&unstructuredGateway)
 
-			var gateway = &v1alpha3.Gateway{}
-			err := scheme.Scheme.Convert(&unstructuredGateway, gateway, nil)
+			GatewayTransform(instance, log)(gateway)
+
+			got, ok, err := unstructured.NestedStringMap(gateway.Object, "spec", "selector")
 			util.AssertEqual(t, err, nil)
-			for expectedKey, expectedValue := range tt.expected {
-				util.AssertEqual(t, gateway.Spec.Selector[expectedKey], expectedValue)
+			util.AssertEqual(t, ok, true)
+
+			if !cmp.Equal(got, tt.expected) {
+				t.Errorf("Got = %v, want: %v, diff:\n%s", got, tt.expected, cmp.Diff(got, tt.expected))
 			}
 		})
 	}
 }
 
-func makeUnstructuredGateway(t *testing.T, name string, selector map[string]string) unstructured.Unstructured {
-	gateway := v1alpha3.Gateway{
-		Spec: istiov1alpha3.Gateway{
-			Selector: selector,
-		},
-	}
-	gateway.APIVersion = "networking.istio.io/v1alpha3"
-	gateway.Kind = "Gateway"
-	gateway.Name = name
-	result := unstructured.Unstructured{}
-	err := scheme.Scheme.Convert(&gateway, &result, nil)
-	if err != nil {
-		t.Fatalf("Could not create unstructured deployment object: %v, err: %v", result, err)
-	}
+func makeUnstructuredGateway(t *testing.T, name string, selector map[string]string) *unstructured.Unstructured {
+	result := &unstructured.Unstructured{}
+	result.SetAPIVersion("networking.istio.io/v1alpha3")
+	result.SetKind("Gateway")
+	result.SetName(name)
+	unstructured.SetNestedStringMap(result.Object, selector, "spec", "selector")
+
 	return result
 }

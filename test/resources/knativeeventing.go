@@ -22,7 +22,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pkg/errors"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -49,7 +48,7 @@ func WaitForKnativeEventingState(clients eventingv1alpha1.KnativeEventingInterfa
 	})
 
 	if waitErr != nil {
-		return lastState, errors.Wrapf(waitErr, "KnativeEventing %s is not in desired state, got: %+v", name, lastState)
+		return lastState, fmt.Errorf("KnativeEventing %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
 	}
 	return lastState, nil
 }

@@ -19,7 +19,6 @@ package common
 import (
 	"encoding/json"
 
-	"github.com/ghodss/yaml"
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -28,6 +27,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	eventingconfig "knative.dev/eventing/pkg/apis/config"
 	"knative.dev/eventing/pkg/apis/eventing"
+	"sigs.k8s.io/yaml"
 
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )

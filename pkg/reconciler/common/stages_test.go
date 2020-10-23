@@ -35,7 +35,11 @@ func TestStagesExecute(t *testing.T) {
 	manifest, _ := mf.ManifestFrom(mf.Slice{})
 	stages := Stages{AppendTarget, AppendInstalled}
 	util.AssertEqual(t, len(manifest.Resources()), 0)
-	stages.Execute(context.TODO(), &manifest, &v1alpha1.KnativeServing{})
+	stages.Execute(context.TODO(), &manifest, &v1alpha1.KnativeServing{Spec: v1alpha1.KnativeServingSpec{
+		CommonSpec: v1alpha1.CommonSpec{
+			Version: "0.16.0",
+		},
+	}})
 	util.AssertEqual(t, len(manifest.Resources()), 4)
 }
 

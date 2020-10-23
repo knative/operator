@@ -84,10 +84,14 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 	}
 
 	isReady := func(d *v1.Deployment) bool {
-		for _, val := range d.GetObjectMeta().GetLabels() {
+		for key, val := range d.GetObjectMeta().GetLabels() {
 			// Check if the version matches. As long as we find a value equals to the version, we can determine
-			// the deployment is for the specific version.
-			if val == fmt.Sprintf("v%s", version) {
+			// the deployment is for the specific version. The key "networking.knative.dev/ingress-provider" is
+			// used to indicate the network ingress resource.
+			// Currently, the network ingress resource is still specified together with the knative serving.
+			// It is possible that network ingress resource is not using the same version as knative serving.
+			// This is the reason why we skip the version checking for network ingress resource.
+			if val == fmt.Sprintf("v%s", version) || key == "networking.knative.dev/ingress-provider" {
 				for _, c := range d.Status.Conditions {
 					if c.Type == v1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
 						return true

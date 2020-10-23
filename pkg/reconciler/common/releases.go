@@ -74,42 +74,53 @@ func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 	return fetch(installedManifestPath(current, instance))
 }
 
-// IsUpDowngradeEligible returns the bool indicate whether the installed manifest is able to upgrade or downgrade to
-// the target manifest.
-func IsUpDowngradeEligible(instance v1alpha1.KComponent) bool {
+// IsVersionValidMigrationEligible returns the bool indicate whether the target version is valid and the installed
+// manifest is able to upgrade or downgrade to the target manifest.
+func IsVersionValidMigrationEligible(instance v1alpha1.KComponent) error {
+	var errMess error
+	target := sanitizeSemver(TargetVersion(instance))
+	if !semver.IsValid(target) {
+		return fmt.Errorf("target version %v is not in a valid semantic versioning format.", target)
+	}
+
+	if len(strings.Split(target, ".")) < 2 {
+		return fmt.Errorf("target version %v should at least include the major and minor numbers.", target)
+	}
+
+	targetMinor, err := strconv.Atoi(strings.Split(target, ".")[1])
+	if err != nil {
+		return fmt.Errorf("minor number of the target version %v should be an integer.", target)
+	}
+
 	current := instance.GetStatus().GetVersion()
 	// If there is no manifest installed, return true, because the target manifest is able to install.
 	if current == "" {
-		return true
+		return nil
 	}
-	current = sanitizeSemver(current)
-	target := sanitizeSemver(TargetVersion(instance))
 
+	current = sanitizeSemver(current)
+	errMess = fmt.Errorf("not supported to upgrade or downgrade across multiple MINOR versions. The "+
+		"installed KnativeServing version is %v.", current)
 	currentMajor := semver.Major(current)
 	targetMajor := semver.Major(target)
 	if currentMajor != targetMajor {
 		// All the official releases of Knative are under the same Major version number. If target and current versions
 		// are different in terms of major version, upgrade or downgrade is not supported.
 		// TODO We need to deal with the the case of bumping major version later.
-		return false
+		return errMess
 	}
 
 	currentMinor, err := strconv.Atoi(strings.Split(current, ".")[1])
 	if err != nil {
-		return false
-	}
-
-	targetMinor, err := strconv.Atoi(strings.Split(target, ".")[1])
-	if err != nil {
-		return false
+		return fmt.Errorf("minor number of the current version %v should be an integer.", current)
 	}
 
 	// If the diff between minor versions are less than 2, return true.
 	if abs(currentMinor-targetMinor) < 2 {
-		return true
+		return nil
 	}
 
-	return false
+	return errMess
 }
 
 func getVersionKey(instance v1alpha1.KComponent) string {

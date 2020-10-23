@@ -27,13 +27,12 @@ import (
 )
 
 const (
-	VERSION              = "0.16.0"
-	SERVING_CORE         = "testdata/kodata/knative-serving/" + VERSION + "/serving-core.yaml"
-	SERVING_HPA          = "testdata/kodata/knative-serving/" + VERSION + "/serving-hpa.yaml"
-	EVENTING_CORE        = "testdata/kodata/knative-eventing/" + VERSION + "/eventing-core.yaml"
-	IN_MEMORY_CHANNEL    = "testdata/kodata/knative-eventing/" + VERSION + "/in-memory-channel.yaml"
-	SERVING_VERSION_CORE = "testdata/kodata/knative-serving/${VERSION}/serving-core.yaml"
-	SERVING_VERSION_HPA  = "testdata/kodata/knative-serving/${VERSION}/serving-hpa.yaml"
+	SERVING_CORE         = "testdata/kodata/knative-serving/0.16.1/serving-core.yaml"
+	SERVING_HPA          = "testdata/kodata/knative-serving/0.16.1/serving-hpa.yaml"
+	EVENTING_CORE        = "testdata/kodata/knative-eventing/0.16.0/eventing-core.yaml"
+	IN_MEMORY_CHANNEL    = "testdata/kodata/knative-eventing/0.16.0/in-memory-channel.yaml"
+	SERVING_VERSION_CORE = "testdata/kodata/knative-serving/" + VersionVariable + "/serving-core.yaml"
+	SERVING_VERSION_HPA  = "testdata/kodata/knative-serving/" + VersionVariable + "/serving-hpa.yaml"
 )
 
 func TestRetrieveManifestPath(t *testing.T) {
@@ -69,7 +68,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 				},
 			},
 		},
-		version:  VERSION,
+		version:  "0.16.0",
 		expected: SERVING_CORE + "," + SERVING_HPA,
 	}, {
 		name: "Valid Knative Eventing URLs",
@@ -84,7 +83,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 				},
 			},
 		},
-		version:  VERSION,
+		version:  "0.16.0",
 		expected: EVENTING_CORE + "," + IN_MEMORY_CHANNEL,
 	}, {
 		name: "Valid Knative Serving URLs with the version parameter",
@@ -99,7 +98,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 				},
 			},
 		},
-		version:  VERSION,
+		version:  "0.16.1",
 		expected: SERVING_CORE + "," + SERVING_HPA,
 	}}
 
@@ -146,11 +145,11 @@ func TestGetLatestRelease(t *testing.T) {
 	}{{
 		name:      "serving",
 		component: &v1alpha1.KnativeServing{},
-		expected:  VERSION,
+		expected:  "0.16.1",
 	}, {
 		name:      "eventing",
 		component: &v1alpha1.KnativeEventing{},
-		expected:  VERSION,
+		expected:  "0.16.0",
 	}}
 
 	os.Setenv(KoEnvKey, koPath)
@@ -173,7 +172,7 @@ func TestListReleases(t *testing.T) {
 	}{{
 		name:      "knative-serving",
 		component: &v1alpha1.KnativeServing{},
-		expected:  []string{"0.16.0", "0.15.0", "0.14.0"},
+		expected:  []string{"0.16.1", "0.16.0", "0.15.0", "0.14.0"},
 	}, {
 		name:      "knative-eventing",
 		component: &v1alpha1.KnativeEventing{},
@@ -293,9 +292,9 @@ func TestTargetManifest(t *testing.T) {
 				CommonSpec: v1alpha1.CommonSpec{
 					Version: "0.16.0",
 					Manifests: []v1alpha1.Manifest{{
-						Url: "testdata/kodata/knative-serving/${VERSION}/serving-core.yaml",
+						Url: "testdata/kodata/knative-serving/" + VersionVariable + "/serving-core.yaml",
 					}, {
-						Url: "testdata/kodata/knative-serving/${VERSION}/serving-hpa.yaml",
+						Url: "testdata/kodata/knative-serving/" + VersionVariable + "/serving-hpa.yaml",
 					}},
 				},
 			},
@@ -308,15 +307,15 @@ func TestTargetManifest(t *testing.T) {
 				CommonSpec: v1alpha1.CommonSpec{
 					Version: "0.16.0",
 					Manifests: []v1alpha1.Manifest{{
-						Url: "testdata/invalid_kodata/knative-serving/${VERSION}_unmatched_version/serving-core.yaml",
+						Url: "testdata/invalid_kodata/knative-serving/" + VersionVariable + "_unmatched_version/serving-core.yaml",
 					}, {
-						Url: "testdata/invalid_kodata/knative-serving/${VERSION}_unmatched_version/serving-hpa.yaml",
+						Url: "testdata/invalid_kodata/knative-serving/" + VersionVariable + "_unmatched_version/serving-hpa.yaml",
 					}},
 				},
 			},
 		},
 		expectedError: fmt.Errorf("The version of the manifests %s does not match the target "+
-			"version of the operator CR %s. The resource name is %s.", "v0.16.2", "v0.16.0", "knative-serving"),
+			"version of the operator CR %s. The resource name is %s.", "v0.17.2", "v0.16.0", "knative-serving"),
 	}, {
 		name: "knative-serving with spec.manifests matched but no spec.version",
 		component: &v1alpha1.KnativeServing{
@@ -326,6 +325,22 @@ func TestTargetManifest(t *testing.T) {
 						Url: "testdata/kodata/knative-serving/0.16.0/serving-core.yaml",
 					}, {
 						Url: "testdata/kodata/knative-serving/0.16.0/serving-hpa.yaml",
+					}},
+				},
+			},
+		},
+		expectedError: nil,
+	}, {
+		name: "knative-serving with additional resources",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/knative-serving/0.16.1/serving-core.yaml",
+					}, {
+						Url: "testdata/kodata/knative-serving/0.16.1/serving-hpa.yaml",
+					}, {
+						Url: "testdata/kodata/knative-serving/0.16.1/additional-resource.yaml",
 					}},
 				},
 			},
@@ -341,7 +356,11 @@ func TestTargetManifest(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			_, err := TargetManifest(test.component)
 			if err != test.expectedError {
-				util.AssertEqual(t, err.Error(), test.expectedError.Error())
+				if err != nil {
+					util.AssertEqual(t, err.Error(), test.expectedError.Error())
+				} else {
+					util.AssertEqual(t, nil, test.expectedError.Error())
+				}
 			}
 		})
 	}

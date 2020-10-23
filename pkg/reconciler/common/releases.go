@@ -148,9 +148,10 @@ func versionValidation(version string, instance v1alpha1.KComponent) (mf.Manifes
 	targetVersion := sanitizeSemver(version)
 	key := getVersionKey(instance)
 	for _, u := range manifests.Resources() {
-		// Check the labels of the resources one by one to see if the version matches the target version.
+		// Check the labels of the resources one by one to see if the version matches the target version in terms of
+		// major.minor.
 		manifestVersion := u.GetLabels()[key]
-		if targetVersion != manifestVersion && manifestVersion != "" {
+		if manifestVersion != "" && semver.MajorMinor(targetVersion) != semver.MajorMinor(manifestVersion) {
 			return mf.Manifest{}, fmt.Errorf("The version of the manifests %s does not match the target "+
 				"version of the operator CR %s. The resource name is %s.", manifestVersion, targetVersion, u.GetName())
 		}

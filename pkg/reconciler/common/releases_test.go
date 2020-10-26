@@ -190,14 +190,14 @@ func TestListReleases(t *testing.T) {
 	}
 }
 
-func TestIsUpDowngradeEligible(t *testing.T) {
+func TestIsVersionValidMigrationEligible(t *testing.T) {
 	koPath := "testdata/kodata"
 	tests := []struct {
 		name      string
 		component v1alpha1.KComponent
 		expected  bool
 	}{{
-		name: "knative-serving without status.version",
+		name: "knative-serving with target version in major.minor.patch and without status.version",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
@@ -267,6 +267,36 @@ func TestIsUpDowngradeEligible(t *testing.T) {
 			},
 		},
 		expected: true,
+	}, {
+		name: "knative-serving with target version in major.minor",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.15",
+				},
+			},
+		},
+		expected: true,
+	}, {
+		name: "knative-serving with invalid target version",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "badVersion",
+				},
+			},
+		},
+		expected: false,
+	}, {
+		name: "knative-serving with invalid target version only major",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "1",
+				},
+			},
+		},
+		expected: false,
 	}}
 
 	os.Setenv(KoEnvKey, koPath)
@@ -274,8 +304,8 @@ func TestIsUpDowngradeEligible(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			result := IsUpDowngradeEligible(test.component)
-			util.AssertEqual(t, result, test.expected)
+			result := IsVersionValidMigrationEligible(test.component)
+			util.AssertEqual(t, result == nil, test.expected)
 		})
 	}
 }

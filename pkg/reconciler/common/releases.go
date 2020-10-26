@@ -305,8 +305,14 @@ func getLatestRelease(instance v1alpha1.KComponent, version string) string {
 	if err != nil {
 		panic(err)
 	}
+
+	if version == "" {
+		return vers[0]
+	}
+
 	for _, val := range vers {
-		if strings.HasPrefix(val, version) {
+		if strings.HasPrefix(val, version) &&
+			semver.MajorMinor(sanitizeSemver(val)) == semver.MajorMinor(sanitizeSemver(version)) {
 			// If spec.version is set in the format of major.minor, we return the latest version matching
 			// spec.version.
 			return val

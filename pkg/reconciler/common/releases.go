@@ -46,15 +46,18 @@ var cache = map[string]mf.Manifest{}
 // per the spec in the component. If spec.version is empty, the latest
 // version known to the operator is returned.
 func TargetVersion(instance v1alpha1.KComponent) string {
-	target := instance.GetSpec().GetVersion()
-	if target == "" {
-		// If spec.version is not set and spec.manifests are set, we leave the target version empty.
-		if len(instance.GetSpec().GetManifests()) != 0 {
-			return ""
+	version := instance.GetSpec().GetVersion()
+	if len(instance.GetSpec().GetManifests()) == 0 {
+		if version == "" {
+			return latestRelease(instance)
 		}
-		return latestRelease(instance)
+
+		if sanitizeSemver(version) == semver.MajorMinor(sanitizeSemver(version)) {
+			return getLatestRelease(instance, version)
+		}
 	}
-	return target
+
+	return version
 }
 
 // TargetManifest returns the manifest for the TargetVersion
@@ -291,10 +294,23 @@ func allReleases(instance v1alpha1.KComponent) ([]string, error) {
 
 // latestRelease returns the latest release tag available under kodata directory for Knative component.
 func latestRelease(instance v1alpha1.KComponent) string {
+	return getLatestRelease(instance, "")
+}
+
+// getLatestRelease returns the latest release tag available under kodata directory for Knative component
+// based on spec.version.
+func getLatestRelease(instance v1alpha1.KComponent, version string) string {
+	// The versions are in a descending order, so the first one will be the latest version.
 	vers, err := allReleases(instance)
 	if err != nil {
 		panic(err)
 	}
-	// The versions are in a descending order, so the first one will be the latest version.
-	return vers[0]
+	for _, val := range vers {
+		if strings.HasPrefix(val, version) {
+			// If spec.version is set in the format of major.minor, we return the latest version matching
+			// spec.version.
+			return val
+		}
+	}
+	return ""
 }

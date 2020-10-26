@@ -135,7 +135,119 @@ func TestRetrieveManifestPath(t *testing.T) {
 	}
 }
 
+func TestTargetVersion(t *testing.T) {
+	koPath := "testdata/kodata"
+
+	tests := []struct {
+		name      string
+		component v1alpha1.KComponent
+		expected  string
+	}{{
+		name: "serving",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16",
+				},
+			},
+		},
+		expected: "0.16.1",
+	}, {
+		name: "eventing",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.15",
+				},
+			},
+		},
+		expected: "0.15.0",
+	}, {
+		name:      "eventing",
+		component: &v1alpha1.KnativeEventing{},
+		expected:  "0.16.0",
+	}, {
+		name: "serving",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16",
+					Manifests: []v1alpha1.Manifest{{
+						Url: SERVING_VERSION_CORE,
+					}, {
+						Url: SERVING_VERSION_HPA,
+					}},
+				},
+			},
+		},
+		expected: "0.16",
+	}, {
+		name: "serving",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "",
+					Manifests: []v1alpha1.Manifest{{
+						Url: SERVING_VERSION_CORE,
+					}, {
+						Url: SERVING_VERSION_HPA,
+					}},
+				},
+			},
+		},
+		expected: "",
+	}}
+
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			version := TargetVersion(test.component)
+			util.AssertEqual(t, version, test.expected)
+		})
+	}
+}
+
 func TestGetLatestRelease(t *testing.T) {
+	koPath := "testdata/kodata"
+
+	tests := []struct {
+		name      string
+		component v1alpha1.KComponent
+		expected  string
+	}{{
+		name: "serving",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16",
+				},
+			},
+		},
+		expected: "0.16.1",
+	}, {
+		name: "eventing",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.15",
+				},
+			},
+		},
+		expected: "0.15.0",
+	}}
+
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			version := getLatestRelease(test.component, test.component.GetSpec().GetVersion())
+			util.AssertEqual(t, version, test.expected)
+		})
+	}
+}
+
+func TestLatestRelease(t *testing.T) {
 	koPath := "testdata/kodata"
 
 	tests := []struct {

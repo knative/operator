@@ -67,8 +67,7 @@ func (cfg *Config) Equals(other *Config) bool {
 	return reflect.DeepEqual(other, cfg)
 }
 
-// NoopConfig returns a new noop config
-func NoopConfig() *Config {
+func defaultConfig() *Config {
 	return &Config{
 		Backend:    None,
 		Debug:      false,
@@ -78,7 +77,7 @@ func NoopConfig() *Config {
 
 // NewTracingConfigFromMap returns a Config given a map corresponding to a ConfigMap
 func NewTracingConfigFromMap(cfgMap map[string]string) (*Config, error) {
-	tc := NoopConfig()
+	tc := defaultConfig()
 
 	if backend, ok := cfgMap[backendKey]; ok {
 		switch bt := BackendType(backend); bt {
@@ -128,34 +127,30 @@ func NewTracingConfigFromMap(cfgMap map[string]string) (*Config, error) {
 
 // NewTracingConfigFromConfigMap returns a Config for the given configmap
 func NewTracingConfigFromConfigMap(config *corev1.ConfigMap) (*Config, error) {
-	if config == nil {
-		return NewTracingConfigFromMap(nil)
-	}
 	return NewTracingConfigFromMap(config.Data)
 }
 
 // JsonToTracingConfig converts a json string of a Config.
 // Returns a non-nil Config always and an eventual error.
-func JsonToTracingConfig(jsonCfg string) (*Config, error) { //nolint:stylecheck for backcompat.
-
+func JsonToTracingConfig(jsonCfg string) (*Config, error) {
 	if jsonCfg == "" {
-		return NoopConfig(), errors.New("empty json tracing config")
+		return defaultConfig(), errors.New("empty json tracing config")
 	}
 
 	var configMap map[string]string
 	if err := json.Unmarshal([]byte(jsonCfg), &configMap); err != nil {
-		return NoopConfig(), err
+		return defaultConfig(), err
 	}
 
 	cfg, err := NewTracingConfigFromMap(configMap)
 	if err != nil {
-		return NoopConfig(), nil
+		return defaultConfig(), nil
 	}
 	return cfg, nil
 }
 
 // TracingConfigToJson converts a Config to a json string.
-func TracingConfigToJson(cfg *Config) (string, error) { //nolint:stylecheck for backcompat.
+func TracingConfigToJson(cfg *Config) (string, error) {
 	if cfg == nil {
 		return "", nil
 	}

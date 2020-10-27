@@ -29,7 +29,6 @@ import (
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
-	"k8s.io/apimachinery/pkg/util/clock"
 )
 
 type storedViews struct {
@@ -41,7 +40,6 @@ type meterExporter struct {
 	m view.Meter    // NOTE: DO NOT RETURN THIS DIRECTLY; the view.Meter will not work for the empty Resource
 	o stats.Options // Cache the option to reduce allocations
 	e view.Exporter
-	t time.Time // Time when last access occurred
 }
 
 // ResourceExporterFactory provides a hook for producing separate view.Exporters
@@ -50,70 +48,17 @@ type meterExporter struct {
 // Tags are.
 type ResourceExporterFactory func(*resource.Resource) (view.Exporter, error)
 type meters struct {
-	meters         map[string]*meterExporter
-	factory        ResourceExporterFactory
-	lock           sync.Mutex
-	clock          clock.Clock
-	ticker         clock.Ticker
-	tickerStopChan chan struct{}
+	meters  map[string]*meterExporter
+	factory ResourceExporterFactory
+	lock    sync.Mutex
 }
 
 // Lock regime: lock allMeters before resourceViews. The critical path is in
 // optionForResource, which must lock allMeters, but only needs to lock
 // resourceViews if a new meter needs to be created.
-var (
-	resourceViews = storedViews{}
-	allMeters     = meters{
-		meters: map[string]*meterExporter{"": &defaultMeter},
-		clock:  clock.Clock(clock.RealClock{}),
-	}
-
-	cleanupOnce                = new(sync.Once)
-	meterExporterScanFrequency = 1 * time.Minute
-	maxMeterExporterAge        = 10 * time.Minute
-)
-
-// cleanup looks through allMeter's meterExporter and prunes any that were last visited
-// more than maxMeterExporterAge ago. This will clean up any exporters for resources
-// that no longer exist on the system (a replaced revision, e.g.).  All meterExporter
-// lookups (and creations) run meterExporterForResource, which updates the timestamp
-// on each access.
-func cleanup() {
-	expiryCutoff := allMeters.clock.Now().Add(-1 * maxMeterExporterAge)
-	allMeters.lock.Lock()
-	defer allMeters.lock.Unlock()
-	for key, meter := range allMeters.meters {
-		if key != "" && meter.t.Before(expiryCutoff) {
-			flushGivenExporter(meter.e)
-			delete(allMeters.meters, key)
-		}
-	}
-}
-
-// startCleanup is configured to only run once in production.  For testing,
-// calling startCleanup again will terminate old cleanup threads,
-// and restart anew.
-func startCleanup() {
-	if allMeters.tickerStopChan != nil {
-		close(allMeters.tickerStopChan)
-	}
-
-	curClock := allMeters.clock
-	newTicker := curClock.NewTicker(meterExporterScanFrequency)
-	newStopChan := make(chan struct{})
-	allMeters.tickerStopChan = newStopChan
-	allMeters.ticker = newTicker
-	go func() {
-		defer newTicker.Stop()
-		for {
-			select {
-			case <-newTicker.C():
-				cleanup()
-			case <-newStopChan:
-				return
-			}
-		}
-	}()
+var resourceViews = storedViews{}
+var allMeters = meters{
+	meters: map[string]*meterExporter{"": &defaultMeter},
 }
 
 // RegisterResourceView is similar to view.Register(), except that it will
@@ -229,9 +174,7 @@ func flushResourceExporters() {
 }
 
 // ClearMetersForTest clears the internal set of metrics being exported,
-// including cleaning up background threads, and restarts cleanup thread.
-//
-// If a replacement clock is desired, it should be in allMeters.clock before calling.
+// including cleaning up background threads.
 func ClearMetersForTest() {
 	allMeters.lock.Lock()
 	defer allMeters.lock.Unlock()
@@ -243,7 +186,6 @@ func ClearMetersForTest() {
 		meter.m.Stop()
 		delete(allMeters.meters, k)
 	}
-	startCleanup()
 }
 
 func meterExporterForResource(r *resource.Resource) *meterExporter {
@@ -253,7 +195,6 @@ func meterExporterForResource(r *resource.Resource) *meterExporter {
 		mE = &meterExporter{}
 		allMeters.meters[key] = mE
 	}
-	mE.t = allMeters.clock.Now()
 	if mE.o != nil {
 		return mE
 	}
@@ -278,9 +219,6 @@ func meterExporterForResource(r *resource.Resource) *meterExporter {
 // optionForResource finds or creates a stats exporter for the resource, and
 // returns a stats.Option indicating which meter to record to.
 func optionForResource(r *resource.Resource) (stats.Options, error) {
-	// Start the allMeters cleanup thread, if not already started
-	cleanupOnce.Do(startCleanup)
-
 	allMeters.lock.Lock()
 	defer allMeters.lock.Unlock()
 
@@ -375,7 +313,6 @@ var _ view.Meter = (*defaultMeterImpl)(nil)
 var defaultMeter = meterExporter{
 	m: &defaultMeterImpl{},
 	o: stats.WithRecorder(nil),
-	t: time.Now(), // time.Now() here is ok - defaultMeter never expires, so this won't be checked
 }
 
 func (*defaultMeterImpl) Record(*tag.Map, interface{}, map[string]interface{}) {

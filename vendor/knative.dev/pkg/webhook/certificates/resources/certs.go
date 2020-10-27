@@ -30,7 +30,6 @@ import (
 	"go.uber.org/zap"
 
 	"knative.dev/pkg/logging"
-	"knative.dev/pkg/network"
 )
 
 const (
@@ -48,12 +47,11 @@ func createCertTemplate(name, namespace string, notAfter time.Time) (*x509.Certi
 
 	serviceName := name + "." + namespace
 	commonName := serviceName + ".svc"
-	serviceHostname := network.GetServiceHostname(name, namespace)
 	serviceNames := []string{
 		name,
 		serviceName,
 		commonName,
-		serviceHostname,
+		serviceName + ".svc.cluster.local",
 	}
 
 	tmpl := x509.Certificate{

@@ -60,7 +60,7 @@ func WaitForKnativeDeploymentState(clients *test.Clients, namespace string, vers
 	defer span.End()
 
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		dpList, err := clients.KubeClient.Kube.AppsV1().Deployments(namespace).List(context.TODO(), metav1.ListOptions{})
+		dpList, err := clients.KubeClient.AppsV1().Deployments(namespace).List(context.TODO(), metav1.ListOptions{})
 		return inState(dpList, expectedDeployments, version, err, logf)
 	})
 

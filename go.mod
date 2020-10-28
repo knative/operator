@@ -10,18 +10,15 @@ require (
 	github.com/manifestival/client-go-client v0.4.0
 	github.com/manifestival/manifestival v0.6.1
 	go.uber.org/zap v1.15.0
-	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/mod v0.3.0
-	golang.org/x/tools v0.0.0-20200916195026-c9a70fc28ce3 // indirect
-	honnef.co/go/tools v0.0.1-2020.1.5 // indirect
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.19.0
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.18.8
 	knative.dev/caching v0.0.0-20200122154023-853d6022845c
 	knative.dev/eventing v0.14.0
-	knative.dev/pkg v0.0.0-20201026165741-2f75016c1368
-	knative.dev/test-infra v0.0.0-20200921012245-37f1a12adbd3
+	knative.dev/pkg v0.0.0-20201028051934-55f46ef531b4
+	knative.dev/test-infra v0.0.0-20201028004634-fe8002e29c05
 	sigs.k8s.io/yaml v1.2.0
 )
 

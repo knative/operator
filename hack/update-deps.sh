@@ -22,7 +22,7 @@ export GO111MODULE=on
 export GOFLAGS=-mod=vendor
 
 # This controls the release branch we track.
-VERSION="release-0.15"
+VERSION="master"
 
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/library.sh
 
@@ -31,8 +31,8 @@ cd "${REPO_ROOT_DIR}"
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
 FLOATING_DEPS=(
-  "knative.dev/pkg@release-0.18"
-  "knative.dev/test-infra@release-0.18"
+  "knative.dev/pkg@$VERSION"
+  "knative.dev/test-infra@$VERSION"
 )
 
 # Parse flags to determine any we should pass to dep.

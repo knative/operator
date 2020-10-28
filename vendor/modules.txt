@@ -762,6 +762,7 @@ knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck/v1
 knative.dev/eventing/pkg/apis/eventing
 # knative.dev/hack v0.0.0-20201027221733-0d7f2f064b7b
+## explicit
 knative.dev/hack
 # knative.dev/pkg v0.0.0-20201028051934-55f46ef531b4
 ## explicit
@@ -812,9 +813,6 @@ knative.dev/pkg/tracker
 knative.dev/pkg/version
 knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
-# knative.dev/test-infra v0.0.0-20201028004634-fe8002e29c05
-## explicit
-knative.dev/test-infra/scripts
 # sigs.k8s.io/controller-runtime v0.6.2
 sigs.k8s.io/controller-runtime/pkg/client/apiutil
 # sigs.k8s.io/structured-merge-diff/v3 v3.0.1-0.20200706213357-43c19bbb7fba

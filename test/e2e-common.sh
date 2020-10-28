@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # This script provides helper methods to perform cluster actions.
-source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
+source $(dirname $0)/../vendor/knative.dev/hack/e2e-tests.sh
 
 # The previous serving release, installed by the operator.
 readonly PREVIOUS_SERVING_RELEASE_VERSION="0.17.4"

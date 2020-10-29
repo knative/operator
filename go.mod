@@ -9,16 +9,16 @@ require (
 	github.com/google/go-cmp v0.5.2
 	github.com/manifestival/client-go-client v0.4.0
 	github.com/manifestival/manifestival v0.6.1
-	go.uber.org/zap v1.15.0
+	go.uber.org/zap v1.16.0
 	golang.org/x/mod v0.3.0
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.19.0
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.18.8
-	knative.dev/caching v0.0.0-20201027231233-cc1d9d2e090f
-	knative.dev/eventing v0.18.1-0.20201028080734-4cc2383cc70f
-	knative.dev/hack v0.0.0-20201027221733-0d7f2f064b7b
-	knative.dev/pkg v0.0.0-20201028051934-55f46ef531b4
+	knative.dev/caching v0.0.0-20201029015435-f2bc7482b39c
+	knative.dev/eventing v0.18.1-0.20201029043934-af98d5579864
+	knative.dev/hack v0.0.0-20201028205534-fe80f1c8af68
+	knative.dev/pkg v0.0.0-20201029122234-6d905b3f84a6
 	sigs.k8s.io/yaml v1.2.0
 )
 

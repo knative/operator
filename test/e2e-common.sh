@@ -17,8 +17,9 @@
 # This script provides helper methods to perform cluster actions.
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
+
 # The previous operator release.
-readonly PREVIOUS_OPERATOR_RELEASE_VERSION="0.15.3"
+readonly PREVIOUS_OPERATOR_RELEASE_VERSION="0.15.4"
 # The previous serving release, installed by the operator at PREVIOUS_OPERATOR_RELEASE_VERSION. This can be
 # different from PREVIOUS_OPERATOR_RELEASE_VERSION.
 readonly PREVIOUS_SERVING_RELEASE_VERSION="0.15.2"

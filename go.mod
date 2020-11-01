@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/emicklei/go-restful v2.11.1+incompatible // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
-	github.com/go-logr/zapr v0.1.1
+	github.com/go-logr/zapr v0.2.0
 	github.com/google/go-cmp v0.5.2
 	github.com/manifestival/client-go-client v0.4.0
 	github.com/manifestival/manifestival v0.6.1

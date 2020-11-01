@@ -27,4 +27,7 @@ replace (
 	k8s.io/apimachinery => k8s.io/apimachinery v0.18.8
 	k8s.io/client-go => k8s.io/client-go v0.18.8
 	k8s.io/code-generator => k8s.io/code-generator v0.18.8
+
+	// DO NOT SUBMIT
+	knative.dev/pkg => github.com/nak3/pkg v0.0.0-20201101062213-900cb8ec3ac6
 )

@@ -123,7 +123,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: knative-local-gateway
-  namespace: istio-system
+  namespace: knative-serving
   labels:
     serving.knative.dev/release: "v0.19.0"
     networking.knative.dev/ingress-provider: istio

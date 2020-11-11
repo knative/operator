@@ -68,7 +68,7 @@ metadata:
   name: knative-serving
   namespace: ${TEST_NAMESPACE}
 spec:
-  version: ${version}
+  version: "${version}"
 EOF
 }
 
@@ -82,7 +82,7 @@ metadata:
   name: knative-eventing
   namespace: ${TEST_EVENTING_NAMESPACE}
 spec:
-  version: ${version}
+  version: "${version}"
 EOF
 }
 

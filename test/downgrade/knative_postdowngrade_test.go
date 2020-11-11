@@ -71,7 +71,7 @@ func TestKnativeEventingPostDowngrade(t *testing.T) {
 		}
 		expectedDeployments := resources.GetExpectedDeployments(preManifest)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
-		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, test.OperatorFlags.PreviousEventingVersion,
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(instance),
 			expectedDeployments)
 	})
 }
@@ -116,7 +116,7 @@ func TestKnativeServingPostDowngrade(t *testing.T) {
 		}
 		expectedDeployments := resources.GetExpectedDeployments(preManifest)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
-		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, test.OperatorFlags.PreviousServingVersion,
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(instance),
 			expectedDeployments)
 	})
 }

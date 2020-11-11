@@ -122,6 +122,8 @@ function test_setup() {
   for i in $(ls test/config/*.yaml); do
     sed s/knative-serving/${TEST_NAMESPACE}/ $i | ko apply ${KO_FLAGS} -f -
   done || return 1
+  # Disable the chaosduck deployment as in Serving upgrade prow
+  kubectl -n "${TEST_NAMESPACE}" scale deployment "chaosduck" --replicas=0 || fail_test
 
   echo ">> Uploading test images..."
   # We only need to build and publish two images among all the test images
@@ -134,7 +136,7 @@ function test_setup() {
   echo ">> Waiting for Ingress provider to be running..."
   if [[ -n "${ISTIO_VERSION}" ]]; then
     wait_until_pods_running istio-system || return 1
-    # wait_until_service_has_external_http_address istio-system istio-ingressgateway
+    wait_until_service_has_external_http_address istio-system istio-ingressgateway
   fi
 
   # Install kail if needed.
@@ -190,37 +192,40 @@ function generate_latest_serving_manifest() {
 # Skip installing istio as an add-on
 initialize $@ --skip-istio-addon
 
-TIMEOUT=20m
+TIMEOUT=10m
+PROBE_TIMEOUT=20m
 
-header "Running preupgrade tests"
+header "Running preupgrade tests for Knative Operator"
 go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
 
 header "Listing all the pods of the previous release"
 wait_until_pods_running ${TEST_NAMESPACE}
 
-header "Running preupgrade tests"
-
+header "Running preupgrade tests for Knative Serving"
 # Go to the knative serving repo
-# cd ${KNATIVE_DIR}/serving
-# go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade \
-#   --resolvabledomain="false" "--https" || fail_test
+cd ${KNATIVE_DIR}/serving
+go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade \
+  --resolvabledomain="false" "--https" || fail_test
 
-# header "Starting prober test for serving"
+header "Starting prober test for serving"
 # Remove this in case we failed to clean it up in an earlier test.
-# rm -f /tmp/prober-signal
-# go_test_e2e -tags=probe -timeout=${TIMEOUT} ./test/upgrade \
-#   --resolvabledomain="false" "--https" &
-# PROBER_PID_SERVING=$!
-# echo "Prober PID Serving is ${PROBER_PID_SERVING}"
+rm -f /tmp/prober-signal
+rm -f /tmp/autoscaling-signal
+rm -f /tmp/autoscaling-tbc-signal
+go_test_e2e -tags=probe -timeout=${PROBE_TIMEOUT} ./test/upgrade \
+  --resolvabledomain="false" "--https" &
+PROBER_PID_SERVING=$!
+echo "Prober PID Serving is ${PROBER_PID_SERVING}"
 
+header "Running preupgrade tests for Knative Eventing"
 # Go to the knative eventing repo
 cd ${KNATIVE_DIR}/eventing
 go_test_e2e -tags=preupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
 
-header "Starting prober test for eventing"
+header "Starting prober test for Knative Eventing"
 # Remove this in case we failed to clean it up in an earlier test.
 rm -f ${EVENTING_READY_FILE}
-go_test_e2e -tags=probe -timeout="${TIMEOUT}" ./test/upgrade --pipefile="${EVENTING_PROBER_FILE}" --readyfile="${EVENTING_READY_FILE}" &
+go_test_e2e -tags=probe -timeout="${PROBE_TIMEOUT}" ./test/upgrade --pipefile="${EVENTING_PROBER_FILE}" --readyfile="${EVENTING_READY_FILE}" &
 PROBER_PID_EVENTING=$!
 echo "Prober PID Eventing is ${PROBER_PID_EVENTING}"
 
@@ -241,10 +246,10 @@ go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade \
 wait_until_pods_running ${TEST_NAMESPACE}
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
-# header "Running postupgrade tests for Knative Serving"
+header "Running postupgrade tests for Knative Serving"
 # Run the postupgrade tests under serving
-# cd ${KNATIVE_DIR}/serving
-# go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
+cd ${KNATIVE_DIR}/serving
+go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
 
 header "Running postupgrade tests for Knative Eventing"
 cd ${KNATIVE_DIR}/eventing
@@ -259,18 +264,20 @@ cd ${OPERATOR_DIR}
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/downgrade \
   --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
 
-# header "Running postdowngrade tests for Knative Serving"
-# cd ${KNATIVE_DIR}/serving
-# go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \
-#   --resolvabledomain="false" || fail_test
+header "Running postdowngrade tests for Knative Serving"
+cd ${KNATIVE_DIR}/serving
+go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \
+  --resolvabledomain="false" || fail_test
 
 header "Running postdowngrade tests for Knative Eventing"
 cd ${KNATIVE_DIR}/eventing
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
 
-# echo "done" > /tmp/prober-signal
-# header "Waiting for prober test for Knative Serving"
-# wait ${PROBER_PID_SERVING} || fail_test "Prober failed"
+echo "done" > /tmp/prober-signal
+echo "done" > /tmp/autoscaling-signal
+echo "done" > /tmp/autoscaling-tbc-signal
+header "Waiting for prober test for Knative Serving"
+wait ${PROBER_PID_SERVING} || fail_test "Prober failed"
 
 echo "done" > ${EVENTING_PROBER_FILE}
 header "Waiting for prober test for Knative Eventing"

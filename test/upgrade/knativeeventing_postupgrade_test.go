@@ -24,7 +24,6 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
-
 	"knative.dev/operator/pkg/reconciler/common"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 	"knative.dev/operator/test"

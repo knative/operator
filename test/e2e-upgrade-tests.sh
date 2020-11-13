@@ -219,10 +219,12 @@ go_test_e2e -tags=preupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
 
 header "Starting prober test for eventing"
 # Remove this in case we failed to clean it up in an earlier test.
-rm -f ${EVENTING_PROBER_FILE}
+rm -f ${EVENTING_READY_FILE}
 go_test_e2e -tags=probe -timeout="${TIMEOUT}" ./test/upgrade --pipefile="${EVENTING_PROBER_FILE}" --readyfile="${EVENTING_READY_FILE}" &
 PROBER_PID_EVENTING=$!
-echo "Prober PID Serving is ${PROBER_PID_EVENTING}"
+echo "Prober PID Eventing is ${PROBER_PID_EVENTING}"
+
+wait_for_file ${EVENTING_READY_FILE} || fail_test
 
 create_latest_custom_resource
 

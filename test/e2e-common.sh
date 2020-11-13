@@ -18,11 +18,11 @@
 source $(dirname $0)/../vendor/knative.dev/hack/e2e-tests.sh
 
 # The previous serving release, installed by the operator.
-readonly PREVIOUS_SERVING_RELEASE_VERSION="0.17.4"
+readonly PREVIOUS_SERVING_RELEASE_VERSION="0.18"
 # The previous eventing release, installed by the operator.
-readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.17.7"
+readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.18"
 # This is the branch name of serving and eventing repo, where we run the upgrade tests.
-readonly KNATIVE_REPO_BRANCH="release-0.18" #${PULL_BASE_REF}
+readonly KNATIVE_REPO_BRANCH="release-0.19" #${PULL_BASE_REF}
 # The istio branch version for Knative.
 readonly KNATIVE_ISTIO_BRANCH_VERSION="0.16.0"
 # Istio version we test with

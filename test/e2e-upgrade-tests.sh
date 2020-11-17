@@ -112,16 +112,25 @@ function knative_setup() {
   download_knative "${KNATIVE_EVENTING_REPO:-knative/eventing}" eventing "${KNATIVE_REPO_BRANCH}"
 }
 
+function replace_ns_walk_dir() {
+  for pathname in "$1"/*; do
+    if [ -d "$pathname" ]; then
+      replace_ns_walk_dir "$pathname"
+    else
+      echo "file is $pathname"
+      sed s/knative-serving/${TEST_NAMESPACE}/ $pathname | ko apply ${KO_FLAGS} -f -
+    fi
+  done
+}
+
 # Create test resources and images
 function test_setup() {
   if (( GENERATE_SERVING_YAML )); then
     generate_latest_serving_manifest ${KNATIVE_REPO_BRANCH}
   fi
   echo ">> Creating test resources (test/config/) in Knative Serving repository"
-  cd ${KNATIVE_DIR}/serving
-  for i in $(ls test/config/*.yaml); do
-    sed s/knative-serving/${TEST_NAMESPACE}/ $i | ko apply ${KO_FLAGS} -f -
-  done || return 1
+  local TEST_CONFIG_DIR=${KNATIVE_DIR}/serving/test/config
+  replace_ns_walk_dir "${TEST_CONFIG_DIR}"
 
   echo ">> Uploading test images..."
   # We only need to build and publish two images among all the test images

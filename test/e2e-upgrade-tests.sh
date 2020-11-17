@@ -52,10 +52,18 @@ function install_previous_operator_release() {
 
 function install_previous_knative() {
   header "Create the custom resources for Knative of the previous version"
-  create_knative_serving ${PREVIOUS_SERVING_RELEASE_VERSION}
-  create_knative_eventing ${PREVIOUS_EVENTING_RELEASE_VERSION}
+  install_previous_knative_serving
+  install_previous_knative_eventing
   wait_until_pods_running ${TEST_NAMESPACE}
   wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
+}
+
+function install_previous_knative_serving() {
+  create_knative_serving ${PREVIOUS_SERVING_RELEASE_VERSION}
+}
+
+function install_previous_knative_eventing() {
+  create_knative_eventing ${PREVIOUS_EVENTING_RELEASE_VERSION}
 }
 
 function create_knative_serving() {
@@ -86,7 +94,7 @@ spec:
 EOF
 }
 
-function create_latest_custom_resource() {
+function create_latest_serving_cr() {
   echo ">> Creating the custom resource of Knative Serving:"
   cat <<EOF | kubectl apply -f -
 apiVersion: operator.knative.dev/v1alpha1
@@ -95,6 +103,9 @@ metadata:
   name: knative-serving
   namespace: ${TEST_NAMESPACE}
 EOF
+}
+
+function create_latest_eventing_cr() {
   echo ">> Creating the custom resource of Knative Eventing:"
   cat <<-EOF | kubectl apply -f -
 apiVersion: operator.knative.dev/v1alpha1
@@ -103,6 +114,11 @@ metadata:
   name: knative-eventing
   namespace: ${TEST_EVENTING_NAMESPACE}
 EOF
+}
+
+function create_latest_custom_resource() {
+  create_latest_serving_cr
+  create_latest_eventing_cr
 }
 
 function knative_setup() {
@@ -195,11 +211,11 @@ initialize $@ --skip-istio-addon
 TIMEOUT=10m
 PROBE_TIMEOUT=20m
 
-header "Running preupgrade tests for Knative Operator"
-go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
-
-header "Listing all the pods of the previous release"
+header "Listing all the pods of Knative Serving for the previous release"
 wait_until_pods_running ${TEST_NAMESPACE}
+
+header "Listing all the pods of Knative Eventing for the previous release"
+wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running preupgrade tests for Knative Serving"
 # Go to the knative serving repo
@@ -207,71 +223,79 @@ cd ${KNATIVE_DIR}/serving
 go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade \
   --resolvabledomain="false" "--https" || fail_test
 
-header "Starting prober test for serving"
-# Remove this in case we failed to clean it up in an earlier test.
-rm -f /tmp/prober-signal
-rm -f /tmp/autoscaling-signal
-rm -f /tmp/autoscaling-tbc-signal
-go_test_e2e -tags=probe -timeout=${PROBE_TIMEOUT} ./test/upgrade \
-  --resolvabledomain="false" "--https" &
-PROBER_PID_SERVING=$!
-echo "Prober PID Serving is ${PROBER_PID_SERVING}"
-
 header "Running preupgrade tests for Knative Eventing"
 # Go to the knative eventing repo
 cd ${KNATIVE_DIR}/eventing
 go_test_e2e -tags=preupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
 
+header "Running preupgrade tests for Knative Operator"
+cd ${OPERATOR_DIR}
+go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
+
+header "Starting prober test for serving"
+# Remove this in case we failed to clean it up in an earlier test.
+rm -f /tmp/prober-signal
+rm -f /tmp/autoscaling-signal
+rm -f /tmp/autoscaling-tbc-signal
+cd ${KNATIVE_DIR}/serving
+go_test_e2e -tags=probe -timeout=${PROBE_TIMEOUT} ./test/upgrade \
+  --resolvabledomain="false" "--https" &
+PROBER_PID_SERVING=$!
+echo "Prober PID Serving is ${PROBER_PID_SERVING}"
+
+create_latest_serving_cr
+
+header "Running postupgrade tests for Knative Serving"
+# Run the postupgrade tests under serving
+wait_until_pods_running ${TEST_NAMESPACE}
+cd ${KNATIVE_DIR}/serving
+go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
+
 header "Starting prober test for Knative Eventing"
 # Remove this in case we failed to clean it up in an earlier test.
 rm -f ${EVENTING_READY_FILE}
+rm -f ${EVENTING_PROBER_FILE}
+cd ${KNATIVE_DIR}/eventing
 go_test_e2e -tags=probe -timeout="${PROBE_TIMEOUT}" ./test/upgrade --pipefile="${EVENTING_PROBER_FILE}" --readyfile="${EVENTING_READY_FILE}" &
 PROBER_PID_EVENTING=$!
 echo "Prober PID Eventing is ${PROBER_PID_EVENTING}"
 
 wait_for_file ${EVENTING_READY_FILE} || fail_test
 
-create_latest_custom_resource
+create_latest_eventing_cr
+
+header "Running postupgrade tests for Knative Eventing"
+wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
+cd ${KNATIVE_DIR}/eventing
+go_test_e2e -tags=postupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
 
 # If we got this far, the operator installed Knative of the latest source code.
 header "Running tests for Knative Operator"
-failed=0
-
 # Run the postupgrade tests under operator
 # Operator tests here will make sure that all the Knative deployments reach the desired states and operator CR is
 # in ready state.
 cd ${OPERATOR_DIR}
 go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade \
-  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
-wait_until_pods_running ${TEST_NAMESPACE}
+  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || fail_test
+
+install_previous_knative_eventing
+
+header "Running postdowngrade tests for Knative Eventing"
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
-
-header "Running postupgrade tests for Knative Serving"
-# Run the postupgrade tests under serving
-cd ${KNATIVE_DIR}/serving
-go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
-
-header "Running postupgrade tests for Knative Eventing"
 cd ${KNATIVE_DIR}/eventing
-go_test_e2e -tags=postupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
+go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
 
-install_previous_knative
-wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
+echo "done" > ${EVENTING_PROBER_FILE}
+header "Waiting for prober test for Knative Eventing"
+wait ${PROBER_PID_EVENTING} || fail_test "Prober failed"
 
-header "Running postdowngrade tests for Knative Operator"
-cd ${OPERATOR_DIR}
-go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/downgrade \
-  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
+install_previous_knative_serving
 
 header "Running postdowngrade tests for Knative Serving"
+wait_until_pods_running ${TEST_NAMESPACE}
 cd ${KNATIVE_DIR}/serving
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \
   --resolvabledomain="false" || fail_test
-
-header "Running postdowngrade tests for Knative Eventing"
-cd ${KNATIVE_DIR}/eventing
-go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
 
 echo "done" > /tmp/prober-signal
 echo "done" > /tmp/autoscaling-signal
@@ -279,9 +303,10 @@ echo "done" > /tmp/autoscaling-tbc-signal
 header "Waiting for prober test for Knative Serving"
 wait ${PROBER_PID_SERVING} || fail_test "Prober failed"
 
-echo "done" > ${EVENTING_PROBER_FILE}
-header "Waiting for prober test for Knative Eventing"
-wait ${PROBER_PID_EVENTING} || fail_test "Prober failed"
+header "Running postdowngrade tests for Knative Operator"
+cd ${OPERATOR_DIR}
+go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/downgrade \
+  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || fail_test
 
 # Require that tests succeeded.
 (( failed )) && fail_test

@@ -136,7 +136,7 @@ spec:
 
 ---
 # Allows the Webhooks to be reached by kube-api with or without
-# sidecar injection and with mTLS PERMISSIVE and STRICT.
+# sidecar injection and with mTLS PERMISSIVE and STRICT. 
 apiVersion: "security.istio.io/v1beta1"
 kind: "PeerAuthentication"
 metadata:

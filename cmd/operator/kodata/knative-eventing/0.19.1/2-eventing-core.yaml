@@ -16,7 +16,7 @@ kind: Namespace
 metadata:
   name: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 
 ---
 # Copyright 2018 The Knative Authors
@@ -39,14 +39,14 @@ metadata:
   name: eventing-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: eventing-controller
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 subjects:
   - kind: ServiceAccount
     name: eventing-controller
@@ -61,7 +61,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-controller-resolver
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 subjects:
   - kind: ServiceAccount
     name: eventing-controller
@@ -76,7 +76,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-controller-source-observer
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 subjects:
   - kind: ServiceAccount
     name: eventing-controller
@@ -91,7 +91,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-controller-sources-controller
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 subjects:
   - kind: ServiceAccount
     name: eventing-controller
@@ -106,7 +106,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-controller-manipulator
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 subjects:
   - kind: ServiceAccount
     name: eventing-controller
@@ -137,14 +137,14 @@ metadata:
   name: pingsource-mt-adapter
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-pingsource-mt-adapter
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 subjects:
   - kind: ServiceAccount
     name: pingsource-mt-adapter
@@ -175,14 +175,14 @@ metadata:
   name: eventing-webhook
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: eventing-webhook
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 subjects:
   - kind: ServiceAccount
     name: eventing-webhook
@@ -197,7 +197,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-webhook-resolver
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 subjects:
   - kind: ServiceAccount
     name: eventing-webhook
@@ -212,7 +212,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-webhook-podspecable-binding
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 subjects:
   - kind: ServiceAccount
     name: eventing-webhook
@@ -243,10 +243,10 @@ metadata:
   name: config-br-default-channel
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 data:
   channelTemplateSpec: |
-    apiVersion: messaging.knative.dev/v1beta1
+    apiVersion: messaging.knative.dev/v1
     kind: InMemoryChannel
 
 ---
@@ -270,7 +270,7 @@ metadata:
   name: config-br-defaults
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 data:
   # Configuration for defaulting channels that do not specify CRD implementations.
   default-br-config: |
@@ -302,16 +302,16 @@ metadata:
   name: default-ch-webhook
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 data:
   # Configuration for defaulting channels that do not specify CRD implementations.
   default-ch-config: |
     clusterDefault:
-      apiVersion: messaging.knative.dev/v1beta1
+      apiVersion: messaging.knative.dev/v1
       kind: InMemoryChannel
     namespaceDefaults:
       some-namespace:
-        apiVersion: messaging.knative.dev/v1beta1
+        apiVersion: messaging.knative.dev/v1
         kind: InMemoryChannel
 
 ---
@@ -335,9 +335,9 @@ metadata:
   name: config-leader-election
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
   annotations:
-    knative.dev/example-checksum: "6cf53e10"
+    knative.dev/example-checksum: "a255a6cc"
 data:
   _example: |
     ################################
@@ -364,7 +364,7 @@ data:
     renewDeadline: "10s"
 
     # retryPeriod is how long the leader election client waits between tries of
-    # actions; 2 seconds is the value used by core kuberntes controllers.
+    # actions; 2 seconds is the value used by core kubernetes controllers.
     retryPeriod: "2s"
 
 ---
@@ -388,7 +388,7 @@ metadata:
   name: config-logging
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
 data:
@@ -440,7 +440,7 @@ metadata:
   name: config-observability
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
   annotations:
@@ -515,7 +515,7 @@ metadata:
   name: config-tracing
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
   annotations:
@@ -576,7 +576,7 @@ metadata:
   name: eventing-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     knative.dev/high-availability: "true"
 spec:
   replicas: 1
@@ -587,7 +587,7 @@ spec:
     metadata:
       labels:
         app: eventing-controller
-        eventing.knative.dev/release: "v0.17.6"
+        eventing.knative.dev/release: "v0.19.1"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -603,7 +603,7 @@ spec:
       containers:
         - name: eventing-controller
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/controller@sha256:00f89eb761af3928e3b42b368c7eae0a9e12cc4bb87d0a3eaaf122c192a85025
+          image: gcr.io/knative-releases/knative.dev/eventing/cmd/controller@sha256:e257854e0fde2f5b1986dd72825bbff05b8a22acbbad769913bb5382c87be008
           resources:
             requests:
               cpu: 100m
@@ -619,14 +619,23 @@ spec:
               value: config-observability
             - name: METRICS_DOMAIN
               value: knative.dev/eventing
-            # PingSource
-            - name: PING_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing/cmd/ping@sha256:246e9e35d6d2f01b4ab6b36eb9969c9a0c60da436dbcb5c5b8b1b0b44a4610c7
-            - name: MT_PING_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:8f453b50f82a819d389c3e528888cb402dd28e532b8c1ca8a72f1ead97a3d48e
             # APIServerSource
             - name: APISERVER_RA_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing/cmd/apiserver_receive_adapter@sha256:7d2bac0af7128f4a0cb8b1451c47a8e625bfe6088c085033a38b6ed2df0d74c7
+              value: gcr.io/knative-releases/knative.dev/eventing/cmd/apiserver_receive_adapter@sha256:e6a6b06769db3e63f1dd3775b9d1c9fe11eef67d68a922fedabf137c763823f3
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+                  ##         Adapter settings
+                  #          - name: K_LOGGING_CONFIG
+                  #            value: ''
+                  #          - name: K_LEADER_ELECTION_CONFIG
+                  #            value: ''
+                  #          - name: K_NO_SHUTDOWN_AFTER
+                  #            value: ''
+                  ##           Time in seconds the adapter will wait for the sink to respond. Default is no timeout
+                  #          - name: K_SINK_TIMEOUT
+                  #            value: ''
           securityContext:
             allowPrivilegeEscalation: false
           ports:
@@ -634,6 +643,81 @@ spec:
               containerPort: 9090
             - name: profiling
               containerPort: 8008
+
+---
+# Copyright 2018 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pingsource-mt-adapter
+  namespace: knative-eventing
+  labels:
+    eventing.knative.dev/release: "v0.19.1"
+spec:
+  # when set to 0 (and only 0) will be set to 1 when the first PingSource is created.
+  replicas: 0
+  selector:
+    matchLabels:
+      eventing.knative.dev/source: ping-source-controller
+      sources.knative.dev/role: adapter
+  template:
+    metadata:
+      labels:
+        eventing.knative.dev/source: ping-source-controller
+        sources.knative.dev/role: adapter
+        eventing.knative.dev/release: "v0.19.1"
+    spec:
+      containers:
+        - name: dispatcher
+          image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:11f0ad34117788d46834a1ccbd9ca3895a2020c8928880d55dd9f666bc534742
+          env:
+            - name: SYSTEM_NAMESPACE
+              value: ''
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            # DO NOT MODIFY: The values below are being filled by the ping source controller
+            # See 500-controller.yaml
+            - name: K_METRICS_CONFIG
+              value: ''
+            - name: K_LOGGING_CONFIG
+              value: ''
+            - name: K_LEADER_ELECTION_CONFIG
+              value: ''
+            - name: K_NO_SHUTDOWN_AFTER
+              value: ''
+            - name: K_SINK_TIMEOUT
+              value: '-1'
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          ports:
+            - containerPort: 9090
+              name: metrics
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 125m
+              memory: 64Mi
+            limits:
+              cpu: 1000m
+              memory: 2048Mi
+      serviceAccountName: pingsource-mt-adapter
 
 ---
 # Copyright 2018 The Knative Authors
@@ -656,7 +740,7 @@ metadata:
   name: eventing-webhook
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 spec:
   replicas: 1
   selector:
@@ -683,7 +767,7 @@ spec:
           terminationMessagePolicy: FallbackToLogsOnError
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/webhook@sha256:bb59d76b20f3e5d55009407561fd0ceee667f93483c2bb114e166d681987c905
+          image: gcr.io/knative-releases/knative.dev/eventing/cmd/webhook@sha256:f89ce040f278006126dabd15cae2af6d96bd1841409679e401042b49847cd004
           resources:
             requests:
               # taken from serving.
@@ -708,13 +792,17 @@ spec:
               value: "8443"
               # SINK_BINDING_SELECTION_MODE specifies the NamespaceSelector and ObjectSelector
               # for the sinkbinding webhook.
-              # If `inclusion` is selected, namespaces/objects labled as `bindings.knative.dev/include:true`
+              # If `inclusion` is selected, namespaces/objects labelled as `bindings.knative.dev/include:true`
               # will be considered by the sinkbinding webhook;
-              # If `exclusion` is selected, namespaces/objects labled as `bindings.knative.dev/exclude:true`
+              # If `exclusion` is selected, namespaces/objects labelled as `bindings.knative.dev/exclude:true`
               # will NOT be considered by the sinkbinding webhook.
               # The default is `exclusion`.
             - name: SINK_BINDING_SELECTION_MODE
               value: "exclusion"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           securityContext:
             allowPrivilegeEscalation: false
           ports:
@@ -743,7 +831,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     role: eventing-webhook
   name: eventing-webhook
   namespace: knative-eventing
@@ -775,7 +863,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -797,7 +885,7 @@ spec:
     - &version
       name: v1alpha1
       served: true
-      storage: true
+      storage: false
       subresources:
         status: {}
       schema:
@@ -1160,8 +1248,16 @@ spec:
     - !!merge <<: *version
       name: v1beta1
       served: true
-      storage: false
+      storage: true
       # the schema of v1beta1 is exactly the same as v1alpha2 schema
+      schema:
+        openAPIV3Schema:
+          !!merge <<: *openAPIV3Schema
+    - !!merge <<: *version
+      name: v1
+      served: true
+      storage: false
+      # the schema of v1 is exactly the same as v1beta1 schema
       schema:
         openAPIV3Schema:
           !!merge <<: *openAPIV3Schema
@@ -1202,7 +1298,7 @@ kind: CustomResourceDefinition
 metadata:
   name: brokers.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -1211,7 +1307,7 @@ spec:
     - &version
       name: v1beta1
       served: true
-      storage: true
+      storage: false
       subresources:
         status: {}
       schema:
@@ -1244,7 +1340,7 @@ spec:
                   type: object
                   properties:
                     backoffDelay:
-                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is the time interval between retries. For exponential policy , backoff delay is backoffDelay*2^<numberOfRetries>.'
+                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
                       type: string
                     backoffPolicy:
                       description: ' BackoffPolicy is the retry backoff policy (linear, exponential).'
@@ -1337,7 +1433,7 @@ spec:
     - !!merge <<: *version
       name: v1
       served: true
-      storage: false
+      storage: true
       # the schema of v1 is exactly the same as v1beta1 schema
       schema:
         openAPIV3Schema:
@@ -1380,7 +1476,7 @@ kind: CustomResourceDefinition
 metadata:
   name: channels.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -1390,7 +1486,7 @@ spec:
     - &version
       name: v1beta1
       served: true
-      storage: true
+      storage: false
       subresources:
         status: {}
       additionalPrinterColumns:
@@ -1407,19 +1503,161 @@ spec:
           type: string
           jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
       schema:
-        openAPIV3Schema:
+        openAPIV3Schema: &openAPIV3Schema
           type: object
           properties:
             spec:
+              description: Spec defines the desired state of the Channel.
               type: object
-              x-kubernetes-preserve-unknown-fields: true
+              properties:
+                channelTemplate:
+                  description: ChannelTemplate specifies which Channel CRD to use to create the CRD Channel backing this Channel. This is immutable after creation. Normally this is set by the Channel defaulter, not directly by the user.
+                  type: object
+                  properties:
+                    apiVersion:
+                      description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                      type: string
+                    kind:
+                      description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                      type: string
+                    spec:
+                      description: Spec defines the Spec to use for each channel created. Passed in verbatim to the Channel CRD as Spec section.
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                delivery: &deliverySpec
+                  description: DeliverySpec contains options controlling the event delivery
+                  type: object
+                  properties:
+                    backoffDelay:
+                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
+                      type: string
+                    backoffPolicy:
+                      description: BackoffPolicy is the retry backoff policy (linear, exponential).
+                      type: string
+                    deadLetterSink:
+                      description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
+                      type: object
+                      properties:
+                        ref:
+                          description: Ref points to an Addressable.
+                          type: object
+                          properties: &referentProperties
+                            apiVersion:
+                              description: API version of the referent.
+                              type: string
+                            kind:
+                              description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                              type: string
+                            namespace:
+                              description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                              type: string
+                        uri:
+                          description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                          type: string
+                    retry:
+                      description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
+                      type: integer
+                      format: int32
+                subscribers:
+                  description: This is the list of subscriptions for this subscribable.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      delivery:
+                        !!merge <<: *deliverySpec
+                      generation:
+                        description: Generation of the origin of the subscriber with uid:UID.
+                        type: integer
+                        format: int64
+                      replyUri:
+                        description: ReplyURI is the endpoint for the reply
+                        type: string
+                      subscriberUri:
+                        description: SubscriberURI is the endpoint for the subscriber
+                        type: string
+                      uid:
+                        description: UID is used to understand the origin of the subscriber.
+                        type: string
             status:
+              description: Status represents the current state of the Channel. This data may be out of date.
               type: object
-              x-kubernetes-preserve-unknown-fields: true
+              properties:
+                address:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                annotations:
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                channel:
+                  description: Channel is an KReference to the Channel CRD backing this Channel.
+                  type: object
+                  properties:
+                    !!merge <<: *referentProperties
+                conditions:
+                  description: Conditions the latest available observations of a resource's current state.
+                  type: array
+                  items:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                    properties:
+                      message:
+                        description: A human readable message indicating details about the transition.
+                        type: string
+                      reason:
+                        description: The reason for the condition's last transition.
+                        type: string
+                      severity:
+                        description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+                        type: string
+                      status:
+                        description: Status of the condition, one of True, False, Unknown.
+                        type: string
+                      type:
+                        description: Type of condition.
+                        type: string
+                deadLetterChannel:
+                  description: DeadLetterChannel is a KReference and is set by the channel when it supports native error handling via a channel Failed messages are delivered here.
+                  type: object
+                  properties:
+                    !!merge <<: *referentProperties
+                observedGeneration:
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                  type: integer
+                  format: int64
+                subscribers:
+                  description: This is the list of subscription's statuses for this channel.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      message:
+                        description: A human readable message indicating details of Ready status.
+                        type: string
+                      observedGeneration:
+                        description: Generation of the origin of the subscriber with uid:UID.
+                        type: integer
+                        format: int64
+                      ready:
+                        description: Status of the subscriber.
+                        type: string
+                      uid:
+                        description: UID is used to understand the origin of the subscriber.
+                        type: string
     - !!merge <<: *version
       name: v1
       served: true
-      storage: false
+      storage: true
+      # the schema of v1 is exactly the same as v1beta1 schema
+      schema:
+        openAPIV3Schema:
+          !!merge <<: *openAPIV3Schema
   names:
     kind: Channel
     plural: channels
@@ -1460,7 +1698,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -1471,17 +1709,207 @@ spec:
     - &version
       name: v1alpha2
       served: true
-      storage: true
+      storage: false
       subresources:
         status: {}
       schema:
-        openAPIV3Schema:
+        openAPIV3Schema: &openAPIV3Schema
           type: object
-          # this is a work around so we don't need to flush out the
-          # schema for each version at this time
-          #
-          # see issue: https://github.com/knative/serving/issues/912
-          x-kubernetes-preserve-unknown-fields: true
+          description: 'ContainerSource is an event source that starts a container image which generates events under certain situations and sends messages to a sink URI'
+          properties:
+            spec:
+              type: object
+              description: 'ContainerSourceSpec defines the desired state of ContainerSource (from the client).'
+              properties:
+                ceOverrides:
+                  description: 'CloudEventOverrides defines overrides to control the output format and modifications of the event sent to the sink.'
+                  type: object
+                  properties:
+                    extensions:
+                      description: 'Extensions specify what attribute are added or overridden on the outbound event. Each `Extensions` key-value pair are set on the event as an attribute extension independently.'
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                sink:
+                  description: 'Sink is a reference to an object that will resolve to a uri to use as the sink.'
+                  type: object
+                  properties:
+                    ref:
+                      description: 'Ref points to an Addressable.'
+                      type: object
+                      properties:
+                        apiVersion:
+                          description: 'API version of the referent.'
+                          type: string
+                        kind:
+                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                          type: string
+                        name:
+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                          type: string
+                        namespace:
+                          description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                          type: string
+                    uri:
+                      description: 'URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.'
+                      type: string
+                template:
+                  description: 'Template describes the pods that will be created'
+                  type: object
+                  properties:
+                    annotations:
+                      description: 'Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. They are not queryable and should be preserved when modifying objects. More info: http://kubernetes.io/docs/user-guide/annotations'
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    clusterName:
+                      description: 'The name of the cluster which the object belongs to. This is used to distinguish resources with same name and namespace in different clusters. This field is not set anywhere right now and apiserver is going to ignore it if set in create or update request.'
+                      type: string
+                    creationTimestamp:
+                      description: 'CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.  Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata'
+                      type: string
+                    deletionGracePeriodSeconds:
+                      description: 'Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened. Read-only.'
+                      type: integer
+                      format: int64
+                    deletionTimestamp:
+                      description: 'DeletionTimestamp is RFC 3339 date and time at which this resource will be deleted. This field is set by the server when a graceful deletion is requested by the user, and is not directly settable by a client. The resource is expected to be deleted (no longer visible from resource lists, and not reachable by name) after the time in this field, once the finalizers list is empty. As long as the finalizers list contains items, deletion is blocked. Once the deletionTimestamp is set, this value may not be unset or be set further into the future, although it may be shortened or the resource may be deleted prior to this time. For example, a user may request that a pod is deleted in 30 seconds. The Kubelet will react by sending a graceful termination signal to the containers in the pod. After that 30 seconds, the Kubelet will send a hard termination signal (SIGKILL) to the container and after cleanup, remove the pod from the API. In the presence of network partitions, this object may still exist after this timestamp, until an administrator or automated process can determine the resource is fully terminated. If not set, graceful deletion of the object has not been requested.  Populated by the system when a graceful deletion is requested. Read-only. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata'
+                      type: string
+                    finalizers:
+                      description: 'Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list. If the deletionTimestamp of the object is non-nil, entries in this list can only be removed. Finalizers may be processed and removed in any order.  Order is NOT enforced because it introduces significant risk of stuck finalizers. finalizers is a shared field, any actor with permission can reorder it. If the finalizer list is processed in order, then this can lead to a situation in which the component responsible for the first finalizer in the list is waiting for a signal (field value, external system, or other) produced by a component responsible for a finalizer later in the list, resulting in a deadlock. Without enforced ordering finalizers are free to order amongst themselves and are not vulnerable to ordering changes in the list.'
+                      type: array
+                      items:
+                        type: string
+                    generateName:
+                      description: 'GenerateName is an optional prefix, used by the server, to generate a unique name ONLY IF the Name field has not been provided. If this field is used, the name returned to the client will be different than the name passed. This value will also be combined with a unique suffix. The provided value has the same validation rules as the Name field, and may be truncated by the length of the suffix required to make the value unique on the server.  If this field is specified and the generated name exists, the server will NOT return a 409 - instead, it will either return 201 Created or 500 with Reason ServerTimeout indicating a unique name could not be found in the time allotted, and the client should retry (optionally after the time indicated in the Retry-After header).  Applied only if Name is not specified. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#idempotency'
+                      type: string
+                    generation:
+                      description: 'A sequence number representing a specific generation of the desired state. Populated by the system. Read-only.'
+                      type: integer
+                      format: int64
+                    labels:
+                      description: 'Map of string keys and values that can be used to organize and categorize (scope and select) objects. May match selectors of replication controllers and services. More info: http://kubernetes.io/docs/user-guide/labels'
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    managedFields:
+                      description: 'ManagedFields maps workflow-id and version to the set of fields that are managed by that workflow. This is mostly for internal housekeeping, and users typically shouldn''t need to set or understand this field. A workflow can be the user''s name, a controller''s name, or the name of a specific apply path like "ci-cd". The set of fields is always in the version that the workflow used when modifying the object. '
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          apiVersion:
+                            description: 'APIVersion defines the version of this resource that this field set applies to. The format is "group/version" just like the top-level APIVersion field. It is necessary to track the version of a field set because it cannot be automatically converted.'
+                            type: string
+                          fieldsType:
+                            description: 'FieldsType is the discriminator for the different fields format and version. There is currently only one possible value: "FieldsV1"'
+                            type: string
+                          fieldsV1:
+                            description: 'FieldsV1 holds the first JSON version format as described in the "FieldsV1" type.'
+                            type: string
+                          manager:
+                            description: 'Manager is an identifier of the workflow managing these fields.'
+                            type: string
+                          operation:
+                            description: 'Operation is the type of operation which lead to this ManagedFieldsEntry being created. The only valid values for this field are "Apply" and "Update".'
+                            type: string
+                          time:
+                            description: 'Time is timestamp of when these fields were set. It should always be empty if Operation is "Apply"'
+                            type: string
+                    name:
+                      description: 'Name must be unique within a namespace. Is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically. Name is primarily intended for creation idempotence and configuration definition. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                      type: string
+                    namespace:
+                      description: 'Namespace defines the space within each name must be unique. An empty namespace is equivalent to the "default" namespace, but "default" is the canonical representation. Not all objects are required to be scoped to a namespace - the value of this field for those objects will be empty.  Must be a DNS_LABEL. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/namespaces'
+                      type: string
+                    ownerReferences:
+                      description: 'List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. If this object is managed by a controller, then an entry in this list will point to this controller, with the controller field set to true. There cannot be more than one managing controller.'
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          apiVersion:
+                            description: 'API version of the referent.'
+                            type: string
+                          blockOwnerDeletion:
+                            description: 'If true, AND if the owner has the "foregroundDeletion" finalizer, then the owner cannot be deleted from the key-value store until this reference is removed. Defaults to false. To set this field, a user needs "delete" permission of the owner, otherwise 422 (Unprocessable Entity) will be returned.'
+                            type: boolean
+                          controller:
+                            description: 'If true, this reference points to the managing controller.'
+                            type: boolean
+                          kind:
+                            description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                            type: string
+                          name:
+                            description: 'Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                            type: string
+                          uid:
+                            description: 'UID of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#uids'
+                            type: string
+                    resourceVersion:
+                      description: 'An opaque value that represents the internal version of this object that can be used by clients to determine when objects have changed. May be used for optimistic concurrency, change detection, and the watch operation on a resource or set of resources. Clients must treat these values as opaque and passed unmodified back to the server. They may only be valid for a particular resource or set of resources.  Populated by the system. Read-only. Value must be treated as opaque by clients and . More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                      type: string
+                    selfLink:
+                      description: 'SelfLink is a URL representing this object. Populated by the system. Read-only.  DEPRECATED Kubernetes will stop propagating this field in 1.20 release and the field is planned to be removed in 1.21 release.'
+                      type: string
+                    spec:
+                      description: 'Specification of the desired behavior of the pod. More info: Type ''kubectl explain pod.spec''. Also, https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    uid:
+                      description: 'UID is the unique in time and space value for this object. It is typically generated by the server on successful creation of a resource and is not allowed to change on PUT operations.  Populated by the system. Read-only. More info: http://kubernetes.io/docs/user-guide/identifiers#uids'
+                      type: string
+            status:
+              type: object
+              description: 'ContainerSourceStatus defines the observed state of ContainerSource (from the controller).'
+              properties:
+                annotations:
+                  description: 'Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.'
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                ceAttributes:
+                  description: 'CloudEventAttributes are the specific attributes that the Source uses as part of its CloudEvents.'
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      source:
+                        description: 'Source is the CloudEvents source attribute.'
+                        type: string
+                      type:
+                        description: 'Type refers to the CloudEvent type attribute.'
+                        type: string
+                conditions:
+                  description: 'Conditions the latest available observations of a resource''s current state.'
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - type
+                      - status
+                    properties:
+                      lastTransitionTime:
+                        description: 'LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).'
+                        type: string
+                      message:
+                        description: 'A human readable message indicating details about the transition.'
+                        type: string
+                      reason:
+                        description: 'The reason for the condition''s last transition.'
+                        type: string
+                      severity:
+                        description: 'Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.'
+                        type: string
+                      status:
+                        description: 'Status of the condition, one of True, False, Unknown.'
+                        type: string
+                      type:
+                        description: Type of condition.
+                        type: string
+                observedGeneration:
+                  description: 'ObservedGeneration is the "Generation" of the Service that was last processed by the controller.'
+                  type: integer
+                  format: int64
+                sinkUri:
+                  description: 'SinkURI is the current active sink URI that has been configured for the Source.'
+                  type: string
       additionalPrinterColumns:
         - name: Sink
           type: string
@@ -1498,7 +1926,19 @@ spec:
     - !!merge <<: *version
       name: v1beta1
       served: true
+      storage: true
+      # the schema of v1beta1 is exactly the same as v1alpha2 schema
+      schema:
+        openAPIV3Schema:
+          !!merge <<: *openAPIV3Schema
+    - !!merge <<: *version
+      name: v1
+      served: true
       storage: false
+      # the schema of v1 is exactly the same as v1beta1 schema
+      schema:
+        openAPIV3Schema:
+          !!merge <<: *openAPIV3Schema
   names:
     categories:
       - all
@@ -1535,7 +1975,7 @@ kind: CustomResourceDefinition
 metadata:
   name: eventtypes.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     knative.dev/crd-install: "true"
 spec:
   group: eventing.knative.dev
@@ -1679,7 +2119,7 @@ kind: CustomResourceDefinition
 metadata:
   name: parallels.flows.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -1688,17 +2128,207 @@ spec:
     - &version
       name: v1beta1
       served: true
-      storage: true
+      storage: false
       subresources:
         status: {}
       schema:
-        openAPIV3Schema:
+        openAPIV3Schema: &openAPIV3Schema
           type: object
-          # this is a work around so we don't need to flush out the
-          # schema for each version at this time
-          #
-          # see issue: https://github.com/knative/serving/issues/912
-          x-kubernetes-preserve-unknown-fields: true
+          properties:
+            spec:
+              description: Spec defines the desired state of the Parallel.
+              type: object
+              properties:
+                branches:
+                  description: Branches is the list of Filter/Subscribers pairs.
+                  type: array
+                  items:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                    properties:
+                      delivery:
+                        description: Delivery is the delivery specification for events to the subscriber This includes things like retries, DLQ, etc.
+                        type: object
+                        properties:
+                          backoffDelay:
+                            description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
+                            type: string
+                          backoffPolicy:
+                            description: BackoffPolicy is the retry backoff policy (linear, exponential).
+                            type: string
+                          deadLetterSink:
+                            description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
+                            type: object
+                            properties: &addressableProperties
+                              ref:
+                                description: Ref points to an Addressable.
+                                type: object
+                                properties:
+                                  apiVersion:
+                                    description: API version of the referent.
+                                    type: string
+                                  kind:
+                                    description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                                    type: string
+                                  namespace:
+                                    description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                                    type: string
+                              uri:
+                                description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                                type: string
+                          retry:
+                            description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
+                            type: integer
+                            format: int32
+                      filter:
+                        description: Filter is the expression guarding the branch
+                        type: object
+                        properties:
+                          !!merge <<: *addressableProperties
+                      reply:
+                        description: Reply is a Reference to where the result of Subscriber of this case gets sent to. If not specified, sent the result to the Parallel Reply
+                        type: object
+                        properties:
+                          !!merge <<: *addressableProperties
+                      subscriber:
+                        description: Subscriber receiving the event when the filter passes
+                        type: object
+                        properties:
+                          !!merge <<: *addressableProperties
+                channelTemplate:
+                  description: ChannelTemplate specifies which Channel CRD to use. If left unspecified, it is set to the default Channel CRD for the namespace (or cluster, in case there are no defaults for the namespace).
+                  type: object
+                  properties:
+                    apiVersion:
+                      description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                      type: string
+                    kind:
+                      description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                      type: string
+                    spec:
+                      description: Spec defines the Spec to use for each channel created. Passed in verbatim to the Channel CRD as Spec section.
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                reply:
+                  description: Reply is a Reference to where the result of a case Subscriber gets sent to when the case does not have a Reply
+                  type: object
+                  properties:
+                    !!merge <<: *addressableProperties
+            status:
+              description: Status represents the current state of the Parallel. This data may be out of date.
+              type: object
+              properties:
+                address:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                annotations:
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                branchStatuses:
+                  description: BranchStatuses is an array of corresponding to branch statuses. Matches the Spec.Branches array in the order.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      filterChannelStatus:
+                        description: FilterChannelStatus corresponds to the filter channel status.
+                        type: object
+                        properties: &channelProperties
+                          channel:
+                            description: Channel is the reference to the underlying channel.
+                            type: object
+                            properties: &referentProperties
+                              apiVersion:
+                                description: API version of the referent.
+                                type: string
+                              fieldPath:
+                                description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object.'
+                                type: string
+                              kind:
+                                description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                                type: string
+                              namespace:
+                                description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                                type: string
+                              resourceVersion:
+                                description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                                type: string
+                              uid:
+                                description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                                type: string
+                          ready:
+                            description: ReadyCondition indicates whether the Channel is ready or not.
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                            properties: &readyConditionProperties
+                              message:
+                                description: A human readable message indicating details about the transition.
+                                type: string
+                              reason:
+                                description: The reason for the condition's last transition.
+                                type: string
+                              severity:
+                                description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+                                type: string
+                              status:
+                                description: Status of the condition, one of True, False, Unknown.
+                                type: string
+                              type:
+                                description: Type of condition.
+                                type: string
+                      filterSubscriptionStatus:
+                        description: FilterSubscriptionStatus corresponds to the filter subscription status.
+                        type: object
+                        properties:
+                          ready:
+                            description: ReadyCondition indicates whether the Subscription is ready or not.
+                            type: object
+                            properties:
+                              !!merge <<: *readyConditionProperties
+                          subscription:
+                            description: Subscription is the reference to the underlying Subscription.
+                            type: object
+                            properties:
+                              !!merge <<: *referentProperties
+                      subscriberSubscriptionStatus:
+                        description: SubscriptionStatus corresponds to the subscriber subscription status.
+                        type: object
+                        properties:
+                          ready:
+                            description: ReadyCondition indicates whether the Subscription is ready or not.
+                            type: object
+                            properties:
+                              !!merge <<: *readyConditionProperties
+                          subscription:
+                            description: Subscription is the reference to the underlying Subscription.
+                            type: object
+                            properties:
+                              !!merge <<: *referentProperties
+                conditions:
+                  description: Conditions the latest available observations of a resource's current state.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      !!merge <<: *readyConditionProperties
+                ingressChannelStatus:
+                  description: IngressChannelStatus corresponds to the ingress channel status.
+                  type: object
+                  properties:
+                    !!merge <<: *channelProperties
+                observedGeneration:
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                  type: integer
+                  format: int64
       additionalPrinterColumns:
         - name: URL
           type: string
@@ -1715,7 +2345,11 @@ spec:
     - !!merge <<: *version
       name: v1
       served: true
-      storage: false
+      storage: true
+      # the schema of v1 is exactly the same as v1beta1 schema
+      schema:
+        openAPIV3Schema:
+          !!merge <<: *openAPIV3Schema
   names:
     kind: Parallel
     plural: parallels
@@ -1753,7 +2387,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -1770,7 +2404,7 @@ spec:
     - &version
       name: v1alpha2
       served: true
-      storage: true
+      storage: false
       subresources:
         status: {}
       schema:
@@ -1879,6 +2513,9 @@ spec:
         - name: Sink
           type: string
           jsonPath: .status.sinkUri
+        - name: Schedule
+          type: string
+          jsonPath: .spec.schedule
         - name: Age
           type: date
           jsonPath: .metadata.creationTimestamp
@@ -1891,7 +2528,7 @@ spec:
     - !!merge <<: *version
       name: v1beta1
       served: true
-      storage: false
+      storage: true
       schema:
         openAPIV3Schema:
           type: object
@@ -2033,7 +2670,7 @@ kind: CustomResourceDefinition
 metadata:
   name: sequences.flows.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -2042,17 +2679,170 @@ spec:
     - &version
       name: v1beta1
       served: true
-      storage: true
+      storage: false
       subresources:
         status: {}
       schema:
-        openAPIV3Schema:
+        openAPIV3Schema: &openAPIV3Schema
           type: object
-          # this is a work around so we don't need to flush out the
-          # schema for each version at this time
-          #
-          # see issue: https://github.com/knative/serving/issues/912
-          x-kubernetes-preserve-unknown-fields: true
+          properties:
+            spec:
+              description: Spec defines the desired state of the Sequence.
+              type: object
+              properties:
+                channelTemplate:
+                  description: ChannelTemplate specifies which Channel CRD to use. If left unspecified, it is set to the default Channel CRD for the namespace (or cluster, in case there are no defaults for the namespace).
+                  type: object
+                  properties:
+                    apiVersion:
+                      description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                      type: string
+                    kind:
+                      description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                      type: string
+                    spec:
+                      description: Spec defines the Spec to use for each channel created. Passed in verbatim to the Channel CRD as Spec section.
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                reply:
+                  description: Reply is a Reference to where the result of the last Subscriber gets sent to.
+                  type: object
+                  properties: &addressableProperties
+                    ref:
+                      description: Ref points to an Addressable.
+                      type: object
+                      properties:
+                        apiVersion:
+                          description: API version of the referent.
+                          type: string
+                        kind:
+                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                          type: string
+                        name:
+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                          type: string
+                        namespace:
+                          description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                          type: string
+                    uri:
+                      description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                      type: string
+                steps:
+                  description: Steps is the list of Destinations (processors / functions) that will be called in the order provided. Each step has its own delivery options
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      !!merge <<: *addressableProperties
+                      delivery:
+                        description: Delivery is the delivery specification for events to the subscriber This includes things like retries, DLQ, etc.
+                        type: object
+                        properties:
+                          backoffDelay:
+                            description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
+                            type: string
+                          backoffPolicy:
+                            description: BackoffPolicy is the retry backoff policy (linear, exponential).
+                            type: string
+                          deadLetterSink:
+                            description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
+                            type: object
+                            properties:
+                              !!merge <<: *addressableProperties
+                          retry:
+                            description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
+                            type: integer
+                            format: int32
+            status:
+              description: Status represents the current state of the Sequence. This data may be out of date.
+              type: object
+              properties:
+                address:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                annotations:
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                  type: object
+                channelStatuses:
+                  description: ChannelStatuses is an array of corresponding Channel statuses. Matches the Spec.Steps array in the order.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      channel:
+                        description: Channel is the reference to the underlying channel.
+                        type: object
+                        properties: &referentProperties
+                          apiVersion:
+                            description: API version of the referent.
+                            type: string
+                          fieldPath:
+                            description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object.'
+                            type: string
+                          kind:
+                            description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                            type: string
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                            type: string
+                          namespace:
+                            description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                            type: string
+                          resourceVersion:
+                            description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                            type: string
+                          uid:
+                            description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                            type: string
+                      ready:
+                        description: ReadyCondition indicates whether the Channel is ready or not.
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                        properties: &readyConditionProperties
+                          message:
+                            description: A human readable message indicating details about the transition.
+                            type: string
+                          reason:
+                            description: The reason for the condition's last transition.
+                            type: string
+                          severity:
+                            description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+                            type: string
+                          status:
+                            description: Status of the condition, one of True, False, Unknown.
+                            type: string
+                          type:
+                            description: Type of condition.
+                            type: string
+                conditions:
+                  description: Conditions the latest available observations of a resource's current state.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      !!merge <<: *readyConditionProperties
+                observedGeneration:
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                  type: integer
+                  format: int64
+                subscriptionStatuses:
+                  description: SubscriptionStatuses is an array of corresponding Subscription statuses. Matches the Spec.Steps array in the order.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      ready:
+                        description: ReadyCondition indicates whether the Subscription is ready or not.
+                        type: object
+                        properties:
+                          !!merge <<: *readyConditionProperties
+                      subscription:
+                        description: Subscription is the reference to the underlying Subscription.
+                        type: object
+                        properties:
+                          !!merge <<: *referentProperties
       additionalPrinterColumns:
         - name: URL
           type: string
@@ -2069,7 +2859,11 @@ spec:
     - !!merge <<: *version
       name: v1
       served: true
-      storage: false
+      storage: true
+      # the schema of v1 is exactly the same as v1beta1 schema
+      schema:
+        openAPIV3Schema:
+          !!merge <<: *openAPIV3Schema
   names:
     kind: Sequence
     plural: sequences
@@ -2107,7 +2901,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     duck.knative.dev/binding: "true"
@@ -2119,7 +2913,7 @@ spec:
     - &version
       name: v1alpha1
       served: true
-      storage: true
+      storage: false
       subresources:
         status: {}
       schema:
@@ -2149,6 +2943,10 @@ spec:
       storage: false
     - !!merge <<: *version
       name: v1beta1
+      served: true
+      storage: true
+    - !!merge <<: *version
+      name: v1
       served: true
       storage: false
       schema:
@@ -2324,7 +3122,7 @@ kind: CustomResourceDefinition
 metadata:
   name: subscriptions.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     knative.dev/crd-install: "true"
 spec:
   group: messaging.knative.dev
@@ -2332,7 +3130,7 @@ spec:
     - &version
       name: v1beta1
       served: true
-      storage: true
+      storage: false
       subresources:
         status: {}
       schema:
@@ -2376,7 +3174,7 @@ spec:
                   type: object
                   properties:
                     backoffDelay:
-                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is the time interval between retries. For exponential policy , backoff delay is backoffDelay*2^<numberOfRetries>.'
+                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
                       type: string
                     backoffPolicy:
                       description: 'BackoffPolicy is the retry backoff policy (linear, exponential).'
@@ -2516,7 +3314,7 @@ spec:
     - !!merge <<: *version
       name: v1
       served: true
-      storage: false
+      storage: true
       # the schema of v1 is exactly the same as v1beta1 schema
       schema:
         openAPIV3Schema:
@@ -2561,7 +3359,7 @@ kind: CustomResourceDefinition
 metadata:
   name: triggers.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     knative.dev/crd-install: "true"
 spec:
   group: eventing.knative.dev
@@ -2569,7 +3367,7 @@ spec:
     - &version
       name: v1beta1
       served: true
-      storage: true
+      storage: false
       subresources:
         status: {}
       additionalPrinterColumns:
@@ -2641,7 +3439,7 @@ spec:
     - !!merge <<: *version
       name: v1
       served: true
-      storage: false
+      storage: true
       schema:
         openAPIV3Schema:
           type: object
@@ -2736,7 +3534,7 @@ kind: ClusterRole
 metadata:
   name: addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
@@ -2748,7 +3546,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: service-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -2766,7 +3564,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: serving-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -2787,7 +3585,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: channel-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -2812,7 +3610,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: broker-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -2831,7 +3629,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: messaging-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -2852,7 +3650,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flows-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -2888,7 +3686,7 @@ kind: ClusterRole
 metadata:
   name: eventing-broker-filter
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 rules:
   - apiGroups:
       - ""
@@ -2913,7 +3711,7 @@ kind: ClusterRole
 metadata:
   name: eventing-broker-ingress
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 rules:
   - apiGroups:
       - ""
@@ -2929,7 +3727,7 @@ kind: ClusterRole
 metadata:
   name: eventing-config-reader
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 rules:
   - apiGroups:
       - ""
@@ -2961,7 +3759,7 @@ kind: ClusterRole
 metadata:
   name: channelable-manipulator
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
@@ -2973,7 +3771,7 @@ kind: ClusterRole
 metadata:
   name: meta-channelable-manipulator
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -3010,7 +3808,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-eventing-namespaced-admin
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:
   - apiGroups: ["eventing.knative.dev"]
@@ -3022,7 +3820,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-messaging-namespaced-admin
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:
   - apiGroups: ["messaging.knative.dev"]
@@ -3034,7 +3832,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-flows-namespaced-admin
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:
   - apiGroups: ["flows.knative.dev"]
@@ -3046,7 +3844,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-sources-namespaced-admin
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:
   - apiGroups: ["sources.knative.dev"]
@@ -3058,7 +3856,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-bindings-namespaced-admin
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:
   - apiGroups: ["bindings.knative.dev"]
@@ -3071,7 +3869,7 @@ metadata:
   name: knative-eventing-namespaced-edit
   labels:
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 rules:
   - apiGroups: ["eventing.knative.dev", "messaging.knative.dev", "sources.knative.dev", "flows.knative.dev", "bindings.knative.dev"]
     resources: ["*"]
@@ -3083,7 +3881,7 @@ metadata:
   name: knative-eventing-namespaced-view
   labels:
     rbac.authorization.k8s.io/aggregate-to-view: "true"
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 rules:
   - apiGroups: ["eventing.knative.dev", "messaging.knative.dev", "sources.knative.dev", "flows.knative.dev", "bindings.knative.dev"]
     resources: ["*"]
@@ -3109,7 +3907,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-controller
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 rules:
   - apiGroups:
       - ""
@@ -3241,32 +4039,9 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: knative-eventing-pingsource-adapter
-  labels:
-    eventing.knative.dev/release: "v0.17.6"
-rules: []
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
   name: knative-eventing-pingsource-mt-adapter
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 rules:
   - apiGroups:
       - ""
@@ -3332,7 +4107,7 @@ kind: ClusterRole
 metadata:
   name: podspecable-binding
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
@@ -3344,7 +4119,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: builtin-podspecable-binding
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     duck.knative.dev/podspecable: "true"
 # Do not use this role directly. These rules will be added to the "podspecable-binding role.
 rules:
@@ -3390,7 +4165,7 @@ kind: ClusterRole
 metadata:
   name: source-observer
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
@@ -3402,7 +4177,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: eventing-sources-source-observer
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
     duck.knative.dev/source: "true"
 # Do not use this role directly. These rules will be added to the "source-observer" role.
 rules:
@@ -3438,7 +4213,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-sources-controller
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 rules:
   - apiGroups:
       - ""
@@ -3523,7 +4298,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-webhook
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:
@@ -3614,7 +4389,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: config.webhook.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -3650,7 +4425,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: webhook.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -3682,7 +4457,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -3715,7 +4490,7 @@ metadata:
   name: eventing-webhook-certs
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 # The data is populated at install time.
 
 ---
@@ -3738,7 +4513,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: sinkbindings.webhook.sources.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.17.6"
+    eventing.knative.dev/release: "v0.19.1"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:

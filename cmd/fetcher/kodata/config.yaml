@@ -1,0 +1,28 @@
+knative-serving:
+  test: foo
+  primary:
+    github:
+      repo: "knative/serving"
+    include:
+      - ".*.yaml"
+    exclude:
+      - "monitoring-.*"
+      - "serving.yaml"
+      - "serving-storage-version-migration.yaml"
+knative-eventing:
+  primary:
+    github:
+      repo: "knative/eventing"
+    include:
+      - ".*.yaml"
+    exclude:
+      - ".*-post-install-jobs.yaml"
+
+# net-happy:
+#   knative-eventing:
+#   primary:
+#     github:
+#       repo: "knative/eventing"
+#     include:
+#       - ".*-post-install-jobs.yaml"
+      

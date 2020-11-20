@@ -48,8 +48,19 @@ type Release struct {
 	Assets  assetList //[]Asset
 }
 
-// Less provides a method for implementing `sort.Slice` to ensure that assets are applied in the correct order.
+// Less provides a method for implementing `sort.Slice` to ensure that assets
+// are applied in the correct order.
 func (a Asset) Less(b Asset) bool {
+	// HACK for pre-install jobs, which are deprecated, because the job needs to
+	// *complete*, not just be applied, before the next manifests can be
+	// applied.
+	if strings.HasSuffix(a.Name, "-pre-install-jobs.yaml") {
+		return true
+	}
+	if strings.HasSuffix(b.Name, "-pre-install-jobs.yaml") {
+		return false
+	}
+
 	if strings.HasSuffix(a.Name, "-crds.yaml") {
 		return true
 	}
@@ -62,6 +73,9 @@ func (a Asset) Less(b Asset) bool {
 	if strings.HasSuffix(b.Name, "-post-install-jobs.yaml") {
 		return true
 	}
+
+	// HACK for eventing, which lists the sugar controller after the
+	// channel/broker despite collating before.
 	if strings.HasSuffix(a.Name, "-sugar-controller.yaml") {
 		return false
 	}
@@ -120,11 +134,14 @@ func (rl releaseList) Swap(i, j int) {
 	rl[i], rl[j] = rl[j], rl[i]
 }
 
-// FilterAssets does an IN-PLACE removal of assets from the selected release which do not match the `retain` filter.
-func (al assetList) FilterAssets(retain func(string) bool) assetList {
+// FilterAssets retains only assets where `accept` returns a non-empty string.
+// `accept` may return a *different* string in the case of assets which should
+// be renamed.
+func (al assetList) FilterAssets(accept func(string) string) assetList {
 	retval := make([]Asset, 0, len(al))
 	for _, asset := range al {
-		if retain(asset.Name) {
+		if name := accept(asset.Name); name != "" {
+			asset.Name = name
 			retval = append(retval, asset)
 		}
 	}
@@ -147,7 +164,7 @@ func HandleRelease(ctx context.Context, client *http.Client, p Package, r Releas
 
 	// TODO: make a copy of r's assets to avoid modifying the global cache.
 	assets := make(assetList, 0, len(r.Assets))
-	assets = append(assets, r.Assets.FilterAssets(p.Primary.Accept)...)
+	assets = append(assets, r.Assets.FilterAssets(p.Primary.Accept(r.TagName))...)
 	for _, src := range p.Additional {
 		candidates := allReleases[src.String()]
 		sort.Sort(releaseList(candidates))
@@ -173,12 +190,13 @@ func HandleRelease(ctx context.Context, client *http.Client, p Package, r Releas
 			}
 		}
 
-		newAssets := candidates[timeMatch].Assets.FilterAssets(src.Accept)
+		candidate := candidates[timeMatch]
+		newAssets := candidate.Assets.FilterAssets(src.Accept(candidate.TagName))
 		for i := range newAssets {
 			newAssets[i].secondary = true
 		}
 		assets = append(assets, newAssets...)
-		log.Printf("Using %s/%s with %s/%s", candidates[timeMatch].String(), candidates[timeMatch].TagName, r.String(), r.TagName)
+		log.Printf("Using %s/%s with %s/%s", candidate.String(), candidate.TagName, r.String(), r.TagName)
 	}
 	sort.Sort(assets)
 

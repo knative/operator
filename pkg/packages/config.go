@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"strings"
 
+	"golang.org/x/mod/semver"
 	"gopkg.in/yaml.v2"
 )
 
@@ -46,10 +47,27 @@ type Package struct {
 // provides a sequence of semver-tagged artifact collections for an individual
 // release.
 type Source struct {
+	AssetFilter `yaml:",inline"`
 	// GitHub represents software released on GitHub using GitHub releases.
 	GitHub GitHubSource `yaml:"github,omitempty"`
 	// TODO: add other sources like an S3 bucket here.
 
+	// Overrides provides a mechanism for modifying include/exclude (and
+	// possibly other settings) on a per-release or per-minor-version basis, to
+	// allow fixing up discontinuities in release patterns.
+	Overrides map[string]AssetFilter `yaml:"overrides"`
+}
+
+// GitHubSource represents a software package which is released via GitHub
+// releases.
+type GitHubSource struct {
+	// Repo is the path to a repo in GitHub, using the "org/repo" format.
+	Repo string `yaml:"repo"`
+}
+
+// AssetFilter provides an interface for selecting and managing assets within a
+// release.
+type AssetFilter struct {
 	// IncludeArtifacts is a set of regep patterns to select which artifacts
 	// from a release should be downloaded and included. If no IncludeArtifacts
 	// are supplied, all files from the release will be included.
@@ -57,12 +75,10 @@ type Source struct {
 	// ExcludeArtifacts is a set of regexp patterns to remove artifacts which
 	// would otherwise be selected by IncludeArtifacts.
 	ExcludeArtifacts []string `yaml:"exclude,omitempty"`
-}
 
-// GitHubSource represents a software package which is released via GitHub releases.
-type GitHubSource struct {
-	// Repo is the path to a repo in GitHub, using the "org/repo" format.
-	Repo string `yaml:"repo"`
+	// Rename provides a mechanism to remap artifacts from one filename to
+	// another.
+	Rename map[string]string
 }
 
 // ReadConfig reads a set of Packages (as a map from package name to package configuration) from a yaml file a the selected path
@@ -72,7 +88,7 @@ func ReadConfig(path string) (retval map[string]*Package, err error) {
 	if err != nil {
 		return
 	}
-	err = yaml.Unmarshal(bytes, retval)
+	err = yaml.UnmarshalStrict(bytes, retval)
 	if err != nil {
 		return
 	}
@@ -107,19 +123,45 @@ func (s *Source) OrgRepo() (string, string) {
 
 // Accept provides a method which can be supplied to `FilterAssets` to handle
 // `IncludeArtifacts` and `ExcludeArtifacts`.
-func (s *Source) Accept(name string) bool {
+func (af *AssetFilter) Accept(name string) string {
+	if newName := af.Rename[name]; newName != "" {
+		name = newName
+	}
+
 	// TODO: pre-compile the regexps
-	for _, p := range s.ExcludeArtifacts {
+	for _, p := range af.ExcludeArtifacts {
 		if ok, _ := regexp.MatchString(p, name); ok {
-			return false
+			return ""
 		}
 	}
-	for _, p := range s.IncludeArtifacts {
+	for _, p := range af.IncludeArtifacts {
 		if ok, _ := regexp.MatchString(p, name); ok {
-			return true
+			return name
 		}
 	}
 
 	// If no include patterns are supplied, accept all non-excluded strings
-	return len(s.IncludeArtifacts) == 0
+	if len(af.IncludeArtifacts) == 0 {
+		return name
+	}
+	return ""
+}
+
+// Accept determines the best acceptance function for the given version, taking
+// into account overrides.
+func (s *Source) Accept(ver string) func(name string) string {
+	best := s.AssetFilter
+	ver = semver.Canonical(ver)
+	for v, ie := range s.Overrides {
+		if ver == v {
+			best = ie
+			break
+		}
+		if semver.MajorMinor(ver) == v {
+			// Match same Major/Minor without patch, but there might be an exact override later.
+			best = ie
+		}
+	}
+
+	return best.Accept
 }

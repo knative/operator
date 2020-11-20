@@ -160,7 +160,6 @@ func HandleRelease(ctx context.Context, client *http.Client, p Package, r Releas
 		return err
 	}
 
-	// TODO: make a copy of r's assets to avoid modifying the global cache.
 	assets := make(assetList, 0, len(r.Assets))
 	assets = append(assets, r.Assets.FilterAssets(p.Primary.Accept(r.TagName))...)
 	for _, src := range p.Additional {

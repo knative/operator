@@ -151,8 +151,6 @@ func (al assetList) FilterAssets(accept func(string) string) assetList {
 
 // HandleRelease processes the files for a given release of the specified
 // Package.
-//
-// NOTE: This does not currently handle Additional assets.
 func HandleRelease(ctx context.Context, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
 	majorMinor := semver.MajorMinor(r.TagName)
 	shortName := strings.TrimPrefix(r.TagName, "v")
@@ -208,9 +206,6 @@ func HandleRelease(ctx context.Context, client *http.Client, p Package, r Releas
 			return fmt.Errorf("Unable to open %s: %w", fileName, err)
 		}
 		defer file.Close()
-		// if _, err := file.WriteString("# " + asset.URL + "\n\n"); err != nil {
-		// 	return err
-		// }
 		log.Print(asset.URL)
 		fetch, err := client.Get(asset.URL)
 		if err != nil {

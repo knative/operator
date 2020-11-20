@@ -39,19 +39,9 @@ func main() {
 		log.Printf("Unable to read config: %v", err)
 		os.Exit(2)
 	}
-	log.Printf("%+v", cfg)
 
 	ctx := context.Background()
-	httpClient := getClient(ctx) // github.NewClient(nil)
-	ghClient := ghclient.NewClient(httpClient)
-	/*
-		// TODO: filter for only "interesting" repos
-		repos, err := github.GetRepos(ctx, ghClient, "knative", "knative-sandbox")
-		if err != nil {
-			log.Print("Unable to fetch repos:", err)
-			os.Exit(1)
-		}
-	*/
+	ghClient := ghclient.NewClient(getClient(ctx))
 	repos := make(map[string][]packages.Release, len(cfg))
 
 	for _, v := range cfg {
@@ -91,10 +81,6 @@ func ensureRepo(ctx context.Context, known map[string][]packages.Release, client
 		return nil
 	}
 	owner, repo := src.OrgRepo()
-	/*	repo, _, err := client.Repositories.Get(ctx, owner, repo)
-		if err != nil {
-			return err
-		}*/
 	releases, err := github.GetReleases(ctx, client, owner, repo)
 	if err != nil {
 		return err

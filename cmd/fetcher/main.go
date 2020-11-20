@@ -20,6 +20,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	ghclient "github.com/google/go-github/v32/github"
 	"golang.org/x/oauth2"
@@ -65,8 +66,14 @@ func main() {
 			}
 		}
 
-		for _, release := range packages.LastN(3, repos[v.Primary.String()]) {
-			if err := packages.HandleRelease(ctx, http.DefaultClient, *v, release); err != nil {
+		base := filepath.Join("cmd", "operator", "kodata", v.Name)
+		if err := os.RemoveAll(base); err != nil && !os.IsNotExist(err) {
+			log.Printf("Unable to remove directory %s: %v", base, err)
+			os.Exit(3)
+		}
+
+		for _, release := range packages.LastN(4, repos[v.Primary.String()]) {
+			if err := packages.HandleRelease(ctx, http.DefaultClient, *v, release, repos); err != nil {
 				log.Printf("Unable to fetch %s, %v", release, err)
 			}
 			log.Printf("Wrote %s ==> %s", v.String(), release.String())

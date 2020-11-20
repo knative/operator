@@ -27,14 +27,16 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"golang.org/x/mod/semver"
 )
 
 // Asset provides an abstract interface for describing a resource which should be stored on the disk.
 type Asset struct {
-	Name string
-	URL  string
+	Name      string
+	URL       string
+	secondary bool
 }
 
 // Release provides an interface for a release which contains multiple assets at the same release (TagName)
@@ -42,7 +44,8 @@ type Release struct {
 	Org     string
 	Repo    string
 	TagName string
-	Assets  []Asset
+	Created time.Time
+	Assets  assetList //[]Asset
 }
 
 // Less provides a method for implementing `sort.Slice` to ensure that assets are applied in the correct order.
@@ -54,17 +57,27 @@ func (a Asset) Less(b Asset) bool {
 		return false
 	}
 	if strings.HasSuffix(a.Name, "-post-install-jobs.yaml") {
-		return true
+		return false
 	}
 	if strings.HasSuffix(b.Name, "-post-install-jobs.yaml") {
+		return true
+	}
+	if strings.HasSuffix(a.Name, "-sugar-controller.yaml") {
 		return false
+	}
+	if strings.HasSuffix(b.Name, "-sugar-controller.yaml") {
+		return true
+	}
+	if a.secondary != b.secondary {
+		// Sort primary assets before secondary assets
+		return b.secondary
 	}
 	return a.Name < b.Name
 }
 
 // Less provides a sort on Releases by TagName.
 func (r Release) Less(b Release) bool {
-	return semver.Compare(r.TagName, b.TagName) < 0
+	return semver.Compare(r.TagName, b.TagName) > 0
 }
 
 // String implements `fmt.Stringer`.
@@ -72,27 +85,59 @@ func (r Release) String() string {
 	return fmt.Sprintf("%s/%s %s", r.Org, r.Repo, r.TagName)
 }
 
-// SortAssets ensures that the assets in the resource are in correct order for application.
-func (r *Release) SortAssets() {
-	sort.Slice(r.Assets, func(i, j int) bool { return r.Assets[i].Less(r.Assets[j]) })
+// assetList provides an interface for operating on a set of assets.
+type assetList []Asset
+
+// Len is part of `sort.Interface`.
+func (al assetList) Len() int {
+	return len(al)
+}
+
+// Less is part of `sort.Interface`.
+func (al assetList) Less(i, j int) bool {
+	return al[i].Less(al[j])
+}
+
+// Swap is part of `sort.Interface`.
+func (al assetList) Swap(i, j int) {
+	al[i], al[j] = al[j], al[i]
+}
+
+type releaseList []Release
+
+// Len is part of `sort.Interface`.
+func (rl releaseList) Len() int {
+	return len(rl)
+}
+
+// Less is part of `sort.Interface`.
+func (rl releaseList) Less(i, j int) bool {
+	return rl[i].Less(rl[j])
+}
+
+// Swap is part of `sort.Interface`.
+func (rl releaseList) Swap(i, j int) {
+	rl[i], rl[j] = rl[j], rl[i]
 }
 
 // FilterAssets does an IN-PLACE removal of assets from the selected release which do not match the `retain` filter.
-func (r *Release) FilterAssets(retain func(string) bool) {
-	raw := r.Assets
-	r.Assets = make([]Asset, 0, len(r.Assets))
-	for _, asset := range raw {
+func (al assetList) FilterAssets(retain func(string) bool) assetList {
+	retval := make([]Asset, 0, len(al))
+	for _, asset := range al {
 		if retain(asset.Name) {
-			r.Assets = append(r.Assets, asset)
+			retval = append(retval, asset)
 		}
 	}
+
+	return retval
 }
 
 // HandleRelease processes the files for a given release of the specified
 // Package.
 //
-// NOTE: This does not currently handle Additional assets, and ends up modifying `r` in a way that it probably shouldn't.
-func HandleRelease(ctx context.Context, client *http.Client, p Package, r Release) error {
+// NOTE: This does not currently handle Additional assets.
+func HandleRelease(ctx context.Context, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
+	majorMinor := semver.MajorMinor(r.TagName)
 	shortName := strings.TrimPrefix(r.TagName, "v")
 	path := filepath.Join("cmd", "operator", "kodata", p.Name, shortName)
 	err := os.MkdirAll(path, 0755)
@@ -101,21 +146,53 @@ func HandleRelease(ctx context.Context, client *http.Client, p Package, r Releas
 	}
 
 	// TODO: make a copy of r's assets to avoid modifying the global cache.
+	assets := make(assetList, 0, len(r.Assets))
+	assets = append(assets, r.Assets.FilterAssets(p.Primary.Accept)...)
+	for _, src := range p.Additional {
+		candidates := allReleases[src.String()]
+		sort.Sort(releaseList(candidates))
+		start, end := -1, len(candidates)
+		for i, srcRelease := range candidates {
+			// Collect matching minor versions
+			comp := semver.Compare(majorMinor, semver.MajorMinor(srcRelease.TagName))
+			if start == -1 && comp == 0 {
+				start = i
+			}
+			if comp > 0 {
+				end = i
+				break
+			}
+		}
+		candidates = candidates[start:end]
+		timeMatch := len(candidates) - 1
+		for i, srcRelease := range candidates {
+			// TODO: more sophisticated alignment options, for example, always use latest matching minor.
+			if r.Created.After(srcRelease.Created) {
+				timeMatch = i
+				break
+			}
+		}
 
-	r.FilterAssets(p.Primary.Accept)
-	r.SortAssets()
+		newAssets := candidates[timeMatch].Assets.FilterAssets(src.Accept)
+		for i := range newAssets {
+			newAssets[i].secondary = true
+		}
+		assets = append(assets, newAssets...)
+		log.Printf("Using %s/%s with %s/%s", candidates[timeMatch].String(), candidates[timeMatch].TagName, r.String(), r.TagName)
+	}
+	sort.Sort(assets)
 
 	// Download assets and store them.
-	for i, asset := range r.Assets {
+	for i, asset := range assets {
 		fileName := fmt.Sprintf("%d-%s", i+1, asset.Name)
 		file, err := os.OpenFile(filepath.Join(path, fileName), os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return fmt.Errorf("Unable to open %s: %w", fileName, err)
 		}
 		defer file.Close()
-		if _, err := file.WriteString("# " + asset.URL + "\n\n"); err != nil {
-			return err
-		}
+		// if _, err := file.WriteString("# " + asset.URL + "\n\n"); err != nil {
+		// 	return err
+		// }
 		log.Print(asset.URL)
 		fetch, err := client.Get(asset.URL)
 		if err != nil {
@@ -133,13 +210,10 @@ func HandleRelease(ctx context.Context, client *http.Client, p Package, r Releas
 // LastN selects the last N minor releases (including all patch releases) for a
 // given sequence of releases, which need not be sorted.
 func LastN(minors int, allReleases []Release) []Release {
-	retval := make([]Release, len(allReleases))
+	retval := make(releaseList, len(allReleases))
 
 	copy(retval, allReleases)
-	sort.Slice(retval, func(i, j int) bool {
-		// Sort larger items earlier
-		return !retval[i].Less(retval[j])
-	})
+	sort.Sort(retval)
 
 	previous := semver.MajorMinor(retval[0].TagName)
 	for i, r := range retval {

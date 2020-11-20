@@ -54,6 +54,7 @@ func makeRelease(org string, repo string, gh *github.RepositoryRelease) packages
 		Org:     org,
 		Repo:    repo,
 		TagName: gh.GetTagName(),
+		Created: gh.GetCreatedAt().Time,
 		Assets:  make([]packages.Asset, 0, len(gh.Assets)),
 	}
 	for _, a := range gh.Assets {

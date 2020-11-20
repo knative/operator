@@ -66,8 +66,8 @@ type GitHubSource struct {
 }
 
 // ReadConfig reads a set of Packages (as a map from package name to package configuration) from a yaml file a the selected path
-func ReadConfig(path string) (retval map[string]Package, err error) {
-	retval = Config{}
+func ReadConfig(path string) (retval map[string]*Package, err error) {
+	retval = map[string]*Package{}
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return

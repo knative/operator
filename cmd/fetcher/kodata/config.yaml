@@ -6,9 +6,17 @@ knative-serving:
     include:
       - ".*.yaml"
     exclude:
-      - "monitoring-.*"
+      - "monitoring.*"
       - "serving.yaml"
       - "serving-storage-version-migration.yaml"
+      - ".*domain.*"
+      - "release.yaml"
+      - ".*-nscert.yaml"
+  additional:
+  - github:
+      repo: "knative-sandbox/net-istio"
+    exclude:
+    - "release.yaml"
 knative-eventing:
   primary:
     github:
@@ -16,7 +24,7 @@ knative-eventing:
     include:
       - ".*.yaml"
     exclude:
-      - ".*-post-install-jobs.yaml"
+      - ".*-pre-install-jobs.yaml"
 
 # net-happy:
 #   knative-eventing:

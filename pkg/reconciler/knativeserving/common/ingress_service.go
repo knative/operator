@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
+// IngressServiceTransform pins the namespace to istio-system for the service named knative-local-gateway.
 func IngressServiceTransform() mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetAPIVersion() == "v1" && u.GetKind() == "Service" && u.GetName() == "knative-local-gateway" {

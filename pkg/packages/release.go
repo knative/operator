@@ -147,17 +147,7 @@ func (al assetList) FilterAssets(accept func(string) string) assetList {
 	return retval
 }
 
-// HandleRelease processes the files for a given release of the specified
-// Package.
-func HandleRelease(ctx context.Context, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
-	majorMinor := semver.MajorMinor(r.TagName)
-	shortName := strings.TrimPrefix(r.TagName, "v")
-	path := filepath.Join("cmd", "operator", "kodata", p.Name, shortName)
-	err := os.MkdirAll(path, 0755)
-	if err != nil {
-		return err
-	}
-
+func CollectReleaseAssets(p Package, r Release, allReleases map[string][]Release) []Asset {
 	assets := make(assetList, 0, len(r.Assets))
 	assets = append(assets, r.Assets.FilterAssets(p.Primary.Accept(r.TagName))...)
 	for _, src := range p.Additional {
@@ -166,7 +156,7 @@ func HandleRelease(ctx context.Context, client *http.Client, p Package, r Releas
 		start, end := -1, len(candidates)
 		for i, srcRelease := range candidates {
 			// Collect matching minor versions
-			comp := semver.Compare(majorMinor, semver.MajorMinor(srcRelease.TagName))
+			comp := semver.Compare(semver.MajorMinor(r.TagName), semver.MajorMinor(srcRelease.TagName))
 			if start == -1 && comp == 0 {
 				start = i
 			}
@@ -194,6 +184,20 @@ func HandleRelease(ctx context.Context, client *http.Client, p Package, r Releas
 		log.Printf("Using %s/%s with %s/%s", candidate.String(), candidate.TagName, r.String(), r.TagName)
 	}
 	sort.Sort(assets)
+	return assets
+}
+
+// HandleRelease processes the files for a given release of the specified
+// Package.
+func HandleRelease(ctx context.Context, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
+	assets := CollectReleaseAssets(p, r, allReleases)
+
+	shortName := strings.TrimPrefix(r.TagName, "v")
+	path := filepath.Join("cmd", "operator", "kodata", p.Name, shortName)
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		return err
+	}
 
 	// Download assets and store them.
 	for i, asset := range assets {

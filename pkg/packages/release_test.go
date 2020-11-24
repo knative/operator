@@ -245,3 +245,132 @@ func TestLastN(t *testing.T) {
 		})
 	}
 }
+
+func TestCollectReleaseAssets(t *testing.T) {
+	p := Package{
+		Name: "test",
+		Primary: Source{
+			AssetFilter: AssetFilter{
+				ExcludeArtifacts: []string{".*bad.*"},
+			},
+			GitHub: GitHubSource{Repo: "knative/test"},
+			Overrides: map[string]AssetFilter{
+				"v0.2": {
+					ExcludeArtifacts: []string{".*bad.*"},
+					Rename: map[string]string{
+						"v0.2-upgrade.yaml": "upgrade.yaml",
+					},
+				},
+			},
+		},
+		Additional: []Source{
+			{
+				GitHub: GitHubSource{Repo: "knative/dep"},
+			},
+		},
+	}
+	allReleases := map[string][]Release{
+		"knative/test": []Release{
+			{
+				TagName: "v0.1.0",
+				Created: time.Unix(1000, 0),
+				Assets: []Asset{
+					{Name: "good.yaml", URL: "data:010"},
+					{Name: "bad.yaml", URL: "data:7777"},
+				},
+			},
+			{
+				TagName: "v0.1.1",
+				Created: time.Unix(1500, 0),
+				Assets: []Asset{
+					{Name: "good.yaml", URL: "data:011"},
+					{Name: "bad.yaml", URL: "data:7778"},
+				},
+			},
+			{
+				TagName: "v0.2.0",
+				Created: time.Unix(2000, 0),
+				Assets: []Asset{
+					{Name: "good.yaml", URL: "data:020"},
+					{Name: "v0.2-upgrade.yaml", URL: "data:up020"},
+					{Name: "bad.yaml", URL: "data:7778"},
+				},
+			},
+		},
+		"knative/dep": []Release{
+			{
+				TagName: "v0.1.0",
+				Created: time.Unix(1010, 0),
+				Assets: []Asset{
+					{Name: "helper.yaml", URL: "data:dep010"},
+				},
+			},
+			{
+				TagName: "v0.1.1",
+				Created: time.Unix(1200, 0),
+				Assets: []Asset{
+					{Name: "helper.yaml", URL: "data:dep011"},
+				},
+			},
+			{
+				TagName: "v0.1.2",
+				Created: time.Unix(1400, 0),
+				Assets: []Asset{
+					{Name: "helper.yaml", URL: "data:dep012"},
+				},
+			},
+			{
+				TagName: "v0.2.0",
+				Created: time.Unix(1900, 0),
+				Assets: []Asset{
+					{Name: "helper.yaml", URL: "data:dep020"},
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		version string
+		want    []Asset
+	}{
+		{
+			version: "v0.1.0",
+			want: []Asset{
+				{Name: "good.yaml", URL: "data:010"},
+				{Name: "helper.yaml", URL: "data:dep010"},
+			},
+		},
+		{
+			version: "v0.1.1",
+			want: []Asset{
+				{Name: "good.yaml", URL: "data:011"},
+				{Name: "helper.yaml", URL: "data:dep012"},
+			},
+		},
+		{
+			version: "v0.2.0",
+			want: []Asset{
+				{Name: "good.yaml", URL: "data:020"},
+				{Name: "upgrade.yaml", URL: "data:up020"},
+				{Name: "helper.yaml", URL: "data:dep020"},
+			},
+		},
+	}
+
+	relByVersion := make(map[string]Release, len(allReleases["knative/test"]))
+	for _, rel := range allReleases["knative/test"] {
+		relByVersion[rel.TagName] = rel
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.version, func(t *testing.T) {
+
+			got := CollectReleaseAssets(p, relByVersion[tt.version], allReleases)
+			ignore := cmpopts.IgnoreUnexported(Asset{})
+
+			if diff := cmp.Diff(tt.want, got, ignore); diff != "" {
+				t.Errorf("Wrong asset list (-want +got): %s", diff)
+			}
+		})
+	}
+}

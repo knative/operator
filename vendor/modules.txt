@@ -76,7 +76,7 @@ github.com/davecgh/go-spew/spew
 ## explicit
 github.com/emicklei/go-restful
 github.com/emicklei/go-restful/log
-# github.com/evanphx/json-patch v4.5.0+incompatible
+# github.com/evanphx/json-patch v4.9.0+incompatible
 github.com/evanphx/json-patch
 # github.com/evanphx/json-patch/v5 v5.0.0
 github.com/evanphx/json-patch/v5
@@ -423,7 +423,7 @@ gopkg.in/evanphx/json-patch.v4
 gopkg.in/inf.v0
 # gopkg.in/yaml.v2 v2.3.0
 gopkg.in/yaml.v2
-# k8s.io/api v0.18.8 => k8s.io/api v0.18.8
+# k8s.io/api v0.18.12 => k8s.io/api v0.18.8
 ## explicit
 k8s.io/api/admission/v1
 k8s.io/api/admissionregistration/v1
@@ -466,7 +466,7 @@ k8s.io/api/settings/v1alpha1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apiextensions-apiserver v0.18.8
+# k8s.io/apiextensions-apiserver v0.18.12
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 # k8s.io/apimachinery v0.19.0 => k8s.io/apimachinery v0.18.8
@@ -691,7 +691,7 @@ k8s.io/client-go/util/jsonpath
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/code-generator v0.18.8 => k8s.io/code-generator v0.18.8
+# k8s.io/code-generator v0.18.12 => k8s.io/code-generator v0.18.8
 ## explicit
 k8s.io/code-generator
 k8s.io/code-generator/cmd/client-gen
@@ -753,19 +753,19 @@ k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20201113182901-ee88f744543c
+# knative.dev/caching v0.0.0-20201124023036-dfa63c15d12a
 ## explicit
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.19.1-0.20201117061051-47ee6e3586ca
+# knative.dev/eventing v0.19.1-0.20201124020934-518010ed7378
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck/v1
 knative.dev/eventing/pkg/apis/eventing
-# knative.dev/hack v0.0.0-20201112185459-01a34c573bd8
+# knative.dev/hack v0.0.0-20201120192952-353db687ec5b
 ## explicit
 knative.dev/hack
-# knative.dev/pkg v0.0.0-20201117020252-ab1a398f669c
+# knative.dev/pkg v0.0.0-20201124023135-49e55c9eb816
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck

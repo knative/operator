@@ -13,3 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+package common
+
+import (
+	mf "github.com/manifestival/manifestival"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+)
+
+// IngressServiceTransform pins the namespace to istio-system for the service named knative-local-gateway.
+func IngressServiceTransform() mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetAPIVersion() == "v1" && u.GetKind() == "Service" && u.GetName() == "knative-local-gateway" {
+			u.SetNamespace("istio-system")
+		}
+		return nil
+	}
+}

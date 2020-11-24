@@ -48,50 +48,47 @@ type Release struct {
 	Assets  assetList //[]Asset
 }
 
-// Less provides a method for implementing `sort.Slice` to ensure that assets
-// are applied in the correct order.
-func (a Asset) Less(b Asset) bool {
+var suffixOrder = map[string]int{
 	// HACK for pre-install jobs, which are deprecated, because the job needs to
 	// *complete*, not just be applied, before the next manifests can be
 	// applied.
-	if strings.HasSuffix(a.Name, "-pre-install-jobs.yaml") {
-		return true
-	}
-	if strings.HasSuffix(b.Name, "-pre-install-jobs.yaml") {
-		return false
-	}
-
-	if strings.HasSuffix(a.Name, "-crds.yaml") {
-		return true
-	}
-	if strings.HasSuffix(b.Name, "-crds.yaml") {
-		return false
-	}
-	if strings.HasSuffix(a.Name, "-post-install-jobs.yaml") {
-		return false
-	}
-	if strings.HasSuffix(b.Name, "-post-install-jobs.yaml") {
-		return true
-	}
-
+	"-pre-install-jobs.yaml": -6,
+	"-crds.yaml":             -3,
 	// HACK for eventing, which lists the sugar controller after the
 	// channel/broker despite collating before.
-	if strings.HasSuffix(a.Name, "-sugar-controller.yaml") {
-		return false
+	"-sugar-controller.yaml":  3,
+	"-post-install-jobs.yaml": 6,
+}
+
+// Less provides a method for implementing `sort.Slice` to ensure that assets
+// are applied in the correct order.
+func (a Asset) Less(b Asset) bool {
+	aScore, bScore := 0, 0
+	for suffix, score := range suffixOrder {
+		if strings.HasSuffix(a.Name, suffix) {
+			aScore = score
+		}
+		if strings.HasSuffix(b.Name, suffix) {
+			bScore = score
+		}
 	}
-	if strings.HasSuffix(b.Name, "-sugar-controller.yaml") {
-		return true
+	// Sort primary assets before secondary assets
+	if a.secondary {
+		aScore += 1
 	}
-	if a.secondary != b.secondary {
-		// Sort primary assets before secondary assets
-		return b.secondary
+	if b.secondary {
+		bScore += 1
 	}
-	return a.Name < b.Name
+
+	if aScore == bScore {
+		return a.Name < b.Name
+	}
+	return aScore < bScore
 }
 
 // Less provides a sort on Releases by TagName.
 func (r Release) Less(b Release) bool {
-	return semver.Compare(r.TagName, b.TagName) > 0
+	return semver.Compare(r.TagName, b.TagName) < 0
 }
 
 // String implements `fmt.Stringer`.
@@ -124,9 +121,10 @@ func (rl releaseList) Len() int {
 	return len(rl)
 }
 
-// Less is part of `sort.Interface`.
+// Less is part of `sort.Interface`.  Note that this is actually a reversed
+// sort, because we want newest releases towards the start of the list.
 func (rl releaseList) Less(i, j int) bool {
-	return rl[i].Less(rl[j])
+	return !rl[i].Less(rl[j])
 }
 
 // Swap is part of `sort.Interface`.

@@ -128,6 +128,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 		ksc.AggregationRuleTransform(manifest.Client),
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)
+	extra = append(extra, ksc.IngressServiceTransform())
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 

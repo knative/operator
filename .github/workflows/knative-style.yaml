@@ -109,7 +109,7 @@ jobs:
           curl -sfL https://raw.githubusercontent.com/get-woke/woke/main/install.sh | sh -s -- -b "${TEMP_PATH}" "${WOKE_VERSION}" 2>&1
           echo '::endgroup::'
 
-          echo "::add-path::${TEMP_PATH}"
+          echo "${TEMP_PATH}" >> $GITHUB_PATH
 
       - id: golangci_configuration
         uses: andstor/file-existence-action@v1

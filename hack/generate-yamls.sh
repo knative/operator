@@ -61,7 +61,12 @@ fi
 # Flags for all ko commands
 KO_YAML_FLAGS="-P"
 [[ "${KO_DOCKER_REPO}" != gcr.io/* ]] && KO_YAML_FLAGS=""
-readonly KO_YAML_FLAGS="${KO_YAML_FLAGS} ${KO_FLAGS} --strict"
+
+if [[ "${KO_FLAGS}" != *"--platform"* ]]; then
+  KO_YAML_FLAGS="${KO_YAML_FLAGS} --platform=all"
+fi
+
+readonly KO_YAML_FLAGS="${KO_YAML_FLAGS} ${KO_FLAGS}"
 
 : ${KO_DOCKER_REPO:="ko.local"}
 export KO_DOCKER_REPO

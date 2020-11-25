@@ -25,6 +25,7 @@ function build_release() {
   echo "call build release ....................."
   local YAML_LIST="${REPO_ROOT_DIR}/.operator-temp.yaml"
   export TAG
+  export KO_FLAGS
   $(dirname $0)/generate-yamls.sh "${REPO_ROOT_DIR}" "${YAML_LIST}"
   ARTIFACTS_TO_PUBLISH=$(cat "${YAML_LIST}" | tr '\n' ' ')
   if (( ! PUBLISH_RELEASE )); then

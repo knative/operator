@@ -137,14 +137,11 @@ func getVersionKey(instance v1alpha1.KComponent) string {
 
 func versionValidation(version string, instance v1alpha1.KComponent) (mf.Manifest, error) {
 	manifestsPath := componentURL(version, instance)
-	if manifestsPath == "" {
-		// The spec.manifests are empty. There is no need to check whether the versions match.
-		return fetch(manifestPath(version, instance))
-	}
-
 	manifests, err := fetch(manifestsPath)
-	if err != nil {
+	if err != nil || (len(instance.GetSpec().GetManifests()) == 0 && len(instance.GetSpec().GetAdditionalManifests()) == 0) {
 		// If we cannot access the manifests, there is no need to check whether the versions match.
+		// If both spec.manifests and spec.additionalManifests are empty, there is no need to check whether the versions
+		// match.
 		return manifests, err
 	}
 
@@ -210,11 +207,32 @@ func componentURL(version string, instance v1alpha1.KComponent) string {
 		url := strings.ReplaceAll(manifest.Url, VersionVariable, version)
 		urls = append(urls, url)
 	}
+
+	manifestPath := strings.Join(urls, COMMA)
+	// If spec.manifests is empty, add the local path
+	if manifestPath == "" {
+		manifestPath = filepath.Join(componentDir(instance), version)
+		if _, err := os.Stat(manifestPath); os.IsNotExist(err) {
+			return ""
+		}
+	}
+
+	// Append the spec.additionalManifests
+	addManifests := instance.GetSpec().GetAdditionalManifests()
+	urls = make([]string, 0, len(addManifests))
+	urls = append(urls, manifestPath)
+	for _, manifest := range addManifests {
+		url := strings.ReplaceAll(manifest.Url, VersionVariable, version)
+		urls = append(urls, url)
+	}
+
 	return strings.Join(urls, COMMA)
 }
 
 func createManifestsPath(instance v1alpha1.KComponent) []string {
-	if len(instance.GetSpec().GetManifests()) > 0 {
+	if len(instance.GetSpec().GetManifests()) > 0 || len(instance.GetSpec().GetAdditionalManifests()) > 0 {
+		// If either spec.manifests or spec.additionalManifests is not empty, we leverage status.manifests
+		// to save the complete manifest path.
 		return strings.Split(manifestPath(TargetVersion(instance), instance), COMMA)
 	}
 
@@ -226,16 +244,7 @@ func manifestPath(version string, instance v1alpha1.KComponent) string {
 		return ""
 	}
 
-	if manifestPath := componentURL(version, instance); manifestPath != "" {
-		return manifestPath
-	}
-
-	localPath := filepath.Join(componentDir(instance), version)
-	if _, err := os.Stat(localPath); !os.IsNotExist(err) {
-		return localPath
-	}
-
-	return ""
+	return componentURL(version, instance)
 }
 
 func installedManifestPath(version string, instance v1alpha1.KComponent) string {

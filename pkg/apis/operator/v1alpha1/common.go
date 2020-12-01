@@ -104,11 +104,6 @@ type KComponentStatus interface {
 	// SetManifests sets the url links of the manifests
 	SetManifests(manifests []string)
 
-	// GetAdditionalManifests gets the url links of the additional manifests
-	GetAdditionalManifests() []string
-	// SetAdditionalManifests sets the url links of the additional manifests
-	SetAdditionalManifests(additionalManifests []string)
-
 	// IsReady return true if all conditions are satisfied
 	IsReady() bool
 }

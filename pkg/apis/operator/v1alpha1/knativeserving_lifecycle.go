@@ -139,13 +139,3 @@ func (is *KnativeServingStatus) GetManifests() []string {
 func (is *KnativeServingStatus) SetManifests(manifests []string) {
 	is.Manifests = manifests
 }
-
-// GetAdditionalManifests gets the url links of the additional manifests.
-func (is *KnativeServingStatus) GetAdditionalManifests() []string {
-	return is.AdditionalManifests
-}
-
-// SetAdditionalManifests sets the url links of the additional manifests.
-func (is *KnativeServingStatus) SetAdditionalManifests(additionalManifests []string) {
-	is.AdditionalManifests = additionalManifests
-}

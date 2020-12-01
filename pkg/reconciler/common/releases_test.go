@@ -424,9 +424,10 @@ func TestIsVersionValidMigrationEligible(t *testing.T) {
 
 func TestTargetManifest(t *testing.T) {
 	tests := []struct {
-		name          string
-		component     v1alpha1.KComponent
-		expectedError error
+		name                 string
+		component            v1alpha1.KComponent
+		expectedNumResources int
+		expectedError        error
 	}{{
 		name: "knative-serving with spec.manifests matched",
 		component: &v1alpha1.KnativeServing{
@@ -441,7 +442,8 @@ func TestTargetManifest(t *testing.T) {
 				},
 			},
 		},
-		expectedError: nil,
+		expectedNumResources: 2,
+		expectedError:        nil,
 	}, {
 		name: "knative-serving with spec.manifests unmatched",
 		component: &v1alpha1.KnativeServing{
@@ -456,6 +458,7 @@ func TestTargetManifest(t *testing.T) {
 				},
 			},
 		},
+		expectedNumResources: 0,
 		expectedError: fmt.Errorf("The version of the manifests %s does not match the target "+
 			"version of the operator CR %s. The resource name is %s.", "v0.17.2", "v0.16.0", "knative-serving"),
 	}, {
@@ -471,7 +474,8 @@ func TestTargetManifest(t *testing.T) {
 				},
 			},
 		},
-		expectedError: nil,
+		expectedNumResources: 2,
+		expectedError:        nil,
 	}, {
 		name: "knative-serving with additional resources",
 		component: &v1alpha1.KnativeServing{
@@ -487,7 +491,66 @@ func TestTargetManifest(t *testing.T) {
 				},
 			},
 		},
-		expectedError: nil,
+		expectedNumResources: 3,
+		expectedError:        nil,
+	}, {
+		name: "knative-serving with additional manifests only",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedNumResources: 4,
+		expectedError:        nil,
+	}, {
+		name: "knative-serving with manifests and additional manifests",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/knative-serving/0.16.1/serving-core.yaml",
+					}},
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedNumResources: 2,
+		expectedError:        nil,
+	}, {
+		name: "knative-eventing with additional manifests only",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedNumResources: 3,
+		expectedError:        nil,
+	}, {
+		name: "knative-eventing with manifests and additional manifests",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/knative-eventing/0.16.0/eventing-core.yaml",
+					}},
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedNumResources: 2,
+		expectedError:        nil,
 	}}
 
 	koPath := "testdata/kodata"
@@ -496,7 +559,8 @@ func TestTargetManifest(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err := TargetManifest(test.component)
+			m, err := TargetManifest(test.component)
+			util.AssertEqual(t, len(m.Resources()), test.expectedNumResources)
 			if err != test.expectedError {
 				if err != nil {
 					util.AssertEqual(t, err.Error(), test.expectedError.Error())

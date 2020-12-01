@@ -136,17 +136,7 @@ func (es *KnativeEventingStatus) GetManifests() []string {
 	return es.Manifests
 }
 
-// SetAdditionalManifests sets the url links of the manifests.
+// SetManifests sets the url links of the manifests.
 func (es *KnativeEventingStatus) SetManifests(manifests []string) {
 	es.Manifests = manifests
-}
-
-// GetAdditionalManifests gets the url links of the manifests.
-func (es *KnativeEventingStatus) GetAdditionalManifests() []string {
-	return es.AdditionalManifests
-}
-
-// SetAdditionalManifests sets the url links of the manifests.
-func (es *KnativeEventingStatus) SetAdditionalManifests(additionalManifests []string) {
-	es.AdditionalManifests = additionalManifests
 }

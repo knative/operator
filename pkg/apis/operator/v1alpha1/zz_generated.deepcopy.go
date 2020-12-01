@@ -250,11 +250,6 @@ func (in *KnativeEventingStatus) DeepCopyInto(out *KnativeEventingStatus) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
-	if in.AdditionalManifests != nil {
-		in, out := &in.AdditionalManifests, &out.AdditionalManifests
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
 	return
 }
 
@@ -360,11 +355,6 @@ func (in *KnativeServingStatus) DeepCopyInto(out *KnativeServingStatus) {
 	in.Status.DeepCopyInto(&out.Status)
 	if in.Manifests != nil {
 		in, out := &in.Manifests, &out.Manifests
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
-	if in.AdditionalManifests != nil {
-		in, out := &in.AdditionalManifests, &out.AdditionalManifests
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}

@@ -77,10 +77,6 @@ type KnativeServingStatus struct {
 	// The url links of the manifests, separated by comma
 	// +optional
 	Manifests []string `json:"manifests,omitempty"`
-
-	// The url links of the additional manifests, separated by comma
-	// +optional
-	AdditionalManifests []string `json:"additionalManifests,omitempty"`
 }
 
 // KnativeServingList contains a list of KnativeServing

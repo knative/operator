@@ -62,7 +62,7 @@ func TargetVersion(instance v1alpha1.KComponent) string {
 
 // TargetManifest returns the manifest for the TargetVersion
 func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
-	return versionValidation(TargetVersion(instance), instance)
+	return getManifestWithVersionValidation(TargetVersion(instance), instance)
 }
 
 // InstalledManifest returns the version currently installed, which is
@@ -135,8 +135,8 @@ func getVersionKey(instance v1alpha1.KComponent) string {
 	return ""
 }
 
-func versionValidation(version string, instance v1alpha1.KComponent) (mf.Manifest, error) {
-	manifestsPath := componentURL(version, instance)
+func getManifestWithVersionValidation(version string, instance v1alpha1.KComponent) (mf.Manifest, error) {
+	manifestsPath := targetManifestPath(version, instance)
 	manifests, err := fetch(manifestsPath)
 	if err != nil || (len(instance.GetSpec().GetManifests()) == 0 && len(instance.GetSpec().GetAdditionalManifests()) == 0) {
 		// If we cannot access the manifests, there is no need to check whether the versions match.
@@ -199,7 +199,7 @@ func componentDir(instance v1alpha1.KComponent) string {
 	return ""
 }
 
-func componentURL(version string, instance v1alpha1.KComponent) string {
+func targetManifestPath(version string, instance v1alpha1.KComponent) string {
 	manifests := instance.GetSpec().GetManifests()
 	// Create the comma-separated string as the URL to retrieve the manifest
 	urls := make([]string, 0, len(manifests))
@@ -229,22 +229,14 @@ func componentURL(version string, instance v1alpha1.KComponent) string {
 	return strings.Join(urls, COMMA)
 }
 
-func createManifestsPath(instance v1alpha1.KComponent) []string {
+func targetManifestPathArray(instance v1alpha1.KComponent) []string {
 	if len(instance.GetSpec().GetManifests()) > 0 || len(instance.GetSpec().GetAdditionalManifests()) > 0 {
 		// If either spec.manifests or spec.additionalManifests is not empty, we leverage status.manifests
 		// to save the complete manifest path.
-		return strings.Split(manifestPath(TargetVersion(instance), instance), COMMA)
+		return strings.Split(targetManifestPath(TargetVersion(instance), instance), COMMA)
 	}
 
 	return nil
-}
-
-func manifestPath(version string, instance v1alpha1.KComponent) string {
-	if !semver.IsValid(sanitizeSemver(version)) {
-		return ""
-	}
-
-	return componentURL(version, instance)
 }
 
 func installedManifestPath(version string, instance v1alpha1.KComponent) string {

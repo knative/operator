@@ -104,7 +104,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			manifestPath := manifestPath(test.version, test.component)
+			manifestPath := targetManifestPath(test.version, test.component)
 			util.AssertEqual(t, manifestPath, test.expected)
 			manifest, err := mf.NewManifest(manifestPath)
 			util.AssertEqual(t, err, nil)
@@ -126,7 +126,7 @@ func TestRetrieveManifestPath(t *testing.T) {
 
 	for _, test := range invalidPathTests {
 		t.Run(test.name, func(t *testing.T) {
-			manifestPath := manifestPath(test.version, test.component)
+			manifestPath := targetManifestPath(test.version, test.component)
 			util.AssertEqual(t, manifestPath, test.expected)
 			manifest, err := mf.NewManifest(manifestPath)
 			util.AssertEqual(t, err != nil, true)

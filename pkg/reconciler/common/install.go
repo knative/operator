@@ -53,7 +53,7 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComp
 	}
 	status.MarkInstallSucceeded()
 	status.SetVersion(TargetVersion(instance))
-	status.SetManifests(createManifestsPath(instance))
+	status.SetManifests(targetManifestPathArray(instance))
 	return nil
 }
 

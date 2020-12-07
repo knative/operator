@@ -58,6 +58,11 @@ func (in *CommonSpec) DeepCopyInto(out *CommonSpec) {
 		*out = make([]Manifest, len(*in))
 		copy(*out, *in)
 	}
+	if in.AdditionalManifests != nil {
+		in, out := &in.AdditionalManifests, &out.AdditionalManifests
+		*out = make([]Manifest, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

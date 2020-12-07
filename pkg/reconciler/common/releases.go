@@ -62,7 +62,7 @@ func TargetVersion(instance v1alpha1.KComponent) string {
 
 // TargetManifest returns the manifest for the TargetVersion
 func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
-	return versionValidation(TargetVersion(instance), instance)
+	return getManifestWithVersionValidation(TargetVersion(instance), instance)
 }
 
 // InstalledManifest returns the version currently installed, which is
@@ -135,16 +135,13 @@ func getVersionKey(instance v1alpha1.KComponent) string {
 	return ""
 }
 
-func versionValidation(version string, instance v1alpha1.KComponent) (mf.Manifest, error) {
-	manifestsPath := componentURL(version, instance)
-	if manifestsPath == "" {
-		// The spec.manifests are empty. There is no need to check whether the versions match.
-		return fetch(manifestPath(version, instance))
-	}
-
+func getManifestWithVersionValidation(version string, instance v1alpha1.KComponent) (mf.Manifest, error) {
+	manifestsPath := targetManifestPath(version, instance)
 	manifests, err := fetch(manifestsPath)
-	if err != nil {
+	if err != nil || (len(instance.GetSpec().GetManifests()) == 0 && len(instance.GetSpec().GetAdditionalManifests()) == 0) {
 		// If we cannot access the manifests, there is no need to check whether the versions match.
+		// If both spec.manifests and spec.additionalManifests are empty, there is no need to check whether the versions
+		// match.
 		return manifests, err
 	}
 
@@ -202,7 +199,7 @@ func componentDir(instance v1alpha1.KComponent) string {
 	return ""
 }
 
-func componentURL(version string, instance v1alpha1.KComponent) string {
+func targetManifestPath(version string, instance v1alpha1.KComponent) string {
 	manifests := instance.GetSpec().GetManifests()
 	// Create the comma-separated string as the URL to retrieve the manifest
 	urls := make([]string, 0, len(manifests))
@@ -210,32 +207,36 @@ func componentURL(version string, instance v1alpha1.KComponent) string {
 		url := strings.ReplaceAll(manifest.Url, VersionVariable, version)
 		urls = append(urls, url)
 	}
+
+	manifestPath := strings.Join(urls, COMMA)
+	// If spec.manifests is empty, add the local path
+	if manifestPath == "" {
+		manifestPath = filepath.Join(componentDir(instance), version)
+		if _, err := os.Stat(manifestPath); os.IsNotExist(err) {
+			return ""
+		}
+	}
+
+	// Append the spec.additionalManifests
+	addManifests := instance.GetSpec().GetAdditionalManifests()
+	urls = make([]string, 0, len(addManifests))
+	urls = append(urls, manifestPath)
+	for _, manifest := range addManifests {
+		url := strings.ReplaceAll(manifest.Url, VersionVariable, version)
+		urls = append(urls, url)
+	}
+
 	return strings.Join(urls, COMMA)
 }
 
-func createManifestsPath(instance v1alpha1.KComponent) []string {
-	if len(instance.GetSpec().GetManifests()) > 0 {
-		return strings.Split(manifestPath(TargetVersion(instance), instance), COMMA)
+func targetManifestPathArray(instance v1alpha1.KComponent) []string {
+	if len(instance.GetSpec().GetManifests()) > 0 || len(instance.GetSpec().GetAdditionalManifests()) > 0 {
+		// If either spec.manifests or spec.additionalManifests is not empty, we leverage status.manifests
+		// to save the complete manifest path.
+		return strings.Split(targetManifestPath(TargetVersion(instance), instance), COMMA)
 	}
 
 	return nil
-}
-
-func manifestPath(version string, instance v1alpha1.KComponent) string {
-	if !semver.IsValid(sanitizeSemver(version)) {
-		return ""
-	}
-
-	if manifestPath := componentURL(version, instance); manifestPath != "" {
-		return manifestPath
-	}
-
-	localPath := filepath.Join(componentDir(instance), version)
-	if _, err := os.Stat(localPath); !os.IsNotExist(err) {
-		return localPath
-	}
-
-	return ""
 }
 
 func installedManifestPath(version string, instance v1alpha1.KComponent) string {

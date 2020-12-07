@@ -71,6 +71,15 @@ spec:
                   URL:
                     description: The link of the manifest URL
                     type: string
+            additionalManifests:
+              description: A list of the additional eventing manifests, which will be installed by the operator
+              type: array
+              items:
+                type: object
+                properties:
+                  URL:
+                    description: The link of the additional manifest URL
+                    type: string
             config:
               additionalProperties:
                 additionalProperties:

@@ -26,11 +26,12 @@ type unstructuredGetter interface {
 	Get(obj *unstructured.Unstructured) (*unstructured.Unstructured, error)
 }
 
-// PingsourceMTAadapterTransform keeps the number of replicas and the env vars, if the deployment
-// pingsource-mt-adapter exists in the cluster.
-func PingsourceMTAadapterTransform(client unstructuredGetter) mf.Transformer {
+// DispatcherAdapterTransform keeps the number of replicas and the env vars, if the deployment
+// pingsource-mt-adapter, kafka-ch-dispatcher or imc-dispatcher exists in the cluster.
+func DispatcherAdapterTransform(client unstructuredGetter) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Deployment" && u.GetName() == "pingsource-mt-adapter" {
+		if u.GetKind() == "Deployment" && (u.GetName() == "pingsource-mt-adapter" ||
+			u.GetName() == "imc-dispatcher") {
 			current, err := client.Get(u)
 			if errors.IsNotFound(err) {
 				return nil
@@ -53,37 +54,37 @@ func setReplicaEnvVars(u, current *unstructured.Unstructured) error {
 	}
 
 	// Get the existing containers
-	oldContainers, found, err := unstructured.NestedSlice(current.Object, "spec", "template", "spec",
-		"containers")
-	if err != nil || !found {
-		return err
-	}
-
-	// Get the new containers
-	containers, found, err := unstructured.NestedSlice(u.Object, "spec", "template", "spec",
-		"containers")
-	if err != nil || !found {
-		return err
-	}
-	for index := range containers {
-		name, found, err := unstructured.NestedString(containers[index].(map[string]interface{}),
-			"name")
-		if err != nil || !found {
-			return err
-		}
-		envVars, foundVal := nestedEnvVar(name, oldContainers, "env")
-		if !foundVal {
-			continue
-		}
-		if err := unstructured.SetNestedField(containers[index].(map[string]interface{}), envVars,
-			"env"); err != nil {
-			return err
-		}
-	}
-	if err := unstructured.SetNestedField(u.Object, containers, "spec", "template",
-		"spec", "containers"); err != nil {
-		return err
-	}
+	//oldContainers, found, err := unstructured.NestedSlice(current.Object, "spec", "template", "spec",
+	//	"containers")
+	//if err != nil || !found {
+	//	return err
+	//}
+	//
+	//// Get the new containers
+	//containers, found, err := unstructured.NestedSlice(u.Object, "spec", "template", "spec",
+	//	"containers")
+	//if err != nil || !found {
+	//	return err
+	//}
+	//for index := range containers {
+	//	name, found, err := unstructured.NestedString(containers[index].(map[string]interface{}),
+	//		"name")
+	//	if err != nil || !found {
+	//		return err
+	//	}
+	//	envVars, foundVal := nestedEnvVar(name, oldContainers, "env")
+	//	if !foundVal {
+	//		continue
+	//	}
+	//	if err := unstructured.SetNestedField(containers[index].(map[string]interface{}), envVars,
+	//		"env"); err != nil {
+	//		return err
+	//	}
+	//}
+	//if err := unstructured.SetNestedField(u.Object, containers, "spec", "template",
+	//	"spec", "containers"); err != nil {
+	//	return err
+	//}
 	return nil
 }
 

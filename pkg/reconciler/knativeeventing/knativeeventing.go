@@ -118,7 +118,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	extra := []mf.Transformer{
 		kec.DefaultBrokerConfigMapTransform(instance, logger),
 		kec.SinkBindingSelectionModeTransform(instance, logger),
-		kec.PingsourceMTAadapterTransform(manifest.Client),
+		kec.DispatcherAdapterTransform(manifest.Client),
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)

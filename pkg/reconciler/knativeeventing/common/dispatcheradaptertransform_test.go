@@ -301,7 +301,7 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			mock := mockGetter{test.Existing}
-			transformer := PingsourceMTAadapterTransform(&mock)
+			transformer := DispatcherAdapterTransform(&mock)
 			if err := transformer(test.Input); err != nil {
 				t.Error(err)
 			}

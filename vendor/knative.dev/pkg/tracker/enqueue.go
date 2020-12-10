@@ -216,18 +216,9 @@ func isExpired(expiry time.Time) bool {
 
 // OnChanged implements Interface.
 func (i *impl) OnChanged(obj interface{}) {
-	observers := i.GetObservers(obj)
-
-	for _, observer := range observers {
-		i.cb(observer)
-	}
-}
-
-// GetObservers implements Interface.
-func (i *impl) GetObservers(obj interface{}) []types.NamespacedName {
 	item, err := kmeta.DeletionHandlingAccessor(obj)
 	if err != nil {
-		return nil
+		return
 	}
 
 	or := kmeta.ObjectReference(item)
@@ -238,9 +229,14 @@ func (i *impl) GetObservers(obj interface{}) []types.NamespacedName {
 		Name:       or.Name,
 	}
 
-	var keys []types.NamespacedName
-
 	i.m.Lock()
+	// Call the callbacks without the lock held.
+	var keys []types.NamespacedName
+	defer func(cb func(types.NamespacedName)) {
+		for _, key := range keys {
+			cb(key)
+		}
+	}(i.cb) // read i.cb with the lock held
 	defer i.m.Unlock()
 
 	// Handle exact matches.
@@ -278,8 +274,6 @@ func (i *impl) GetObservers(obj interface{}) []types.NamespacedName {
 			delete(i.exact, ref)
 		}
 	}
-
-	return keys
 }
 
 // OnChanged implements Interface.

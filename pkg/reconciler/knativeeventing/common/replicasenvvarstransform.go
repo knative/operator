@@ -29,12 +29,11 @@ type unstructuredGetter interface {
 	Get(obj *unstructured.Unstructured) (*unstructured.Unstructured, error)
 }
 
-// DispatcherAdapterTransform keeps the number of replicas and the env vars, if the deployment
-// pingsource-mt-adapter, kafka-ch-dispatcher or imc-dispatcher exists in the cluster.
-func DispatcherAdapterTransform(client unstructuredGetter) mf.Transformer {
+// ReplicasEnvVarsTransform keeps the number of replicas and the env vars, if the deployment
+// pingsource-mt-adapter exists in the cluster.
+func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Deployment" && (u.GetName() == "pingsource-mt-adapter" ||
-			u.GetName() == "imc-dispatcher") {
+		if u.GetKind() == "Deployment" && u.GetName() == "pingsource-mt-adapter" {
 			currentU, err := client.Get(u)
 			if errors.IsNotFound(err) {
 				return nil
@@ -54,15 +53,12 @@ func DispatcherAdapterTransform(client unstructuredGetter) mf.Transformer {
 			// Keep the existing number of replicas in the cluster for the deployment
 			apply.Spec.Replicas = current.Spec.Replicas
 
-			if u.GetName() == "pingsource-mt-adapter" {
-				// Copy the existing env vars of existing containers
-				for index := range current.Spec.Template.Spec.Containers {
-					currentContainer := current.Spec.Template.Spec.Containers[index]
-					for j := range apply.Spec.Template.Spec.Containers {
-						applyContainer := &apply.Spec.Template.Spec.Containers[j]
-						if currentContainer.Name == applyContainer.Name {
-							applyContainer.Env = currentContainer.Env
-						}
+			for index := range current.Spec.Template.Spec.Containers {
+				currentContainer := current.Spec.Template.Spec.Containers[index]
+				for j := range apply.Spec.Template.Spec.Containers {
+					applyContainer := &apply.Spec.Template.Spec.Containers[j]
+					if currentContainer.Name == applyContainer.Name {
+						applyContainer.Env = currentContainer.Env
 					}
 				}
 			}

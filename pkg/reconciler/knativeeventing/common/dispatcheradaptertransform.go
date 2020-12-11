@@ -18,8 +18,11 @@ package common
 
 import (
 	mf "github.com/manifestival/manifestival"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 type unstructuredGetter interface {
@@ -32,94 +35,45 @@ func DispatcherAdapterTransform(client unstructuredGetter) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" && (u.GetName() == "pingsource-mt-adapter" ||
 			u.GetName() == "imc-dispatcher") {
-			current, err := client.Get(u)
+			currentU, err := client.Get(u)
 			if errors.IsNotFound(err) {
 				return nil
 			}
 			if err != nil {
 				return err
 			}
-			return setReplicaEnvVars(u, current)
+			apply := &appsv1.Deployment{}
+			if err := scheme.Scheme.Convert(u, apply, nil); err != nil {
+				return err
+			}
+			current := &appsv1.Deployment{}
+			if err := scheme.Scheme.Convert(currentU, current, nil); err != nil {
+				return err
+			}
+
+			// Keep the existing number of replicas in the cluster for the deployment
+			apply.Spec.Replicas = current.Spec.Replicas
+
+			if u.GetName() == "pingsource-mt-adapter" {
+				// Copy the existing env vars of existing containers
+				for index := range current.Spec.Template.Spec.Containers {
+					currentContainer := current.Spec.Template.Spec.Containers[index]
+					for j := range apply.Spec.Template.Spec.Containers {
+						applyContainer := &apply.Spec.Template.Spec.Containers[j]
+						if currentContainer.Name == applyContainer.Name {
+							applyContainer.Env = currentContainer.Env
+						}
+					}
+				}
+			}
+
+			if err := scheme.Scheme.Convert(apply, u, nil); err != nil {
+				return err
+			}
+			// The zero-value timestamp defaulted by the conversion causes
+			// superfluous updates
+			u.SetCreationTimestamp(metav1.Time{})
 		}
 		return nil
 	}
-}
-
-func setReplicaEnvVars(u, current *unstructured.Unstructured) error {
-	numReplicas, found := nestedInt64OrFloat64(current.Object, "spec", "replicas")
-	if found {
-		if err := unstructured.SetNestedField(u.Object, numReplicas, "spec", "replicas"); err != nil {
-			return err
-		}
-	}
-
-	// Get the existing containers
-	//oldContainers, found, err := unstructured.NestedSlice(current.Object, "spec", "template", "spec",
-	//	"containers")
-	//if err != nil || !found {
-	//	return err
-	//}
-	//
-	//// Get the new containers
-	//containers, found, err := unstructured.NestedSlice(u.Object, "spec", "template", "spec",
-	//	"containers")
-	//if err != nil || !found {
-	//	return err
-	//}
-	//for index := range containers {
-	//	name, found, err := unstructured.NestedString(containers[index].(map[string]interface{}),
-	//		"name")
-	//	if err != nil || !found {
-	//		return err
-	//	}
-	//	envVars, foundVal := nestedEnvVar(name, oldContainers, "env")
-	//	if !foundVal {
-	//		continue
-	//	}
-	//	if err := unstructured.SetNestedField(containers[index].(map[string]interface{}), envVars,
-	//		"env"); err != nil {
-	//		return err
-	//	}
-	//}
-	//if err := unstructured.SetNestedField(u.Object, containers, "spec", "template",
-	//	"spec", "containers"); err != nil {
-	//	return err
-	//}
-	return nil
-}
-
-func nestedInt64OrFloat64(obj map[string]interface{}, fields ...string) (int64, bool) {
-	val, found, err := unstructured.NestedFieldNoCopy(obj, fields...)
-	if !found || err != nil {
-		return 0, found
-	}
-
-	intVal, ok := val.(int64)
-	if ok {
-		return intVal, true
-	}
-
-	floatVal, ok := val.(float64)
-	if ok {
-		return int64(floatVal), true
-	}
-
-	return 0, false
-}
-
-func nestedEnvVar(name string, oldContainers []interface{}, fields ...string) (interface{}, bool) {
-	for _, oldContainer := range oldContainers {
-		oldName, found, err := unstructured.NestedString(oldContainer.(map[string]interface{}), "name")
-		if err != nil || !found {
-			return nil, false
-		}
-		if oldName == name {
-			val, found, err := unstructured.NestedFieldCopy(oldContainer.(map[string]interface{}), fields...)
-			if err != nil || !found {
-				return nil, false
-			}
-			return val, true
-		}
-	}
-	return nil, false
 }

@@ -19,10 +19,13 @@ package common
 import (
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	util "knative.dev/operator/pkg/reconciler/common/testing"
 	"sigs.k8s.io/yaml"
 )
 
@@ -50,7 +53,6 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
-                  value: ''
                   valueFrom:
                     fieldRef:
                       apiVersion: v1
@@ -74,7 +76,6 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
-                  value: ''
                   valueFrom:
                     fieldRef:
                       apiVersion: v1
@@ -98,7 +99,6 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
-                  value: ''
                   valueFrom:
                     fieldRef:
                       apiVersion: v1
@@ -123,7 +123,6 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
-                  value: ''
                   valueFrom:
                     fieldRef:
                       apiVersion: v1
@@ -136,7 +135,6 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
-                  value: ''
                   valueFrom:
                     fieldRef:
                       apiVersion: v1
@@ -160,7 +158,6 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
-                  value: ''
                   valueFrom:
                     fieldRef:
                       apiVersion: v2
@@ -184,7 +181,6 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
-                  value: ''
                   valueFrom:
                     fieldRef:
                       apiVersion: v2
@@ -197,7 +193,6 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
-                  value: ''
                   valueFrom:
                     fieldRef:
                       apiVersion: v1
@@ -222,7 +217,6 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
-                  value: ''
                   valueFrom:
                     fieldRef:
                       apiVersion: v1
@@ -246,7 +240,6 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
-                  value: ''
                   valueFrom:
                     fieldRef:
                       apiVersion: v2
@@ -259,7 +252,6 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
-                  value: ''
                   valueFrom:
                     fieldRef:
                       apiVersion: v2
@@ -283,7 +275,6 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
-                  value: ''
                   valueFrom:
                     fieldRef:
                       apiVersion: v2
@@ -305,7 +296,19 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
 			if err := transformer(test.Input); err != nil {
 				t.Error(err)
 			}
-			util.AssertDeepEqual(t, test.Input, test.Expected)
+			got := &appsv1.Deployment{}
+			if err := scheme.Scheme.Convert(test.Input, got, nil); err != nil {
+				t.Fatal(err)
+			}
+
+			want := &appsv1.Deployment{}
+			if err := scheme.Scheme.Convert(test.Expected, want, nil); err != nil {
+				t.Fatal(err)
+			}
+
+			if !cmp.Equal(got, want) {
+				t.Errorf("Not equal: (+got, -want):\n%s", cmp.Diff(got, want))
+			}
 		})
 	}
 }

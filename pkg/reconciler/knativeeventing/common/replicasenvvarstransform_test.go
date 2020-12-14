@@ -61,6 +61,8 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
                   value: ''
                 - name: K_LOGGING_CONFIG
                   value: ''
+                - name: K_LOGGING_CONFIG_1
+                  value: 'overwrite'
   existing:
     apiVersion: apps/v1
     kind: Deployment
@@ -81,9 +83,11 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: K_METRICS_CONFIG
-                  value: 'test1'
+                  value: 'old'
                 - name: K_LOGGING_CONFIG
-                  value: 'test2'
+                  value: 'old'
+                - name: K_LOGGING_CONFIG_1
+                  value: 'old'
   expected:
     apiVersion: apps/v1
     kind: Deployment
@@ -104,9 +108,11 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: K_METRICS_CONFIG
-                  value: 'test1'
+                  value: 'old'
                 - name: K_LOGGING_CONFIG
-                  value: 'test2'
+                  value: 'old'
+                - name: K_LOGGING_CONFIG_1
+                  value: 'overwrite'
 - name: "existing pingsource-mt-adapter has less containers"
   input:
     apiVersion: apps/v1

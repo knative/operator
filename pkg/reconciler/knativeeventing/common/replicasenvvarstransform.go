@@ -24,6 +24,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/pkg/system"
+)
+
+var (
+	envVarNames = []string{system.NamespaceEnvKey, "K_METRICS_CONFIG", "K_LOGGING_CONFIG", "K_LEADER_ELECTION_CONFIG",
+		"K_NO_SHUTDOWN_AFTER", "K_SINK_TIMEOUT"}
 )
 
 type unstructuredGetter interface {
@@ -63,9 +69,15 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 					applyContainer := &apply.Spec.Template.Spec.Containers[containerIndex]
 					mergedEnv := currentContainer.Env
 					for _, env := range applyContainer.Env {
-						if !nameExistsEnvVars(env.Name, mergedEnv) {
-							// Add the new env var into the existing env vars
+						found, envIndex := nameExistsEnvVars(env.Name, mergedEnv)
+						if !found {
+							// Add the new env var into the existing env vars, if it is not available in the existing
+							// cluster.
 							mergedEnv = append(mergedEnv, env)
+						} else if !nameExistsEnvVarNames(env.Name, envVarNames) {
+							// Set the env var value, if it is available in the existing
+							// cluster, but it is not in the preserved list of the env vars.
+							mergedEnv[envIndex] = env
 						}
 					}
 					applyContainer.Env = mergedEnv
@@ -83,9 +95,18 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 	}
 }
 
-func nameExistsEnvVars(name string, envvars []corev1.EnvVar) bool {
-	for _, env := range envvars {
+func nameExistsEnvVars(name string, envvars []corev1.EnvVar) (bool, int) {
+	for index, env := range envvars {
 		if env.Name == name {
+			return true, index
+		}
+	}
+	return false, -1
+}
+
+func nameExistsEnvVarNames(name string, envVarNames []string) bool {
+	for _, envVarName := range envVarNames {
+		if envVarName == name {
 			return true
 		}
 	}

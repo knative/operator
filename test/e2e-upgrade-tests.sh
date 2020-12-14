@@ -217,19 +217,19 @@ go_test_e2e -tags=probe -timeout=${PROBE_TIMEOUT} ./test/upgrade \
 PROBER_PID_SERVING=$!
 echo "Prober PID Serving is ${PROBER_PID_SERVING}"
 
-header "Running preupgrade tests for Knative Eventing"
+# header "Running preupgrade tests for Knative Eventing"
 # Go to the knative eventing repo
-cd ${KNATIVE_DIR}/eventing
-go_test_e2e -tags=preupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
+# cd ${KNATIVE_DIR}/eventing
+# go_test_e2e -tags=preupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
 
-header "Starting prober test for Knative Eventing"
+# header "Starting prober test for Knative Eventing"
 # Remove this in case we failed to clean it up in an earlier test.
-rm -f ${EVENTING_READY_FILE}
-go_test_e2e -tags=probe -timeout="${PROBE_TIMEOUT}" ./test/upgrade --pipefile="${EVENTING_PROBER_FILE}" --readyfile="${EVENTING_READY_FILE}" &
-PROBER_PID_EVENTING=$!
-echo "Prober PID Eventing is ${PROBER_PID_EVENTING}"
+# rm -f ${EVENTING_READY_FILE}
+# go_test_e2e -tags=probe -timeout="${PROBE_TIMEOUT}" ./test/upgrade --pipefile="${EVENTING_PROBER_FILE}" --readyfile="${EVENTING_READY_FILE}" &
+# PROBER_PID_EVENTING=$!
+# echo "Prober PID Eventing is ${PROBER_PID_EVENTING}"
 
-wait_for_file ${EVENTING_READY_FILE} || fail_test
+# wait_for_file ${EVENTING_READY_FILE} || fail_test
 
 create_latest_custom_resource
 
@@ -251,9 +251,9 @@ header "Running postupgrade tests for Knative Serving"
 cd ${KNATIVE_DIR}/serving
 go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
 
-header "Running postupgrade tests for Knative Eventing"
-cd ${KNATIVE_DIR}/eventing
-go_test_e2e -tags=postupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
+# header "Running postupgrade tests for Knative Eventing"
+# cd ${KNATIVE_DIR}/eventing
+# go_test_e2e -tags=postupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
 
 install_previous_knative
 wait_until_pods_running ${TEST_NAMESPACE}
@@ -269,9 +269,9 @@ cd ${KNATIVE_DIR}/serving
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \
   --resolvabledomain="false" || fail_test
 
-header "Running postdowngrade tests for Knative Eventing"
-cd ${KNATIVE_DIR}/eventing
-go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
+# header "Running postdowngrade tests for Knative Eventing"
+# cd ${KNATIVE_DIR}/eventing
+# go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
 
 echo "done" > /tmp/prober-signal
 echo "done" > /tmp/autoscaling-signal
@@ -279,9 +279,9 @@ echo "done" > /tmp/autoscaling-tbc-signal
 header "Waiting for prober test for Knative Serving"
 wait ${PROBER_PID_SERVING} || fail_test "Prober failed"
 
-echo "done" > ${EVENTING_PROBER_FILE}
-header "Waiting for prober test for Knative Eventing"
-wait ${PROBER_PID_EVENTING} || fail_test "Prober failed"
+# echo "done" > ${EVENTING_PROBER_FILE}
+# header "Waiting for prober test for Knative Eventing"
+# wait ${PROBER_PID_EVENTING} || fail_test "Prober failed"
 
 # Require that tests succeeded.
 (( failed )) && fail_test

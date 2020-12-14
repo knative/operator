@@ -109,7 +109,7 @@ function knative_setup() {
   create_namespace
   install_previous_operator_release
   download_knative "${KNATIVE_SERVING_REPO:-knative/serving}" serving "${KNATIVE_REPO_BRANCH}"
-  download_knative "${KNATIVE_EVENTING_REPO:-knative/eventing}" eventing "${KNATIVE_REPO_BRANCH}"
+  download_knative "${KNATIVE_EVENTING_REPO:-knative/eventing}" eventing "ece174166d561df9c4d5d644899d66e66d525523"
 }
 
 # Create test resources and images

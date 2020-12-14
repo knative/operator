@@ -19,6 +19,7 @@ package common
 import (
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -45,6 +46,7 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 			if err := scheme.Scheme.Convert(u, apply, nil); err != nil {
 				return err
 			}
+
 			current := &appsv1.Deployment{}
 			if err := scheme.Scheme.Convert(currentU, current, nil); err != nil {
 				return err
@@ -53,13 +55,20 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 			// Keep the existing number of replicas in the cluster for the deployment
 			apply.Spec.Replicas = current.Spec.Replicas
 
+			// Preserve the env vars in the existing cluster
 			for index := range current.Spec.Template.Spec.Containers {
 				currentContainer := current.Spec.Template.Spec.Containers[index]
-				for j := range apply.Spec.Template.Spec.Containers {
-					applyContainer := &apply.Spec.Template.Spec.Containers[j]
-					if currentContainer.Name == applyContainer.Name {
-						applyContainer.Env = currentContainer.Env
+				found, containerIndex := nameExistsContainers(currentContainer.Name, apply.Spec.Template.Spec.Containers)
+				if found {
+					applyContainer := &apply.Spec.Template.Spec.Containers[containerIndex]
+					mergedEnv := currentContainer.Env
+					for _, env := range applyContainer.Env {
+						if !nameExistsEnvVars(env.Name, mergedEnv) {
+							// Add the new env var into the existing env vars
+							mergedEnv = append(mergedEnv, env)
+						}
 					}
+					applyContainer.Env = mergedEnv
 				}
 			}
 
@@ -72,4 +81,22 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 		}
 		return nil
 	}
+}
+
+func nameExistsEnvVars(name string, envvars []corev1.EnvVar) bool {
+	for _, env := range envvars {
+		if env.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
+func nameExistsContainers(name string, containers []corev1.Container) (bool, int) {
+	for index, container := range containers {
+		if container.Name == name {
+			return true, index
+		}
+	}
+	return false, -1
 }

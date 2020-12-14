@@ -236,7 +236,7 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
       template:
         spec:
           containers:
-            - name: dispatcher
+            - name: dispatcher1
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
@@ -248,7 +248,7 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
                   value: 'test1'
                 - name: K_LOGGING_CONFIG
                   value: 'test2'
-            - name: dispatcher1
+            - name: dispatcher
               image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
               env:
                 - name: SYSTEM_NAMESPACE
@@ -283,6 +283,142 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
                   value: 'test1'
                 - name: K_LOGGING_CONFIG
                   value: 'test2'
+- name: "existing pingsource-mt-adapter has the same number of containers, but with less env vars"
+  input:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: pingsource-mt-adapter
+      namespace: knative-eventing
+    spec:
+      replicas: 0
+      template:
+        spec:
+          containers:
+            - name: dispatcher
+              image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
+              env:
+                - name: SYSTEM_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: K_METRICS_CONFIG
+                  value: ''
+                - name: K_LOGGING_CONFIG
+                  value: 'new-env-var'
+  existing:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: pingsource-mt-adapter
+      namespace: knative-eventing
+    spec:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: dispatcher
+              image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
+              env:
+                - name: SYSTEM_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: K_METRICS_CONFIG
+                  value: 'test1'
+  expected:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: pingsource-mt-adapter
+      namespace: knative-eventing
+    spec:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: dispatcher
+              image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
+              env:
+                - name: SYSTEM_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: K_METRICS_CONFIG
+                  value: 'test1'
+                - name: K_LOGGING_CONFIG
+                  value: 'new-env-var'
+- name: "existing pingsource-mt-adapter has the same number of containers, but with more env vars"
+  input:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: pingsource-mt-adapter
+      namespace: knative-eventing
+    spec:
+      replicas: 0
+      template:
+        spec:
+          containers:
+            - name: dispatcher
+              image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
+              env:
+                - name: SYSTEM_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: K_METRICS_CONFIG
+                  value: ''
+  existing:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: pingsource-mt-adapter
+      namespace: knative-eventing
+    spec:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: dispatcher
+              image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
+              env:
+                - name: SYSTEM_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: K_METRICS_CONFIG
+                  value: 'test1'
+                - name: K_LOGGING_CONFIG
+                  value: 'existing-env-var'
+  expected:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: pingsource-mt-adapter
+      namespace: knative-eventing
+    spec:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: dispatcher
+              image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
+              env:
+                - name: SYSTEM_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: K_METRICS_CONFIG
+                  value: 'test1'
+                - name: K_LOGGING_CONFIG
+                  value: 'existing-env-var'
 `)
 	err := yaml.Unmarshal(testData, &tests)
 	if err != nil {

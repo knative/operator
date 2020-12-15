@@ -108,37 +108,11 @@ EOF
 function knative_setup() {
   create_namespace
   install_previous_operator_release
-  download_knative "${KNATIVE_SERVING_REPO:-knative/serving}" serving "${KNATIVE_REPO_BRANCH}"
   download_knative "${KNATIVE_EVENTING_REPO:-knative/eventing}" eventing "${KNATIVE_REPO_BRANCH}"
 }
 
 # Create test resources and images
 function test_setup() {
-  if (( GENERATE_SERVING_YAML )); then
-    generate_latest_serving_manifest ${KNATIVE_REPO_BRANCH}
-  fi
-  echo ">> Creating test resources (test/config/) in Knative Serving repository"
-  cd ${KNATIVE_DIR}/serving
-  for i in $(ls test/config/*.yaml); do
-    sed s/knative-serving/${TEST_NAMESPACE}/ $i | ko apply ${KO_FLAGS} -f -
-  done || return 1
-  # Disable the chaosduck deployment as in Serving upgrade prow
-  kubectl -n "${TEST_NAMESPACE}" scale deployment "chaosduck" --replicas=0 || fail_test
-
-  echo ">> Uploading test images..."
-  # We only need to build and publish two images among all the test images
-  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/serving "test/test_images/pizzaplanetv1"
-  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/serving "test/test_images/pizzaplanetv2"
-  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/serving "test/test_images/autoscale"
-
-  test_setup_logging
-
-  echo ">> Waiting for Ingress provider to be running..."
-  if [[ -n "${ISTIO_VERSION}" ]]; then
-    wait_until_pods_running istio-system || return 1
-    wait_until_service_has_external_http_address istio-system istio-ingressgateway
-  fi
-
   # Install kail if needed.
   if ! which kail >/dev/null; then
     bash <(curl -sfL https://raw.githubusercontent.com/boz/kail/master/godownloader.sh) -b "$GOPATH/bin"
@@ -156,39 +130,6 @@ function test_setup() {
   cd ${OPERATOR_DIR}
 }
 
-# This function either generate the manifest based on a branch or download the latest manifest for Knative Serving.
-# Parameter: $1 - branch name. If it is empty, download the manifest from nightly build.
-function generate_latest_serving_manifest() {
-  cd ${KNATIVE_DIR}/serving
-  mkdir -p output
-  local branch=$1
-  export YAML_OUTPUT_DIR=${KNATIVE_DIR}/serving/output
-  SERVING_YAML=${YAML_OUTPUT_DIR}/serving.yaml
-  if [[ -n "${branch}" ]]; then
-    git checkout ${branch}
-    COMMIT_ID=$(git rev-parse --verify HEAD)
-    echo ">> The latest commit ID of Knative Serving is ${COMMIT_ID}."
-    # Generate the manifest
-    export YAML_OUTPUT_DIR=${KNATIVE_DIR}/serving/output
-    ./hack/generate-yamls.sh ${KNATIVE_DIR}/serving ${YAML_OUTPUT_DIR}/output.yaml
-  else
-    echo ">> Download the latest nightly build of Knative Serving."
-    # Download the latest manifest
-    wget -O ${SERVING_YAML} https://storage.googleapis.com/knative-nightly/serving/latest/serving.yaml
-  fi
-
-  if [[ -f "${SERVING_YAML}" ]]; then
-    echo ">> Replacing the current manifest in operator with the generated manifest"
-    rm -rf ${OPERATOR_DIR}/cmd/serving-operator/kodata/knative-serving/*
-    cp ${SERVING_YAML} ${OPERATOR_DIR}/cmd/serving-operator/kodata/knative-serving/serving.yaml
-  else
-    echo ">> The serving.yaml was not generated, so keep the current manifest"
-  fi
-
-  # Go back to the directory of operator
-  cd ${OPERATOR_DIR}
-}
-
 # Skip installing istio as an add-on
 initialize $@ --skip-istio-addon
 
@@ -200,22 +141,6 @@ go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
 
 header "Listing all the pods of the previous release"
 wait_until_pods_running ${TEST_NAMESPACE}
-
-header "Running preupgrade tests for Knative Serving"
-# Go to the knative serving repo
-cd ${KNATIVE_DIR}/serving
-go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade \
-  --resolvabledomain="false" "--https" || fail_test
-
-header "Starting prober test for serving"
-# Remove this in case we failed to clean it up in an earlier test.
-rm -f /tmp/prober-signal
-rm -f /tmp/autoscaling-signal
-rm -f /tmp/autoscaling-tbc-signal
-go_test_e2e -tags=probe -timeout=${PROBE_TIMEOUT} ./test/upgrade \
-  --resolvabledomain="false" "--https" &
-PROBER_PID_SERVING=$!
-echo "Prober PID Serving is ${PROBER_PID_SERVING}"
 
 header "Running preupgrade tests for Knative Eventing"
 # Go to the knative eventing repo
@@ -246,11 +171,6 @@ go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade \
 wait_until_pods_running ${TEST_NAMESPACE}
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
-header "Running postupgrade tests for Knative Serving"
-# Run the postupgrade tests under serving
-cd ${KNATIVE_DIR}/serving
-go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
-
 header "Running postupgrade tests for Knative Eventing"
 cd ${KNATIVE_DIR}/eventing
 go_test_e2e -tags=postupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
@@ -264,20 +184,9 @@ cd ${OPERATOR_DIR}
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/downgrade \
   --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
 
-header "Running postdowngrade tests for Knative Serving"
-cd ${KNATIVE_DIR}/serving
-go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \
-  --resolvabledomain="false" || fail_test
-
 header "Running postdowngrade tests for Knative Eventing"
 cd ${KNATIVE_DIR}/eventing
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
-
-echo "done" > /tmp/prober-signal
-echo "done" > /tmp/autoscaling-signal
-echo "done" > /tmp/autoscaling-tbc-signal
-header "Waiting for prober test for Knative Serving"
-wait ${PROBER_PID_SERVING} || fail_test "Prober failed"
 
 echo "done" > ${EVENTING_PROBER_FILE}
 header "Waiting for prober test for Knative Eventing"

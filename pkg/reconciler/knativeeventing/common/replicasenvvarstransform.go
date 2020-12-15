@@ -68,30 +68,24 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 				found, containerIndex := nameExistsContainers(currentContainer.Name, apply.Spec.Template.Spec.Containers)
 				if found {
 					applyContainer := &apply.Spec.Template.Spec.Containers[containerIndex]
-					mergedEnv := currentContainer.Env
-					for _, env := range applyContainer.Env {
-						found, envIndex := nameExistsEnvVars(env.Name, mergedEnv)
-						if !found {
-							// Add the new env var into the existing env vars, if it is not available in the existing
-							// cluster.
+					var mergedEnv []corev1.EnvVar
+					actualKeys := sets.NewString()
+					for _, env := range currentContainer.Env {
+						if envVarNames.Has(env.Name) {
+							// Keep all the env vars in the preserved list
 							mergedEnv = append(mergedEnv, env)
-						} else if !envVarNames.Has(env.Name) {
-							// Set the env var value, if it is available in the existing
-							// cluster, but it is not in the preserved list of the env vars.
-							mergedEnv[envIndex] = env
+							actualKeys.Insert(env.Name)
 						}
 					}
 
-					// Remove the env var, which is not in the preserved list and not in the applied manifests
-					cleanedMergedEnv := mergedEnv
-					for _, env := range mergedEnv {
-						found, _ := nameExistsEnvVars(env.Name, applyContainer.Env)
-						if !found && !envVarNames.Has(env.Name) {
-							// Remove the env var from the cleaned merged env
-							cleanedMergedEnv = removeEnvVar(env.Name, cleanedMergedEnv)
+					for _, env := range applyContainer.Env {
+						if !actualKeys.Has(env.Name) {
+							// Apply all keys that are neither preserved, nor in the actual container.
+							mergedEnv = append(mergedEnv, env)
 						}
 					}
-					applyContainer.Env = cleanedMergedEnv
+
+					applyContainer.Env = mergedEnv
 				}
 			}
 
@@ -104,25 +98,6 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 		}
 		return nil
 	}
-}
-
-func removeEnvVar(name string, envvars []corev1.EnvVar) []corev1.EnvVar {
-	newEnvVars := make([]corev1.EnvVar, 0)
-	for _, env := range envvars {
-		if env.Name != name {
-			newEnvVars = append(newEnvVars, env)
-		}
-	}
-	return newEnvVars
-}
-
-func nameExistsEnvVars(name string, envvars []corev1.EnvVar) (bool, int) {
-	for index, env := range envvars {
-		if env.Name == name {
-			return true, index
-		}
-	}
-	return false, -1
 }
 
 func nameExistsContainers(name string, containers []corev1.Container) (bool, int) {

@@ -425,6 +425,78 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
                   value: 'test1'
                 - name: K_LOGGING_CONFIG
                   value: 'existing-env-var'
+- name: "existing pingsource-mt-adapter needs to delete env var"
+  input:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: pingsource-mt-adapter
+      namespace: knative-eventing
+    spec:
+      replicas: 0
+      template:
+        spec:
+          containers:
+            - name: dispatcher
+              image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
+              env:
+                - name: SYSTEM_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: K_METRICS_CONFIG
+                  value: ''
+                - name: K_LOGGING_CONFIG
+                  value: ''
+  existing:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: pingsource-mt-adapter
+      namespace: knative-eventing
+    spec:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: dispatcher
+              image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
+              env:
+                - name: SYSTEM_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: K_METRICS_CONFIG
+                  value: 'old'
+                - name: K_LOGGING_CONFIG
+                  value: 'old'
+                - name: K_LOGGING_CONFIG_1
+                  value: 'old'
+  expected:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: pingsource-mt-adapter
+      namespace: knative-eventing
+    spec:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: dispatcher
+              image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:d6b4bd0d75a67c486f36eb34534178154db81b2ee85c0b18d7ca5269b36df037
+              env:
+                - name: SYSTEM_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: K_METRICS_CONFIG
+                  value: 'old'
+                - name: K_LOGGING_CONFIG
+                  value: 'old'
 `)
 	err := yaml.Unmarshal(testData, &tests)
 	if err != nil {

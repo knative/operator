@@ -23,13 +23,14 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/pkg/system"
 )
 
 var (
-	envVarNames = []string{system.NamespaceEnvKey, "K_METRICS_CONFIG", "K_LOGGING_CONFIG", "K_LEADER_ELECTION_CONFIG",
-		"K_NO_SHUTDOWN_AFTER", "K_SINK_TIMEOUT"}
+	envVarNames = sets.NewString(system.NamespaceEnvKey, "K_METRICS_CONFIG", "K_LOGGING_CONFIG",
+		"K_LEADER_ELECTION_CONFIG", "K_NO_SHUTDOWN_AFTER", "K_SINK_TIMEOUT")
 )
 
 type unstructuredGetter interface {
@@ -74,13 +75,23 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 							// Add the new env var into the existing env vars, if it is not available in the existing
 							// cluster.
 							mergedEnv = append(mergedEnv, env)
-						} else if !nameExistsEnvVarNames(env.Name, envVarNames) {
+						} else if !envVarNames.Has(env.Name) {
 							// Set the env var value, if it is available in the existing
 							// cluster, but it is not in the preserved list of the env vars.
 							mergedEnv[envIndex] = env
 						}
 					}
-					applyContainer.Env = mergedEnv
+
+					// Remove the env var, which is not in the preserved list and not in the applied manifests
+					cleanedMergedEnv := mergedEnv
+					for _, env := range mergedEnv {
+						found, _ := nameExistsEnvVars(env.Name, applyContainer.Env)
+						if !found && !envVarNames.Has(env.Name) {
+							// Remove the env var from the cleaned merged env
+							cleanedMergedEnv = removeEnvVar(env.Name, cleanedMergedEnv)
+						}
+					}
+					applyContainer.Env = cleanedMergedEnv
 				}
 			}
 
@@ -95,6 +106,16 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 	}
 }
 
+func removeEnvVar(name string, envvars []corev1.EnvVar) []corev1.EnvVar {
+	newEnvVars := make([]corev1.EnvVar, 0)
+	for _, env := range envvars {
+		if env.Name != name {
+			newEnvVars = append(newEnvVars, env)
+		}
+	}
+	return newEnvVars
+}
+
 func nameExistsEnvVars(name string, envvars []corev1.EnvVar) (bool, int) {
 	for index, env := range envvars {
 		if env.Name == name {
@@ -102,15 +123,6 @@ func nameExistsEnvVars(name string, envvars []corev1.EnvVar) (bool, int) {
 		}
 	}
 	return false, -1
-}
-
-func nameExistsEnvVarNames(name string, envVarNames []string) bool {
-	for _, envVarName := range envVarNames {
-		if envVarName == name {
-			return true
-		}
-	}
-	return false
 }
 
 func nameExistsContainers(name string, containers []corev1.Container) (bool, int) {

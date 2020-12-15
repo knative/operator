@@ -52,14 +52,16 @@ function install_previous_operator_release() {
 
 function install_previous_knative() {
   header "Create the custom resources for Knative of the previous version"
-  create_knative_serving ${PREVIOUS_SERVING_RELEASE_VERSION}
+  create_knative_serving ${PREVIOUS_SERVING_RELEASE_VERSION} 2
   create_knative_eventing ${PREVIOUS_EVENTING_RELEASE_VERSION}
-  wait_until_pods_running ${TEST_NAMESPACE}
-  wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 }
 
 function create_knative_serving() {
   version=${1}
+  minReplicas=${2}
+  if [ -z "${minReplicas}" ] ; then
+    minReplicas=1
+  fi
   echo ">> Creating the custom resource of Knative Serving:"
   cat <<EOF | kubectl apply -f -
 apiVersion: operator.knative.dev/v1alpha1
@@ -69,6 +71,8 @@ metadata:
   namespace: ${TEST_NAMESPACE}
 spec:
   version: "${version}"
+  high-availability:
+    replicas: ${minReplicas}
 EOF
 }
 
@@ -87,6 +91,10 @@ EOF
 }
 
 function create_latest_custom_resource() {
+  minReplicas=${1}
+  if [ -z "${minReplicas}" ] ; then
+    minReplicas=1
+  fi
   echo ">> Creating the custom resource of Knative Serving:"
   cat <<EOF | kubectl apply -f -
 apiVersion: operator.knative.dev/v1alpha1
@@ -94,6 +102,9 @@ kind: KnativeServing
 metadata:
   name: knative-serving
   namespace: ${TEST_NAMESPACE}
+spec:
+  high-availability:
+    replicas: ${minReplicas}
 EOF
   echo ">> Creating the custom resource of Knative Eventing:"
   cat <<-EOF | kubectl apply -f -
@@ -200,6 +211,7 @@ go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
 
 header "Listing all the pods of the previous release"
 wait_until_pods_running ${TEST_NAMESPACE}
+wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running preupgrade tests for Knative Serving"
 # Go to the knative serving repo
@@ -231,7 +243,7 @@ echo "Prober PID Eventing is ${PROBER_PID_EVENTING}"
 
 wait_for_file ${EVENTING_READY_FILE} || fail_test
 
-create_latest_custom_resource
+create_latest_custom_resource 2
 
 # If we got this far, the operator installed Knative of the latest source code.
 header "Running tests for Knative Operator"
@@ -243,6 +255,8 @@ failed=0
 cd ${OPERATOR_DIR}
 go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade \
   --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
+
+header "Listing all the pods of the current release"
 wait_until_pods_running ${TEST_NAMESPACE}
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
@@ -256,13 +270,15 @@ cd ${KNATIVE_DIR}/eventing
 go_test_e2e -tags=postupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
 
 install_previous_knative
-wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running postdowngrade tests for Knative Operator"
 cd ${OPERATOR_DIR}
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/downgrade \
   --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
+
+header "Listing all the pods of the previous release"
+wait_until_pods_running ${TEST_NAMESPACE}
+wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running postdowngrade tests for Knative Serving"
 cd ${KNATIVE_DIR}/serving
@@ -273,15 +289,15 @@ header "Running postdowngrade tests for Knative Eventing"
 cd ${KNATIVE_DIR}/eventing
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
 
+echo "done" > ${EVENTING_PROBER_FILE}
+header "Waiting for prober test for Knative Eventing"
+wait ${PROBER_PID_EVENTING} || fail_test "Prober failed"
+
 echo "done" > /tmp/prober-signal
 echo "done" > /tmp/autoscaling-signal
 echo "done" > /tmp/autoscaling-tbc-signal
 header "Waiting for prober test for Knative Serving"
 wait ${PROBER_PID_SERVING} || fail_test "Prober failed"
-
-echo "done" > ${EVENTING_PROBER_FILE}
-header "Waiting for prober test for Knative Eventing"
-wait ${PROBER_PID_EVENTING} || fail_test "Prober failed"
 
 # Require that tests succeeded.
 (( failed )) && fail_test

@@ -35,82 +35,23 @@ export GO111MODULE=auto
 
 source $(dirname $0)/e2e-common.sh
 
+readonly EVENTING_READY_FILE="/tmp/prober-ready-eventing"
+readonly EVENTING_PROBER_FILE="/tmp/prober-signal-eventing"
+
 # TODO: remove when components can coexist in same namespace
 export TEST_EVENTING_NAMESPACE=knative-eventing
-
-function install_previous_operator_release() {
-  install_istio || fail_test "Istio installation failed"
-  install_operator
-  install_previous_knative
-}
-
-function install_previous_knative() {
-  header "Create the custom resources for Knative of the previous version"
-  create_knative_serving ${PREVIOUS_SERVING_RELEASE_VERSION}
-  create_knative_eventing ${PREVIOUS_EVENTING_RELEASE_VERSION}
-}
-
-function create_knative_serving() {
-  version=${1}
-  echo ">> Creating the custom resource of Knative Serving:"
-  cat <<EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: ${TEST_NAMESPACE}
-spec:
-  version: "${version}"
-EOF
-}
-
-function create_knative_eventing() {
-  version=${1}
-  echo ">> Creating the custom resource of Knative Eventing:"
-  cat <<-EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeEventing
-metadata:
-  name: knative-eventing
-  namespace: ${TEST_EVENTING_NAMESPACE}
-spec:
-  version: "${version}"
-EOF
-}
-
-function create_latest_custom_resource() {
-  echo ">> Creating the custom resource of Knative Serving:"
-  cat <<EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: ${TEST_NAMESPACE}
-EOF
-  echo ">> Creating the custom resource of Knative Eventing:"
-  cat <<-EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeEventing
-metadata:
-  name: knative-eventing
-  namespace: ${TEST_EVENTING_NAMESPACE}
-EOF
-}
+export E2E_UPGRADE_TESTS_SERVING_USE=false
+# FIXME(ksuszyns): remove when knative/operator#297 is fixed
+export E2E_UPGRADE_TESTS_SERVING_SCALETOZERO=false
 
 function knative_setup() {
   create_namespace
   install_previous_operator_release
+  download_knative "${KNATIVE_EVENTING_REPO:-knative/eventing}" eventing "${KNATIVE_REPO_BRANCH}"
 }
 
 # Create test resources and images
 function test_setup() {
-  test_setup_logging
-  echo ">> Waiting for Ingress provider to be running..."
-  if [[ -n "${ISTIO_VERSION}" ]]; then
-    wait_until_pods_running istio-system || return 1
-    wait_until_service_has_external_http_address istio-system istio-ingressgateway
-  fi
-
   # Install kail if needed.
   if ! which kail >/dev/null; then
     bash <(curl -sfL https://raw.githubusercontent.com/boz/kail/master/godownloader.sh) -b "$GOPATH/bin"
@@ -121,6 +62,11 @@ function test_setup() {
   local kail_pid=$!
   # Clean up kail so it doesn't interfere with job shutting down
   add_trap "kill $kail_pid || true" EXIT
+
+  echo ">> Publish test images for eventing"
+  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/eventing "test/test_images"
+
+  cd ${OPERATOR_DIR}
 }
 
 # Skip installing istio as an add-on
@@ -130,20 +76,33 @@ TIMEOUT=10m
 PROBE_TIMEOUT=20m
 failed=0
 
-header "Running preupgrade tests for Knative Operator"
-go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test=1
-
 header "Listing all the pods of the previous release"
 wait_until_pods_running ${TEST_NAMESPACE}
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
+header "Running preupgrade tests for Knative Eventing"
+# Go to the knative eventing repo
+cd ${KNATIVE_DIR}/eventing
+go_test_e2e -tags=preupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test=1
+
+header "Starting prober test for Knative Eventing"
+# Remove this in case we failed to clean it up in an earlier test.
+rm -f ${EVENTING_READY_FILE}
+go_test_e2e -tags=probe -timeout="${PROBE_TIMEOUT}" ./test/upgrade --pipefile="${EVENTING_PROBER_FILE}" --readyfile="${EVENTING_READY_FILE}" &
+PROBER_PID_EVENTING=$!
+echo "Prober PID Eventing is ${PROBER_PID_EVENTING}"
+
+wait_for_file ${EVENTING_READY_FILE} || fail_test
+
 create_latest_custom_resource
 
+# If we got this far, the operator installed Knative of the latest source code.
 header "Running tests for Knative Operator"
 
 # Run the postupgrade tests under operator
 # Operator tests here will make sure that all the Knative deployments reach the desired states and operator CR is
 # in ready state.
+cd ${OPERATOR_DIR}
 go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade \
   --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
 
@@ -151,15 +110,28 @@ header "Listing all the pods of the current release"
 wait_until_pods_running ${TEST_NAMESPACE}
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
+header "Running postupgrade tests for Knative Eventing"
+cd ${KNATIVE_DIR}/eventing
+go_test_e2e -tags=postupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
+
 install_previous_knative
 
 header "Running postdowngrade tests for Knative Operator"
+cd ${OPERATOR_DIR}
 go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/downgrade \
   --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
 
 header "Listing all the pods of the previous release"
 wait_until_pods_running ${TEST_NAMESPACE}
 wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
+
+header "Running postdowngrade tests for Knative Eventing"
+cd ${KNATIVE_DIR}/eventing
+go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
+
+echo "done" > ${EVENTING_PROBER_FILE}
+header "Waiting for prober test for Knative Eventing"
+wait ${PROBER_PID_EVENTING} || fail_test "Prober failed"
 
 # Require that tests succeeded.
 (( failed )) && fail_test

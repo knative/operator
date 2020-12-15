@@ -65,7 +65,42 @@ metadata:
   name: knative-serving
   namespace: ${TEST_NAMESPACE}
 spec:
+  config:
+    logging:
+      zap-logger-config: |
+        {
+          "level": "debug",
+          "development": false,
+          "outputPaths": ["stdout"],
+          "errorOutputPaths": ["stderr"],
+          "encoding": "json",
+          "encoderConfig": {
+            "timeKey": "ts",
+            "levelKey": "level",
+            "nameKey": "logger",
+            "callerKey": "caller",
+            "messageKey": "msg",
+            "stacktraceKey": "stacktrace",
+            "lineEnding": "",
+            "levelEncoder": "",
+            "timeEncoder": "iso8601",
+            "durationEncoder": "",
+            "callerEncoder": ""
+          }
+        }
+      loglevel.controller: "debug"
+      loglevel.autoscaler: "debug"
+      loglevel.queueproxy: "debug"
+      loglevel.webhook: "debug"
+      loglevel.activator: "debug"
+      loglevel.hpaautoscaler: "debug"
+      loglevel.domainmapping: "debug"
+      loglevel.certcontroller: "debug"
+      loglevel.istiocontroller: "debug"
+      loglevel.nscontroller: "debug"
   version: "${version}"
+  high-availability:
+    replicas: 2
 EOF
 }
 
@@ -91,6 +126,42 @@ kind: KnativeServing
 metadata:
   name: knative-serving
   namespace: ${TEST_NAMESPACE}
+spec:
+  config:
+    logging:
+      zap-logger-config: |
+        {
+          "level": "debug",
+          "development": false,
+          "outputPaths": ["stdout"],
+          "errorOutputPaths": ["stderr"],
+          "encoding": "json",
+          "encoderConfig": {
+            "timeKey": "ts",
+            "levelKey": "level",
+            "nameKey": "logger",
+            "callerKey": "caller",
+            "messageKey": "msg",
+            "stacktraceKey": "stacktrace",
+            "lineEnding": "",
+            "levelEncoder": "",
+            "timeEncoder": "iso8601",
+            "durationEncoder": "",
+            "callerEncoder": ""
+          }
+        }
+      loglevel.controller: "debug"
+      loglevel.autoscaler: "debug"
+      loglevel.queueproxy: "debug"
+      loglevel.webhook: "debug"
+      loglevel.activator: "debug"
+      loglevel.hpaautoscaler: "debug"
+      loglevel.domainmapping: "debug"
+      loglevel.certcontroller: "debug"
+      loglevel.istiocontroller: "debug"
+      loglevel.nscontroller: "debug"
+  high-availability:
+    replicas: 2
 EOF
   echo ">> Creating the custom resource of Knative Eventing:"
   cat <<-EOF | kubectl apply -f -
@@ -105,7 +176,7 @@ EOF
 function knative_setup() {
   create_namespace
   install_previous_operator_release
-  download_knative "${KNATIVE_SERVING_REPO:-knative/serving}" serving "${KNATIVE_REPO_BRANCH}"
+  download_knative "${KNATIVE_SERVING_REPO:-knative/serving}" serving "$KNATIVE_REPO_BRANCH"
 }
 
 # Create test resources and images
@@ -190,6 +261,7 @@ go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
 
 header "Listing all the pods of the previous release"
 wait_until_pods_running ${TEST_NAMESPACE}
+wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running preupgrade tests for Knative Serving"
 # Go to the knative serving repo

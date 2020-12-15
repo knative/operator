@@ -141,6 +141,7 @@ go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
 
 header "Listing all the pods of the previous release"
 wait_until_pods_running ${TEST_NAMESPACE}
+wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running preupgrade tests for Knative Eventing"
 # Go to the knative eventing repo

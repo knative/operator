@@ -96,7 +96,6 @@ function download_knative() {
   cd "${component_name}"
   local branch=$3
   if [ -n "${branch}" ] ; then
-    git fetch origin ${branch}:${branch}
     git checkout ${branch}
   fi
   cd ${OPERATOR_DIR}

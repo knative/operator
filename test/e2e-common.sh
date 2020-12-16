@@ -201,3 +201,62 @@ function wait_for_file() {
   done
   return 0
 }
+
+function install_previous_operator_release() {
+  install_istio || fail_test "Istio installation failed"
+  install_operator
+  install_previous_knative
+}
+
+function install_previous_knative() {
+  header "Create the custom resources for Knative of the previous version"
+  create_knative_serving ${PREVIOUS_SERVING_RELEASE_VERSION}
+  create_knative_eventing ${PREVIOUS_EVENTING_RELEASE_VERSION}
+}
+
+function create_knative_serving() {
+  version=${1}
+  echo ">> Creating the custom resource of Knative Serving:"
+  cat <<EOF | kubectl apply -f -
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeServing
+metadata:
+  name: knative-serving
+  namespace: ${TEST_NAMESPACE}
+spec:
+  version: "${version}"
+EOF
+}
+
+function create_knative_eventing() {
+  version=${1}
+  echo ">> Creating the custom resource of Knative Eventing:"
+  cat <<-EOF | kubectl apply -f -
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+  namespace: ${TEST_EVENTING_NAMESPACE}
+spec:
+  version: "${version}"
+EOF
+}
+
+function create_latest_custom_resource() {
+  echo ">> Creating the custom resource of Knative Serving:"
+  cat <<EOF | kubectl apply -f -
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeServing
+metadata:
+  name: knative-serving
+  namespace: ${TEST_NAMESPACE}
+EOF
+  echo ">> Creating the custom resource of Knative Eventing:"
+  cat <<-EOF | kubectl apply -f -
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+  namespace: ${TEST_EVENTING_NAMESPACE}
+EOF
+}

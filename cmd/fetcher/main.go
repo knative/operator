@@ -32,15 +32,10 @@ import (
 	"knative.dev/operator/pkg/packages"
 )
 
-var interested = map[string]struct{}{
-	"knative/serving":  {},
-	"knative/eventing": {},
-}
-
 func main() {
 	cfg, err := packages.ReadConfig("cmd/fetcher/kodata/config.yaml")
 	if err != nil {
-		log.Printf("Unable to read config: %v", err)
+		log.Print("Unable to read config: ", err)
 		os.Exit(2)
 	}
 

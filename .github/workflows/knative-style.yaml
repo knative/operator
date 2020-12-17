@@ -19,7 +19,7 @@ name: Code Style
 
 on:
   pull_request:
-    branches: [ 'master', 'release-*' ]
+    branches: [ 'main', 'master', 'release-*' ]
 
 jobs:
 
@@ -100,7 +100,7 @@ jobs:
 
       - name: Install Tools
         env:
-          WOKE_VERSION: v0.1.15
+          WOKE_VERSION: v0.4.1
         run: |
           TEMP_PATH="$(mktemp -d)"
           cd $TEMP_PATH

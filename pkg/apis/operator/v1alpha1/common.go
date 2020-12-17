@@ -61,6 +61,8 @@ type KComponentSpec interface {
 	GetVersion() string
 	// GetManifests gets the list of manifests, which should ultimately be installed
 	GetManifests() []Manifest
+	// GetAdditionalManifests gets the list of additional manifests, which should be installed
+	GetAdditionalManifests() []Manifest
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -128,6 +130,10 @@ type CommonSpec struct {
 	// A means to specify the manifests to install
 	// +optional
 	Manifests []Manifest `json:"manifests,omitempty"`
+
+	// A means to specify the additional manifests to install
+	// +optional
+	AdditionalManifests []Manifest `json:"additionalManifests,omitempty"`
 }
 
 // GetConfig implements KComponentSpec.
@@ -153,6 +159,11 @@ func (c *CommonSpec) GetVersion() string {
 // GetManifests implements KComponentSpec.
 func (c *CommonSpec) GetManifests() []Manifest {
 	return c.Manifests
+}
+
+// GetAdditionalManifests implements KComponentSpec.
+func (c *CommonSpec) GetAdditionalManifests() []Manifest {
+	return c.AdditionalManifests
 }
 
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first

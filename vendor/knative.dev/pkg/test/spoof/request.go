@@ -14,10 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package handlers
+package spoof
 
-import "knative.dev/pkg/network"
+import "net/http"
 
-// Error sets up a handler suitable for use with the ErrorHandler field on
-// httputil's reverse proxy, which logs /proc/net/sockstat data.
-var Error = network.ErrorHandler
+// RequestOption enables configuration of requests
+// when polling for endpoint states.
+type RequestOption func(*http.Request)
+
+// WithHeader will add the provided headers to the request.
+func WithHeader(header http.Header) RequestOption {
+	return func(r *http.Request) {
+		if r.Header == nil {
+			r.Header = header
+			return
+		}
+		for key, values := range header {
+			for _, value := range values {
+				r.Header.Add(key, value)
+			}
+		}
+	}
+}

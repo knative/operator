@@ -135,7 +135,7 @@ func (is *KnativeServingStatus) GetManifests() []string {
 	return is.Manifests
 }
 
-// SetVersion sets the url links of the manifests.
+// SetManifests sets the url links of the manifests.
 func (is *KnativeServingStatus) SetManifests(manifests []string) {
 	is.Manifests = manifests
 }

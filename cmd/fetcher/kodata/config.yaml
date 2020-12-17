@@ -1,0 +1,57 @@
+knative-serving:
+  primary:
+    github:
+      repo: "knative/serving"
+    include:
+      - ".*.yaml"
+    exclude:
+      - "monitoring.*"
+      - "serving.yaml"
+      - "serving-storage-version-migration.yaml"
+      - ".*domain.*"
+      - "release.yaml"
+      - ".*-nscert.yaml"
+  additional:
+  - github:
+      repo: "knative-sandbox/net-istio"
+    exclude:
+    - "release.yaml"
+knative-eventing:
+  primary:
+    github:
+      repo: "knative/eventing"
+    include:
+      - ".*.yaml"
+    exclude:
+      - ".*-pre-install-jobs.yaml"
+      - "eventing.yaml"
+    # Eventing packaging has evolved in non-standard ways over the last few releases.
+    overrides:
+      v0.16.0:
+        include:
+        - "eventing.yaml"
+        - "eventing-pre-install-jobs.yaml"
+        - "eventing-post-install-jobs.yaml"
+      v0.16.1:
+        include:
+        - "eventing.yaml"
+        - "eventing-pre-install-jobs.yaml"
+        - "eventing-post-install-jobs.yaml"
+        rename:
+          "pre-install-to-v0.16.0.yaml": "eventing-pre-install-jobs.yaml"
+          "post-install-to-v0.16.0.yaml": "eventing-post-install-jobs.yaml"
+      v0.16:
+        include:
+          - ".*.yaml"
+        exclude:
+          - "eventing.yaml"
+          - "deprecated.*"
+        rename:
+          "pre-install-to-v0.16.0.yaml": "eventing-pre-install-jobs.yaml"
+          "post-install-to-v0.16.0.yaml": "eventing-post-install-jobs.yaml"
+      v0.18:
+        include:
+          - ".*.yaml"
+        exclude:
+          # v0.18 has a pre-install job
+          - "eventing.yaml"

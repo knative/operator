@@ -309,7 +309,7 @@ spec:
       - name: networking-istio
         # This is the Go import path for the binary that is containerized
         # and substituted here.
-        image: gcr.io/knative-releases/knative.dev/net-istio/cmd/controller@sha256:6da903d755509b5d9618491177ff5efc7a39e998d33c1383db461bc99a5e4392
+        image: gcr.io/knative-releases/knative.dev/net-istio/cmd/controller@sha256:d641b71dfc38afcbd30121b57f11cb3c489413b93166ae77d724da1b2a5f5759
         resources:
           requests:
             cpu: 30m
@@ -382,7 +382,7 @@ spec:
       - name: webhook
         # This is the Go import path for the binary that is containerized
         # and substituted here.
-        image: gcr.io/knative-releases/knative.dev/net-istio/cmd/webhook@sha256:3e9eacff55f07aacfd46ce28c472ee8c8999c284b3347d3c46eeb67347b2ea67
+        image: gcr.io/knative-releases/knative.dev/net-istio/cmd/webhook@sha256:23df9385de0f11ae3bfcdf03ed5e9935342a5433990ef2e515df5b418d978468
         resources:
           requests:
             cpu: 20m

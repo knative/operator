@@ -269,7 +269,7 @@ func TestCollectReleaseAssets(t *testing.T) {
 		},
 	}
 	allReleases := map[string][]Release{
-		"knative/test": []Release{
+		"knative/test": {
 			{
 				TagName: "v0.1.0",
 				Created: time.Unix(1000, 0),
@@ -296,7 +296,7 @@ func TestCollectReleaseAssets(t *testing.T) {
 				},
 			},
 		},
-		"knative/dep": []Release{
+		"knative/dep": {
 			{
 				TagName: "v0.1.0",
 				Created: time.Unix(1010, 0),

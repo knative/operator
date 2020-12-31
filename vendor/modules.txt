@@ -774,11 +774,11 @@ k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20201217015204-c3efd692dc36
+# knative.dev/caching v0.0.0-20201231060230-8415abddade7
 ## explicit
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.19.1-0.20201217221202-9643baffd747
+# knative.dev/eventing v0.19.1-0.20201231084129-953478d67e80
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck/v1
@@ -786,7 +786,7 @@ knative.dev/eventing/pkg/apis/eventing
 # knative.dev/hack v0.0.0-20201214230143-4ed1ecb8db24
 ## explicit
 knative.dev/hack
-# knative.dev/pkg v0.0.0-20201218185703-e41409af6cff
+# knative.dev/pkg v0.0.0-20201231084629-fb3dc711206a
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -801,6 +801,7 @@ knative.dev/pkg/codegen/cmd/injection-gen
 knative.dev/pkg/codegen/cmd/injection-gen/args
 knative.dev/pkg/codegen/cmd/injection-gen/generators
 knative.dev/pkg/configmap
+knative.dev/pkg/configmap/informer
 knative.dev/pkg/controller
 knative.dev/pkg/hack
 knative.dev/pkg/hash

@@ -40,7 +40,12 @@ func main() {
 	}
 
 	ctx := context.Background()
-	ghClient := ghclient.NewClient(getClient(ctx))
+	client := getClient(ctx)
+	if client == nil {
+		log.Print("GITHUB_TOKEN not set, skipping release fetch from GitHub")
+		os.Exit(0)
+	}
+	ghClient := ghclient.NewClient(client)
 	repos := make(map[string][]packages.Release, len(cfg))
 
 	for _, v := range cfg {
@@ -63,7 +68,7 @@ func main() {
 
 		for _, release := range packages.LastN(4, repos[v.Primary.String()]) {
 			if err := packages.HandleRelease(ctx, http.DefaultClient, *v, release, repos); err != nil {
-				log.Printf("Unable to fetch %s, %v", release, err)
+				log.Printf("Unable to fetch %s: %v", release, err)
 			}
 			log.Printf("Wrote %s ==> %s", v.String(), release.String())
 		}
@@ -71,6 +76,9 @@ func main() {
 }
 
 func getClient(ctx context.Context) *http.Client {
+	if os.Getenv("GITHUB_TOKEN") == "" {
+		return nil
+	}
 	staticToken := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")})
 	return oauth2.NewClient(ctx, staticToken)
 }

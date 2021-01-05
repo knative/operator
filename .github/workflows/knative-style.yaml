@@ -148,6 +148,7 @@ jobs:
                 -reporter="github-pr-check" \
                 -filter-mode="added" \
                 -fail-on-error="true" \
+                -exclude="operator/kodata/*"
                 -level="error"
 
           echo '::endgroup::'
@@ -164,7 +165,7 @@ jobs:
           echo '::group:: Flagging trailing whitespace with reviewdog 🐶 ...'
           # Don't fail because of grep
           set +o pipefail
-          find . -type f -not -path './vendor/*' -not -path './third_party/*' -not -path './.git/*' |
+          find . -type f -not -path './vendor/*' -not -path './third_party/*' -not -path './.git/*' -not -path 'operator/kodata/*' |
           xargs grep -nE " +$" |
           reviewdog -efm="%f:%l:%m" \
                 -name="trailing whitespace" \

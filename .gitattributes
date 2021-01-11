@@ -2,9 +2,16 @@
 # Linguist-specific attributes are documented at
 # https://github.com/github/linguist.
 
+# (Operator-specific) vendored release files
+
+/cmd/operator/kodata/** linguist-generated
+
+# General-purpose annotations of generated/vendored code:
+
 **/zz_generated.*.go linguist-generated=true
 /pkg/client/** linguist-generated=true
-
+/third_party/** linguist-generated
+/vendor/** linguist-vendored
 
 # coverage-excluded is an attribute used to explicitly exclude a path from being included in code
 # coverage. If a path is marked as linguist-generated already, it will be implicitly excluded and

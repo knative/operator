@@ -65,28 +65,28 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 			// Preserve the env vars in the existing cluster
 			for index := range current.Spec.Template.Spec.Containers {
 				currentContainer := current.Spec.Template.Spec.Containers[index]
-				found, containerIndex := nameExistsContainers(currentContainer.Name, apply.Spec.Template.Spec.Containers)
-				if found {
-					applyContainer := &apply.Spec.Template.Spec.Containers[containerIndex]
-					var mergedEnv []corev1.EnvVar
-					actualKeys := sets.NewString()
-					for _, env := range currentContainer.Env {
-						if envVarNames.Has(env.Name) {
-							// Keep all the env vars in the preserved list
-							mergedEnv = append(mergedEnv, env)
-							actualKeys.Insert(env.Name)
-						}
-					}
-
-					for _, env := range applyContainer.Env {
-						if !actualKeys.Has(env.Name) {
-							// Apply all keys that are neither preserved, nor in the actual container.
-							mergedEnv = append(mergedEnv, env)
-						}
-					}
-
-					applyContainer.Env = mergedEnv
+				applyContainer := findContainer(currentContainer.Name, apply.Spec.Template.Spec.Containers)
+				if applyContainer == nil {
+					continue
 				}
+				var mergedEnv []corev1.EnvVar
+				actualKeys := sets.NewString()
+				for _, env := range currentContainer.Env {
+					if envVarNames.Has(env.Name) {
+						// Keep all the env vars in the preserved list
+						mergedEnv = append(mergedEnv, env)
+						actualKeys.Insert(env.Name)
+					}
+				}
+
+				for _, env := range applyContainer.Env {
+					if !actualKeys.Has(env.Name) {
+						// Apply all keys that are neither preserved, nor in the actual container.
+						mergedEnv = append(mergedEnv, env)
+					}
+				}
+
+				applyContainer.Env = mergedEnv
 			}
 
 			if err := scheme.Scheme.Convert(apply, u, nil); err != nil {
@@ -100,11 +100,11 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 	}
 }
 
-func nameExistsContainers(name string, containers []corev1.Container) (bool, int) {
+func findContainer(name string, containers []corev1.Container) *corev1.Container {
 	for index, container := range containers {
 		if container.Name == name {
-			return true, index
+			return &containers[index]
 		}
 	}
-	return false, -1
+	return nil
 }

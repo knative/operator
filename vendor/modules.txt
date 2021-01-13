@@ -778,15 +778,15 @@ k8s.io/utils/trace
 ## explicit
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.19.1-0.20210108100836-8a8f2acaf212
+# knative.dev/eventing v0.20.1-0.20210113135131-21d91e4b1039
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck/v1
 knative.dev/eventing/pkg/apis/eventing
-# knative.dev/hack v0.0.0-20201214230143-4ed1ecb8db24
+# knative.dev/hack v0.0.0-20210112093330-d946d2557383
 ## explicit
 knative.dev/hack
-# knative.dev/pkg v0.0.0-20210107022335-51c72e24c179
+# knative.dev/pkg v0.0.0-20210112143930-acbf2af596cf
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck

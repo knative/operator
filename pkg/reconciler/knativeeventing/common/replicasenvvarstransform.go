@@ -19,10 +19,18 @@ package common
 import (
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/pkg/system"
+)
+
+var (
+	envVarNames = sets.NewString(system.NamespaceEnvKey, "K_METRICS_CONFIG", "K_LOGGING_CONFIG",
+		"K_LEADER_ELECTION_CONFIG", "K_NO_SHUTDOWN_AFTER", "K_SINK_TIMEOUT")
 )
 
 type unstructuredGetter interface {
@@ -45,6 +53,7 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 			if err := scheme.Scheme.Convert(u, apply, nil); err != nil {
 				return err
 			}
+
 			current := &appsv1.Deployment{}
 			if err := scheme.Scheme.Convert(currentU, current, nil); err != nil {
 				return err
@@ -53,14 +62,31 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 			// Keep the existing number of replicas in the cluster for the deployment
 			apply.Spec.Replicas = current.Spec.Replicas
 
+			// Preserve the env vars in the existing cluster
 			for index := range current.Spec.Template.Spec.Containers {
 				currentContainer := current.Spec.Template.Spec.Containers[index]
-				for j := range apply.Spec.Template.Spec.Containers {
-					applyContainer := &apply.Spec.Template.Spec.Containers[j]
-					if currentContainer.Name == applyContainer.Name {
-						applyContainer.Env = currentContainer.Env
+				applyContainer := findContainer(currentContainer.Name, apply.Spec.Template.Spec.Containers)
+				if applyContainer == nil {
+					continue
+				}
+				var mergedEnv []corev1.EnvVar
+				actualKeys := sets.NewString()
+				for _, env := range currentContainer.Env {
+					if envVarNames.Has(env.Name) {
+						// Keep all the env vars in the preserved list
+						mergedEnv = append(mergedEnv, env)
+						actualKeys.Insert(env.Name)
 					}
 				}
+
+				for _, env := range applyContainer.Env {
+					if !actualKeys.Has(env.Name) {
+						// Apply all keys that are neither preserved, nor in the actual container.
+						mergedEnv = append(mergedEnv, env)
+					}
+				}
+
+				applyContainer.Env = mergedEnv
 			}
 
 			if err := scheme.Scheme.Convert(apply, u, nil); err != nil {
@@ -72,4 +98,13 @@ func ReplicasEnvVarsTransform(client unstructuredGetter) mf.Transformer {
 		}
 		return nil
 	}
+}
+
+func findContainer(name string, containers []corev1.Container) *corev1.Container {
+	for index, container := range containers {
+		if container.Name == name {
+			return &containers[index]
+		}
+	}
+	return nil
 }

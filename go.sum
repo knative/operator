@@ -186,8 +186,6 @@ github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWo
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
-github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 h1:Mn26/9ZMNWSw9C9ERFA1PUxfmGpolnw2v0bKOREu5ew=
-github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32/go.mod h1:GIjDIg/heH5DOkXY3YJ/wNhfHsQHoXGjl8G8amsYQ1I=
 github.com/globalsign/mgo v0.0.0-20180905125535-1ca0a4f7cbcb/go.mod h1:xkRDCp4j0OGD1HRkm4kmhM+pmpv3AKq5SU7GMg4oO/Q=
 github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8/go.mod h1:xkRDCp4j0OGD1HRkm4kmhM+pmpv3AKq5SU7GMg4oO/Q=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
@@ -1179,8 +1177,8 @@ k8s.io/utils v0.0.0-20200603063816-c1c6865ac451 h1:v8ud2Up6QK1lNOKFgiIVrZdMg7Mpm
 k8s.io/utils v0.0.0-20200603063816-c1c6865ac451/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 knative.dev/caching v0.0.0-20210107021736-1ee47505018d h1:C5JgxpCO4Dv+pqUHxIS+e+OVOf4QLGjcQUTbe9+SNB8=
 knative.dev/caching v0.0.0-20210107021736-1ee47505018d/go.mod h1:N3jOlbf/CWZsEcfEpthv5b+LB9e+TqiDTVLH/Ti+vWE=
-knative.dev/eventing v0.20.1-0.20210113135131-21d91e4b1039 h1:H6P/bJ05WZv67vZMhUpbzHEJf1gDgSoNCb6NK7Ajaac=
-knative.dev/eventing v0.20.1-0.20210113135131-21d91e4b1039/go.mod h1:/lM3uWKjwWam79fzBOkXf9vz4KQnDzlVqu7yhX38MGU=
+knative.dev/eventing v0.20.1-0.20210113192431-1897543ff672 h1:jHWWj6KtBKqb6kIEk7dJRRHCYE6KRaVgvBCn1h03Sy0=
+knative.dev/eventing v0.20.1-0.20210113192431-1897543ff672/go.mod h1:HdS7UgtDbKQuCuEwgS3+jxtHvpm+PPp/eEsjaQwfWl8=
 knative.dev/hack v0.0.0-20201214230143-4ed1ecb8db24 h1:kIztWfvnIFV8Lhlea02K3YO2mIzcDyQNzrBLn0Oq9sA=
 knative.dev/hack v0.0.0-20201214230143-4ed1ecb8db24/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
 knative.dev/hack v0.0.0-20210112093330-d946d2557383 h1:YDYKfHaplhMelgOVP8eRvHlYf5elgZveo36GBDFfDqA=

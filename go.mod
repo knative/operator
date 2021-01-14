@@ -4,7 +4,6 @@ go 1.14
 
 require (
 	github.com/emicklei/go-restful v2.11.1+incompatible // indirect
-	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
 	github.com/go-logr/zapr v0.1.1
 	github.com/google/go-cmp v0.5.4
 	github.com/google/go-github/v32 v32.1.0
@@ -19,7 +18,7 @@ require (
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.18.12
 	knative.dev/caching v0.0.0-20210107021736-1ee47505018d
-	knative.dev/eventing v0.20.1-0.20210113135131-21d91e4b1039
+	knative.dev/eventing v0.20.1-0.20210113192431-1897543ff672
 	knative.dev/hack v0.0.0-20210112093330-d946d2557383
 	knative.dev/pkg v0.0.0-20210112143930-acbf2af596cf
 	sigs.k8s.io/yaml v1.2.0

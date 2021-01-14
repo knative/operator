@@ -99,18 +99,18 @@ wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 header "Running preupgrade tests for Knative Serving"
 # Go to the knative serving repo
 cd ${KNATIVE_DIR}/serving
-go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade \
-  --resolvabledomain="false" "--https" || fail_test=1
+# go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade \
+#  --resolvabledomain="false" "--https" || fail_test=1
 
 header "Starting prober test for serving"
 # Remove this in case we failed to clean it up in an earlier test.
 rm -f /tmp/prober-signal
 rm -f /tmp/autoscaling-signal
 rm -f /tmp/autoscaling-tbc-signal
-go_test_e2e -tags=probe -timeout=${PROBE_TIMEOUT} ./test/upgrade \
-  --resolvabledomain="false" "--https" &
-PROBER_PID_SERVING=$!
-echo "Prober PID Serving is ${PROBER_PID_SERVING}"
+# go_test_e2e -tags=probe -timeout=${PROBE_TIMEOUT} ./test/upgrade \
+#  --resolvabledomain="false" "--https" &
+# PROBER_PID_SERVING=$!
+# echo "Prober PID Serving is ${PROBER_PID_SERVING}"
 
 create_latest_custom_resource
 
@@ -130,7 +130,7 @@ wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 header "Running postupgrade tests for Knative Serving"
 # Run the postupgrade tests under serving
 cd ${KNATIVE_DIR}/serving
-go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
+# go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
 
 install_previous_knative
 
@@ -145,14 +145,14 @@ wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running postdowngrade tests for Knative Serving"
 cd ${KNATIVE_DIR}/serving
-go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \
-  --resolvabledomain="false" || fail_test
+# go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \
+#  --resolvabledomain="false" || fail_test
 
-echo "done" > /tmp/prober-signal
-echo "done" > /tmp/autoscaling-signal
-echo "done" > /tmp/autoscaling-tbc-signal
+# echo "done" > /tmp/prober-signal
+# echo "done" > /tmp/autoscaling-signal
+# echo "done" > /tmp/autoscaling-tbc-signal
 header "Waiting for prober test for Knative Serving"
-wait ${PROBER_PID_SERVING} || fail_test "Prober failed"
+# wait ${PROBER_PID_SERVING} || fail_test "Prober failed"
 
 # Require that tests succeeded.
 (( failed )) && fail_test

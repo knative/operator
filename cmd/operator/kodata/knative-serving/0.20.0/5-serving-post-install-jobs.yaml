@@ -1,6 +1,6 @@
 
 ---
-# /tmp/tmp.NjskqWbbeq/serving-storage-version-migration.yaml
+# /tmp/tmp.2HYSvtXTr0/serving-storage-version-migration.yaml
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,11 +18,11 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  generateName: storage-version-migration-
+  generateName: storage-version-migration-serving-
   namespace: knative-serving
   labels:
-    app: "storage-version-migration"
-    serving.knative.dev/release: "v0.16.0"
+    app: "storage-version-migration-serving"
+    serving.knative.dev/release: "v0.20.0"
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -31,19 +31,19 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
       labels:
-        app: "storage-version-migration"
+        app: "storage-version-migration-serving"
     spec:
       serviceAccountName: controller
       restartPolicy: OnFailure
       containers:
-      - name: migrate
-        # This is the Go import path for the binary that is containerized
-        # and substituted here.
-        image: gcr.io/knative-releases/knative.dev/serving/vendor/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:677a46ee83412a3b134262f386e80ff2a1cea550378158dfbb990ba828b72b42
-        args:
-        - "services.serving.knative.dev"
-        - "configurations.serving.knative.dev"
-        - "revisions.serving.knative.dev"
-        - "routes.serving.knative.dev"
+        - name: migrate
+          # This is the Go import path for the binary that is containerized
+          # and substituted here.
+          image: gcr.io/knative-releases/knative.dev/serving/vendor/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:f55ceaa1f648f15b14dadf687098e1b4108e2ffc795abbfac6b61b408d3d1b9a
+          args:
+            - "services.serving.knative.dev"
+            - "configurations.serving.knative.dev"
+            - "revisions.serving.knative.dev"
+            - "routes.serving.knative.dev"
 
 ---

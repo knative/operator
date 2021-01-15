@@ -99,6 +99,7 @@ wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 header "Running preupgrade tests for Knative Serving"
 # Go to the knative serving repo
 cd ${KNATIVE_DIR}/serving
+# Tentatively disable the upgrade and downgrade tests for framework transition
 # go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade \
 #  --resolvabledomain="false" "--https" || fail_test=1
 
@@ -107,6 +108,7 @@ header "Starting prober test for serving"
 rm -f /tmp/prober-signal
 rm -f /tmp/autoscaling-signal
 rm -f /tmp/autoscaling-tbc-signal
+# Tentatively disable the upgrade and downgrade tests for framework transition
 # go_test_e2e -tags=probe -timeout=${PROBE_TIMEOUT} ./test/upgrade \
 #  --resolvabledomain="false" "--https" &
 # PROBER_PID_SERVING=$!
@@ -130,6 +132,7 @@ wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 header "Running postupgrade tests for Knative Serving"
 # Run the postupgrade tests under serving
 cd ${KNATIVE_DIR}/serving
+# Tentatively disable the upgrade and downgrade tests for framework transition
 # go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
 
 install_previous_knative
@@ -145,9 +148,11 @@ wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
 
 header "Running postdowngrade tests for Knative Serving"
 cd ${KNATIVE_DIR}/serving
+# Tentatively disable the upgrade and downgrade tests for framework transition
 # go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \
 #  --resolvabledomain="false" || fail_test
 
+# Tentatively disable the upgrade and downgrade tests for framework transition
 # echo "done" > /tmp/prober-signal
 # echo "done" > /tmp/autoscaling-signal
 # echo "done" > /tmp/autoscaling-tbc-signal

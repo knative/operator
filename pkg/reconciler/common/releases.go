@@ -82,6 +82,12 @@ func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 func IsVersionValidMigrationEligible(instance v1alpha1.KComponent) error {
 	var err error
 	target := sanitizeSemver(TargetVersion(instance))
+	if target == "v" {
+		// If the function TargetVersion returns empty string, if means the specified target version is not available
+		// in this release to install.
+		return fmt.Errorf("target version %v is not available in this release.", instance.GetSpec().GetVersion())
+	}
+
 	if !semver.IsValid(target) {
 		return fmt.Errorf("target version %v is not in a valid semantic versioning format.", target)
 	}

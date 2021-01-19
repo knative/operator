@@ -50,6 +50,7 @@ func NoOp(context.Context, *mf.Manifest, v1alpha1.KComponent) error {
 func AppendTarget(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	m, err := TargetManifest(instance)
 	if err != nil {
+		instance.GetStatus().MarkInstallFailed(err.Error())
 		return err
 	}
 	*manifest = manifest.Append(m)

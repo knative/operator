@@ -138,10 +138,14 @@ func getVersionKey(instance v1alpha1.KComponent) string {
 func getManifestWithVersionValidation(version string, instance v1alpha1.KComponent) (mf.Manifest, error) {
 	manifestsPath := targetManifestPath(version, instance)
 	manifests, err := fetch(manifestsPath)
-	if err != nil || (len(instance.GetSpec().GetManifests()) == 0 && len(instance.GetSpec().GetAdditionalManifests()) == 0) {
-		// If we cannot access the manifests, there is no need to check whether the versions match.
-		// If both spec.manifests and spec.additionalManifests are empty, there is no need to check whether the versions
-		// match.
+	if err != nil {
+		if len(instance.GetSpec().GetManifests()) == 0 && len(instance.GetSpec().GetAdditionalManifests()) == 0 {
+			// If we cannot access the manifests, there is no need to check whether the versions match.
+			// If both spec.manifests and spec.additionalManifests are empty, there is no need to check whether the versions
+			// match.
+			return manifests, fmt.Errorf("The manifests of the target version %v are not available to this release.",
+				instance.GetSpec().GetVersion())
+		}
 		return manifests, err
 	}
 
@@ -319,5 +323,5 @@ func getLatestRelease(instance v1alpha1.KComponent, version string) string {
 			return val
 		}
 	}
-	return ""
+	return version
 }

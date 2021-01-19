@@ -196,6 +196,46 @@ func TestTargetVersion(t *testing.T) {
 			},
 		},
 		expected: "",
+	}, {
+		name: "serving CR with major.minor version not available",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.12",
+				},
+			},
+		},
+		expected: "0.12",
+	}, {
+		name: "eventing CR with major.minor version not available",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.12",
+				},
+			},
+		},
+		expected: "0.12",
+	}, {
+		name: "serving CR with major.minor.patch version not available",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.12.0",
+				},
+			},
+		},
+		expected: "0.12.0",
+	}, {
+		name: "eventing CR with major.minor.patch version not available",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.12.1",
+				},
+			},
+		},
+		expected: "0.12.1",
 	}}
 
 	os.Setenv(KoEnvKey, koPath)
@@ -235,6 +275,46 @@ func TestGetLatestRelease(t *testing.T) {
 			},
 		},
 		expected: "0.15.0",
+	}, {
+		name: "eventing CR with the major.minor version not available",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.13",
+				},
+			},
+		},
+		expected: "0.13",
+	}, {
+		name: "serving CR with the major.minor version not available",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.13",
+				},
+			},
+		},
+		expected: "0.13",
+	}, {
+		name: "eventing CR with the major.minor.patch version not available",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.13.1",
+				},
+			},
+		},
+		expected: "0.13.1",
+	}, {
+		name: "serving CR with the major.minor.patch version not available",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.13.1",
+				},
+			},
+		},
+		expected: "0.13.1",
 	}}
 
 	os.Setenv(KoEnvKey, koPath)
@@ -551,6 +631,65 @@ func TestTargetManifest(t *testing.T) {
 		},
 		expectedNumResources: 2,
 		expectedError:        nil,
+	}, {
+		name: "knative-serving with spec.version available",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.0",
+				},
+			},
+		},
+		expectedNumResources: 2,
+		expectedError:        nil,
+	}, {
+		name: "knative-serving with major.minor spec.version not available",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.12",
+				},
+			},
+		},
+		expectedNumResources: 0,
+		expectedError: fmt.Errorf("The manifests of the target version %v are not available to this release.",
+			"0.12"),
+	}, {
+		name: "knative-serving with major.minor.patch spec.version not available",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.12.1",
+				},
+			},
+		},
+		expectedNumResources: 0,
+		expectedError: fmt.Errorf("The manifests of the target version %v are not available to this release.",
+			"0.12.1"),
+	}, {
+		name: "knative-eventing with major.minor spec.version not available",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.12",
+				},
+			},
+		},
+		expectedNumResources: 0,
+		expectedError: fmt.Errorf("The manifests of the target version %v are not available to this release.",
+			"0.12"),
+	}, {
+		name: "knative-eventing with major.minor.patch spec.version not available",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.12.1",
+				},
+			},
+		},
+		expectedNumResources: 0,
+		expectedError: fmt.Errorf("The manifests of the target version %v are not available to this release.",
+			"0.12.1"),
 	}}
 
 	koPath := "testdata/kodata"

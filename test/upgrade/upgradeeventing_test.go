@@ -47,7 +47,9 @@ func TestEventingUpgrades(t *testing.T) {
 			},
 		},
 		Installations: pkgupgrade.Installations{
-			Base: []pkgupgrade.Operation{},
+			Base: []pkgupgrade.Operation{
+				installation.Base(),
+			},
 			UpgradeWith: []pkgupgrade.Operation{
 				installation.LatestRelease(),
 			},
@@ -66,4 +68,8 @@ func newEventingUpgradeConfig(t *testing.T) pkgupgrade.Configuration {
 		t.Fatal(err)
 	}
 	return pkgupgrade.Configuration{T: t, Log: log}
+}
+
+func TestMain(m *testing.M) {
+	eventingupgrade.RunTestMain(m)
 }

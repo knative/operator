@@ -36,7 +36,9 @@ func TestOperatorUpgrades(t *testing.T) {
 			PostDowngrade: OperatorPostDowngradeTests(),
 		},
 		Installations: pkgupgrade.Installations{
-			Base: []pkgupgrade.Operation{},
+			Base: []pkgupgrade.Operation{
+				installation.Base(),
+			},
 			UpgradeWith: []pkgupgrade.Operation{
 				installation.LatestRelease(),
 			},

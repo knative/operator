@@ -18,9 +18,12 @@
 source "$(dirname "${BASH_SOURCE[0]}")/../vendor/knative.dev/hack/e2e-tests.sh"
 
 # The previous serving release, installed by the operator.
-readonly PREVIOUS_SERVING_RELEASE_VERSION="0.19"
+readonly PREVIOUS_SERVING_RELEASE_VERSION="0.20"
 # The previous eventing release, installed by the operator.
-readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.19"
+readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.20"
+# The target serving/eventing release to upgrade, installed by the operator. It can be a release available under
+# kodata or an incoming new release.
+readonly TARGET_RELEASE_VERSION="latest"
 # This is the branch name of knative repos, where we run the upgrade tests.
 readonly KNATIVE_REPO_BRANCH="release-0.20" #${PULL_BASE_REF}
 # The branch of the net-istio repository.
@@ -42,6 +45,10 @@ readonly OPERATOR_DIR="$(dirname "${BASH_SOURCE[0]}")/.."
 readonly KNATIVE_DIR=$(dirname ${OPERATOR_DIR})
 release_yaml="$(mktemp)"
 release_eventing_yaml="$(mktemp)"
+
+readonly SERVING_ARTIFACTS=("serving" "serving-crds.yaml" "serving-core.yaml" "serving-hpa.yaml" "serving-post-install-jobs.yaml")
+readonly EVENTING_ARTIFACTS=("eventing" "eventing-crds.yaml" "eventing-core.yaml" "in-memory-channel.yaml" "mt-channel-broker.yaml"
+  "eventing-sugar-controller.yaml" "eventing-post-install.yaml")
 
 # Add function call to trap
 # Parameters: $1 - Function to call
@@ -138,10 +145,39 @@ function create_namespace() {
   kubectl get ns ${TEST_EVENTING_NAMESPACE} || kubectl create namespace ${TEST_EVENTING_NAMESPACE}
 }
 
+function download_latest_release() {
+  download_nightly_artifacts "${SERVING_ARTIFACTS[@]}"
+  download_nightly_artifacts "${EVENTING_ARTIFACTS[@]}"
+}
+
+function download_nightly_artifacts() {
+  array=("$@")
+  component=${array[0]}
+  unset array[0]
+  counter=0
+  linkprefix="https://storage.googleapis.com/knative-nightly/${component}/latest"
+  version_exists=$(if_version_exists ${TARGET_RELEASE_VERSION} "knative-${component}")
+  if [ "${version_exists}" == "no" ]; then
+    header "Download the nightly build as the target version for Knative ${component}"
+    knative_version_dir=${OPERATOR_DIR}/cmd/operator/kodata/knative-${component}/${TARGET_RELEASE_VERSION}
+    mkdir ${knative_version_dir}
+    for artifact in "${array[@]}";
+      do
+        ((counter=counter+1))
+        wget ${linkprefix}/${artifact} -O ${knative_version_dir}/${counter}-${artifact}
+      done
+    if [ "${component}" == "serving" ]; then
+      ((counter=counter+1))
+      wget https://storage.googleapis.com/knative-nightly/net-istio/latest/net-istio.yaml -O ${knative_version_dir}/${counter}-net-istio.yaml
+    fi
+  fi
+}
+
 function install_operator() {
   create_namespace
   install_istio || fail_test "Istio installation failed"
   cd ${OPERATOR_DIR}
+  download_latest_release
   header "Installing Knative operator"
   # Deploy the operator
   ko apply -f config/
@@ -230,13 +266,16 @@ EOF
 
 function create_latest_custom_resource() {
   echo ">> Creating the custom resource of Knative Serving:"
-  cat <<EOF | kubectl apply -f -
+  cat <<-EOF | kubectl apply -f -
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeServing
 metadata:
   name: ${TEST_RESOURCE}
   namespace: ${TEST_NAMESPACE}
+spec:
+  version: "${TARGET_RELEASE_VERSION}"
 EOF
+
   echo ">> Creating the custom resource of Knative Eventing:"
   cat <<-EOF | kubectl apply -f -
 apiVersion: operator.knative.dev/v1alpha1
@@ -244,5 +283,22 @@ kind: KnativeEventing
 metadata:
   name: ${TEST_RESOURCE}
   namespace: ${TEST_EVENTING_NAMESPACE}
+spec:
+  version: "${TARGET_RELEASE_VERSION}"
 EOF
+}
+
+function if_version_exists() {
+  version=$1
+  component=$2
+  knative_dir=${OPERATOR_DIR}/cmd/operator/kodata/${component}
+  versions=`ls ${knative_dir}`
+  for eachversion in ${versions}
+  do
+    if [[ "${eachversion}" == ${version}* ]]; then
+      echo "yes"
+      exit
+    fi
+  done
+  echo "no"
 }

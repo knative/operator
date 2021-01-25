@@ -37,7 +37,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/e2e-common.sh"
 
 # Skip installing istio as an add-on.
 initialize "$@" --skip-istio-addon
-install_previous_operator_release
 
 TIMEOUT=30m
 

@@ -21,6 +21,11 @@ import (
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 )
 
+// Base installs Operator with Knative Serving and Eventing from the previous stable release.
+func Base() pkgupgrade.Operation {
+	return install("OperatorWithServingEventingPreviousRelease", "install_previous_operator_release")
+}
+
 // LatestRelease installs Knative Serving and Eventing from the latest stable release.
 func LatestRelease() pkgupgrade.Operation {
 	return install("ServingEventingLatestRelease", "create_latest_custom_resource")

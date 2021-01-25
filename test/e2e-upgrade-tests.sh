@@ -33,135 +33,19 @@
 
 export GO111MODULE=auto
 
-source $(dirname $0)/e2e-common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/e2e-common.sh"
 
-# TODO: remove when components can coexist in same namespace
-export TEST_EVENTING_NAMESPACE=knative-eventing
+# Skip installing istio as an add-on.
+initialize "$@" --skip-istio-addon
+install_previous_operator_release
 
-function install_previous_operator_release() {
-  install_istio || fail_test "Istio installation failed"
-  install_operator
-  install_previous_knative
-}
+TIMEOUT=30m
 
-function install_previous_knative() {
-  header "Create the custom resources for Knative of the previous version"
-  create_knative_serving ${PREVIOUS_SERVING_RELEASE_VERSION}
-  create_knative_eventing ${PREVIOUS_EVENTING_RELEASE_VERSION}
-}
+header "Running upgrade tests"
 
-function create_knative_serving() {
-  version=${1}
-  echo ">> Creating the custom resource of Knative Serving:"
-  cat <<EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: ${TEST_NAMESPACE}
-spec:
-  version: "${version}"
-EOF
-}
-
-function create_knative_eventing() {
-  version=${1}
-  echo ">> Creating the custom resource of Knative Eventing:"
-  cat <<-EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeEventing
-metadata:
-  name: knative-eventing
-  namespace: ${TEST_EVENTING_NAMESPACE}
-spec:
-  version: "${version}"
-EOF
-}
-
-function create_latest_custom_resource() {
-  echo ">> Creating the custom resource of Knative Serving:"
-  cat <<EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: ${TEST_NAMESPACE}
-EOF
-  echo ">> Creating the custom resource of Knative Eventing:"
-  cat <<-EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeEventing
-metadata:
-  name: knative-eventing
-  namespace: ${TEST_EVENTING_NAMESPACE}
-EOF
-}
-
-function knative_setup() {
-  create_namespace
-  install_previous_operator_release
-}
-
-# Create test resources and images
-function test_setup() {
-  test_setup_logging
-  echo ">> Waiting for Ingress provider to be running..."
-  if [[ -n "${ISTIO_VERSION}" ]]; then
-    wait_until_pods_running istio-system || return 1
-    wait_until_service_has_external_http_address istio-system istio-ingressgateway
-  fi
-
-  # Install kail if needed.
-  if ! which kail >/dev/null; then
-    bash <(curl -sfL https://raw.githubusercontent.com/boz/kail/master/godownloader.sh) -b "$GOPATH/bin"
-  fi
-
-  # Capture all logs.
-  kail >${ARTIFACTS}/k8s.log.txt &
-  local kail_pid=$!
-  # Clean up kail so it doesn't interfere with job shutting down
-  add_trap "kill $kail_pid || true" EXIT
-}
-
-# Skip installing istio as an add-on
-initialize $@ --skip-istio-addon
-
-TIMEOUT=10m
-PROBE_TIMEOUT=20m
-failed=0
-
-header "Running preupgrade tests for Knative Operator"
-go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade || fail_test=1
-
-header "Listing all the pods of the previous release"
-wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
-
-create_latest_custom_resource
-
-header "Running tests for Knative Operator"
-
-# Run the postupgrade tests under operator
-# Operator tests here will make sure that all the Knative deployments reach the desired states and operator CR is
-# in ready state.
-go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade \
-  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
-
-header "Listing all the pods of the current release"
-wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
-
-install_previous_knative
-
-header "Running postdowngrade tests for Knative Operator"
-go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/downgrade \
-  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
-
-header "Listing all the pods of the previous release"
-wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
-
-# Require that tests succeeded.
-(( failed )) && fail_test
+go_test_e2e -tags=upgrade -timeout=${TIMEOUT} \
+  ./test/upgrade \
+  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" \
+  || fail_test
 
 success

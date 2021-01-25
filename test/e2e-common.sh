@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # This script provides helper methods to perform cluster actions.
-source $(dirname $0)/../vendor/knative.dev/hack/e2e-tests.sh
+source "$(dirname "${BASH_SOURCE[0]}")/../vendor/knative.dev/hack/e2e-tests.sh"
 
 # The previous serving release, installed by the operator.
 readonly PREVIOUS_SERVING_RELEASE_VERSION="0.19"
@@ -31,14 +31,14 @@ readonly ISTIO_VERSION="stable"
 readonly ISTIO_MESH=0
 # Namespaces used for tests
 export TEST_NAMESPACE="${TEST_NAMESPACE:-knative-operator-testing}"
-export SYSTEM_NAMESPACE=${TEST_NAMESPACE}           # knative-serving
-export TEST_EVENTING_NAMESPACE=${TEST_NAMESPACE}    # knative-eventing
-export TEST_RESOURCE="knative"    # knative-eventing
+export SYSTEM_NAMESPACE=${TEST_NAMESPACE}
+export TEST_EVENTING_NAMESPACE="knative-eventing"
+export TEST_RESOURCE="knative"
 
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_SERVING_REPO_BRANCH.
 GENERATE_SERVING_YAML=0
 
-readonly OPERATOR_DIR=$(dirname $(cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P))
+readonly OPERATOR_DIR="$(dirname "${BASH_SOURCE[0]}")/.."
 readonly KNATIVE_DIR=$(dirname ${OPERATOR_DIR})
 release_yaml="$(mktemp)"
 release_eventing_yaml="$(mktemp)"
@@ -132,13 +132,15 @@ function install_istio() {
 }
 
 function create_namespace() {
-  echo ">> Creating test namespaces"
+  echo ">> Creating test namespaces for knative serving and eventing"
   # All the custom resources and Knative Serving resources are created under this TEST_NAMESPACE.
-  kubectl create namespace $TEST_NAMESPACE
-  kubectl get ns $TEST_EVENTING_NAMESPACE || kubectl create ns $TEST_EVENTING_NAMESPACE
+  kubectl get ns ${TEST_NAMESPACE} || kubectl create namespace ${TEST_NAMESPACE}
+  kubectl get ns ${TEST_EVENTING_NAMESPACE} || kubectl create namespace ${TEST_EVENTING_NAMESPACE}
 }
 
 function install_operator() {
+  create_namespace
+  install_istio || fail_test "Istio installation failed"
   cd ${OPERATOR_DIR}
   header "Installing Knative operator"
   # Deploy the operator
@@ -188,7 +190,6 @@ function wait_for_file() {
 }
 
 function install_previous_operator_release() {
-  install_istio || fail_test "Istio installation failed"
   install_operator
   install_previous_knative
 }
@@ -206,7 +207,7 @@ function create_knative_serving() {
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeServing
 metadata:
-  name: knative-serving
+  name: ${TEST_RESOURCE}
   namespace: ${TEST_NAMESPACE}
 spec:
   version: "${version}"
@@ -220,7 +221,7 @@ function create_knative_eventing() {
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
 metadata:
-  name: knative-eventing
+  name: ${TEST_RESOURCE}
   namespace: ${TEST_EVENTING_NAMESPACE}
 spec:
   version: "${version}"
@@ -233,7 +234,7 @@ function create_latest_custom_resource() {
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeServing
 metadata:
-  name: knative-serving
+  name: ${TEST_RESOURCE}
   namespace: ${TEST_NAMESPACE}
 EOF
   echo ">> Creating the custom resource of Knative Eventing:"
@@ -241,7 +242,7 @@ EOF
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
 metadata:
-  name: knative-eventing
+  name: ${TEST_RESOURCE}
   namespace: ${TEST_EVENTING_NAMESPACE}
 EOF
 }

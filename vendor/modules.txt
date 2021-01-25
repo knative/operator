@@ -783,6 +783,7 @@ knative.dev/eventing/pkg/apis/eventing
 # knative.dev/hack v0.0.0-20210114150620-4422dcadb3c8
 ## explicit
 knative.dev/hack
+knative.dev/hack/shell
 # knative.dev/pkg v0.0.0-20210119162123-1bbf0a6436c3
 ## explicit
 knative.dev/pkg/apis
@@ -819,12 +820,14 @@ knative.dev/pkg/ptr
 knative.dev/pkg/reconciler
 knative.dev/pkg/signals
 knative.dev/pkg/system
+knative.dev/pkg/system/testing
 knative.dev/pkg/test
 knative.dev/pkg/test/flags
 knative.dev/pkg/test/ingress
 knative.dev/pkg/test/logging
 knative.dev/pkg/test/monitoring
 knative.dev/pkg/test/spoof
+knative.dev/pkg/test/upgrade
 knative.dev/pkg/test/zipkin
 knative.dev/pkg/tracing/config
 knative.dev/pkg/tracing/propagation

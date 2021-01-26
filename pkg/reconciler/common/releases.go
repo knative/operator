@@ -38,6 +38,8 @@ const (
 	VersionVariable = "${VERSION}"
 	// COMMA is the character comma
 	COMMA = ","
+	// LATEST_VERSION is the special version Knative Operator support, besides all semantic versions of Knative.
+	LATEST_VERSION = "latest"
 )
 
 var cache = map[string]mf.Manifest{}
@@ -81,7 +83,11 @@ func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 // manifest is able to upgrade or downgrade to the target manifest.
 func IsVersionValidMigrationEligible(instance v1alpha1.KComponent) error {
 	var err error
-	target := sanitizeSemver(TargetVersion(instance))
+	targetVersion := TargetVersion(instance)
+	if targetVersion == LATEST_VERSION {
+		return nil
+	}
+	target := sanitizeSemver(targetVersion)
 	if !semver.IsValid(target) {
 		return fmt.Errorf("target version %v is not in a valid semantic versioning format.", target)
 	}
@@ -92,7 +98,8 @@ func IsVersionValidMigrationEligible(instance v1alpha1.KComponent) error {
 
 	current := instance.GetStatus().GetVersion()
 	// If there is no manifest installed, return nil, because the target manifest is able to install.
-	if current == "" {
+	// If the installed manifest is versioned with latest, we allow any version to upgrade to or from it.
+	if current == "" || current == LATEST_VERSION {
 		return nil
 	}
 
@@ -154,8 +161,9 @@ func getManifestWithVersionValidation(version string, instance v1alpha1.KCompone
 		return manifests, fmt.Errorf("There is no resource available in the target manifests %s.", manifestsPath)
 	}
 
-	if version == "" {
-		// If target version is empty, there is no need to check whether the versions match.
+	if version == "" || version == LATEST_VERSION {
+		// If target version is empty or equal to the special latest version, there is no need to check whether
+		// the versions match.
 		return manifests, nil
 	}
 

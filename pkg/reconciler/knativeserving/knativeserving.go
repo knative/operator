@@ -131,7 +131,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	instance := comp.(*v1alpha1.KnativeServing)
 	extra := []mf.Transformer{
 		ksc.CustomCertsTransform(instance, logger),
-		ksc.HighAvailabilityTransform(instance, logger),
+		common.HighAvailabilityTransform(instance, logger),
 		ksc.AggregationRuleTransform(manifest.Client),
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)

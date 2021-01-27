@@ -116,6 +116,14 @@ spec:
               description: The default broker type to use for the brokers Knative creates.
                 If no value is provided, MTChannelBasedBroker will be used.
               type: string
+            high-availability:
+              description: Allows specification of HA control plane
+              type: object
+              properties:
+                replicas:
+                  description: The number of replicas that HA parts of the control plane will be scaled to
+                  type: integer
+                  minimum: 1
             resources:
               description: A mapping of deployment name to resource requirements
               type: array

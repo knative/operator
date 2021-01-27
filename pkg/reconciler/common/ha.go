@@ -21,13 +21,14 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 const (
-	configMapName        = "config-leader-election"
-	enabledComponentsKey = "enabledComponents"
-	componentsValue      = "controller,hpaautoscaler,certcontroller,istiocontroller,nscontroller"
+	configMapName           = "config-leader-election"
+	enabledComponentsKey    = "enabledComponents"
+	servingComponentsValue  = "controller,hpaautoscaler,certcontroller,istiocontroller,nscontroller"
+	eventingComponentsValue = "eventing-controller,sugar-controller,imc-controller,imc-dispatcher,mt-broker-controller"
 )
 
 var deploymentNames = sets.NewString(
@@ -36,13 +37,20 @@ var deploymentNames = sets.NewString(
 	"networking-certmanager",
 	"networking-ns-cert",
 	"networking-istio",
+	"eventing-controller",
+	"sugar-controller",
+	"imc-controller",
+	"imc-dispatcher",
+	"mt-broker-controller",
 )
 
 // HighAvailabilityTransform mutates configmaps and replicacounts of certain
 // controllers when HA control plane is specified.
-func HighAvailabilityTransform(instance *servingv1alpha1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
+func HighAvailabilityTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if instance.Spec.HighAvailability == nil {
+		// stash the HA object
+		ha := obj.GetSpec().GetHighAvailability()
+		if ha == nil {
 			return nil
 		}
 
@@ -56,13 +64,18 @@ func HighAvailabilityTransform(instance *servingv1alpha1.KnativeServing, log *za
 				data = map[string]string{}
 			}
 
-			data[enabledComponentsKey] = componentsValue
+			if _, ok := obj.(*v1alpha1.KnativeServing); ok {
+				data[enabledComponentsKey] = servingComponentsValue
+			}
+			if _, ok := obj.(*v1alpha1.KnativeEventing); ok {
+				data[enabledComponentsKey] = eventingComponentsValue
+			}
 			if err := unstructured.SetNestedStringMap(u.Object, data, "data"); err != nil {
 				return err
 			}
 		}
 
-		replicas := int64(instance.Spec.HighAvailability.Replicas)
+		replicas := int64(ha.Replicas)
 
 		// Transform deployments that support HA.
 		if u.GetKind() == "Deployment" && deploymentNames.Has(u.GetName()) {

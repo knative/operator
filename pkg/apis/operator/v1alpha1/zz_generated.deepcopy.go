@@ -63,6 +63,11 @@ func (in *CommonSpec) DeepCopyInto(out *CommonSpec) {
 		*out = make([]Manifest, len(*in))
 		copy(*out, *in)
 	}
+	if in.HighAvailability != nil {
+		in, out := &in.HighAvailability, &out.HighAvailability
+		*out = new(HighAvailability)
+		**out = **in
+	}
 	return
 }
 
@@ -382,11 +387,6 @@ func (in *KnativeServingSpec) DeepCopyInto(out *KnativeServingSpec) {
 	in.KnativeIngressGateway.DeepCopyInto(&out.KnativeIngressGateway)
 	in.ClusterLocalGateway.DeepCopyInto(&out.ClusterLocalGateway)
 	out.ControllerCustomCerts = in.ControllerCustomCerts
-	if in.HighAvailability != nil {
-		in, out := &in.HighAvailability, &out.HighAvailability
-		*out = new(HighAvailability)
-		**out = **in
-	}
 	if in.Ingress != nil {
 		in, out := &in.Ingress, &out.Ingress
 		*out = new(IngressConfigs)

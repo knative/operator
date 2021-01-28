@@ -33,8 +33,12 @@ readonly ISTIO_VERSION="stable"
 # Test without Istio mesh enabled
 readonly ISTIO_MESH=0
 # Namespaces used for tests
+# This environment variable TEST_NAMESPACE defines the namespace to install Knative Serving.
 export TEST_NAMESPACE="${TEST_NAMESPACE:-knative-operator-testing}"
 export SYSTEM_NAMESPACE=${TEST_NAMESPACE}
+# This environment variable TEST_EVENTING_NAMESPACE defines the namespace to install Knative Eventing.
+# It is different from the namespace to install Knative Serving.
+# We will use only one namespace, when Knative supports both components can coexist under one namespace.
 export TEST_EVENTING_NAMESPACE="knative-eventing"
 export TEST_RESOURCE="knative"
 
@@ -292,7 +296,7 @@ function if_version_exists() {
   version=$1
   component=$2
   knative_dir=${OPERATOR_DIR}/cmd/operator/kodata/${component}
-  versions=`ls ${knative_dir}`
+  versions=$(ls ${knative_dir})
   for eachversion in ${versions}
   do
     if [[ "${eachversion}" == ${version}* ]]; then

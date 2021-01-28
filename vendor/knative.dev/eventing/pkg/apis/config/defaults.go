@@ -23,7 +23,7 @@ import (
 
 	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1"
 
-	"sigs.k8s.io/yaml"
+	"github.com/ghodss/yaml"
 
 	corev1 "k8s.io/api/core/v1"
 

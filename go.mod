@@ -1,10 +1,10 @@
 module knative.dev/operator
 
-go 1.14
+go 1.15
 
 require (
 	github.com/emicklei/go-restful v2.11.1+incompatible // indirect
-	github.com/go-logr/zapr v0.1.1
+	github.com/go-logr/zapr v0.2.0
 	github.com/google/go-cmp v0.5.4
 	github.com/google/go-github/v32 v32.1.0
 	github.com/manifestival/client-go-client v0.4.0
@@ -13,20 +13,13 @@ require (
 	golang.org/x/mod v0.3.0
 	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5
 	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/api v0.18.12
-	k8s.io/apimachinery v0.19.0
-	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
-	k8s.io/code-generator v0.18.12
-	knative.dev/caching v0.0.0-20210121025253-d2183e9eb5bc
-	knative.dev/eventing v0.20.1-0.20210122083854-7123f45f3275
+	k8s.io/api v0.19.7
+	k8s.io/apimachinery v0.19.7
+	k8s.io/client-go v0.19.7
+	k8s.io/code-generator v0.19.7
+	knative.dev/caching v0.0.0-20210125050654-45e8de7ff96e
+	knative.dev/eventing v0.20.1-0.20210128132430-1725902f7e39
 	knative.dev/hack v0.0.0-20210120165453-8d623a0af457
-	knative.dev/pkg v0.0.0-20210121051653-32a3248a7121
+	knative.dev/pkg v0.0.0-20210127163530-0d31134d5f4e
 	sigs.k8s.io/yaml v1.2.0
-)
-
-replace (
-	k8s.io/api => k8s.io/api v0.18.8
-	k8s.io/apimachinery => k8s.io/apimachinery v0.18.8
-	k8s.io/client-go => k8s.io/client-go v0.18.8
-	k8s.io/code-generator => k8s.io/code-generator v0.18.8
 )

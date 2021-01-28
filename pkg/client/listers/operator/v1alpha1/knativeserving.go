@@ -26,8 +26,10 @@ import (
 )
 
 // KnativeServingLister helps list KnativeServings.
+// All objects returned here must be treated as read-only.
 type KnativeServingLister interface {
 	// List lists all KnativeServings in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.KnativeServing, err error)
 	// KnativeServings returns an object that can list and get KnativeServings.
 	KnativeServings(namespace string) KnativeServingNamespaceLister
@@ -58,10 +60,13 @@ func (s *knativeServingLister) KnativeServings(namespace string) KnativeServingN
 }
 
 // KnativeServingNamespaceLister helps list and get KnativeServings.
+// All objects returned here must be treated as read-only.
 type KnativeServingNamespaceLister interface {
 	// List lists all KnativeServings in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.KnativeServing, err error)
 	// Get retrieves the KnativeServing from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.KnativeServing, error)
 	KnativeServingNamespaceListerExpansion
 }

@@ -301,8 +301,7 @@ is used with duck types:
                 Base:             reconciler.NewBase(opt, controllerAgentName),
                 ...
         }
-        logger := c.Logger.Named("Revisions")
-        impl := controller.NewImpl(c, logger, "Revisions")
+        impl := controller.NewImpl(c, c.Logger, "Revisions")
 
         // Calls to Track create a 30 minute lease before they must be renewed.
         // Coordinate this value with controller resync periods.

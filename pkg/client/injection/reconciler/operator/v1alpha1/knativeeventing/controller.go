@@ -24,7 +24,6 @@ import (
 	reflect "reflect"
 	strings "strings"
 
-	zap "go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	types "k8s.io/apimachinery/pkg/types"
@@ -38,7 +37,6 @@ import (
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	controller "knative.dev/pkg/controller"
 	logging "knative.dev/pkg/logging"
-	logkey "knative.dev/pkg/logging/logkey"
 	reconciler "knative.dev/pkg/reconciler"
 )
 
@@ -86,16 +84,10 @@ func NewImpl(ctx context.Context, r Interface, optionsFns ...controller.OptionsF
 		finalizerName: defaultFinalizerName,
 	}
 
-	ctrType := reflect.TypeOf(r).Elem()
-	ctrTypeName := fmt.Sprintf("%s.%s", ctrType.PkgPath(), ctrType.Name())
-	ctrTypeName = strings.ReplaceAll(ctrTypeName, "/", ".")
+	t := reflect.TypeOf(r).Elem()
+	queueName := fmt.Sprintf("%s.%s", strings.ReplaceAll(t.PkgPath(), "/", "-"), t.Name())
 
-	logger = logger.With(
-		zap.String(logkey.ControllerType, ctrTypeName),
-		zap.String(logkey.Kind, "operator.knative.dev.KnativeEventing"),
-	)
-
-	impl := controller.NewImpl(rec, logger, ctrTypeName)
+	impl := controller.NewImpl(rec, logger, queueName)
 	agentName := defaultControllerAgentName
 
 	// Pass impl to the options. Save any optional results.

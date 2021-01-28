@@ -89,10 +89,6 @@ func (g *reconcilerReconcilerGenerator) GenerateType(c *generator.Context, t *ty
 			Package: "knative.dev/pkg/controller",
 			Name:    "WithEventRecorder",
 		}),
-		"controllerNewSkipKey": c.Universe.Type(types.Name{
-			Package: "knative.dev/pkg/controller",
-			Name:    "NewSkipKey",
-		}),
 		"corev1EventSource": c.Universe.Function(types.Name{
 			Package: "k8s.io/api/core/v1",
 			Name:    "EventSource",
@@ -379,7 +375,7 @@ func (r *reconcilerImpl) Reconcile(ctx {{.contextContext|raw}}, key string) erro
 	// If we are not the leader, and we don't implement either ReadOnly
 	// observer interfaces, then take a fast-path out.
 	if s.isNotLeaderNorObserver() {
-		return {{.controllerNewSkipKey|raw}}(key)
+		return nil
 	}
 
 	// If configStore is set, attach the frozen configuration to the context.

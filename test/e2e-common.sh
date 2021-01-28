@@ -15,12 +15,15 @@
 # limitations under the License.
 
 # This script provides helper methods to perform cluster actions.
-source $(dirname $0)/../vendor/knative.dev/hack/e2e-tests.sh
+source "$(dirname "${BASH_SOURCE[0]}")/../vendor/knative.dev/hack/e2e-tests.sh"
 
 # The previous serving release, installed by the operator.
-readonly PREVIOUS_SERVING_RELEASE_VERSION="0.19"
+readonly PREVIOUS_SERVING_RELEASE_VERSION="0.20"
 # The previous eventing release, installed by the operator.
-readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.19"
+readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.20"
+# The target serving/eventing release to upgrade, installed by the operator. It can be a release available under
+# kodata or an incoming new release.
+readonly TARGET_RELEASE_VERSION="latest"
 # This is the branch name of knative repos, where we run the upgrade tests.
 readonly KNATIVE_REPO_BRANCH="release-0.20" #${PULL_BASE_REF}
 # The branch of the net-istio repository.
@@ -30,18 +33,26 @@ readonly ISTIO_VERSION="stable"
 # Test without Istio mesh enabled
 readonly ISTIO_MESH=0
 # Namespaces used for tests
+# This environment variable TEST_NAMESPACE defines the namespace to install Knative Serving.
 export TEST_NAMESPACE="${TEST_NAMESPACE:-knative-operator-testing}"
-export SYSTEM_NAMESPACE=${TEST_NAMESPACE}           # knative-serving
-export TEST_EVENTING_NAMESPACE=${TEST_NAMESPACE}    # knative-eventing
-export TEST_RESOURCE="knative"    # knative-eventing
+export SYSTEM_NAMESPACE=${TEST_NAMESPACE}
+# This environment variable TEST_EVENTING_NAMESPACE defines the namespace to install Knative Eventing.
+# It is different from the namespace to install Knative Serving.
+# We will use only one namespace, when Knative supports both components can coexist under one namespace.
+export TEST_EVENTING_NAMESPACE="knative-eventing"
+export TEST_RESOURCE="knative"
 
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_SERVING_REPO_BRANCH.
 GENERATE_SERVING_YAML=0
 
-readonly OPERATOR_DIR=$(dirname $(cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P))
+readonly OPERATOR_DIR="$(dirname "${BASH_SOURCE[0]}")/.."
 readonly KNATIVE_DIR=$(dirname ${OPERATOR_DIR})
 release_yaml="$(mktemp)"
 release_eventing_yaml="$(mktemp)"
+
+readonly SERVING_ARTIFACTS=("serving" "serving-crds.yaml" "serving-core.yaml" "serving-hpa.yaml" "serving-post-install-jobs.yaml")
+readonly EVENTING_ARTIFACTS=("eventing" "eventing-crds.yaml" "eventing-core.yaml" "in-memory-channel.yaml" "mt-channel-broker.yaml"
+  "eventing-sugar-controller.yaml" "eventing-post-install.yaml")
 
 # Add function call to trap
 # Parameters: $1 - Function to call
@@ -132,14 +143,45 @@ function install_istio() {
 }
 
 function create_namespace() {
-  echo ">> Creating test namespaces"
+  echo ">> Creating test namespaces for knative serving and eventing"
   # All the custom resources and Knative Serving resources are created under this TEST_NAMESPACE.
-  kubectl create namespace $TEST_NAMESPACE
-  kubectl get ns $TEST_EVENTING_NAMESPACE || kubectl create ns $TEST_EVENTING_NAMESPACE
+  kubectl get ns ${TEST_NAMESPACE} || kubectl create namespace ${TEST_NAMESPACE}
+  kubectl get ns ${TEST_EVENTING_NAMESPACE} || kubectl create namespace ${TEST_EVENTING_NAMESPACE}
+}
+
+function download_latest_release() {
+  download_nightly_artifacts "${SERVING_ARTIFACTS[@]}"
+  download_nightly_artifacts "${EVENTING_ARTIFACTS[@]}"
+}
+
+function download_nightly_artifacts() {
+  array=("$@")
+  component=${array[0]}
+  unset array[0]
+  counter=0
+  linkprefix="https://storage.googleapis.com/knative-nightly/${component}/latest"
+  version_exists=$(if_version_exists ${TARGET_RELEASE_VERSION} "knative-${component}")
+  if [ "${version_exists}" == "no" ]; then
+    header "Download the nightly build as the target version for Knative ${component}"
+    knative_version_dir=${OPERATOR_DIR}/cmd/operator/kodata/knative-${component}/${TARGET_RELEASE_VERSION}
+    mkdir ${knative_version_dir}
+    for artifact in "${array[@]}";
+      do
+        ((counter=counter+1))
+        wget ${linkprefix}/${artifact} -O ${knative_version_dir}/${counter}-${artifact}
+      done
+    if [ "${component}" == "serving" ]; then
+      ((counter=counter+1))
+      wget https://storage.googleapis.com/knative-nightly/net-istio/latest/net-istio.yaml -O ${knative_version_dir}/${counter}-net-istio.yaml
+    fi
+  fi
 }
 
 function install_operator() {
+  create_namespace
+  install_istio || fail_test "Istio installation failed"
   cd ${OPERATOR_DIR}
+  download_latest_release
   header "Installing Knative operator"
   # Deploy the operator
   ko apply -f config/
@@ -188,7 +230,6 @@ function wait_for_file() {
 }
 
 function install_previous_operator_release() {
-  install_istio || fail_test "Istio installation failed"
   install_operator
   install_previous_knative
 }
@@ -206,7 +247,7 @@ function create_knative_serving() {
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeServing
 metadata:
-  name: knative-serving
+  name: ${TEST_RESOURCE}
   namespace: ${TEST_NAMESPACE}
 spec:
   version: "${version}"
@@ -220,7 +261,7 @@ function create_knative_eventing() {
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
 metadata:
-  name: knative-eventing
+  name: ${TEST_RESOURCE}
   namespace: ${TEST_EVENTING_NAMESPACE}
 spec:
   version: "${version}"
@@ -229,19 +270,39 @@ EOF
 
 function create_latest_custom_resource() {
   echo ">> Creating the custom resource of Knative Serving:"
-  cat <<EOF | kubectl apply -f -
+  cat <<-EOF | kubectl apply -f -
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeServing
 metadata:
-  name: knative-serving
+  name: ${TEST_RESOURCE}
   namespace: ${TEST_NAMESPACE}
+spec:
+  version: "${TARGET_RELEASE_VERSION}"
 EOF
+
   echo ">> Creating the custom resource of Knative Eventing:"
   cat <<-EOF | kubectl apply -f -
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
 metadata:
-  name: knative-eventing
+  name: ${TEST_RESOURCE}
   namespace: ${TEST_EVENTING_NAMESPACE}
+spec:
+  version: "${TARGET_RELEASE_VERSION}"
 EOF
+}
+
+function if_version_exists() {
+  version=$1
+  component=$2
+  knative_dir=${OPERATOR_DIR}/cmd/operator/kodata/${component}
+  versions=$(ls ${knative_dir})
+  for eachversion in ${versions}
+  do
+    if [[ "${eachversion}" == ${version}* ]]; then
+      echo "yes"
+      exit
+    fi
+  done
+  echo "no"
 }

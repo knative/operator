@@ -27,7 +27,7 @@ import (
 var (
 	// ServingOperatorNamespace is the default namespace for serving operator e2e tests
 	ServingOperatorNamespace  = getenv("TEST_NAMESPACE", "knative-operator-testing")
-	EventingOperatorNamespace = getenv("TEST_EVENTING_NAMESPACE", ServingOperatorNamespace)
+	EventingOperatorNamespace = getenv("TEST_EVENTING_NAMESPACE", "knative-eventing")
 	// OperatorName is the default operator name for serving operator e2e tests
 	OperatorName = getenv("TEST_RESOURCE", "knative")
 	// OperatorFlags holds the flags or defaults for knative/operator settings in the user's environment.

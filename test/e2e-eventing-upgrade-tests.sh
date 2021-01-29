@@ -35,6 +35,12 @@ export GO111MODULE=auto
 
 source "$(dirname "${BASH_SOURCE[0]}")/e2e-common.sh"
 
+# The environment variable E2E_UPGRADE_TESTS_SERVING_USE controls the usage of ksvc forwarder of Serving
+export E2E_UPGRADE_TESTS_SERVING_USE=false
+# The environment variable E2E_UPGRADE_TESTS_SERVING_SCALETOZERO controls whether the ksvc can scale to zero.
+# FIXME(ksuszyns): remove when knative/operator#297 is fixed
+export E2E_UPGRADE_TESTS_SERVING_SCALETOZERO=false
+
 # Create test resources and images
 function test_setup() {
   download_knative "knative/eventing" eventing "${KNATIVE_REPO_BRANCH}"

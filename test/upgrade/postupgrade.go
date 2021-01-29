@@ -34,26 +34,26 @@ import (
 // the deletion after the operator upgrades to the latest release.
 func OperatorPostUpgradeTests() []pkgupgrade.Operation {
 	return []pkgupgrade.Operation{
-		ServingPostUpgradeTests(),
-		EventingPostUpgradeTests(),
+		ServingCRPostUpgradeTests(),
+		EventingCRPostUpgradeTests(),
 	}
 }
 
-// ServingPostUpgradeTests verifies Knative Serving installation after the upgrade.
-func ServingPostUpgradeTests() pkgupgrade.Operation {
+// ServingCRPostUpgradeTests verifies Knative Serving installation after the upgrade.
+func ServingCRPostUpgradeTests() pkgupgrade.Operation {
 	return pkgupgrade.NewOperation("ServingPostUpgradeTests", func(c pkgupgrade.Context) {
-		servingPostUpgrade(c.T)
+		servingCRPostUpgrade(c.T)
 	})
 }
 
-// EventingPostUpgradeTests verifies Knative Eventing installation after the upgrade.
-func EventingPostUpgradeTests() pkgupgrade.Operation {
+// EventingCRPostUpgradeTests verifies Knative Eventing installation after the upgrade.
+func EventingCRPostUpgradeTests() pkgupgrade.Operation {
 	return pkgupgrade.NewOperation("EventingPostUpgradeTests", func(c pkgupgrade.Context) {
-		eventingPostUpgrade(c.T)
+		eventingCRPostUpgrade(c.T)
 	})
 }
 
-func servingPostUpgrade(t *testing.T) {
+func servingCRPostUpgrade(t *testing.T) {
 	clients := client.Setup(t)
 
 	names := test.ResourceNames{
@@ -102,7 +102,7 @@ func servingPostUpgrade(t *testing.T) {
 	})
 }
 
-func eventingPostUpgrade(t *testing.T) {
+func eventingCRPostUpgrade(t *testing.T) {
 	clients := client.Setup(t)
 
 	names := test.ResourceNames{

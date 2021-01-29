@@ -31,13 +31,13 @@ func TestServingUpgrades(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade: append([]pkgupgrade.Operation{
-				ServingPreUpgradeTests(),
+				ServingCRPreUpgradeTests(),
 			}, servingupgrade.ServingPreUpgradeTests()...),
 			PostUpgrade: append([]pkgupgrade.Operation{
-				ServingPostUpgradeTests(),
+				ServingCRPostUpgradeTests(),
 			}, servingupgrade.ServingPostUpgradeTests()...),
 			PostDowngrade: append([]pkgupgrade.Operation{
-				ServingPostDowngradeTests(),
+				ServingCRPostDowngradeTests(),
 			}, servingupgrade.ServingPostDowngradeTests()...),
 			Continual: servingupgrade.ContinualTests(),
 		},

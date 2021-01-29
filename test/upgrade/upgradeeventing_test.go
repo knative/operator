@@ -31,15 +31,15 @@ func TestEventingUpgrades(t *testing.T) {
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
 			PreUpgrade: []pkgupgrade.Operation{
-				EventingPreUpgradeTests(),
+				EventingCRPreUpgradeTests(),
 				eventingupgrade.PreUpgradeTest(),
 			},
 			PostUpgrade: []pkgupgrade.Operation{
-				EventingPostUpgradeTests(),
+				EventingCRPostUpgradeTests(),
 				eventingupgrade.PostUpgradeTest(),
 			},
 			PostDowngrade: []pkgupgrade.Operation{
-				EventingPostDowngradeTests(),
+				EventingCRPostDowngradeTests(),
 				eventingupgrade.PostDowngradeTest(),
 			},
 			Continual: []pkgupgrade.BackgroundOperation{

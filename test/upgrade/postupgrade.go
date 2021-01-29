@@ -41,14 +41,14 @@ func OperatorPostUpgradeTests() []pkgupgrade.Operation {
 
 // ServingCRPostUpgradeTests verifies Knative Serving installation after the upgrade.
 func ServingCRPostUpgradeTests() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation("ServingPostUpgradeTests", func(c pkgupgrade.Context) {
+	return pkgupgrade.NewOperation("ServingCRPostUpgradeTests", func(c pkgupgrade.Context) {
 		servingCRPostUpgrade(c.T)
 	})
 }
 
 // EventingCRPostUpgradeTests verifies Knative Eventing installation after the upgrade.
 func EventingCRPostUpgradeTests() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation("EventingPostUpgradeTests", func(c pkgupgrade.Context) {
+	return pkgupgrade.NewOperation("EventingCRPostUpgradeTests", func(c pkgupgrade.Context) {
 		eventingCRPostUpgrade(c.T)
 	})
 }

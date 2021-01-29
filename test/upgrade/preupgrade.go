@@ -41,14 +41,14 @@ func OperatorPreUpgradeTests() []pkgupgrade.Operation {
 
 // ServingCRPreUpgradeTests verifies the KnativeServing creation for the previous release.
 func ServingCRPreUpgradeTests() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation("ServingPreUpgradeTests", func(c pkgupgrade.Context) {
+	return pkgupgrade.NewOperation("ServingCRPreUpgradeTests", func(c pkgupgrade.Context) {
 		servingCRPreUpgrade(c.T)
 	})
 }
 
 // EventingCRPreUpgradeTests verifies the KnativeEventing creation for the previous release.
 func EventingCRPreUpgradeTests() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation("EventingPreUpgradeTests", func(c pkgupgrade.Context) {
+	return pkgupgrade.NewOperation("EventingCRPreUpgradeTests", func(c pkgupgrade.Context) {
 		eventingCRPreUpgrade(c.T)
 	})
 }

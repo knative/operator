@@ -20,6 +20,8 @@ import (
 	"os"
 	"testing"
 
+	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
+
 	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler/common"
@@ -76,7 +78,7 @@ func servingCRPostUpgrade(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to get the manifest for Knative: %v", err)
 		}
-		expectedDeployments := resources.GetExpectedDeployments(targetManifest)
+		expectedDeployments := resources.GetExpectedDeployments(targetManifest.Filter(ingress.Filters(ks)))
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(ks),
 			expectedDeployments)

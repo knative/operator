@@ -51,7 +51,7 @@ func TestReplaceKourierGWNamespace(t *testing.T) {
 		expectedNS: Expected_NS,
 		expected: []v1.Container{{
 			Name: DEPLOY_NAME,
-			Env:  []v1.EnvVar{{Name: KourierGatewayNSEnvVarKey, Value: Expected_NS}},
+			Env:  []v1.EnvVar{{Name: kourierGatewayNSEnvVarKey, Value: Expected_NS}},
 		}},
 	}, {
 		name:           "Do Not Replace Kourier Gateway Namespace without the ingress label",
@@ -61,7 +61,7 @@ func TestReplaceKourierGWNamespace(t *testing.T) {
 		expectedNS:     Expected_NS,
 		expected: []v1.Container{{
 			Name: DEPLOY_NAME,
-			Env:  []v1.EnvVar{{Name: KourierGatewayNSEnvVarKey, Value: Kourier_GATEWAY_NS}},
+			Env:  []v1.EnvVar{{Name: kourierGatewayNSEnvVarKey, Value: Kourier_GATEWAY_NS}},
 		}},
 	}}
 
@@ -88,7 +88,7 @@ func makeUnstructuredDeployment(t *testing.T, name, ns string, labels map[string
 				Spec: v1.PodSpec{
 					Containers: []v1.Container{{
 						Name: name,
-						Env:  []v1.EnvVar{{Name: KourierGatewayNSEnvVarKey, Value: ns}},
+						Env:  []v1.EnvVar{{Name: kourierGatewayNSEnvVarKey, Value: ns}},
 					}},
 				},
 			},

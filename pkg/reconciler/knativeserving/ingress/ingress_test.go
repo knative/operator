@@ -33,7 +33,7 @@ import (
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
-const numberIngressResource = 5
+const numberIngressResource = 27
 
 func TestGetIngress(t *testing.T) {
 	os.Setenv(common.KoEnvKey, "testdata/kodata")
@@ -48,10 +48,10 @@ func TestGetIngress(t *testing.T) {
 		name:                 "Available ingresses",
 		targetVersion:        "0.18",
 		expected:             true,
-		expectedIngressesNum: NumberIngressResource,
+		expectedIngressesNum: numberIngressResource,
 	}, {
 		name:                 "Unavailable ingresses",
-		targetVersion:        "0.17",
+		targetVersion:        "0.16",
 		expected:             false,
 		expectedIngressesNum: 0,
 	}, {
@@ -208,7 +208,7 @@ func TestFilters(t *testing.T) {
 		name: "Available istio ingress",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigurations{
+				Ingress: &servingv1alpha1.IngressConfigs{
 					Istio: servingv1alpha1.IstioIngressConfiguration{
 						Enabled: true,
 					},
@@ -226,7 +226,7 @@ func TestFilters(t *testing.T) {
 		},
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigurations{
+				Ingress: &servingv1alpha1.IngressConfigs{
 					Kourier: servingv1alpha1.KourierIngressConfiguration{
 						Enabled: true,
 					},
@@ -241,7 +241,7 @@ func TestFilters(t *testing.T) {
 		},
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigurations{
+				Ingress: &servingv1alpha1.IngressConfigs{
 					Contour: servingv1alpha1.ContourIngressConfiguration{
 						Enabled: true,
 					},
@@ -287,7 +287,7 @@ func TestTransformers(t *testing.T) {
 		name: "Available istio ingress",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigurations{
+				Ingress: &servingv1alpha1.IngressConfigs{
 					Istio: servingv1alpha1.IstioIngressConfiguration{
 						Enabled: true,
 					},
@@ -299,7 +299,7 @@ func TestTransformers(t *testing.T) {
 		name: "Available kourier ingress",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigurations{
+				Ingress: &servingv1alpha1.IngressConfigs{
 					Kourier: servingv1alpha1.KourierIngressConfiguration{
 						Enabled: true,
 					},
@@ -311,7 +311,7 @@ func TestTransformers(t *testing.T) {
 		name: "Available contour ingress",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigurations{
+				Ingress: &servingv1alpha1.IngressConfigs{
 					Contour: servingv1alpha1.ContourIngressConfiguration{
 						Enabled: true,
 					},
@@ -329,7 +329,7 @@ func TestTransformers(t *testing.T) {
 		name: "All ingresses enabled",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigurations{
+				Ingress: &servingv1alpha1.IngressConfigs{
 					Contour: servingv1alpha1.ContourIngressConfiguration{
 						Enabled: true,
 					},

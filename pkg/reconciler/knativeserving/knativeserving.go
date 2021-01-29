@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 
+	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
+
 	mf "github.com/manifestival/manifestival"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -104,6 +106,8 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	}
 	stages := common.Stages{
 		common.AppendTarget,
+		ingress.AppendTargetIngresses,
+		r.filterDisabledIngresses,
 		r.transform,
 		common.Install,
 		common.CheckDeployments,
@@ -113,27 +117,33 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	return stages.Execute(ctx, &manifest, ks)
 }
 
+// filterDisabledIngresses removes the disabled ingresses from the manifests
+func (r *Reconciler) filterDisabledIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+	ks := instance.(*v1alpha1.KnativeServing)
+	*manifest = manifest.Filter(ingress.Filters(ks))
+	return nil
+}
+
 // transform mutates the passed manifest to one with common, component
 // and platform transformations applied
 func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp v1alpha1.KComponent) error {
 	logger := logging.FromContext(ctx)
 	instance := comp.(*v1alpha1.KnativeServing)
 	extra := []mf.Transformer{
-		ksc.GatewayTransform(instance, logger),
 		ksc.CustomCertsTransform(instance, logger),
 		ksc.HighAvailabilityTransform(instance, logger),
 		ksc.AggregationRuleTransform(manifest.Client),
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)
 	extra = append(extra, ksc.IngressServiceTransform())
+	extra = append(extra, ingress.Transformers(ctx, instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 
 func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
-	// TODO: add ingress, etc
-	stages := common.Stages{common.AppendInstalled, r.transform}
+	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.transform}
 	err := stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }

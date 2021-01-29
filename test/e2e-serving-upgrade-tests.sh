@@ -33,19 +33,12 @@
 
 export GO111MODULE=auto
 
-source $(dirname $0)/e2e-common.sh
-
-# TODO: remove when components can coexist in same namespace
-export TEST_EVENTING_NAMESPACE=knative-eventing
-
-function knative_setup() {
-  create_namespace
-  install_previous_operator_release
-  download_knative "${KNATIVE_SERVING_REPO:-knative/serving}" serving "${KNATIVE_REPO_BRANCH}"
-}
+source "$(dirname "${BASH_SOURCE[0]}")/e2e-common.sh"
 
 # Create test resources and images
 function test_setup() {
+  create_namespace
+  download_knative "knative/serving" serving "${KNATIVE_REPO_BRANCH}"
   echo ">> Creating test resources (test/config/) in Knative Serving repository"
   cd ${KNATIVE_DIR}/serving
   for i in $(ls test/config/*.yaml); do
@@ -62,12 +55,6 @@ function test_setup() {
 
   test_setup_logging
 
-  echo ">> Waiting for Ingress provider to be running..."
-  if [[ -n "${ISTIO_VERSION}" ]]; then
-    wait_until_pods_running istio-system || return 1
-    wait_until_service_has_external_http_address istio-system istio-ingressgateway
-  fi
-
   # Install kail if needed.
   if ! which kail >/dev/null; then
     bash <(curl -sfL https://raw.githubusercontent.com/boz/kail/master/godownloader.sh) -b "$GOPATH/bin"
@@ -82,86 +69,16 @@ function test_setup() {
   cd ${OPERATOR_DIR}
 }
 
-# This function either generate the manifest based on a branch or download the latest manifest for Knative Serving.
-# Parameter: $1 - branch name. If it is empty, download the manifest from nightly build.
+# Skip installing istio as an add-on.
+initialize "$@" --skip-istio-addon
 
-# Skip installing istio as an add-on
-initialize $@ --skip-istio-addon
+TIMEOUT=30m
 
-TIMEOUT=10m
-PROBE_TIMEOUT=20m
-failed=0
+header "Running upgrade tests"
 
-header "Listing all the pods of the previous release"
-wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
-
-header "Running preupgrade tests for Knative Serving"
-# Go to the knative serving repo
-cd ${KNATIVE_DIR}/serving
-# Tentatively disable the upgrade and downgrade tests for framework transition
-# go_test_e2e -tags=preupgrade -timeout=${TIMEOUT} ./test/upgrade \
-#  --resolvabledomain="false" "--https" || fail_test=1
-
-header "Starting prober test for serving"
-# Remove this in case we failed to clean it up in an earlier test.
-rm -f /tmp/prober-signal
-rm -f /tmp/autoscaling-signal
-rm -f /tmp/autoscaling-tbc-signal
-# Tentatively disable the upgrade and downgrade tests for framework transition
-# go_test_e2e -tags=probe -timeout=${PROBE_TIMEOUT} ./test/upgrade \
-#  --resolvabledomain="false" "--https" &
-# PROBER_PID_SERVING=$!
-# echo "Prober PID Serving is ${PROBER_PID_SERVING}"
-
-create_latest_custom_resource
-
-# If we got this far, the operator installed Knative of the latest source code.
-header "Running tests for Knative Operator"
-# Run the postupgrade tests under operator
-# Operator tests here will make sure that all the Knative deployments reach the desired states and operator CR is
-# in ready state.
-cd ${OPERATOR_DIR}
-# Temporarily comment out this line. This prow will be fixed later in another PR for serving prow.
-#go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade \
-#  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
-
-header "Listing all the pods of the current release"
-wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
-
-header "Running postupgrade tests for Knative Serving"
-# Run the postupgrade tests under serving
-cd ${KNATIVE_DIR}/serving
-# Tentatively disable the upgrade and downgrade tests for framework transition
-# go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade || failed=1
-
-install_previous_knative
-
-header "Running postdowngrade tests for Knative Operator"
-cd ${OPERATOR_DIR}
-# Temporarily comment out this line. This prow will be fixed later in another PR for serving prow.
-#go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/downgrade \
-#  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
-
-header "Listing all the pods of the previous release"
-wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
-
-header "Running postdowngrade tests for Knative Serving"
-cd ${KNATIVE_DIR}/serving
-# Tentatively disable the upgrade and downgrade tests for framework transition
-# go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade \
-#  --resolvabledomain="false" || fail_test
-
-# Tentatively disable the upgrade and downgrade tests for framework transition
-# echo "done" > /tmp/prober-signal
-# echo "done" > /tmp/autoscaling-signal
-# echo "done" > /tmp/autoscaling-tbc-signal
-header "Waiting for prober test for Knative Serving"
-# wait ${PROBER_PID_SERVING} || fail_test "Prober failed"
-
-# Require that tests succeeded.
-(( failed )) && fail_test
+go_test_e2e -tags=upgradeserving -timeout=${TIMEOUT} \
+  ./test/upgrade \
+  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" \
+  || fail_test
 
 success

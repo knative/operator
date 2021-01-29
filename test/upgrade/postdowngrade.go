@@ -32,26 +32,26 @@ import (
 // OperatorPostDowngradeTests verifies the KnativeServing and KnativeEventing creation, after downgraded to the previous version.
 func OperatorPostDowngradeTests() []pkgupgrade.Operation {
 	return []pkgupgrade.Operation{
-		ServingPostDowngradeTests(),
-		EventingPostDowngradeTests(),
+		ServingCRPostDowngradeTests(),
+		EventingCRPostDowngradeTests(),
 	}
 }
 
-// ServingPostDowngradeTests verifies the KnativeServing creation, after downgraded to the previous version.
-func ServingPostDowngradeTests() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation("ServingPostDowngradeTests", func(c pkgupgrade.Context) {
-		servingPostDowngrade(c.T)
+// ServingCRPostDowngradeTests verifies the KnativeServing creation, after downgraded to the previous version.
+func ServingCRPostDowngradeTests() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("ServingCRPostDowngradeTests", func(c pkgupgrade.Context) {
+		servingCRPostDowngrade(c.T)
 	})
 }
 
-// EventingPostDowngradeTests verifies the KnativeEventing creation, after downgraded to the previous version.
-func EventingPostDowngradeTests() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation("EventingPostDowngradeTests", func(c pkgupgrade.Context) {
-		eventingPostDowngrade(c.T)
+// EventingCRPostDowngradeTests verifies the KnativeEventing creation, after downgraded to the previous version.
+func EventingCRPostDowngradeTests() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("EventingCRPostDowngradeTests", func(c pkgupgrade.Context) {
+		eventingCRPostDowngrade(c.T)
 	})
 }
 
-func eventingPostDowngrade(t *testing.T) {
+func eventingCRPostDowngrade(t *testing.T) {
 	clients := client.Setup(t)
 
 	names := test.ResourceNames{
@@ -95,7 +95,7 @@ func eventingPostDowngrade(t *testing.T) {
 	})
 }
 
-func servingPostDowngrade(t *testing.T) {
+func servingCRPostDowngrade(t *testing.T) {
 	clients := client.Setup(t)
 
 	names := test.ResourceNames{

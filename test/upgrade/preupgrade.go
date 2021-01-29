@@ -34,26 +34,26 @@ import (
 // OperatorPreUpgradeTests verifies the KnativeServing and KnativeEventing creation, before upgraded to the latest HEAD.
 func OperatorPreUpgradeTests() []pkgupgrade.Operation {
 	return []pkgupgrade.Operation{
-		ServingPreUpgradeTests(),
-		EventingPreUpgradeTests(),
+		ServingCRPreUpgradeTests(),
+		EventingCRPreUpgradeTests(),
 	}
 }
 
-// ServingPreUpgradeTests verifies the KnativeServing creation for the previous release.
-func ServingPreUpgradeTests() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation("ServingPreUpgradeTests", func(c pkgupgrade.Context) {
-		servingPreUpgrade(c.T)
+// ServingCRPreUpgradeTests verifies the KnativeServing creation for the previous release.
+func ServingCRPreUpgradeTests() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("ServingCRPreUpgradeTests", func(c pkgupgrade.Context) {
+		servingCRPreUpgrade(c.T)
 	})
 }
 
-// EventingPreUpgradeTests verifies the KnativeEventing creation for the previous release.
-func EventingPreUpgradeTests() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation("EventingPreUpgradeTests", func(c pkgupgrade.Context) {
-		eventingPreUpgrade(c.T)
+// EventingCRPreUpgradeTests verifies the KnativeEventing creation for the previous release.
+func EventingCRPreUpgradeTests() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("EventingCRPreUpgradeTests", func(c pkgupgrade.Context) {
+		eventingCRPreUpgrade(c.T)
 	})
 }
 
-func servingPreUpgrade(t *testing.T) {
+func servingCRPreUpgrade(t *testing.T) {
 	clients := client.Setup(t)
 	names := test.ResourceNames{
 		KnativeServing: test.OperatorName,
@@ -86,7 +86,7 @@ func servingPreUpgrade(t *testing.T) {
 	})
 }
 
-func eventingPreUpgrade(t *testing.T) {
+func eventingCRPreUpgrade(t *testing.T) {
 	clients := client.Setup(t)
 	names := test.ResourceNames{
 		KnativeEventing: test.OperatorName,

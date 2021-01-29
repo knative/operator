@@ -33,25 +33,17 @@
 
 export GO111MODULE=auto
 
-source $(dirname $0)/e2e-common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/e2e-common.sh"
 
-readonly EVENTING_READY_FILE="/tmp/prober-ready-eventing"
-readonly EVENTING_PROBER_FILE="/tmp/prober-signal-eventing"
-
-# TODO: remove when components can coexist in same namespace
-export TEST_EVENTING_NAMESPACE=knative-eventing
+# The environment variable E2E_UPGRADE_TESTS_SERVING_USE controls the usage of ksvc forwarder of Serving
 export E2E_UPGRADE_TESTS_SERVING_USE=false
+# The environment variable E2E_UPGRADE_TESTS_SERVING_SCALETOZERO controls whether the ksvc can scale to zero.
 # FIXME(ksuszyns): remove when knative/operator#297 is fixed
 export E2E_UPGRADE_TESTS_SERVING_SCALETOZERO=false
 
-function knative_setup() {
-  create_namespace
-  install_previous_operator_release
-  download_knative "${KNATIVE_EVENTING_REPO:-knative/eventing}" eventing "${KNATIVE_REPO_BRANCH}"
-}
-
 # Create test resources and images
 function test_setup() {
+  download_knative "knative/eventing" eventing "${KNATIVE_REPO_BRANCH}"
   # Install kail if needed.
   if ! which kail >/dev/null; then
     bash <(curl -sfL https://raw.githubusercontent.com/boz/kail/master/godownloader.sh) -b "$GOPATH/bin"
@@ -69,78 +61,16 @@ function test_setup() {
   cd ${OPERATOR_DIR}
 }
 
-# Skip installing istio as an add-on
-initialize $@ --skip-istio-addon
+# Skip installing istio as an add-on.
+initialize "$@" --skip-istio-addon
 
-TIMEOUT=10m
-PROBE_TIMEOUT=20m
-failed=0
+TIMEOUT=30m
 
-header "Listing all the pods of the previous release"
-wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
+header "Running upgrade tests"
 
-header "Running preupgrade tests for Knative Eventing"
-# Go to the knative eventing repo
-cd ${KNATIVE_DIR}/eventing
-# Tentatively disable the upgrade and downgrade tests for framework transition
-# go_test_e2e -tags=preupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test=1
-
-header "Starting prober test for Knative Eventing"
-# Remove this in case we failed to clean it up in an earlier test.
-rm -f ${EVENTING_READY_FILE}
-# Tentatively disable the upgrade and downgrade tests for framework transition
-# go_test_e2e -tags=probe -timeout="${PROBE_TIMEOUT}" ./test/upgrade --pipefile="${EVENTING_PROBER_FILE}" --readyfile="${EVENTING_READY_FILE}" &
-# PROBER_PID_EVENTING=$!
-# echo "Prober PID Eventing is ${PROBER_PID_EVENTING}"
-
-# wait_for_file ${EVENTING_READY_FILE} || fail_test
-
-create_latest_custom_resource
-
-# If we got this far, the operator installed Knative of the latest source code.
-header "Running tests for Knative Operator"
-
-# Run the postupgrade tests under operator
-# Operator tests here will make sure that all the Knative deployments reach the desired states and operator CR is
-# in ready state.
-cd ${OPERATOR_DIR}
-# Temporarily comment out this line. This prow will be fixed later in another PR for eventing prow.
-#go_test_e2e -tags=postupgrade -timeout=${TIMEOUT} ./test/upgrade \
-#  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
-
-header "Listing all the pods of the current release"
-wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
-
-header "Running postupgrade tests for Knative Eventing"
-cd ${KNATIVE_DIR}/eventing
-# Tentatively disable the upgrade and downgrade tests for framework transition
-# go_test_e2e -tags=postupgrade -timeout="${TIMEOUT}" ./test/upgrade || fail_test
-
-install_previous_knative
-
-header "Running postdowngrade tests for Knative Operator"
-cd ${OPERATOR_DIR}
-# Temporarily comment out this line. This prow will be fixed later in another PR for eventing prow.
-#go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/downgrade \
-#  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" || failed=1
-
-header "Listing all the pods of the previous release"
-wait_until_pods_running ${TEST_NAMESPACE}
-wait_until_pods_running ${TEST_EVENTING_NAMESPACE}
-
-header "Running postdowngrade tests for Knative Eventing"
-cd ${KNATIVE_DIR}/eventing
-# Tentatively disable the upgrade and downgrade tests for framework transition
-# go_test_e2e -tags=postdowngrade -timeout=${TIMEOUT} ./test/upgrade || fail_test
-
-# Tentatively disable the upgrade and downgrade tests for framework transition
-# echo "done" > ${EVENTING_PROBER_FILE}
-# header "Waiting for prober test for Knative Eventing"
-# wait ${PROBER_PID_EVENTING} || fail_test "Prober failed"
-
-# Require that tests succeeded.
-(( failed )) && fail_test
+go_test_e2e -tags=upgradeeventing -timeout=${TIMEOUT} \
+  ./test/upgrade \
+  --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" \
+  || fail_test
 
 success

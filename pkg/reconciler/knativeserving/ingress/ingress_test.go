@@ -21,7 +21,7 @@ import (
 	"os"
 	"testing"
 
-	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -43,22 +43,22 @@ func TestGetIngress(t *testing.T) {
 		name                 string
 		targetVersion        string
 		expected             bool
-		expectedIngressesNum int
+		expectedResourcesNum int
 	}{{
 		name:                 "Available ingresses",
 		targetVersion:        "0.18",
 		expected:             true,
-		expectedIngressesNum: numberIngressResource,
+		expectedResourcesNum: numberIngressResource,
 	}, {
 		name:                 "Unavailable ingresses",
 		targetVersion:        "0.16",
 		expected:             false,
-		expectedIngressesNum: 0,
+		expectedResourcesNum: 0,
 	}, {
 		name:                 "Missing version",
 		targetVersion:        "",
 		expected:             true,
-		expectedIngressesNum: 0,
+		expectedResourcesNum: 0,
 	}}
 
 	for _, tt := range tests {
@@ -66,7 +66,7 @@ func TestGetIngress(t *testing.T) {
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
 			err := getIngress(tt.targetVersion, &manifest)
 			util.AssertEqual(t, err == nil, tt.expected)
-			util.AssertEqual(t, len(manifest.Resources()), tt.expectedIngressesNum)
+			util.AssertEqual(t, len(manifest.Resources()), tt.expectedResourcesNum)
 		})
 	}
 }
@@ -79,7 +79,7 @@ func TestAppendInstalledIngresses(t *testing.T) {
 		name                 string
 		instance             servingv1alpha1.KnativeServing
 		expected             bool
-		expectedIngressesNum int
+		expectedResourcesNum int
 	}{{
 		name: "Available installed ingresses",
 		instance: servingv1alpha1.KnativeServing{
@@ -89,7 +89,7 @@ func TestAppendInstalledIngresses(t *testing.T) {
 			},
 		},
 		expected:             true,
-		expectedIngressesNum: numberIngressResource,
+		expectedResourcesNum: numberIngressResource,
 	}, {
 		name: "Available installed ingresses for missing status.version",
 		instance: servingv1alpha1.KnativeServing{
@@ -101,7 +101,7 @@ func TestAppendInstalledIngresses(t *testing.T) {
 			Status: servingv1alpha1.KnativeServingStatus{},
 		},
 		expected:             true,
-		expectedIngressesNum: numberIngressResource,
+		expectedResourcesNum: numberIngressResource,
 	}}
 
 	for _, tt := range tests {
@@ -109,39 +109,166 @@ func TestAppendInstalledIngresses(t *testing.T) {
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
 			err := AppendInstalledIngresses(context.TODO(), &manifest, &tt.instance)
 			util.AssertEqual(t, err == nil, tt.expected)
-			util.AssertEqual(t, len(manifest.Resources()), tt.expectedIngressesNum)
+			util.AssertEqual(t, len(manifest.Resources()), tt.expectedResourcesNum)
 		})
 	}
 }
 
-func TestAppendTargetIngresses(t *testing.T) {
+func TestGetIngressWithFilters(t *testing.T) {
 	os.Setenv(common.KoEnvKey, "testdata/kodata")
 	defer os.Unsetenv(common.KoEnvKey)
-
+	version := "0.18"
 	tests := []struct {
 		name                 string
 		instance             servingv1alpha1.KnativeServing
+		expectedManifestPath string
 		expected             bool
-		expectedIngressesNum int
 	}{{
-		name: "Available installed ingresses",
+		name: "Enabled Istio ingress for target manifests",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				CommonSpec: servingv1alpha1.CommonSpec{
-					Version: "0.18.1",
+					Version: version,
+				},
+				Ingress: &servingv1alpha1.IngressConfigs{
+					Istio: servingv1alpha1.IstioIngressConfiguration{
+						Enabled: true,
+					},
 				},
 			},
 		},
 		expected:             true,
-		expectedIngressesNum: numberIngressResource,
+		expectedManifestPath: os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/net-istio.yaml",
+	}, {
+		name: "Enabled Contour ingress for target manifests",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Version: version,
+				},
+				Ingress: &servingv1alpha1.IngressConfigs{
+					Contour: servingv1alpha1.ContourIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expected:             true,
+		expectedManifestPath: os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/net-contour.yaml",
+	}, {
+		name: "Enabled Kourier ingress for target manifests",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Version: version,
+				},
+				Ingress: &servingv1alpha1.IngressConfigs{
+					Kourier: servingv1alpha1.KourierIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expected:             true,
+		expectedManifestPath: os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/kourier.yaml",
+	}, {
+		name: "Enabled Contour and Kourier ingress for target manifests",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Version: version,
+				},
+				Ingress: &servingv1alpha1.IngressConfigs{
+					Kourier: servingv1alpha1.KourierIngressConfiguration{
+						Enabled: true,
+					},
+					Contour: servingv1alpha1.ContourIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expected: true,
+		expectedManifestPath: os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/net-contour.yaml" + "," +
+			os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/kourier.yaml",
+	}, {
+		name: "Enabled Istio and Kourier ingress for target manifests",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Version: version,
+				},
+				Ingress: &servingv1alpha1.IngressConfigs{
+					Kourier: servingv1alpha1.KourierIngressConfiguration{
+						Enabled: true,
+					},
+					Istio: servingv1alpha1.IstioIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expected: true,
+		expectedManifestPath: os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/kourier.yaml" + "," +
+			os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/net-istio.yaml",
+	}, {
+		name: "Enabled Istio and Contour ingress for target manifests",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Version: version,
+				},
+				Ingress: &servingv1alpha1.IngressConfigs{
+					Contour: servingv1alpha1.ContourIngressConfiguration{
+						Enabled: true,
+					},
+					Istio: servingv1alpha1.IstioIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expected: true,
+		expectedManifestPath: os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/net-contour.yaml" + "," +
+			os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/net-istio.yaml",
+	}, {
+		name: "Enabled All ingresses for target manifests",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Version: version,
+				},
+				Ingress: &servingv1alpha1.IngressConfigs{
+					Contour: servingv1alpha1.ContourIngressConfiguration{
+						Enabled: true,
+					},
+					Istio: servingv1alpha1.IstioIngressConfiguration{
+						Enabled: true,
+					},
+					Kourier: servingv1alpha1.KourierIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expected:             true,
+		expectedManifestPath: os.Getenv(common.KoEnvKey) + "/ingress/" + version,
 	}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			targetIngressManifests, err := common.FetchManifest(tt.expectedManifestPath)
+			util.AssertEqual(t, err, nil)
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
-			err := AppendTargetIngresses(context.TODO(), &manifest, &tt.instance)
+			err = getIngress(version, &manifest)
 			util.AssertEqual(t, err == nil, tt.expected)
-			util.AssertEqual(t, len(manifest.Resources()), tt.expectedIngressesNum)
+			manifest = manifest.Filter(Filters(&tt.instance))
+			// The resources loaded with the enabled istio ingress returns exactly the same resources as we
+			// expect from the ingress yaml file.
+			// The manifest could have more resources than targetIngressManifests, because if the resource is not
+			// labelled with the ingress provider, it will be kept. We can make sure all the resources in targetIngressManifests
+			// exist in the manifest.
+			util.AssertEqual(t, len(targetIngressManifests.Filter(mf.Not(mf.In(manifest))).Resources()), 0)
 		})
 	}
 }
@@ -150,62 +277,52 @@ func TestIngressFilter(t *testing.T) {
 	tests := []struct {
 		name        string
 		ingressName string
-		label       map[string]string
+		label       string
 		expected    bool
 	}{{
 		name:        "Available installed ingresses",
 		ingressName: "istio",
-		label: map[string]string{
-			"networking.knative.dev/ingress-provider": "istio",
-		},
-		expected: true,
+		label:       "istio",
+		expected:    true,
 	}, {
 		name:        "Missing ingress label",
 		ingressName: "istio",
-		label:       map[string]string{},
+		label:       "",
 		expected:    true,
 	}, {
 		name:        "Wrong ingress label",
 		ingressName: "istio",
-		label: map[string]string{
-			"networking.knative.dev/ingress-provider": "kourier",
-		},
-		expected: false,
+		label:       "kourier",
+		expected:    false,
 	}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := makeUnstructured(t, "test-resource", tt.label)
+			u := makeIngressResource(t, "test-resource", "knative-serving", tt.label)
 			result := ingressFilter(tt.ingressName)(u)
 			util.AssertEqual(t, result, tt.expected)
 		})
 	}
 }
 
-func makeUnstructured(t *testing.T, name string, labels map[string]string) *unstructured.Unstructured {
-	d := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   name,
-			Labels: labels,
-		},
-		Spec: appsv1.DeploymentSpec{},
-	}
-	result := &unstructured.Unstructured{}
-	err := scheme.Scheme.Convert(d, result, nil)
-	if err != nil {
-		t.Fatalf("Could not create unstructured Deployment: %v, err: %v", d, err)
-	}
-	return result
-}
-
+// TestFilters checks if s certain resource with a network provider label will be correctly returned when passing
+// the filters. If the resource is not labelled with the network provider label, it will be returned by default,
+// regardless of the configuration of the filters.
 func TestFilters(t *testing.T) {
+	servicename := "test-service"
+	namespace := "knative-serving"
 	tests := []struct {
 		name     string
 		instance servingv1alpha1.KnativeServing
-		label    map[string]string
-		expected bool
+		// This label is used to mark the tested resource to indicate which ingress it belongs to.
+		// Empty label means no label for the resource.
+		labels []string
+		// The expected result indicates whether the resource is kept or not.
+		// If it is true, the resource is kept after the filter.
+		// If it is false, the resource is removed after the filter.
+		expected []bool
 	}{{
-		name: "Available istio ingress",
+		name: "Enabled Istio ingress for all resources",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
@@ -215,15 +332,17 @@ func TestFilters(t *testing.T) {
 				},
 			},
 		},
-		label: map[string]string{
-			"networking.knative.dev/ingress-provider": "istio",
-		},
-		expected: true,
+		labels:   []string{"istio", "contour", "kourier", ""},
+		expected: []bool{true, false, false, true},
 	}, {
-		name: "Available kourier ingress",
-		label: map[string]string{
-			"networking.knative.dev/ingress-provider": "kourier",
+		name: "Default ingress for all resources",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{},
 		},
+		labels:   []string{"istio", "contour", "kourier", ""},
+		expected: []bool{true, false, false, true},
+	}, {
+		name: "Enabled kourier ingress for all resources",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
@@ -233,12 +352,10 @@ func TestFilters(t *testing.T) {
 				},
 			},
 		},
-		expected: true,
+		labels:   []string{"istio", "contour", "kourier", ""},
+		expected: []bool{false, false, true, true},
 	}, {
-		name: "Available contour ingress",
-		label: map[string]string{
-			"networking.knative.dev/ingress-provider": "contour",
-		},
+		name: "Enabled Contour ingress for all resources",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
@@ -248,32 +365,84 @@ func TestFilters(t *testing.T) {
 				},
 			},
 		},
-		expected: true,
+		labels:   []string{"istio", "contour", "kourier", ""},
+		expected: []bool{false, true, false, true},
 	}, {
-		name: "Empty ingress for default istio",
-		label: map[string]string{
-			"networking.knative.dev/ingress-provider": "istio",
-		},
+		name: "Enabled Contour and Istio ingress for all resources",
 		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{},
+			Spec: servingv1alpha1.KnativeServingSpec{
+				Ingress: &servingv1alpha1.IngressConfigs{
+					Contour: servingv1alpha1.ContourIngressConfiguration{
+						Enabled: true,
+					},
+					Istio: servingv1alpha1.IstioIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
 		},
-		expected: true,
+		labels:   []string{"istio", "contour", "kourier", ""},
+		expected: []bool{true, true, false, true},
 	}, {
-		name: "Empty ingress for non default ingress",
-		label: map[string]string{
-			"networking.knative.dev/ingress-provider": "kourier",
-		},
+		name: "Enabled Kourier and Istio ingress for all resources",
 		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{},
+			Spec: servingv1alpha1.KnativeServingSpec{
+				Ingress: &servingv1alpha1.IngressConfigs{
+					Kourier: servingv1alpha1.KourierIngressConfiguration{
+						Enabled: true,
+					},
+					Istio: servingv1alpha1.IstioIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
 		},
-		expected: false,
+		labels:   []string{"istio", "contour", "kourier", ""},
+		expected: []bool{true, false, true, true},
+	}, {
+		name: "Enabled Kourier and Contour ingress for all resources",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{
+				Ingress: &servingv1alpha1.IngressConfigs{
+					Kourier: servingv1alpha1.KourierIngressConfiguration{
+						Enabled: true,
+					},
+					Contour: servingv1alpha1.ContourIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		labels:   []string{"istio", "contour", "kourier", ""},
+		expected: []bool{false, true, true, true},
+	}, {
+		name: "Enabled All ingress for all resources",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{
+				Ingress: &servingv1alpha1.IngressConfigs{
+					Istio: servingv1alpha1.IstioIngressConfiguration{
+						Enabled: true,
+					},
+					Kourier: servingv1alpha1.KourierIngressConfiguration{
+						Enabled: true,
+					},
+					Contour: servingv1alpha1.ContourIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		labels:   []string{"istio", "contour", "kourier", ""},
+		expected: []bool{true, true, true, true},
 	}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := makeUnstructured(t, "test-resource", tt.label)
-			result := Filters(&tt.instance)(u)
-			util.AssertEqual(t, result, tt.expected)
+			for i, label := range tt.labels {
+				ingressResource := makeIngressResource(t, servicename, namespace, label)
+				result := Filters(&tt.instance)(ingressResource)
+				util.AssertEqual(t, result, tt.expected[i])
+			}
 		})
 	}
 }
@@ -351,4 +520,27 @@ func TestTransformers(t *testing.T) {
 			util.AssertEqual(t, len(transformers), tt.expected)
 		})
 	}
+}
+
+func makeIngressResource(t *testing.T, name, ns, ingressLabel string) *unstructured.Unstructured {
+	labels := map[string]string{}
+	if ingressLabel != "" {
+		labels = map[string]string{
+			"networking.knative.dev/ingress-provider": ingressLabel,
+		}
+	}
+	service := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: ns,
+			Labels:    labels,
+		},
+	}
+	result := &unstructured.Unstructured{}
+	err := scheme.Scheme.Convert(service, result, nil)
+	if err != nil {
+		t.Fatalf("Could not create unstructured Service: %v, err: %v", service, err)
+	}
+
+	return result
 }

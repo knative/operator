@@ -27,7 +27,10 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
-const kourierGatewayNSEnvVarKey = "KOURIER_GATEWAY_NAMESPACE"
+const (
+	kourierGatewayNSEnvVarKey = "KOURIER_GATEWAY_NAMESPACE"
+	kourierDeploymentName     = "3scale-kourier-control"
+)
 
 var kourierFilter = ingressFilter("kourier")
 
@@ -40,7 +43,7 @@ func kourierTransformers(ctx context.Context, instance *v1alpha1.KnativeServing)
 // replaceKourierGWNamespace replace the environment variable KOURIER_GATEWAY_NAMESPACE with the namespace of the Knative Serving CR
 func replaceKourierGWNamespace(ns string) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Deployment" {
+		if u.GetKind() == "Deployment" && u.GetName() == kourierDeploymentName {
 			_, hasLabel := u.GetLabels()[providerLabel]
 			if !hasLabel {
 				return nil

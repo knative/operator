@@ -20,6 +20,8 @@ import (
 	"os"
 	"testing"
 
+	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
+
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler/common"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
@@ -132,7 +134,7 @@ func servingCRPostDowngrade(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to get KnativeServing manifest: %v", err)
 		}
-		expectedDeployments := resources.GetExpectedDeployments(preManifest)
+		expectedDeployments := resources.GetExpectedDeployments(preManifest.Filter(ingress.Filters(instance)))
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(instance),
 			expectedDeployments)

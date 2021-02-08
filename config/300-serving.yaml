@@ -191,6 +191,28 @@ spec:
                       ephemeral-storage:
                         type: string
                         pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+            ingress:
+              description: The ingress configuration for Knative Serving
+              type: object
+              properties:
+                istio:
+                  description: Istio settings
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                kourier:
+                  description: Kourier settings
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                contour:
+                  description: Contour settings
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
           type: object
         status:
           description: Status defines the observed state of KnativeServing

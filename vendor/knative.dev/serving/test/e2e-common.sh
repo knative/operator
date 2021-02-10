@@ -30,8 +30,6 @@ CONTOUR_VERSION=""
 CERTIFICATE_CLASS=""
 # Only build linux/amd64 bit images
 KO_FLAGS="--platform=linux/amd64"
-# The file name to store logs captured by kail
-KAIL_LOG_FILE="${ARTIFACTS}/k8s.log-$(basename "${E2E_SCRIPT}").txt"
 
 HTTPS=0
 export MESH=0
@@ -66,7 +64,7 @@ LATEST_NET_ISTIO_RELEASE_VERSION=$(
 function parse_flags() {
   case "$1" in
     --istio-version)
-      [[ $2 =~ ^(stable|latest)$ ]] || abort "version format must be 'stable' or 'latest'"
+      [[ $2 =~ ^(stable|latest|head)$ ]] || abort "version format must be 'stable', 'latest', or 'head'"
       readonly ISTIO_VERSION=$2
       readonly INGRESS_CLASS="istio.ingress.networking.knative.dev"
       return 2
@@ -400,7 +398,7 @@ function test_setup() {
   fi
 
   # Capture all logs.
-  kail > "${KAIL_LOG_FILE}" &
+  kail > "${ARTIFACTS}/k8s.log-$(basename "${E2E_SCRIPT}").txt" &
   local kail_pid=$!
   # Clean up kail so it doesn't interfere with job shutting down
   add_trap "kill $kail_pid || true" EXIT

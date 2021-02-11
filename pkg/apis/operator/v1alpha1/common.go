@@ -63,6 +63,9 @@ type KComponentSpec interface {
 	GetManifests() []Manifest
 	// GetAdditionalManifests gets the list of additional manifests, which should be installed
 	GetAdditionalManifests() []Manifest
+
+	// GetHighAvailability returns means to set the number of desired replicas
+	GetHighAvailability() *HighAvailability
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -134,6 +137,10 @@ type CommonSpec struct {
 	// A means to specify the additional manifests to install
 	// +optional
 	AdditionalManifests []Manifest `json:"additionalManifests,omitempty"`
+
+	// Allows specification of HA control plane
+	// +optional
+	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
 }
 
 // GetConfig implements KComponentSpec.
@@ -164,6 +171,11 @@ func (c *CommonSpec) GetManifests() []Manifest {
 // GetAdditionalManifests implements KComponentSpec.
 func (c *CommonSpec) GetAdditionalManifests() []Manifest {
 	return c.AdditionalManifests
+}
+
+// GetHighAvailability implements KComponentSpec.
+func (c *CommonSpec) GetHighAvailability() *HighAvailability {
+	return c.HighAvailability
 }
 
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first
@@ -205,4 +217,13 @@ type ResourceRequirementsOverride struct {
 type Manifest struct {
 	// The link of the manifest URL
 	Url string `json:"URL"`
+}
+
+// HighAvailability specifies options for deploying Knative Serving control
+// plane in a highly available manner. Note that HighAvailability is still in
+// progress and does not currently provide a completely HA control plane.
+type HighAvailability struct {
+	// Replicas is the number of replicas that HA parts of the control plane
+	// will be scaled to.
+	Replicas int32 `json:"replicas"`
 }

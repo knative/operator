@@ -26,14 +26,14 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
 func TestHighAvailabilityTransform(t *testing.T) {
 	cases := []struct {
 		name     string
-		config   *servingv1alpha1.HighAvailability
+		config   *v1alpha1.HighAvailability
 		in       *unstructured.Unstructured
 		expected *unstructured.Unstructured
 		err      error
@@ -47,8 +47,7 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		config: makeHa(2),
 		in:     makeUnstructuredConfigMap(t, nil),
 		expected: makeUnstructuredConfigMap(t, map[string]string{
-			enabledComponentsKey: componentsValue,
-		}),
+			enabledComponentsKey: servingComponentsValue}),
 	}, {
 		name:     "HA; controller",
 		config:   makeHa(2),
@@ -94,9 +93,11 @@ func TestHighAvailabilityTransform(t *testing.T) {
 	for i := range cases {
 		tc := cases[i]
 
-		instance := &servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				HighAvailability: tc.config,
+		instance := &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					HighAvailability: tc.config,
+				},
 			},
 		}
 
@@ -108,8 +109,8 @@ func TestHighAvailabilityTransform(t *testing.T) {
 	}
 }
 
-func makeHa(replicas int32) *servingv1alpha1.HighAvailability {
-	return &servingv1alpha1.HighAvailability{
+func makeHa(replicas int32) *v1alpha1.HighAvailability {
+	return &v1alpha1.HighAvailability{
 		Replicas: replicas,
 	}
 }

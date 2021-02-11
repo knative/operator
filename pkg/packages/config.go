@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"golang.org/x/mod/semver"
-	"gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 // Package represents a single deployable set of software artifacts, possibly
@@ -90,7 +90,7 @@ func ReadConfig(path string) (retval map[string]*Package, err error) {
 	if err != nil {
 		return
 	}
-	err = yaml.UnmarshalStrict(bytes, retval)
+	err = yaml.Unmarshal(bytes, retval)
 	if err != nil {
 		return
 	}

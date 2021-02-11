@@ -117,7 +117,7 @@ github.com/evanphx/json-patch/v5
 # github.com/go-logr/logr v0.4.0
 github.com/go-logr/logr
 github.com/go-logr/logr/testing
-# github.com/go-logr/zapr v0.2.0
+# github.com/go-logr/zapr v0.4.0
 ## explicit
 github.com/go-logr/zapr
 # github.com/go-openapi/jsonpointer v0.19.5
@@ -155,9 +155,9 @@ github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
 # github.com/google/go-containerregistry v0.4.1-0.20210128200529-19c2b639fab1
 github.com/google/go-containerregistry/pkg/name
-# github.com/google/go-github/v32 v32.1.0
+# github.com/google/go-github/v33 v33.0.0
 ## explicit
-github.com/google/go-github/v32/github
+github.com/google/go-github/v33/github
 # github.com/google/go-querystring v1.0.0
 github.com/google/go-querystring/query
 # github.com/google/gofuzz v1.2.0

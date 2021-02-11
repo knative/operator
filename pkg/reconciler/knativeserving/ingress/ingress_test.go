@@ -447,6 +447,7 @@ func TestFilters(t *testing.T) {
 	}
 }
 
+// TODO: This test verifies the number of transformers. It should be rewritten by better test.
 func TestTransformers(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -475,7 +476,7 @@ func TestTransformers(t *testing.T) {
 				},
 			},
 		},
-		expected: 1,
+		expected: 2,
 	}, {
 		name: "Available contour ingress",
 		instance: servingv1alpha1.KnativeServing{
@@ -511,7 +512,7 @@ func TestTransformers(t *testing.T) {
 				},
 			},
 		},
-		expected: 2,
+		expected: 3,
 	}}
 
 	for _, tt := range tests {

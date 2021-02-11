@@ -207,6 +207,8 @@ spec:
                   properties:
                     enabled:
                       type: boolean
+                    service-type:
+                      type: string
                 contour:
                   description: Contour settings
                   type: object

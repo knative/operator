@@ -3,9 +3,9 @@ module knative.dev/operator
 go 1.15
 
 require (
-	github.com/go-logr/zapr v0.2.0
+	github.com/go-logr/zapr v0.4.0
 	github.com/google/go-cmp v0.5.4
-	github.com/google/go-github/v32 v32.1.0
+	github.com/google/go-github/v33 v33.0.0
 	github.com/manifestival/client-go-client v0.4.0
 	github.com/manifestival/manifestival v0.6.1
 	go.uber.org/zap v1.16.0

@@ -26,7 +26,7 @@ import (
 	"os"
 	"path/filepath"
 
-	ghclient "github.com/google/go-github/v32/github"
+	ghclient "github.com/google/go-github/v33/github"
 	"golang.org/x/oauth2"
 	"knative.dev/operator/pkg/github"
 	"knative.dev/operator/pkg/packages"

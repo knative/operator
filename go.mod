@@ -6,8 +6,8 @@ require (
 	github.com/go-logr/zapr v0.4.0
 	github.com/google/go-cmp v0.5.4
 	github.com/google/go-github/v33 v33.0.0
-	github.com/manifestival/client-go-client v0.4.0
-	github.com/manifestival/manifestival v0.6.1
+	github.com/manifestival/client-go-client v0.5.0
+	github.com/manifestival/manifestival v0.7.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/mod v0.4.1
 	golang.org/x/oauth2 v0.0.0-20210126194326-f9ce19ea3013

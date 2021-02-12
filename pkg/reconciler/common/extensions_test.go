@@ -31,7 +31,7 @@ func (t TestExtension) Manifests() []mf.Manifest {
 	if err != nil {
 		return nil
 	}
-	return []mf.Manifest {manifest}
+	return []mf.Manifest{manifest}
 }
 
 func (t TestExtension) Transformers(v1alpha1.KComponent) []mf.Transformer {

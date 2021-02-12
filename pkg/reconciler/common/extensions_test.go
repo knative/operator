@@ -26,6 +26,14 @@ import (
 
 type TestExtension string
 
+func (t TestExtension) Manifests() []mf.Manifest {
+	manifest, err := mf.NewManifest("testdata/kodata/additional-manifests/additional-sa.yaml")
+	if err != nil {
+		return nil
+	}
+	return []mf.Manifest {manifest}
+}
+
 func (t TestExtension) Transformers(v1alpha1.KComponent) []mf.Transformer {
 	if t == "fail" {
 		return nil
@@ -73,6 +81,17 @@ func TestExtensions(t *testing.T) {
 				}
 				if ext.Reconcile(context.TODO(), nil) != nil {
 					t.Error("Unexpected result")
+				}
+				if test.length == 1 {
+					manifest := test.platform.Manifests()[0]
+					if err := Transform(context.TODO(), &manifest, &v1alpha1.KnativeServing{}, transformers...); err != nil {
+						t.Error("Unexpected result")
+					}
+					for _, r := range manifest.Resources() {
+						if r.GetNamespace() != string(ext.(TestExtension)) {
+							t.Error("Unexpected result")
+						}
+					}
 				}
 				if ext.Finalize(context.TODO(), nil) != nil {
 					t.Error("Unexpected result")

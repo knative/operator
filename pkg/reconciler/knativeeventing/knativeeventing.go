@@ -106,7 +106,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 		common.CheckDeployments,
 		common.DeleteObsoleteResources(ctx, ke, r.installed),
 	}
-	manifest := r.manifest.Append()
+	manifest := r.manifest.Append(r.extension.Manifests()...)
 	return stages.Execute(ctx, &manifest, ke)
 }
 

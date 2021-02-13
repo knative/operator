@@ -48,6 +48,11 @@ var deploymentNames = sets.NewString(
 // controllers when HA control plane is specified.
 func HighAvailabilityTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
+		// If spec.deployments is configured, we assume that users already migrated the HA configuration.
+		if len(obj.GetSpec().GetDeploymentOverride()) > 0 {
+			return nil
+		}
+
 		// stash the HA object
 		ha := obj.GetSpec().GetHighAvailability()
 		if ha == nil {

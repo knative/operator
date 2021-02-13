@@ -66,6 +66,9 @@ type KComponentSpec interface {
 
 	// GetHighAvailability returns means to set the number of desired replicas
 	GetHighAvailability() *HighAvailability
+
+	// GetDeploymentOverride gets the deployment configurations to override.
+	GetDeploymentOverride() []DeploymentOverride
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -122,9 +125,14 @@ type CommonSpec struct {
 	// +optional
 	Registry Registry `json:"registry,omitempty"`
 
-	// Override containers' resource requirements
+	// Deprecated: Use DeploymentOverride instead.
+	// DeprecatedResources containers' resource requirements.
 	// +optional
-	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+	DeprecatedResources []ResourceRequirementsOverride `json:"resources,omitempty"`
+
+	// DeploymentOverride overrides Deploymeet configurations such as resources and replicas.
+	// +optional
+	DeploymentOverride []DeploymentOverride `json:"deployments,omitempty"`
 
 	// Override containers' resource requirements
 	// +optional
@@ -138,9 +146,10 @@ type CommonSpec struct {
 	// +optional
 	AdditionalManifests []Manifest `json:"additionalManifests,omitempty"`
 
-	// Allows specification of HA control plane
+	// Deprecated: Use DeploymentOverride instead.
+	// DeprecatedHighAvailability allows specification of HA control plane.
 	// +optional
-	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
+	DeprecatedHighAvailability *HighAvailability `json:"high-availability,omitempty"`
 }
 
 // GetConfig implements KComponentSpec.
@@ -155,7 +164,7 @@ func (c *CommonSpec) GetRegistry() *Registry {
 
 // GetResources implements KComponentSpec.
 func (c *CommonSpec) GetResources() []ResourceRequirementsOverride {
-	return c.Resources
+	return c.DeprecatedResources
 }
 
 // GetVersion implements KComponentSpec.
@@ -175,7 +184,12 @@ func (c *CommonSpec) GetAdditionalManifests() []Manifest {
 
 // GetHighAvailability implements KComponentSpec.
 func (c *CommonSpec) GetHighAvailability() *HighAvailability {
-	return c.HighAvailability
+	return c.DeprecatedHighAvailability
+}
+
+// GetDeploymentOverride implements KComponentSpec.
+func (c *CommonSpec) GetDeploymentOverride() []DeploymentOverride {
+	return c.DeploymentOverride
 }
 
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first
@@ -204,11 +218,44 @@ type Registry struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
+// DeploymentOverride defines the configurations of deployments to override.
+type DeploymentOverride struct {
+	// Name is the name of the deployment to override.
+	Name string `json:"name"`
+
+	// Labels overrides labels for the deployment and its template.
+	// +optional
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// Annotations overrides labels for the deployment and its template.
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Replicas is the number of replicas that HA parts of the control plane
+	// will be scaled to.
+	// +optional
+	Replicas int32 `json:"replicas,omitempty"`
+
+	// Containers overrides container's
+	// resource requests/limits specified in the embedded manifest.
+	// +optional
+	Containers []ContainerOverride `json:"containers,omitempty"`
+}
+
 // ResourceRequirementsOverride enables the user to override any container's
 // resource requests/limits specified in the embedded manifest
 type ResourceRequirementsOverride struct {
 	// The container name
 	Container string `json:"container"`
+	// The desired ResourceRequirements
+	corev1.ResourceRequirements
+}
+
+// ContainerOverride enables the user to override any container's
+// resource requests/limits specified in the embedded manifest
+type ContainerOverride struct {
+	// The container name
+	Name string `json:"name"`
 	// The desired ResourceRequirements
 	corev1.ResourceRequirements
 }

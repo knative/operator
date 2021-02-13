@@ -100,8 +100,13 @@ func TestGatewayTransform(t *testing.T) {
 			gateway := makeUnstructuredGateway(t, tt.gatewayName, tt.in)
 			instance := &servingv1alpha1.KnativeServing{
 				Spec: servingv1alpha1.KnativeServingSpec{
-					KnativeIngressGateway: tt.knativeIngressGateway,
-					ClusterLocalGateway:   tt.clusterLocalGateway,
+					Ingress: &servingv1alpha1.IngressConfigs{
+						Istio: servingv1alpha1.IstioIngressConfiguration{
+							Enabled:               true,
+							KnativeIngressGateway: &tt.knativeIngressGateway,
+							KnativeLocalGateway:   &tt.clusterLocalGateway,
+						},
+					},
 				},
 			}
 
@@ -114,6 +119,30 @@ func TestGatewayTransform(t *testing.T) {
 			if !cmp.Equal(got, tt.expected) {
 				t.Errorf("Got = %v, want: %v, diff:\n%s", got, tt.expected, cmp.Diff(got, tt.expected))
 			}
+
+			/* Run the same test with deprecated field */
+			gateway = makeUnstructuredGateway(t, tt.gatewayName, tt.in)
+			instance = &servingv1alpha1.KnativeServing{
+				Spec: servingv1alpha1.KnativeServingSpec{
+					DeprecatedKnativeIngressGateway: tt.knativeIngressGateway,
+					DeprecatedClusterLocalGateway:   tt.clusterLocalGateway,
+					Ingress: &servingv1alpha1.IngressConfigs{
+						Istio: servingv1alpha1.IstioIngressConfiguration{
+							Enabled: true,
+						},
+					},
+				},
+			}
+			gatewayTransform(instance, log)(gateway)
+
+			got, ok, err = unstructured.NestedStringMap(gateway.Object, "spec", "selector")
+			util.AssertEqual(t, err, nil)
+			util.AssertEqual(t, ok, true)
+
+			if !cmp.Equal(got, tt.expected) {
+				t.Errorf("Got = %v, want: %v, diff:\n%s", got, tt.expected, cmp.Diff(got, tt.expected))
+			}
+
 		})
 	}
 }

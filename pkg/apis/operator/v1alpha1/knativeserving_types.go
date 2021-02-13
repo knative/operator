@@ -52,11 +52,15 @@ func (ks *KnativeServing) GetStatus() KComponentStatus {
 type KnativeServingSpec struct {
 	CommonSpec `json:",inline"`
 
-	// A means to override the knative-ingress-gateway
-	KnativeIngressGateway IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
+	// DEPRECATED.
+	// DeprecatedKnativeIngressGateway is to override the knative-ingress-gateway.
+	// +optional
+	DeprecatedKnativeIngressGateway IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
 
-	// A means to override the cluster-local-gateway
-	ClusterLocalGateway IstioGatewayOverride `json:"cluster-local-gateway,omitempty"`
+	// DEPRECATED.
+	// DeprecatedClusterLocalGateway is to override the cluster-local-gateway.
+	// +optional
+	DeprecatedClusterLocalGateway IstioGatewayOverride `json:"cluster-local-gateway,omitempty"`
 
 	// Enables controller to trust registries with self-signed certificates
 	ControllerCustomCerts CustomCerts `json:"controller-custom-certs,omitempty"`
@@ -86,9 +90,9 @@ type KnativeServingList struct {
 	Items           []KnativeServing `json:"items"`
 }
 
-// IstioGatewayOverride override the knative-ingress-gateway and cluster-local-gateway
+// IstioGatewayOverride override the knative-ingress-gateway and knative-local-gateway(cluster-local-gateway)
 type IstioGatewayOverride struct {
-	// A map of values to replace the "selector" values in the knative-ingress-gateway and cluster-local-gateway
+	// A map of values to replace the "selector" values in the knative-ingress-gateway and knative-local-gateway(cluster-local-gateway)
 	Selector map[string]string `json:"selector,omitempty"`
 }
 
@@ -112,6 +116,14 @@ type IngressConfigs struct {
 // IstioIngressConfiguration specifies options for the istio ingresses.
 type IstioIngressConfiguration struct {
 	Enabled bool `json:"enabled"`
+
+	// KnativeIngressGateway overrides the knative-local-gateway.
+	// +optional
+	KnativeIngressGateway *IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
+
+	// KnativeLocalGateway overrides the knative-local-gateway.
+	// +optional
+	KnativeLocalGateway *IstioGatewayOverride `json:"knative-local-gateway,omitempty"`
 }
 
 // KourierIngressConfiguration specifies whether to enable the kourier ingresses.

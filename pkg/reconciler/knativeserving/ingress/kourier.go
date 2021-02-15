@@ -88,7 +88,7 @@ func configureGWServiceType(instance *v1alpha1.KnativeServing) mf.Transformer {
 			case v1.ServiceTypeClusterIP, v1.ServiceTypeNodePort, v1.ServiceTypeLoadBalancer:
 				svc.Spec.Type = serviceType
 			default:
-				return fmt.Errorf("Unknown service type %q", serviceType)
+				return fmt.Errorf("unknown service type %q", serviceType)
 			}
 
 			if err := scheme.Scheme.Convert(svc, u, nil); err != nil {

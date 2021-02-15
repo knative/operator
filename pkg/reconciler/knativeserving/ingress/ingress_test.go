@@ -107,7 +107,7 @@ func TestAppendInstalledIngresses(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
-			err := AppendInstalledIngresses(context.TODO(), &manifest, &tt.instance)
+			err := appendInstalledIngresses(context.TODO(), &manifest, &tt.instance)
 			util.AssertEqual(t, err == nil, tt.expected)
 			util.AssertEqual(t, len(manifest.Resources()), tt.expectedResourcesNum)
 		})

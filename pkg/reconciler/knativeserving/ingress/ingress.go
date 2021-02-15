@@ -18,7 +18,6 @@ package ingress
 
 import (
 	"context"
-	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"os"
 	"path/filepath"
 
@@ -27,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler/common"
+	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
 )
 
 const providerLabel = "networking.knative.dev/ingress-provider"
@@ -94,13 +94,13 @@ func getIngress(version string, manifest *mf.Manifest) error {
 	return nil
 }
 
-// AppendTargetIngresses appends the manifests of ingresses to be installed
-func AppendTargetIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+// appendTargetIngresses appends the manifests of ingresses to be installed
+func appendTargetIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	return getIngress(common.TargetVersion(instance), manifest)
 }
 
-// AppendInstalledIngresses appends the installed manifests of ingresses
-func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+// appendInstalledIngresses appends the installed manifests of ingresses
+func appendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	version := instance.GetStatus().GetVersion()
 	if version == "" {
 		version = common.TargetVersion(instance)
@@ -108,8 +108,6 @@ func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instan
 	return getIngress(version, manifest)
 }
 
-
-// appendFinalIngresses appends the final manifests of ingresses after running the stages
 func appendFinalIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent, stages common.Stages) error {
 	// Create an empty manifest to load all the ingress manifest
 	var ingressManifest mf.Manifest
@@ -127,7 +125,7 @@ func appendFinalIngresses(ctx context.Context, manifest *mf.Manifest, instance v
 // AppendFinalInstalledIngresses appends the final installed manifests of ingresses after the filters and transformers
 func AppendFinalInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	stages := common.Stages{
-		AppendInstalledIngresses,
+		appendInstalledIngresses,
 		transform,
 	}
 	return appendFinalIngresses(ctx, manifest, instance, stages)
@@ -136,7 +134,7 @@ func AppendFinalInstalledIngresses(ctx context.Context, manifest *mf.Manifest, i
 // AppendFinalTargetIngresses appends the final target manifests of ingresses after the filters and transformers
 func AppendFinalTargetIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	stages := common.Stages{
-		AppendTargetIngresses,
+		appendTargetIngresses,
 		filterDisabledIngresses,
 		transform,
 	}
@@ -156,6 +154,5 @@ func transform(ctx context.Context, manifest *mf.Manifest, comp v1alpha1.KCompon
 	instance := comp.(*v1alpha1.KnativeServing)
 	extra := Transformers(ctx, instance)
 	extra = append(extra, ksc.IngressServiceTransform())
-
 	return common.Transform(ctx, manifest, instance, extra...)
 }

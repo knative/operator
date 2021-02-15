@@ -116,13 +116,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	return stages.Execute(ctx, &manifest, ks)
 }
 
-// filterDisabledIngresses removes the disabled ingresses from the manifests
-func (r *Reconciler) filterDisabledIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
-	ks := instance.(*v1alpha1.KnativeServing)
-	*manifest = manifest.Filter(ingress.Filters(ks))
-	return nil
-}
-
 // transform mutates the passed manifest to one with common, component
 // and platform transformations applied
 func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp v1alpha1.KComponent) error {

@@ -18,6 +18,7 @@ package ingress
 
 import (
 	"context"
+	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"os"
 	"path/filepath"
 
@@ -105,4 +106,56 @@ func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instan
 		version = common.TargetVersion(instance)
 	}
 	return getIngress(version, manifest)
+}
+
+
+// appendFinalIngresses appends the final manifests of ingresses after running the stages
+func appendFinalIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent, stages common.Stages) error {
+	// Create an empty manifest to load all the ingress manifest
+	var ingressManifest mf.Manifest
+	ingressManifest = ingressManifest.Append()
+	err := stages.Execute(ctx, &ingressManifest, instance)
+	if err != nil {
+		return err
+	}
+
+	// In the end, append the final ingress manifest to the existing manifest.
+	*manifest = manifest.Append(ingressManifest)
+	return nil
+}
+
+// AppendFinalInstalledIngresses appends the final installed manifests of ingresses after the filters and transformers
+func AppendFinalInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+	stages := common.Stages{
+		AppendInstalledIngresses,
+		transform,
+	}
+	return appendFinalIngresses(ctx, manifest, instance, stages)
+}
+
+// AppendFinalTargetIngresses appends the final target manifests of ingresses after the filters and transformers
+func AppendFinalTargetIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+	stages := common.Stages{
+		AppendTargetIngresses,
+		filterDisabledIngresses,
+		transform,
+	}
+	return appendFinalIngresses(ctx, manifest, instance, stages)
+}
+
+// filterDisabledIngresses removes the disabled ingresses from the manifests
+func filterDisabledIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+	ks := instance.(*v1alpha1.KnativeServing)
+	*manifest = manifest.Filter(Filters(ks))
+	return nil
+}
+
+// transform mutates the passed manifest to one with common, component
+// and platform transformations applied
+func transform(ctx context.Context, manifest *mf.Manifest, comp v1alpha1.KComponent) error {
+	instance := comp.(*v1alpha1.KnativeServing)
+	extra := Transformers(ctx, instance)
+	extra = append(extra, ksc.IngressServiceTransform())
+
+	return common.Transform(ctx, manifest, instance, extra...)
 }

@@ -106,9 +106,8 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	}
 	stages := common.Stages{
 		common.AppendTarget,
-		ingress.AppendTargetIngresses,
-		r.filterDisabledIngresses,
 		r.transform,
+		ingress.AppendFinalTargetIngresses,
 		common.Install,
 		common.CheckDeployments,
 		common.DeleteObsoleteResources(ctx, ks, r.installed),
@@ -134,15 +133,13 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 		ksc.AggregationRuleTransform(manifest.Client),
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)
-	extra = append(extra, ksc.IngressServiceTransform())
-	extra = append(extra, ingress.Transformers(ctx, instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 
 func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
-	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.transform}
+	stages := common.Stages{common.AppendInstalled, r.transform, ingress.AppendFinalInstalledIngresses}
 	err := stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }

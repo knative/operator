@@ -125,7 +125,6 @@ type CommonSpec struct {
 	// +optional
 	Registry Registry `json:"registry,omitempty"`
 
-	// Deprecated: Use DeploymentOverride instead.
 	// DeprecatedResources containers' resource requirements.
 	// +optional
 	DeprecatedResources []ResourceRequirementsOverride `json:"resources,omitempty"`
@@ -146,7 +145,6 @@ type CommonSpec struct {
 	// +optional
 	AdditionalManifests []Manifest `json:"additionalManifests,omitempty"`
 
-	// Deprecated: Use DeploymentOverride instead.
 	// DeprecatedHighAvailability allows specification of HA control plane.
 	// +optional
 	DeprecatedHighAvailability *HighAvailability `json:"high-availability,omitempty"`

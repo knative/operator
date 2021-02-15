@@ -26,7 +26,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/kubernetes/scheme"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
-	"sigs.k8s.io/yaml"
 )
 
 var testResources = corev1.ResourceRequirements{
@@ -142,9 +141,6 @@ func TestDeploymentsTransform(t *testing.T) {
 			},
 		}}}
 
-	if err := yaml.Unmarshal(testdata, &tests); err != nil {
-		t.Fatalf("Failed to unmarshal tests: %v", err)
-	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			manifest, err := mf.NewManifest("testdata/manifest.yaml")
@@ -196,9 +192,7 @@ func TestDeploymentsTransform(t *testing.T) {
 						}
 
 						for _, c := range got.Spec.Template.Spec.Containers {
-							resource, ok := d.expContainers[c.Name]
-							if !ok {
-							}
+							resource := d.expContainers[c.Name]
 							if diff := cmp.Diff(resource.Limits, c.Resources.Limits); diff != "" {
 								t.Fatalf("Unexpected limits: %v", diff)
 							}

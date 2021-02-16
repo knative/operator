@@ -117,7 +117,7 @@ type IngressConfigs struct {
 type IstioIngressConfiguration struct {
 	Enabled bool `json:"enabled"`
 
-	// KnativeIngressGateway overrides the knative-local-gateway.
+	// KnativeIngressGateway overrides the knative-ingress-gateway.
 	// +optional
 	KnativeIngressGateway *IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
 

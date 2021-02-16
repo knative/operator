@@ -28,68 +28,98 @@ import (
 
 var log = zap.NewNop().Sugar()
 
+func gatewayOverride(selector map[string]string) *servingv1alpha1.IstioGatewayOverride {
+	return &servingv1alpha1.IstioGatewayOverride{
+		Selector: selector,
+	}
+}
+
 func TestGatewayTransform(t *testing.T) {
 	tests := []struct {
-		name                  string
-		gatewayName           string
-		in                    map[string]string
-		knativeIngressGateway servingv1alpha1.IstioGatewayOverride
-		clusterLocalGateway   servingv1alpha1.IstioGatewayOverride
-		expected              map[string]string
+		name                            string
+		gatewayName                     string
+		in                              map[string]string
+		knativeIngressGateway           *servingv1alpha1.IstioGatewayOverride
+		clusterLocalGateway             *servingv1alpha1.IstioGatewayOverride
+		deprecatedKnativeIngressGateway servingv1alpha1.IstioGatewayOverride
+		deprecatedClusterLocalGateway   servingv1alpha1.IstioGatewayOverride
+		expected                        map[string]string
 	}{{
-		name:        "UpdatesKnativeIngressGateway",
+		name:        "update ingress gateway",
 		gatewayName: "knative-ingress-gateway",
 		in: map[string]string{
 			"istio": "old-istio",
 		},
-		knativeIngressGateway: servingv1alpha1.IstioGatewayOverride{
-			Selector: map[string]string{
-				"istio": "knative-ingress",
-			},
-		},
-		clusterLocalGateway: servingv1alpha1.IstioGatewayOverride{
-			Selector: map[string]string{
-				"istio": "cluster-local",
-			},
-		},
+		knativeIngressGateway: gatewayOverride(map[string]string{"istio": "knative-ingress"}),
+		clusterLocalGateway:   gatewayOverride(map[string]string{"istio": "cluster-local"}),
 		expected: map[string]string{
 			"istio": "knative-ingress",
 		},
 	}, {
-		name:        "UpdatesClusterLocalGateway",
+		name:        "update local gateway",
 		gatewayName: "cluster-local-gateway",
 		in: map[string]string{
 			"istio": "old-istio",
 		},
-		knativeIngressGateway: servingv1alpha1.IstioGatewayOverride{
-			Selector: map[string]string{
-				"istio": "knative-ingress",
-			},
-		},
-		clusterLocalGateway: servingv1alpha1.IstioGatewayOverride{
-			Selector: map[string]string{
-				"istio": "cluster-local",
-			},
-		},
+		knativeIngressGateway: gatewayOverride(map[string]string{"istio": "knative-ingress"}),
+		clusterLocalGateway:   gatewayOverride(map[string]string{"istio": "cluster-local"}),
 		expected: map[string]string{
 			"istio": "cluster-local",
 		},
 	}, {
-		name:        "DoesNothingToOtherGateway",
+		name:        "update ingress gateway with deprecatd setting",
+		gatewayName: "knative-ingress-gateway",
+		in: map[string]string{
+			"istio": "old-istio",
+		},
+		deprecatedKnativeIngressGateway: *gatewayOverride(map[string]string{"istio": "knative-ingress"}),
+		deprecatedClusterLocalGateway:   *gatewayOverride(map[string]string{"istio": "cluster-local"}),
+		expected: map[string]string{
+			"istio": "knative-ingress",
+		},
+	}, {
+		name:        "update local gateway with deprecatd setting",
+		gatewayName: "cluster-local-gateway",
+		in: map[string]string{
+			"istio": "old-istio",
+		},
+		deprecatedKnativeIngressGateway: *gatewayOverride(map[string]string{"istio": "knative-ingress"}),
+		deprecatedClusterLocalGateway:   *gatewayOverride(map[string]string{"istio": "cluster-local"}),
+		expected: map[string]string{
+			"istio": "cluster-local",
+		},
+	}, {
+		name:        "update ingress gateway with both new and deprecate config",
+		gatewayName: "knative-ingress-gateway",
+		in: map[string]string{
+			"istio": "old-istio",
+		},
+		knativeIngressGateway:           gatewayOverride(map[string]string{"istio": "win"}),
+		deprecatedKnativeIngressGateway: *gatewayOverride(map[string]string{"istio": "lose"}),
+		expected: map[string]string{
+			"istio": "win",
+		},
+	}, {
+		name:        "update local gateway with both new and deprecate config",
+		gatewayName: "cluster-local-gateway",
+		in: map[string]string{
+			"istio": "old-istio",
+		},
+		clusterLocalGateway:           gatewayOverride(map[string]string{"istio": "win"}),
+		deprecatedClusterLocalGateway: *gatewayOverride(map[string]string{"istio": "lose"}),
+		expected: map[string]string{
+			"istio": "win",
+		},
+	}, {
+		name:        "do not update unknown gateway",
 		gatewayName: "not-knative-ingress-gateway",
 		in: map[string]string{
 			"istio": "old-istio",
 		},
-		knativeIngressGateway: servingv1alpha1.IstioGatewayOverride{
-			Selector: map[string]string{
-				"istio": "knative-ingress",
-			},
-		},
-		clusterLocalGateway: servingv1alpha1.IstioGatewayOverride{
-			Selector: map[string]string{
-				"istio": "cluster-local",
-			},
-		},
+		knativeIngressGateway:           gatewayOverride(map[string]string{"istio": "knative-ingress"}),
+		clusterLocalGateway:             gatewayOverride(map[string]string{"istio": "cluster-local"}),
+		deprecatedKnativeIngressGateway: *gatewayOverride(map[string]string{"istio": "lose"}),
+		deprecatedClusterLocalGateway:   *gatewayOverride(map[string]string{"istio": "cluster-local"}),
 		expected: map[string]string{
 			"istio": "old-istio",
 		},
@@ -100,8 +130,15 @@ func TestGatewayTransform(t *testing.T) {
 			gateway := makeUnstructuredGateway(t, tt.gatewayName, tt.in)
 			instance := &servingv1alpha1.KnativeServing{
 				Spec: servingv1alpha1.KnativeServingSpec{
-					KnativeIngressGateway: tt.knativeIngressGateway,
-					ClusterLocalGateway:   tt.clusterLocalGateway,
+					Ingress: &servingv1alpha1.IngressConfigs{
+						Istio: servingv1alpha1.IstioIngressConfiguration{
+							Enabled:               true,
+							KnativeIngressGateway: tt.knativeIngressGateway,
+							KnativeLocalGateway:   tt.clusterLocalGateway,
+						},
+					},
+					DeprecatedKnativeIngressGateway: tt.deprecatedKnativeIngressGateway,
+					DeprecatedClusterLocalGateway:   tt.deprecatedClusterLocalGateway,
 				},
 			}
 

@@ -89,7 +89,7 @@ spec:
                 configmaps
               type: object
             knative-ingress-gateway:
-              description: A means to override the knative-ingress-gateway
+              description: A means to override the knative-ingress-gateway. This field is deprecated. Use `spec.ingres.istio.knative-ingress-gateway`
               type: object
               properties:
                 selector:
@@ -98,7 +98,7 @@ spec:
                   additionalProperties:
                     type: string
             cluster-local-gateway:
-              description: A means to override the cluster-local-gateway
+              description: A means to override the cluster-local-gateway. This field is deprecated. Use `spec.ingres.istio.knative-local-gateway`
               type: object
               properties:
                 selector:
@@ -201,6 +201,24 @@ spec:
                   properties:
                     enabled:
                       type: boolean
+                    knative-ingress-gateway:
+                      description: A means to override the knative-ingress-gateway
+                      type: object
+                      properties:
+                        selector:
+                          description: The selector for the ingress-gateway.
+                          type: object
+                          additionalProperties:
+                            type: string
+                    knative-local-gateway:
+                      description: A means to override the knative-local-gateway
+                      type: object
+                      properties:
+                        selector:
+                          description: The selector for the ingress-gateway.
+                          type: object
+                          additionalProperties:
+                            type: string
                 kourier:
                   description: Kourier settings
                   type: object

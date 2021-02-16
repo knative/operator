@@ -39,20 +39,36 @@ func gatewayTransform(instance *servingv1alpha1.KnativeServing, log *zap.Sugared
 		// Update the deployment with the new registry and tag
 		if u.GetAPIVersion() == "networking.istio.io/v1alpha3" && u.GetKind() == "Gateway" {
 			if u.GetName() == "knative-ingress-gateway" {
-				return updateKnativeIngressGateway(instance.Spec.KnativeIngressGateway, u, log)
+				return updateIstioGateway(ingressGateway(instance), u, log)
 			}
-			if u.GetName() == "cluster-local-gateway" {
-				return updateKnativeIngressGateway(instance.Spec.ClusterLocalGateway, u, log)
+			// TODO: cluster-local-gateway was removed since v0.20 https://github.com/knative-sandbox/net-istio/commit/058432d749435ef1fc61aa2b1fd048d0c75460ee
+			// Reomove it once operator stops v0.20 support.
+			if u.GetName() == "cluster-local-gateway" || u.GetName() == "knative-local-gateway" {
+				return updateIstioGateway(localGateway(instance), u, log)
 			}
 		}
 		return nil
 	}
 }
 
-func updateKnativeIngressGateway(gatewayOverrides servingv1alpha1.IstioGatewayOverride, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
-	if len(gatewayOverrides.Selector) > 0 {
-		log.Debugw("Updating Gateway", "name", u.GetName(), "gatewayOverrides", gatewayOverrides)
-		unstructured.SetNestedStringMap(u.Object, gatewayOverrides.Selector, "spec", "selector")
+func ingressGateway(instance *servingv1alpha1.KnativeServing) *servingv1alpha1.IstioGatewayOverride {
+	if instance.Spec.Ingress != nil && instance.Spec.Ingress.Istio.KnativeIngressGateway != nil {
+		return instance.Spec.Ingress.Istio.KnativeIngressGateway
+	}
+	return &instance.Spec.DeprecatedKnativeIngressGateway
+}
+
+func localGateway(instance *servingv1alpha1.KnativeServing) *servingv1alpha1.IstioGatewayOverride {
+	if instance.Spec.Ingress != nil && instance.Spec.Ingress.Istio.KnativeLocalGateway != nil {
+		return instance.Spec.Ingress.Istio.KnativeLocalGateway
+	}
+	return &instance.Spec.DeprecatedClusterLocalGateway
+}
+
+func updateIstioGateway(override *servingv1alpha1.IstioGatewayOverride, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+	if override != nil && len(override.Selector) > 0 {
+		log.Debugw("Updating Gateway", "name", u.GetName(), "gatewayOverrides", override)
+		unstructured.SetNestedStringMap(u.Object, override.Selector, "spec", "selector")
 		log.Debugw("Finished conversion", "name", u.GetName(), "unstructured", u.Object)
 	}
 	return nil

@@ -31,16 +31,28 @@ import (
 func TestInstall(t *testing.T) {
 	// Resources in the manifest
 	version := "v0.14-test"
-	deployment := *NamespacedResource("apps/v1", "Deployment", "test", "test-deployment")
-	role := *NamespacedResource("rbac.authorization.k8s.io/v1", "Role", "test", "test-role")
-	roleBinding := *NamespacedResource("rbac.authorization.k8s.io/v1", "RoleBinding", "test", "test-role-binding")
-	clusterRole := *ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRole", "test-cluster-role")
-	clusterRoleBinding := *ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRoleBinding", "test-cluster-role-binding")
+	deployment := NamespacedResource("apps/v1", "Deployment", "test", "test-deployment")
+	role := NamespacedResource("rbac.authorization.k8s.io/v1", "Role", "test", "test-role")
+	roleBinding := NamespacedResource("rbac.authorization.k8s.io/v1", "RoleBinding", "test", "test-role-binding")
+	clusterRole := ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRole", "test-cluster-role")
+	clusterRoleBinding := ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRoleBinding", "test-cluster-role-binding")
 
 	// Deliberately mixing the order in the manifest.
-	in := []unstructured.Unstructured{deployment, role, roleBinding, clusterRole, clusterRoleBinding}
+	in := []unstructured.Unstructured{
+		*deployment,
+		*role,
+		*roleBinding,
+		*clusterRole,
+		*clusterRoleBinding,
+	}
 	// Expect things to be applied in order.
-	want := []unstructured.Unstructured{role, clusterRole, roleBinding, clusterRoleBinding, deployment}
+	want := []unstructured.Unstructured{
+		*role.DeepCopy(),
+		*clusterRole.DeepCopy(),
+		*roleBinding.DeepCopy(),
+		*clusterRoleBinding.DeepCopy(),
+		*deployment.DeepCopy(),
+	}
 
 	client := &fakeClient{}
 	manifest, err := mf.ManifestFrom(mf.Slice(in), mf.UseClient(client))

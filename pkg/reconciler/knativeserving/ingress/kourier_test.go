@@ -100,28 +100,36 @@ func TestTransformKourierManifest(t *testing.T) {
 			}
 
 			for _, u := range manifest.Resources() {
-				if u.GetKind() == "Deployment" && u.GetName() == kourierControllerDeploymentName {
-					deployment := &appsv1.Deployment{}
-					err := scheme.Scheme.Convert(&u, deployment, nil)
-					util.AssertEqual(t, err, nil)
-					envs := deployment.Spec.Template.Spec.Containers[0].Env
-					env := ""
-					for i := range envs {
-						if envs[i].Name == kourierGatewayNSEnvVarKey {
-							env = envs[i].Value
-						}
-					}
-					util.AssertDeepEqual(t, env, tt.expNamespace)
-				}
-				if u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName {
-					svc := &v1.Service{}
-					err := scheme.Scheme.Convert(&u, svc, nil)
-					util.AssertEqual(t, err, nil)
-					svcType := svc.Spec.Type
-					util.AssertDeepEqual(t, string(svcType), tt.expServiceType)
-				}
+				verifyControllerNamespace(t, &u, tt.expNamespace)
+				verifyGatewayServiceType(t, &u, tt.expServiceType)
 			}
 		})
+	}
+}
+
+func verifyControllerNamespace(t *testing.T, u *unstructured.Unstructured, expNamespace string) {
+	if u.GetKind() == "Deployment" && u.GetName() == kourierControllerDeploymentName {
+		deployment := &appsv1.Deployment{}
+		err := scheme.Scheme.Convert(u, deployment, nil)
+		util.AssertEqual(t, err, nil)
+		envs := deployment.Spec.Template.Spec.Containers[0].Env
+		env := ""
+		for i := range envs {
+			if envs[i].Name == kourierGatewayNSEnvVarKey {
+				env = envs[i].Value
+			}
+		}
+		util.AssertDeepEqual(t, env, expNamespace)
+	}
+}
+
+func verifyGatewayServiceType(t *testing.T, u *unstructured.Unstructured, expServiceType string) {
+	if u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName {
+		svc := &v1.Service{}
+		err := scheme.Scheme.Convert(u, svc, nil)
+		util.AssertEqual(t, err, nil)
+		svcType := svc.Spec.Type
+		util.AssertDeepEqual(t, string(svcType), expServiceType)
 	}
 }
 

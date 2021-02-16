@@ -106,3 +106,10 @@ func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instan
 	}
 	return getIngress(version, manifest)
 }
+
+func hasProviderLabel(u *unstructured.Unstructured) bool {
+	if _, hasLabel := u.GetLabels()[providerLabel]; hasLabel {
+		return true
+	}
+	return false
+}

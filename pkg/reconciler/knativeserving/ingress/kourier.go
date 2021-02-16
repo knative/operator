@@ -18,50 +18,80 @@ package ingress
 
 import (
 	"context"
-
-	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/client-go/kubernetes/scheme"
+	"fmt"
 
 	mf "github.com/manifestival/manifestival"
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 const (
-	kourierGatewayNSEnvVarKey = "KOURIER_GATEWAY_NAMESPACE"
-	kourierDeploymentName     = "3scale-kourier-control"
+	kourierGatewayNSEnvVarKey       = "KOURIER_GATEWAY_NAMESPACE"
+	kourierControllerDeploymentName = "3scale-kourier-control"
+	kourierGatewayServiceName       = "kourier"
 )
 
 var kourierFilter = ingressFilter("kourier")
 
 func kourierTransformers(ctx context.Context, instance *v1alpha1.KnativeServing) []mf.Transformer {
 	return []mf.Transformer{
-		replaceKourierGWNamespace(instance.GetNamespace()),
+		replaceGWNamespace(instance),
+		configureGWServiceType(instance),
 	}
 }
 
-// replaceKourierGWNamespace replace the environment variable KOURIER_GATEWAY_NAMESPACE with the namespace of the Knative Serving CR
-func replaceKourierGWNamespace(ns string) mf.Transformer {
+// replaceGWNamespace replace the environment variable KOURIER_GATEWAY_NAMESPACE with the namespace of the Knative Serving CR
+func replaceGWNamespace(instance *v1alpha1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Deployment" && u.GetName() == kourierDeploymentName {
-			_, hasLabel := u.GetLabels()[providerLabel]
-			if !hasLabel {
-				return nil
-			}
+		if u.GetKind() == "Deployment" && u.GetName() == kourierControllerDeploymentName && hasProviderLabel(u) {
 			deployment := &appsv1.Deployment{}
 			if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
 				return err
 			}
+
 			for i := range deployment.Spec.Template.Spec.Containers {
 				c := &deployment.Spec.Template.Spec.Containers[i]
 				for j := range c.Env {
 					envVar := &c.Env[j]
 					if envVar.Name == kourierGatewayNSEnvVarKey {
-						envVar.Value = ns
+						envVar.Value = instance.GetNamespace()
 					}
 				}
 			}
+
 			if err := scheme.Scheme.Convert(deployment, u, nil); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
+// configureGWServiceType configures Kourier GW's service type such as ClusterIP, LoadBalancer and NodePort.
+func configureGWServiceType(instance *v1alpha1.KnativeServing) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName && hasProviderLabel(u) {
+			if instance.Spec.Ingress.Kourier.ServiceType == "" {
+				// Do nothing if ServiceType is not configured.
+				return nil
+			}
+			svc := &v1.Service{}
+			if err := scheme.Scheme.Convert(u, svc, nil); err != nil {
+				return err
+			}
+
+			serviceType := instance.Spec.Ingress.Kourier.ServiceType
+			switch serviceType {
+			case v1.ServiceTypeClusterIP, v1.ServiceTypeNodePort, v1.ServiceTypeLoadBalancer:
+				svc.Spec.Type = serviceType
+			default:
+				return fmt.Errorf("unknown service type %q", serviceType)
+			}
+
+			if err := scheme.Scheme.Convert(svc, u, nil); err != nil {
 				return err
 			}
 		}

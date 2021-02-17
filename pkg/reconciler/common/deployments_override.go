@@ -42,7 +42,6 @@ func DeploymentsTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Tr
 				}
 				replaceLabels(u, &override, deployment)
 				replaceAnnotations(u, &override, deployment)
-				replaceResources(u, &override, deployment)
 				if err := scheme.Scheme.Convert(deployment, u, nil); err != nil {
 					return err
 				}
@@ -55,21 +54,6 @@ func DeploymentsTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Tr
 			}
 		}
 		return nil
-	}
-}
-
-func replaceResources(u *unstructured.Unstructured, overrideDeploy *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
-	for _, override := range overrideDeploy.Containers {
-		for _, container := range deployment.Spec.Template.Spec.Containers {
-			if override.Name == container.Name {
-				if override.Limits != nil {
-					merge(&override.Limits, &container.Resources.Limits)
-				}
-				if override.Requests != nil {
-					merge(&override.Requests, &container.Resources.Requests)
-				}
-			}
-		}
 	}
 }
 

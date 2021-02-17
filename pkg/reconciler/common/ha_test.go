@@ -96,7 +96,7 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		instance := &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
-					DeprecatedHighAvailability: tc.config,
+					HighAvailability: tc.config,
 				},
 			},
 		}

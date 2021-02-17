@@ -23,33 +23,9 @@ import (
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/kubernetes/scheme"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
-
-var testResources = corev1.ResourceRequirements{
-	Limits: corev1.ResourceList{
-		corev1.ResourceCPU:    resource.MustParse("100m"),
-		corev1.ResourceMemory: resource.MustParse("128Mi"),
-	},
-	Requests: corev1.ResourceList{
-		corev1.ResourceCPU:    resource.MustParse("30m"),
-		corev1.ResourceMemory: resource.MustParse("20Mi"),
-	},
-}
-
-// default resources defined in testdata/manifest.yaml.
-var controllerDefaultResources = corev1.ResourceRequirements{
-	Limits: corev1.ResourceList{
-		corev1.ResourceCPU:    resource.MustParse("1000m"),
-		corev1.ResourceMemory: resource.MustParse("1000Mi"),
-	},
-	Requests: corev1.ResourceList{
-		corev1.ResourceCPU:    resource.MustParse("100m"),
-		corev1.ResourceMemory: resource.MustParse("100Mi"),
-	},
-}
 
 type expDeployments struct {
 	expLabels              map[string]string
@@ -62,9 +38,10 @@ type expDeployments struct {
 
 func TestDeploymentsTransform(t *testing.T) {
 	tests := []struct {
-		name          string
-		override      []servingv1alpha1.DeploymentOverride
-		expDeployment map[string]expDeployments
+		name           string
+		override       []servingv1alpha1.DeploymentOverride
+		globalReplicas int32
+		expDeployment  map[string]expDeployments
 	}{{
 		name:     "no override",
 		override: nil,
@@ -74,7 +51,6 @@ func TestDeploymentsTransform(t *testing.T) {
 			expAnnotations:         nil,
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            0,
-			expContainers:          map[string]corev1.ResourceRequirements{"controller": controllerDefaultResources},
 		}},
 	}, {
 		name: "simple override",
@@ -84,19 +60,38 @@ func TestDeploymentsTransform(t *testing.T) {
 				Labels:      map[string]string{"a": "b"},
 				Annotations: map[string]string{"c": "d"},
 				Replicas:    5,
-				Containers: []servingv1alpha1.ContainerOverride{{
-					Name:                 "controller",
-					ResourceRequirements: testResources,
-				}},
 			},
 		},
+		globalReplicas: 10,
 		expDeployment: map[string]expDeployments{"controller": {
 			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0", "a": "b"},
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller", "a": "b"},
 			expAnnotations:         map[string]string{"c": "d"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true", "c": "d"},
 			expReplicas:            5,
-			expContainers:          map[string]corev1.ResourceRequirements{"controller": testResources},
+		}},
+	}, {
+		name: "no replicas in deploymentoverride, use global replicas",
+		override: []servingv1alpha1.DeploymentOverride{
+			{Name: "controller"},
+		},
+		globalReplicas: 10,
+		expDeployment: map[string]expDeployments{"controller": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:            10,
+		}},
+	}, {
+		name: "neither replicas in deploymentoverride nor global replicas",
+		override: []servingv1alpha1.DeploymentOverride{
+			{Name: "controller"},
+		},
+		expDeployment: map[string]expDeployments{"controller": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:            0,
 		}},
 	}, {
 		name: "multiple override",
@@ -106,22 +101,15 @@ func TestDeploymentsTransform(t *testing.T) {
 				Labels:      map[string]string{"a": "b"},
 				Annotations: map[string]string{"c": "d"},
 				Replicas:    5,
-				Containers: []servingv1alpha1.ContainerOverride{{
-					Name:                 "controller",
-					ResourceRequirements: testResources,
-				}},
 			},
 			{
 				Name:        "webhook",
 				Labels:      map[string]string{"e": "f"},
 				Annotations: map[string]string{"g": "h"},
 				Replicas:    4,
-				Containers: []servingv1alpha1.ContainerOverride{{
-					Name:                 "webhook",
-					ResourceRequirements: testResources,
-				}},
 			},
 		},
+		globalReplicas: 10,
 		expDeployment: map[string]expDeployments{
 			"controller": {
 				expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0", "a": "b"},
@@ -129,7 +117,6 @@ func TestDeploymentsTransform(t *testing.T) {
 				expAnnotations:         map[string]string{"c": "d"},
 				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true", "c": "d"},
 				expReplicas:            5,
-				expContainers:          map[string]corev1.ResourceRequirements{"controller": testResources},
 			},
 			"webhook": {
 				expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0", "e": "f"},
@@ -137,9 +124,9 @@ func TestDeploymentsTransform(t *testing.T) {
 				expAnnotations:         map[string]string{"g": "h"},
 				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false", "g": "h"},
 				expReplicas:            4,
-				expContainers:          map[string]corev1.ResourceRequirements{"webhook": testResources},
 			},
-		}}}
+		},
+	}}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -152,11 +139,15 @@ func TestDeploymentsTransform(t *testing.T) {
 				Spec: servingv1alpha1.KnativeServingSpec{
 					CommonSpec: servingv1alpha1.CommonSpec{
 						DeploymentOverride: test.override,
+						HighAvailability: &servingv1alpha1.HighAvailability{
+							Replicas: test.globalReplicas,
+						},
 					},
 				},
 			}
 
-			manifest, err = manifest.Transform(DeploymentsTransform(ks, log))
+			//manifest, err = manifest.Transform(DeploymentsTransform(ks, log), HighAvailabilityTransform(ks, log))
+			manifest, err = manifest.Transform(HighAvailabilityTransform(ks, log), DeploymentsTransform(ks, log))
 			if err != nil {
 				t.Fatalf("Failed to transform manifest: %v", err)
 			}
@@ -189,16 +180,6 @@ func TestDeploymentsTransform(t *testing.T) {
 						}
 						if diff := cmp.Diff(got.Spec.Template.GetAnnotations(), d.expTemplateAnnotations); diff != "" {
 							t.Fatalf("Unexpected annotations in pod template: %v", diff)
-						}
-
-						for _, c := range got.Spec.Template.Spec.Containers {
-							resource := d.expContainers[c.Name]
-							if diff := cmp.Diff(resource.Limits, c.Resources.Limits); diff != "" {
-								t.Fatalf("Unexpected limits: %v", diff)
-							}
-							if diff := cmp.Diff(resource.Requests, c.Resources.Requests); diff != "" {
-								t.Fatalf("Unexpected requests: %v", diff)
-							}
 						}
 					}
 				}

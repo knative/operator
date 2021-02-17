@@ -76,6 +76,29 @@ spec:
                     minimum: 1
                     type: integer
                 type: object
+              deployments:
+                description: A mapping of deployment name to override
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      description: The name of the deployment
+                      type: string
+                    labels:
+                      additionalProperties:
+                        type: string
+                      description: Labels overrides labels for the deployment and its template.
+                      type: object
+                    annotations:
+                      additionalProperties:
+                        type: string
+                      description: Annotations overrides labels for the deployment and its template.
+                      type: object
+                    replicas:
+                      description: The number of replicas that HA parts of the control plane will be scaled to
+                      type: integer
+                      minimum: 1
               manifests:
                 description: A list of eventing manifests, which will be installed
                   by the operator

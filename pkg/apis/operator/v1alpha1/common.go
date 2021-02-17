@@ -125,9 +125,9 @@ type CommonSpec struct {
 	// +optional
 	Registry Registry `json:"registry,omitempty"`
 
-	// DeprecatedResources containers' resource requirements.
+	// Resources overrides containers' resource requirements.
 	// +optional
-	DeprecatedResources []ResourceRequirementsOverride `json:"resources,omitempty"`
+	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
 
 	// DeploymentOverride overrides Deploymeet configurations such as resources and replicas.
 	// +optional
@@ -145,9 +145,9 @@ type CommonSpec struct {
 	// +optional
 	AdditionalManifests []Manifest `json:"additionalManifests,omitempty"`
 
-	// DeprecatedHighAvailability allows specification of HA control plane.
+	// HighAvailability allows specification of HA control plane.
 	// +optional
-	DeprecatedHighAvailability *HighAvailability `json:"high-availability,omitempty"`
+	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
 }
 
 // GetConfig implements KComponentSpec.
@@ -162,7 +162,7 @@ func (c *CommonSpec) GetRegistry() *Registry {
 
 // GetResources implements KComponentSpec.
 func (c *CommonSpec) GetResources() []ResourceRequirementsOverride {
-	return c.DeprecatedResources
+	return c.Resources
 }
 
 // GetVersion implements KComponentSpec.
@@ -182,7 +182,7 @@ func (c *CommonSpec) GetAdditionalManifests() []Manifest {
 
 // GetHighAvailability implements KComponentSpec.
 func (c *CommonSpec) GetHighAvailability() *HighAvailability {
-	return c.DeprecatedHighAvailability
+	return c.HighAvailability
 }
 
 // GetDeploymentOverride implements KComponentSpec.
@@ -233,11 +233,6 @@ type DeploymentOverride struct {
 	// will be scaled to.
 	// +optional
 	Replicas int32 `json:"replicas,omitempty"`
-
-	// Containers overrides container's
-	// resource requests/limits specified in the embedded manifest.
-	// +optional
-	Containers []ContainerOverride `json:"containers,omitempty"`
 }
 
 // ResourceRequirementsOverride enables the user to override any container's
@@ -245,15 +240,6 @@ type DeploymentOverride struct {
 type ResourceRequirementsOverride struct {
 	// The container name
 	Container string `json:"container"`
-	// The desired ResourceRequirements
-	corev1.ResourceRequirements
-}
-
-// ContainerOverride enables the user to override any container's
-// resource requests/limits specified in the embedded manifest
-type ContainerOverride struct {
-	// The container name
-	Name string `json:"name"`
 	// The desired ResourceRequirements
 	corev1.ResourceRequirements
 }

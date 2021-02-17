@@ -104,6 +104,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	}
 	stages := common.Stages{
 		common.AppendTarget,
+		r.appendExtensionManifests,
 		r.transform,
 		common.Install,
 		common.CheckDeployments,
@@ -136,4 +137,13 @@ func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent
 	stages := common.Stages{common.AppendInstalled, r.transform}
 	err := stages.Execute(ctx, &installed, instance)
 	return &installed, err
+}
+
+func (r *Reconciler) appendExtensionManifests(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+	platformManifests, err := r.extension.Manifests(instance)
+	if err != nil {
+		return err
+	}
+	*manifest = manifest.Append(platformManifests...)
+	return nil
 }

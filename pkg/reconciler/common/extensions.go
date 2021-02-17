@@ -24,6 +24,7 @@ import (
 
 // Extension enables platform-specific features
 type Extension interface {
+	Manifests(v1alpha1.KComponent) ([]mf.Manifest, error)
 	Transformers(v1alpha1.KComponent) []mf.Transformer
 	Reconcile(context.Context, v1alpha1.KComponent) error
 	Finalize(context.Context, v1alpha1.KComponent) error
@@ -39,6 +40,9 @@ func NoExtension(context.Context) Extension {
 
 type nilExtension struct{}
 
+func (nilExtension) Manifests(v1alpha1.KComponent) ([]mf.Manifest, error) {
+	return nil, nil
+}
 func (nilExtension) Transformers(v1alpha1.KComponent) []mf.Transformer {
 	return nil
 }

@@ -108,7 +108,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 		common.AppendTarget,
 		ingress.AppendTargetIngresses,
 		r.filterDisabledIngresses,
-		r.appendExtension,
+		r.appendExtensionManifests,
 		r.transform,
 		common.Install,
 		common.CheckDeployments,
@@ -148,7 +148,7 @@ func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent
 	return &installed, err
 }
 
-func (r *Reconciler) appendExtension(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func (r *Reconciler) appendExtensionManifests(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	platformManifests, err := r.extension.Manifests(instance)
 	if err != nil {
 		return err

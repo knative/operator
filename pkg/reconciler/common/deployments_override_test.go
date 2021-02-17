@@ -22,7 +22,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
@@ -33,7 +32,6 @@ type expDeployments struct {
 	expAnnotations         map[string]string
 	expTemplateAnnotations map[string]string
 	expReplicas            int32
-	expContainers          map[string]corev1.ResourceRequirements
 }
 
 func TestDeploymentsTransform(t *testing.T) {

@@ -108,16 +108,13 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 		common.AppendTarget,
 		ingress.AppendTargetIngresses,
 		r.filterDisabledIngresses,
+		r.appendExtension,
 		r.transform,
 		common.Install,
 		common.CheckDeployments,
 		common.DeleteObsoleteResources(ctx, ks, r.installed),
 	}
-	platformManifests, err := r.extension.Manifests(ks)
-	if err != nil {
-		return err
-	}
-	manifest := r.manifest.Append(platformManifests...)
+	manifest := r.manifest.Append()
 	return stages.Execute(ctx, &manifest, ks)
 }
 
@@ -149,4 +146,13 @@ func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent
 	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.transform}
 	err := stages.Execute(ctx, &installed, instance)
 	return &installed, err
+}
+
+func (r *Reconciler) appendExtension(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+	platformManifests, err := r.extension.Manifests(instance)
+	if err != nil {
+		return err
+	}
+	*manifest = manifest.Append(platformManifests...)
+	return nil
 }

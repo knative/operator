@@ -40,12 +40,10 @@ func DeploymentsTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Tr
 				if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
 					return err
 				}
-				replaceLabels(u, &override, deployment)
-				replaceAnnotations(u, &override, deployment)
+				replaceLabels(&override, deployment)
+				replaceAnnotations(&override, deployment)
+				replaceReplicas(&override, deployment)
 				if err := scheme.Scheme.Convert(deployment, u, nil); err != nil {
-					return err
-				}
-				if err := replaceReplicas(u, &override); err != nil {
 					return err
 				}
 				// Avoid superfluous updates from converted zero defaults
@@ -57,7 +55,7 @@ func DeploymentsTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Tr
 	}
 }
 
-func replaceAnnotations(u *unstructured.Unstructured, override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
+func replaceAnnotations(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
 	if deployment.GetAnnotations() == nil {
 		deployment.Annotations = map[string]string{}
 	}
@@ -70,7 +68,7 @@ func replaceAnnotations(u *unstructured.Unstructured, override *v1alpha1.Deploym
 	}
 }
 
-func replaceLabels(u *unstructured.Unstructured, override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
+func replaceLabels(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
 	if deployment.GetLabels() == nil {
 		deployment.Labels = map[string]string{}
 	}
@@ -83,9 +81,8 @@ func replaceLabels(u *unstructured.Unstructured, override *v1alpha1.DeploymentOv
 	}
 }
 
-func replaceReplicas(u *unstructured.Unstructured, override *v1alpha1.DeploymentOverride) error {
+func replaceReplicas(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
 	if override.Replicas > 0 {
-		return unstructured.SetNestedField(u.Object, int64(override.Replicas), "spec", "replicas")
+		deployment.Spec.Replicas = &override.Replicas
 	}
-	return nil
 }

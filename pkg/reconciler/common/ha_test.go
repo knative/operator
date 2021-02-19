@@ -34,6 +34,7 @@ func TestHighAvailabilityTransform(t *testing.T) {
 	cases := []struct {
 		name     string
 		config   *v1alpha1.HighAvailability
+		version  string
 		in       *unstructured.Unstructured
 		expected *unstructured.Unstructured
 		err      error
@@ -53,6 +54,18 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		config:   makeHa(2),
 		in:       makeUnstructuredDeployment(t, "controller"),
 		expected: makeUnstructuredDeploymentReplicas(t, "controller", 2),
+	}, {
+		name:     "HA; autoscaler after v0.19",
+		config:   makeHa(2),
+		version:  "0.19.0",
+		in:       makeUnstructuredDeployment(t, "autoscaler"),
+		expected: makeUnstructuredDeploymentReplicas(t, "autoscaler", 2),
+	}, {
+		name:     "HA; autoscaler before v0.19",
+		config:   makeHa(2),
+		version:  "0.18.2",
+		in:       makeUnstructuredDeployment(t, "autoscaler"),
+		expected: makeUnstructuredDeploymentReplicas(t, "autoscaler", 1), // autoscaler HA is not supported before serving v0.19.
 	}, {
 		name:     "HA; autoscaler-hpa",
 		config:   makeHa(2),
@@ -90,22 +103,24 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		expected: makeUnstructuredHPA(t, "activator", 3),
 	}}
 
-	for i := range cases {
-		tc := cases[i]
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
 
-		instance := &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
-					HighAvailability: tc.config,
+			instance := &v1alpha1.KnativeServing{
+				Spec: v1alpha1.KnativeServingSpec{
+					CommonSpec: v1alpha1.CommonSpec{
+						HighAvailability: tc.config,
+					},
 				},
-			},
-		}
+			}
+			instance.Status.SetVersion(tc.version)
 
-		haTransform := HighAvailabilityTransform(instance, log)
-		err := haTransform(tc.in)
+			haTransform := HighAvailabilityTransform(instance, log)
+			err := haTransform(tc.in)
 
-		util.AssertDeepEqual(t, err, tc.err)
-		util.AssertDeepEqual(t, tc.in, tc.expected)
+			util.AssertDeepEqual(t, err, tc.err)
+			util.AssertDeepEqual(t, tc.in, tc.expected)
+		})
 	}
 }
 

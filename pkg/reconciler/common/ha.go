@@ -59,6 +59,13 @@ func haSupport(obj v1alpha1.KComponent) sets.String {
 // controllers when HA control plane is specified.
 func HighAvailabilityTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
+		// Use spec.deployments.replicas for the deployment instead of spec.high-availability.
+		for _, override := range obj.GetSpec().GetDeploymentOverride() {
+			if override.Replicas > 0 && override.Name == u.GetName() {
+				return nil
+			}
+		}
+
 		// stash the HA object
 		ha := obj.GetSpec().GetHighAvailability()
 		if ha == nil {

@@ -3,13 +3,14 @@ cloud.google.com/go
 cloud.google.com/go/compute/metadata
 cloud.google.com/go/container/apiv1
 cloud.google.com/go/iam
+cloud.google.com/go/iam/credentials/apiv1
 cloud.google.com/go/internal
 cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
 cloud.google.com/go/monitoring/apiv3
 cloud.google.com/go/trace/apiv2
-# cloud.google.com/go/storage v1.10.0
+# cloud.google.com/go/storage v1.12.0
 cloud.google.com/go/storage
 # contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d
 contrib.go.opencensus.io/exporter/ocagent
@@ -22,6 +23,23 @@ contrib.go.opencensus.io/exporter/stackdriver/monitoredresource/aws
 contrib.go.opencensus.io/exporter/stackdriver/monitoredresource/gcp
 # contrib.go.opencensus.io/exporter/zipkin v0.1.2
 contrib.go.opencensus.io/exporter/zipkin
+# github.com/Azure/azure-pipeline-go v0.2.3
+github.com/Azure/azure-pipeline-go/pipeline
+# github.com/Azure/azure-storage-blob-go v0.13.0
+github.com/Azure/azure-storage-blob-go/azblob
+# github.com/Azure/go-autorest v14.2.0+incompatible
+github.com/Azure/go-autorest
+# github.com/Azure/go-autorest/autorest v0.11.17
+github.com/Azure/go-autorest/autorest
+github.com/Azure/go-autorest/autorest/azure
+# github.com/Azure/go-autorest/autorest/adal v0.9.10
+github.com/Azure/go-autorest/autorest/adal
+# github.com/Azure/go-autorest/autorest/date v0.3.0
+github.com/Azure/go-autorest/autorest/date
+# github.com/Azure/go-autorest/logger v0.2.0
+github.com/Azure/go-autorest/logger
+# github.com/Azure/go-autorest/tracing v0.6.0
+github.com/Azure/go-autorest/tracing
 # github.com/PuerkitoBio/purell v1.1.1
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
@@ -33,6 +51,7 @@ github.com/alecthomas/template/parse
 github.com/alecthomas/units
 # github.com/aws/aws-sdk-go v1.37.1
 github.com/aws/aws-sdk-go/aws
+github.com/aws/aws-sdk-go/aws/arn
 github.com/aws/aws-sdk-go/aws/awserr
 github.com/aws/aws-sdk-go/aws/awsutil
 github.com/aws/aws-sdk-go/aws/client
@@ -53,6 +72,9 @@ github.com/aws/aws-sdk-go/aws/session
 github.com/aws/aws-sdk-go/aws/signer/v4
 github.com/aws/aws-sdk-go/internal/context
 github.com/aws/aws-sdk-go/internal/ini
+github.com/aws/aws-sdk-go/internal/s3shared
+github.com/aws/aws-sdk-go/internal/s3shared/arn
+github.com/aws/aws-sdk-go/internal/s3shared/s3err
 github.com/aws/aws-sdk-go/internal/sdkio
 github.com/aws/aws-sdk-go/internal/sdkmath
 github.com/aws/aws-sdk-go/internal/sdkrand
@@ -60,14 +82,21 @@ github.com/aws/aws-sdk-go/internal/sdkuri
 github.com/aws/aws-sdk-go/internal/shareddefaults
 github.com/aws/aws-sdk-go/internal/strings
 github.com/aws/aws-sdk-go/internal/sync/singleflight
+github.com/aws/aws-sdk-go/private/checksum
 github.com/aws/aws-sdk-go/private/protocol
+github.com/aws/aws-sdk-go/private/protocol/eventstream
+github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi
 github.com/aws/aws-sdk-go/private/protocol/json/jsonutil
 github.com/aws/aws-sdk-go/private/protocol/jsonrpc
 github.com/aws/aws-sdk-go/private/protocol/query
 github.com/aws/aws-sdk-go/private/protocol/query/queryutil
 github.com/aws/aws-sdk-go/private/protocol/rest
 github.com/aws/aws-sdk-go/private/protocol/restjson
+github.com/aws/aws-sdk-go/private/protocol/restxml
 github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
+github.com/aws/aws-sdk-go/service/s3
+github.com/aws/aws-sdk-go/service/s3/s3iface
+github.com/aws/aws-sdk-go/service/s3/s3manager
 github.com/aws/aws-sdk-go/service/sso
 github.com/aws/aws-sdk-go/service/sso/ssoiface
 github.com/aws/aws-sdk-go/service/sts
@@ -114,6 +143,8 @@ github.com/emicklei/go-restful/log
 github.com/evanphx/json-patch
 # github.com/evanphx/json-patch/v5 v5.2.0
 github.com/evanphx/json-patch/v5
+# github.com/form3tech-oss/jwt-go v3.2.2+incompatible
+github.com/form3tech-oss/jwt-go
 # github.com/go-logr/logr v0.4.0
 github.com/go-logr/logr
 github.com/go-logr/logr/testing
@@ -165,6 +196,8 @@ github.com/google/gofuzz
 github.com/google/gofuzz/bytesource
 # github.com/google/uuid v1.2.0
 github.com/google/uuid
+# github.com/google/wire v0.4.0
+github.com/google/wire
 # github.com/googleapis/gax-go/v2 v2.0.5
 github.com/googleapis/gax-go/v2
 # github.com/googleapis/gnostic v0.5.3
@@ -216,6 +249,8 @@ github.com/manifestival/manifestival/fake
 github.com/manifestival/manifestival/internal/overlay
 github.com/manifestival/manifestival/internal/patch
 github.com/manifestival/manifestival/internal/sources
+# github.com/mattn/go-ieproxy v0.0.1
+github.com/mattn/go-ieproxy
 # github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/mitchellh/go-homedir v1.1.0
@@ -311,6 +346,23 @@ go.uber.org/zap/internal/exit
 go.uber.org/zap/internal/ztest
 go.uber.org/zap/zapcore
 go.uber.org/zap/zaptest
+# gocloud.dev v0.22.0
+## explicit
+gocloud.dev/aws
+gocloud.dev/blob
+gocloud.dev/blob/azureblob
+gocloud.dev/blob/driver
+gocloud.dev/blob/fileblob
+gocloud.dev/blob/gcsblob
+gocloud.dev/blob/s3blob
+gocloud.dev/gcerrors
+gocloud.dev/gcp
+gocloud.dev/internal/escape
+gocloud.dev/internal/gcerr
+gocloud.dev/internal/oc
+gocloud.dev/internal/openurl
+gocloud.dev/internal/retry
+gocloud.dev/internal/useragent
 # golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 golang.org/x/crypto/cast5
 golang.org/x/crypto/openpgp
@@ -319,6 +371,8 @@ golang.org/x/crypto/openpgp/elgamal
 golang.org/x/crypto/openpgp/errors
 golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
+golang.org/x/crypto/pkcs12
+golang.org/x/crypto/pkcs12/internal/rc2
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 golang.org/x/lint
@@ -331,6 +385,7 @@ golang.org/x/mod/semver
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/http/httpguts
+golang.org/x/net/http/httpproxy
 golang.org/x/net/http2
 golang.org/x/net/http2/h2c
 golang.org/x/net/http2/hpack
@@ -425,6 +480,7 @@ google.golang.org/genproto/googleapis/api/metric
 google.golang.org/genproto/googleapis/api/monitoredres
 google.golang.org/genproto/googleapis/container/v1
 google.golang.org/genproto/googleapis/devtools/cloudtrace/v2
+google.golang.org/genproto/googleapis/iam/credentials/v1
 google.golang.org/genproto/googleapis/iam/v1
 google.golang.org/genproto/googleapis/monitoring/v3
 google.golang.org/genproto/googleapis/rpc/code

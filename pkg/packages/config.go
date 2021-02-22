@@ -34,6 +34,12 @@ type Package struct {
 	// This is collected from a map key in the configuration and is not directly
 	// loaded from YAML.
 	Name string `json:"-"`
+
+	// If Alternatives is true, this will be considered an "alternatives"
+	// collection, which contains single file alternatives for each Additional
+	// item based on the latest minor (but not patch) versions of Primary.
+	Alternatives bool
+
 	// Primary is the primary source of release artifacts; collections of
 	// release artifacts will be numbered based on the primary source's release
 	// numbering scheme.

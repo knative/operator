@@ -18,11 +18,92 @@ limitations under the License.
 package packages
 
 import (
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
+
+func TestConfig_ReadYaml(t *testing.T) {
+	config := `
+a:
+  primary:
+    github:
+      repo: "knative/serving"
+    include:
+    - "serving-.*.yaml"
+    exclude:
+    - "serving-man.yaml"  # A classic of fine cuisine
+b:
+  alternatives: true
+  primary:
+    s3:
+      bucket: "s3://foo"
+      prefix: "eventing/components"
+  additional:
+  - github:
+      repo: "foo/test"
+  - github:
+      repo: "bar/sample"
+  - github:
+      repo: quick/package
+    include:
+    - small.yaml
+`
+	want := map[string]*Package{
+		"a": &Package{
+			Name: "a",
+			Primary: Source{
+				AssetFilter: AssetFilter{
+					IncludeArtifacts: []string{"serving-.*.yaml"},
+					ExcludeArtifacts: []string{"serving-man.yaml"},
+				},
+				GitHub: GitHubSource{"knative/serving"},
+			},
+		},
+		"b": &Package{
+			Name:         "b",
+			Alternatives: true,
+			Primary: Source{
+				S3: S3Source{
+					Bucket: "s3://foo",
+					Prefix: "eventing/components",
+				},
+			},
+			Additional: []Source{
+				Source{
+					GitHub: GitHubSource{"foo/test"},
+				},
+				Source{
+					GitHub: GitHubSource{"bar/sample"},
+				},
+				Source{
+					AssetFilter: AssetFilter{
+						IncludeArtifacts: []string{"small.yaml"},
+					},
+					GitHub: GitHubSource{"quick/package"},
+				},
+			},
+		},
+	}
+	yamlFile, err := ioutil.TempFile("", "config-yaml")
+	if err != nil {
+		t.Fatal("Unable to open tempfile: ", err)
+	}
+	defer os.Remove(yamlFile.Name())
+	yamlFile.WriteString(config)
+
+	got, err := ReadConfig(yamlFile.Name())
+	if err != nil {
+		t.Fatal("Unable to read config: ", err)
+	}
+
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Error("Unexpected config diff (-want +got): ", diff)
+	}
+}
 
 func TestPackage_String(t *testing.T) {
 	p := Package{

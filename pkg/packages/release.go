@@ -74,10 +74,10 @@ func (a Asset) Less(b Asset) bool {
 	}
 	// Sort primary assets before secondary assets
 	if a.secondary {
-		aScore += 1
+		aScore++
 	}
 	if b.secondary {
-		bScore += 1
+		bScore++
 	}
 
 	if aScore == bScore {
@@ -190,6 +190,14 @@ func CollectReleaseAssets(p Package, r Release, allReleases map[string][]Release
 // HandleRelease processes the files for a given release of the specified
 // Package.
 func HandleRelease(ctx context.Context, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
+	if p.Alternatives {
+		return handleAlternatives(ctx, client, p, r, allReleases)
+	}
+	return handlePrimary(ctx, client, p, r, allReleases)
+}
+
+// handlePrimary handles the files for a primary-style package.
+func handlePrimary(ctx context.Context, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
 	assets := CollectReleaseAssets(p, r, allReleases)
 
 	shortName := strings.TrimPrefix(r.TagName, "v")
@@ -210,12 +218,53 @@ func HandleRelease(ctx context.Context, client *http.Client, p Package, r Releas
 		log.Print(asset.URL)
 		fetch, err := client.Get(asset.URL)
 		if err != nil {
-			return fmt.Errorf("Unable to fetch %s: %w", fileName, err)
+			return fmt.Errorf("Unable to fetch %s: %w", asset.URL, err)
 		}
 		defer fetch.Body.Close()
 		_, err = io.Copy(file, fetch.Body)
 		if err != nil {
 			return fmt.Errorf("Unable to write to %s: %w", fileName, err)
+		}
+	}
+	return nil
+}
+
+func handleAlternatives(ctx context.Context, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
+	minor := semver.MajorMinor(r.TagName)
+	if lm := latestMinor(minor, allReleases[p.Primary.String()]); lm.TagName != r.TagName {
+		log.Printf("Skipping %q, %q is newer", r.TagName, lm.TagName)
+		return nil
+	}
+
+	shortName := strings.TrimPrefix(minor, "v")
+	path := filepath.Join("cmd", "operator", "kodata", p.Name, shortName)
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		return err
+	}
+
+	for _, src := range p.Additional {
+		candidates := allReleases[src.String()]
+		release := latestMinor(minor, candidates)
+		// Download assets and concatenate them.
+		assets := release.Assets.FilterAssets(src.Accept(release.TagName))
+		for _, a := range assets {
+			fileName := filepath.Join(path, a.Name)
+			file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				return fmt.Errorf("Unable to open %s: %w", fileName, err)
+			}
+			defer file.Close()
+			log.Print(a.URL)
+			fetch, err := client.Get(a.URL)
+			if err != nil {
+				return fmt.Errorf("Unable to fetch %s: %w", a.URL, err)
+			}
+			defer fetch.Body.Close()
+			_, err = io.Copy(file, fetch.Body)
+			if err != nil {
+				return fmt.Errorf("Unable to write to %s: %w", fileName, err)
+			}
 		}
 	}
 	return nil
@@ -243,4 +292,18 @@ func LastN(minors int, allReleases []Release) []Release {
 	}
 
 	return retval
+}
+
+func latestMinor(minor string, choices []Release) Release {
+	ret := Release{
+		TagName: minor,
+	}
+	for _, release := range choices {
+		if semver.Compare(minor, semver.MajorMinor(release.TagName)) == 0 {
+			if semver.Compare(ret.TagName, release.TagName) <= 0 {
+				ret = release
+			}
+		}
+	}
+	return ret
 }

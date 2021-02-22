@@ -58,6 +58,7 @@ var suffixOrder = map[string]int{
 	// channel/broker despite collating before.
 	"-sugar-controller.yaml":  3,
 	"-post-install-jobs.yaml": 6,
+	"-post-install.yaml":      6,
 }
 
 // Less provides a method for implementing `sort.Slice` to ensure that assets

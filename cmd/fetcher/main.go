@@ -22,6 +22,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -35,7 +36,7 @@ import (
 )
 
 func main() {
-	cfg, err := packages.ReadConfig("cmd/fetcher/kodata/test.yaml")
+	cfg, err := packages.ReadConfig("cmd/fetcher/kodata/config.yaml")
 	if err != nil {
 		log.Print("Unable to read config: ", err)
 		os.Exit(2)
@@ -43,10 +44,6 @@ func main() {
 
 	ctx := context.Background()
 	client := getClient(ctx)
-	// if client == nil {
-	// 	log.Print("GITHUB_TOKEN not set, skipping release fetch from GitHub")
-	// 	os.Exit(0)
-	// }
 	ghClient := ghclient.NewClient(client)
 	repos := make(map[string][]packages.Release, len(cfg))
 	for _, v := range cfg {
@@ -90,6 +87,9 @@ func ensureRepo(ctx context.Context, known map[string][]packages.Release, client
 		return nil
 	}
 	if src.GitHub != (packages.GitHubSource{}) {
+		if client == nil {
+			return fmt.Errorf("Must set $GITHUB_TOKEN to use github sources.")
+		}
 		owner, repo := src.OrgRepo()
 		releases, err := github.GetReleases(ctx, client, owner, repo)
 		if err != nil {

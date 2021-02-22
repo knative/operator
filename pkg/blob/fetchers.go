@@ -22,7 +22,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 
 	"gocloud.dev/blob"
@@ -39,12 +38,10 @@ import (
 )
 
 func init() {
-	if os.Getenv("GCS_NOAUTH") != "" {
-		opener := gcsblob.URLOpener{
-			Client: gcp.NewAnonymousHTTPClient(gcp.DefaultTransport()),
-		}
-		blob.DefaultURLMux().RegisterBucket(gcsblob.Scheme+"-noauth", &opener)
+	opener := gcsblob.URLOpener{
+		Client: gcp.NewAnonymousHTTPClient(gcp.DefaultTransport()),
 	}
+	blob.DefaultURLMux().RegisterBucket(gcsblob.Scheme+"-noauth", &opener)
 }
 
 // GetReleases collects and returns releases from the specified S3 configuration.

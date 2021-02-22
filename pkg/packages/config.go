@@ -58,8 +58,10 @@ type Source struct {
 	AssetFilter `json:",inline"`
 	// GitHub represents software released on GitHub using GitHub releases.
 	GitHub GitHubSource `json:"github,omitempty"`
-	// TODO: add other sources like an S3 bucket here.
+	// S3 represents software manifests stored in an blob storage service under
+	// a specified prefix. The blob paths should end with "vX.Y.Z/<asset name>"
 	S3 S3Source `json:"s3,omitempty"`
+	// TODO: add other sources here as needed.
 
 	// Overrides provides a mechanism for modifying include/exclude (and
 	// possibly other settings) on a per-release or per-minor-version basis, to

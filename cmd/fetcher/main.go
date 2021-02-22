@@ -88,7 +88,7 @@ func ensureRepo(ctx context.Context, known map[string][]packages.Release, client
 	}
 	if src.GitHub != (packages.GitHubSource{}) {
 		if client == nil {
-			return fmt.Errorf("Must set $GITHUB_TOKEN to use github sources.")
+			return fmt.Errorf("must set $GITHUB_TOKEN to use github sources.")
 		}
 		owner, repo := src.OrgRepo()
 		releases, err := github.GetReleases(ctx, client, owner, repo)

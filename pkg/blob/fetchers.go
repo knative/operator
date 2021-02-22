@@ -49,11 +49,11 @@ func init() {
 
 // GetReleases collects and returns releases from the specified S3 configuration.
 func GetReleases(ctx context.Context, client *http.Client, cfg packages.S3Source) ([]packages.Release, error) {
-	bucketUrl, err := url.Parse(cfg.Bucket)
+	bucketURL, err := url.Parse(cfg.Bucket)
 	if err != nil {
 		return nil, err
 	}
-	bucketName := bucketUrl.Host
+	bucketName := bucketURL.Host
 	b, err := blob.OpenBucket(ctx, cfg.Bucket)
 	if err != nil {
 		return nil, err

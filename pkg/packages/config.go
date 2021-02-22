@@ -33,7 +33,13 @@ type Package struct {
 	// Name is a top-level directory name that the releases should be stored in.
 	// This is collected from a map key in the configuration and is not directly
 	// loaded from YAML.
-	Name string `yaml:"-"`
+	Name string `json:"-"`
+
+	// If Alternatives is true, this will be considered an "alternatives"
+	// collection, which contains single file alternatives for each Additional
+	// item based on the latest minor (but not patch) versions of Primary.
+	Alternatives bool
+
 	// Primary is the primary source of release artifacts; collections of
 	// release artifacts will be numbered based on the primary source's release
 	// numbering scheme.
@@ -42,29 +48,41 @@ type Package struct {
 	// Additional sources provide secondary artifacts which should be bundled
 	// with the artifacts of the primary release. This can be useful (for
 	// example) to select plugins which should be included with a base package.
-	Additional []Source `yaml:",omitempty"`
+	Additional []Source `json:",omitempty"`
 }
 
 // Source is represents the release artifacts of a given project or repo, which
 // provides a sequence of semver-tagged artifact collections for an individual
 // release.
 type Source struct {
-	AssetFilter `yaml:",inline"`
+	AssetFilter `json:",inline"`
 	// GitHub represents software released on GitHub using GitHub releases.
-	GitHub GitHubSource `yaml:"github,omitempty"`
-	// TODO: add other sources like an S3 bucket here.
+	GitHub GitHubSource `json:"github,omitempty"`
+	// S3 represents software manifests stored in an blob storage service under
+	// a specified prefix. The blob paths should end with "vX.Y.Z/<asset name>"
+	S3 S3Source `json:"s3,omitempty"`
+	// TODO: add other sources here as needed.
 
 	// Overrides provides a mechanism for modifying include/exclude (and
 	// possibly other settings) on a per-release or per-minor-version basis, to
 	// allow fixing up discontinuities in release patterns.
-	Overrides map[string]AssetFilter `yaml:"overrides"`
+	Overrides map[string]AssetFilter `json:"overrides"`
 }
 
 // GitHubSource represents a software package which is released via GitHub
 // releases.
 type GitHubSource struct {
 	// Repo is the path to a repo in GitHub, using the "org/repo" format.
-	Repo string `yaml:"repo"`
+	Repo string `json:"repo"`
+}
+
+// S3Source represents a set of yaml documents published to a blob storage
+// bucket.
+type S3Source struct {
+	// Bucket is the path to a Blob storage bucket
+	Bucket string
+	// Prefix is the path within a Blob storage bucket
+	Prefix string
 }
 
 // AssetFilter provides an interface for selecting and managing assets within a
@@ -73,10 +91,10 @@ type AssetFilter struct {
 	// IncludeArtifacts is a set of regep patterns to select which artifacts
 	// from a release should be downloaded and included. If no IncludeArtifacts
 	// are supplied, all files from the release will be included.
-	IncludeArtifacts []string `yaml:"include"`
+	IncludeArtifacts []string `json:"include"`
 	// ExcludeArtifacts is a set of regexp patterns to remove artifacts which
 	// would otherwise be selected by IncludeArtifacts.
-	ExcludeArtifacts []string `yaml:"exclude,omitempty"`
+	ExcludeArtifacts []string `json:"exclude,omitempty"`
 
 	// Rename provides a mechanism to remap artifacts from one filename to
 	// another.
@@ -90,7 +108,7 @@ func ReadConfig(path string) (retval map[string]*Package, err error) {
 	if err != nil {
 		return
 	}
-	err = yaml.Unmarshal(bytes, retval)
+	err = yaml.Unmarshal(bytes, &retval)
 	if err != nil {
 		return
 	}
@@ -110,7 +128,13 @@ func (p *Package) String() string {
 
 // String implements fmt.Stringer.
 func (s *Source) String() string {
-	return s.GitHub.Repo
+	if s.GitHub != (GitHubSource{}) {
+		return s.GitHub.Repo
+	}
+	if s.S3 != (S3Source{}) {
+		return s.S3.Bucket + "/" + s.S3.Prefix
+	}
+	return "~~error~~"
 }
 
 // OrgRepo returns the GitHub org and repo associated with this Source.

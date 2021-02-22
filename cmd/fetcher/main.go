@@ -21,6 +21,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -28,6 +30,7 @@ import (
 
 	ghclient "github.com/google/go-github/v33/github"
 	"golang.org/x/oauth2"
+	"knative.dev/operator/pkg/blob"
 	"knative.dev/operator/pkg/github"
 	"knative.dev/operator/pkg/packages"
 )
@@ -41,18 +44,14 @@ func main() {
 
 	ctx := context.Background()
 	client := getClient(ctx)
-	if client == nil {
-		log.Print("GITHUB_TOKEN not set, skipping release fetch from GitHub")
-		os.Exit(0)
-	}
 	ghClient := ghclient.NewClient(client)
 	repos := make(map[string][]packages.Release, len(cfg))
-
 	for _, v := range cfg {
 		if err := ensureRepo(ctx, repos, ghClient, v.Primary); err != nil {
 			log.Printf("Unable to fetch %s: %v", v.Primary, err)
 			os.Exit(2)
 		}
+
 		for _, s := range v.Additional {
 			if err := ensureRepo(ctx, repos, ghClient, s); err != nil {
 				log.Printf("Unable to fetch %s: %v", s, err)
@@ -84,14 +83,28 @@ func getClient(ctx context.Context) *http.Client {
 }
 
 func ensureRepo(ctx context.Context, known map[string][]packages.Release, client *ghclient.Client, src packages.Source) error {
-	if known[src.GitHub.Repo] != nil {
+	if known[src.String()] != nil {
 		return nil
 	}
-	owner, repo := src.OrgRepo()
-	releases, err := github.GetReleases(ctx, client, owner, repo)
-	if err != nil {
-		return err
+	if src.GitHub != (packages.GitHubSource{}) {
+		if client == nil {
+			return fmt.Errorf("must set $GITHUB_TOKEN to use github sources.")
+		}
+		owner, repo := src.OrgRepo()
+		releases, err := github.GetReleases(ctx, client, owner, repo)
+		if err != nil {
+			return err
+		}
+		known[src.String()] = releases
+		return nil
 	}
-	known[src.GitHub.Repo] = releases
-	return nil
+	if src.S3 != (packages.S3Source{}) {
+		releases, err := blob.GetReleases(ctx, &http.Client{}, src.S3)
+		if err != nil {
+			return err
+		}
+		known[src.String()] = releases
+		return nil
+	}
+	return errors.New("Must specify one of S3 or GitHub")
 }

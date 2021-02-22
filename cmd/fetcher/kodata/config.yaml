@@ -1,7 +1,9 @@
 knative-serving:
   primary:
-    github:
-      repo: "knative/serving"
+    # We don't use `github:` as a source to avoid needing to manage tokens.
+    s3:
+      bucket: "gs-noauth://knative-releases"
+      prefix: "serving/previous"
     include:
       - ".*.yaml"
     exclude:
@@ -11,15 +13,33 @@ knative-serving:
       - ".*domain.*"
       - "release.yaml"
       - ".*-nscert.yaml"
+ingress:
+  alternatives: true
+  primary:
+    s3:
+      bucket: "gs-noauth://knative-releases"
+      prefix: "serving/previous"
   additional:
-  - github:
-      repo: "knative-sandbox/net-istio"
-    exclude:
-    - "release.yaml"
+  - s3:
+      bucket: "gs-noauth://knative-releases"
+      prefix: "net-istio/previous"
+    include:
+    - "net-istio.yaml"
+  - s3:
+      bucket: "gs-noauth://knative-releases"
+      prefix: "net-contour/previous"
+    include:
+      - "net-contour.yaml"
+  - s3:
+      bucket: "gs-noauth://knative-releases"
+      prefix: "net-kourier/previous"
+    include:
+      - "kourier.yaml"
 knative-eventing:
   primary:
-    github:
-      repo: "knative/eventing"
+    s3:
+      bucket: "gs-noauth://knative-releases"
+      prefix: "eventing/previous"
     include:
       - ".*.yaml"
     exclude:
@@ -27,28 +47,6 @@ knative-eventing:
       - "eventing.yaml"
     # Eventing packaging has evolved in non-standard ways over the last few releases.
     overrides:
-      v0.16.0:
-        include:
-        - "eventing.yaml"
-        - "eventing-pre-install-jobs.yaml"
-        - "eventing-post-install-jobs.yaml"
-      v0.16.1:
-        include:
-        - "eventing.yaml"
-        - "eventing-pre-install-jobs.yaml"
-        - "eventing-post-install-jobs.yaml"
-        rename:
-          "pre-install-to-v0.16.0.yaml": "eventing-pre-install-jobs.yaml"
-          "post-install-to-v0.16.0.yaml": "eventing-post-install-jobs.yaml"
-      v0.16:
-        include:
-          - ".*.yaml"
-        exclude:
-          - "eventing.yaml"
-          - "deprecated.*"
-        rename:
-          "pre-install-to-v0.16.0.yaml": "eventing-pre-install-jobs.yaml"
-          "post-install-to-v0.16.0.yaml": "eventing-post-install-jobs.yaml"
       v0.18:
         include:
           - ".*.yaml"

@@ -53,7 +53,7 @@ b:
     - small.yaml
 `
 	want := map[string]*Package{
-		"a": &Package{
+		"a": {
 			Name: "a",
 			Primary: Source{
 				AssetFilter: AssetFilter{
@@ -63,7 +63,7 @@ b:
 				GitHub: GitHubSource{"knative/serving"},
 			},
 		},
-		"b": &Package{
+		"b": {
 			Name:         "b",
 			Alternatives: true,
 			Primary: Source{
@@ -73,13 +73,13 @@ b:
 				},
 			},
 			Additional: []Source{
-				Source{
+				{
 					GitHub: GitHubSource{"foo/test"},
 				},
-				Source{
+				{
 					GitHub: GitHubSource{"bar/sample"},
 				},
-				Source{
+				{
 					AssetFilter: AssetFilter{
 						IncludeArtifacts: []string{"small.yaml"},
 					},

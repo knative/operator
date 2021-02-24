@@ -25,9 +25,9 @@ readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.20"
 # kodata or an incoming new release.
 readonly TARGET_RELEASE_VERSION="latest"
 # This is the branch name of knative repos, where we run the upgrade tests.
-readonly KNATIVE_REPO_BRANCH="release-0.20" #${PULL_BASE_REF}
+readonly KNATIVE_REPO_BRANCH="release-0.21" #${PULL_BASE_REF}
 # The branch of the net-istio repository.
-readonly NET_ISTIO_BRANCH="release-0.20"
+readonly NET_ISTIO_BRANCH="release-0.21"
 # Istio version we test with
 readonly ISTIO_VERSION="stable"
 # Test without Istio mesh enabled

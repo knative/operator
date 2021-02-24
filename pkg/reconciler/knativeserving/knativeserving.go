@@ -156,3 +156,7 @@ func (r *Reconciler) appendExtensionManifests(ctx context.Context, manifest *mf.
 	*manifest = manifest.Append(platformManifests...)
 	return nil
 }
+
+func (r *Reconciler) appendExtensionManifests1(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+	return nil
+}

@@ -17,12 +17,12 @@
 # This script provides helper methods to perform cluster actions.
 source "$(dirname "${BASH_SOURCE[0]}")/../vendor/knative.dev/hack/e2e-tests.sh"
 
-# The previous serving release, installed by the operator.
+# The previous serving release, installed by the operator. This value should be in the semantic format of major.minor.
 readonly PREVIOUS_SERVING_RELEASE_VERSION="0.20"
-# The previous eventing release, installed by the operator.
+# The previous eventing release, installed by the operator. This value should be in the semantic format of major.minor.
 readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.20"
 # The target serving/eventing release to upgrade, installed by the operator. It can be a release available under
-# kodata or an incoming new release.
+# kodata or an incoming new release. This value should be in the semantic format of major.minor.
 readonly TARGET_RELEASE_VERSION="0.21"
 # This is the branch name of knative repos, where we run the upgrade tests.
 readonly KNATIVE_REPO_BRANCH="release-0.21" #${PULL_BASE_REF}
@@ -171,8 +171,10 @@ function download_nightly_artifacts() {
         wget ${linkprefix}/${artifact} -O ${knative_version_dir}/${counter}-${artifact}
       done
     if [ "${component}" == "serving" ]; then
-      ((counter=counter+1))
-      wget https://storage.googleapis.com/knative-nightly/net-istio/latest/net-istio.yaml -O ${knative_version_dir}/${counter}-net-istio.yaml
+      # Download the latest net-istio into the ingress directory.
+      ingress_version_dir=${OPERATOR_DIR}/cmd/operator/kodata/ingress/${TARGET_RELEASE_VERSION}
+      mkdir ${ingress_version_dir}
+      wget https://storage.googleapis.com/knative-nightly/net-istio/latest/net-istio.yaml -O ${ingress_version_dir}/net-istio.yaml
     fi
   fi
 }

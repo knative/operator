@@ -23,7 +23,7 @@ readonly PREVIOUS_SERVING_RELEASE_VERSION="0.20"
 readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.20"
 # The target serving/eventing release to upgrade, installed by the operator. It can be a release available under
 # kodata or an incoming new release.
-readonly TARGET_RELEASE_VERSION="latest"
+readonly TARGET_RELEASE_VERSION="0.21"
 # This is the branch name of knative repos, where we run the upgrade tests.
 readonly KNATIVE_REPO_BRANCH="release-0.21" #${PULL_BASE_REF}
 # The branch of the net-istio repository.

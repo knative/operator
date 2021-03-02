@@ -26,6 +26,16 @@ func Base() pkgupgrade.Operation {
 	return install("OperatorWithServingEventingPreviousRelease", "install_previous_operator_release")
 }
 
+// ServingTestSetup sets up the test images for Knative Serving.
+func ServingTestSetup() pkgupgrade.Operation {
+	return install("ServingTestSetup", "serving_test_setup")
+}
+
+// EventingTestSetup sets up the test images for Knative Eventing.
+func EventingTestSetup() pkgupgrade.Operation {
+	return install("EventingTestSetup", "eventing_test_setup")
+}
+
 // LatestRelease installs Knative Serving and Eventing from the latest stable release.
 func LatestRelease() pkgupgrade.Operation {
 	return install("ServingEventingLatestRelease", "create_latest_custom_resource")

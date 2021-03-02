@@ -41,26 +41,6 @@ export E2E_UPGRADE_TESTS_SERVING_USE=false
 # FIXME(ksuszyns): remove when knative/operator#297 is fixed
 export E2E_UPGRADE_TESTS_SERVING_SCALETOZERO=false
 
-# Create test resources and images
-function test_setup() {
-  download_knative "knative/eventing" eventing "${KNATIVE_REPO_BRANCH}"
-  # Install kail if needed.
-  if ! which kail >/dev/null; then
-    bash <(curl -sfL https://raw.githubusercontent.com/boz/kail/master/godownloader.sh) -b "$GOPATH/bin"
-  fi
-
-  # Capture all logs.
-  kail >${ARTIFACTS}/k8s.log.txt &
-  local kail_pid=$!
-  # Clean up kail so it doesn't interfere with job shutting down
-  add_trap "kill $kail_pid || true" EXIT
-
-  echo ">> Publish test images for eventing"
-  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/eventing "test/test_images"
-
-  cd ${OPERATOR_DIR}
-}
-
 # Skip installing istio as an add-on.
 initialize "$@" --skip-istio-addon
 

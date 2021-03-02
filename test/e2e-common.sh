@@ -68,6 +68,31 @@ function add_trap() {
   done
 }
 
+function eventing_test_setup() {
+  download_knative "knative/eventing" eventing "${KNATIVE_REPO_BRANCH}"
+  echo ">> Publish test images for eventing"
+  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/eventing "test/test_images"
+}
+
+function serving_test_setup() {
+  download_knative "knative/serving" serving "${KNATIVE_REPO_BRANCH}"
+  echo ">> Creating test resources (test/config/) in Knative Serving repository"
+  cd ${KNATIVE_DIR}/serving
+  for i in $(ls test/config/*.yaml); do
+    sed s/knative-serving/${TEST_NAMESPACE}/ $i | ko apply ${KO_FLAGS} -f -
+  done || return 1
+  # Disable the chaosduck deployment as in Serving upgrade prow
+  kubectl -n "${TEST_NAMESPACE}" scale deployment "chaosduck" --replicas=0 || fail_test
+
+  echo ">> Uploading test images..."
+  # We only need to build and publish two images among all the test images
+  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/serving "test/test_images/pizzaplanetv1"
+  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/serving "test/test_images/pizzaplanetv2"
+  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/serving "test/test_images/autoscale"
+
+  cd ${OPERATOR_DIR}
+}
+
 # Setup and run kail in the background to collect logs
 # from all pods.
 function test_setup_logging() {

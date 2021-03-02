@@ -44,6 +44,7 @@ func TestServingUpgrades(t *testing.T) {
 		Installations: pkgupgrade.Installations{
 			Base: []pkgupgrade.Operation{
 				installation.Base(),
+				installation.ServingTestSetup(),
 			},
 			UpgradeWith: []pkgupgrade.Operation{
 				installation.LatestRelease(),

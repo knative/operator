@@ -35,40 +35,6 @@ export GO111MODULE=auto
 
 source "$(dirname "${BASH_SOURCE[0]}")/e2e-common.sh"
 
-# Create test resources and images
-function test_setup() {
-  create_namespace
-  download_knative "knative/serving" serving "${KNATIVE_REPO_BRANCH}"
-  echo ">> Creating test resources (test/config/) in Knative Serving repository"
-  cd ${KNATIVE_DIR}/serving
-  for i in $(ls test/config/*.yaml); do
-    sed s/knative-serving/${TEST_NAMESPACE}/ $i | ko apply ${KO_FLAGS} -f -
-  done || return 1
-  # Disable the chaosduck deployment as in Serving upgrade prow
-  kubectl -n "${TEST_NAMESPACE}" scale deployment "chaosduck" --replicas=0 || fail_test
-
-  echo ">> Uploading test images..."
-  # We only need to build and publish two images among all the test images
-  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/serving "test/test_images/pizzaplanetv1"
-  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/serving "test/test_images/pizzaplanetv2"
-  ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/serving "test/test_images/autoscale"
-
-  test_setup_logging
-
-  # Install kail if needed.
-  if ! which kail >/dev/null; then
-    bash <(curl -sfL https://raw.githubusercontent.com/boz/kail/master/godownloader.sh) -b "$GOPATH/bin"
-  fi
-
-  # Capture all logs.
-  kail >${ARTIFACTS}/k8s.log.txt &
-  local kail_pid=$!
-  # Clean up kail so it doesn't interfere with job shutting down
-  add_trap "kill $kail_pid || true" EXIT
-
-  cd ${OPERATOR_DIR}
-}
-
 # Skip installing istio as an add-on.
 initialize "$@" --skip-istio-addon
 

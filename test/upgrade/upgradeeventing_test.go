@@ -49,6 +49,7 @@ func TestEventingUpgrades(t *testing.T) {
 		Installations: pkgupgrade.Installations{
 			Base: []pkgupgrade.Operation{
 				installation.Base(),
+				installation.EventingTestSetup(),
 			},
 			UpgradeWith: []pkgupgrade.Operation{
 				installation.LatestRelease(),

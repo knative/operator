@@ -64,7 +64,19 @@ func TargetVersion(instance v1alpha1.KComponent) string {
 
 // TargetManifest returns the manifest for the TargetVersion
 func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
-	return getManifestWithVersionValidation(TargetVersion(instance), instance)
+	version := TargetVersion(instance)
+	manifestsPath := targetManifestPath(version, instance)
+	return getManifestWithVersionValidation(version, manifestsPath, instance)
+}
+
+// TargetAdditionalManifest returns the manifest for the TargetVersion specified with spec.additionalManifests.
+func TargetAdditionalManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
+	version := TargetVersion(instance)
+	additionalManifestsPath := additionalManifestPath(version, instance)
+	if additionalManifestsPath == "" {
+		return mf.Manifest{}, nil
+	}
+	return getManifestWithVersionValidation(version, additionalManifestsPath, instance)
 }
 
 // InstalledManifest returns the version currently installed, which is
@@ -142,8 +154,7 @@ func getVersionKey(instance v1alpha1.KComponent) string {
 	return ""
 }
 
-func getManifestWithVersionValidation(version string, instance v1alpha1.KComponent) (mf.Manifest, error) {
-	manifestsPath := targetManifestPath(version, instance)
+func getManifestWithVersionValidation(version, manifestsPath string, instance v1alpha1.KComponent) (mf.Manifest, error) {
 	manifests, err := FetchManifest(manifestsPath)
 	if err != nil {
 		if len(instance.GetSpec().GetManifests()) == 0 && len(instance.GetSpec().GetAdditionalManifests()) == 0 {
@@ -213,6 +224,17 @@ func componentDir(instance v1alpha1.KComponent) string {
 	return ""
 }
 
+func additionalManifestPath(version string, instance v1alpha1.KComponent) string {
+	// Create the comma-separated string for URLs in spec.additionalManifests
+	addManifests := instance.GetSpec().GetAdditionalManifests()
+	urls := make([]string, 0, len(addManifests))
+	for _, manifest := range addManifests {
+		url := strings.ReplaceAll(manifest.Url, VersionVariable, version)
+		urls = append(urls, url)
+	}
+	return strings.Join(urls, COMMA)
+}
+
 func targetManifestPath(version string, instance v1alpha1.KComponent) string {
 	manifests := instance.GetSpec().GetManifests()
 	// Create the comma-separated string as the URL to retrieve the manifest
@@ -230,17 +252,7 @@ func targetManifestPath(version string, instance v1alpha1.KComponent) string {
 			return ""
 		}
 	}
-
-	// Append the spec.additionalManifests
-	addManifests := instance.GetSpec().GetAdditionalManifests()
-	urls = make([]string, 0, len(addManifests))
-	urls = append(urls, manifestPath)
-	for _, manifest := range addManifests {
-		url := strings.ReplaceAll(manifest.Url, VersionVariable, version)
-		urls = append(urls, url)
-	}
-
-	return strings.Join(urls, COMMA)
+	return manifestPath
 }
 
 func targetManifestPathArray(instance v1alpha1.KComponent) []string {

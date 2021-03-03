@@ -30,17 +30,50 @@ import (
 )
 
 func TestStagesExecute(t *testing.T) {
-	os.Setenv(KoEnvKey, "testdata/kodata")
-	defer os.Unsetenv(KoEnvKey)
-	manifest, _ := mf.ManifestFrom(mf.Slice{})
-	stages := Stages{AppendTarget, AppendInstalled}
-	util.AssertEqual(t, len(manifest.Resources()), 0)
-	stages.Execute(context.TODO(), &manifest, &v1alpha1.KnativeServing{Spec: v1alpha1.KnativeServingSpec{
-		CommonSpec: v1alpha1.CommonSpec{
-			Version: "0.16.0",
+	tests := []struct {
+		name                 string
+		component            v1alpha1.KComponent
+		expectedNumResources int
+	}{{
+		name: "knative-serving with additional manifests",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.1",
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
 		},
-	}})
-	util.AssertEqual(t, len(manifest.Resources()), 4)
+		expectedNumResources: 6,
+	}, {
+		name: "knative-serving with no additional manifests",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.1",
+				},
+			},
+		},
+		expectedNumResources: 6,
+	}}
+
+	koPath := "testdata/kodata"
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			manifest, _ := mf.ManifestFrom(mf.Slice{})
+			stages := Stages{AppendTarget, AppendAdditionalManifests, AppendInstalled}
+			util.AssertEqual(t, len(manifest.Resources()), 0)
+			err := stages.Execute(context.TODO(), &manifest, test.component)
+			util.AssertEqual(t, len(manifest.Resources()), test.expectedNumResources)
+			util.AssertEqual(t, err, nil)
+		})
+	}
+
 }
 
 func TestDeleteObsoleteResources(t *testing.T) {

@@ -106,6 +106,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 	}
 	stages := common.Stages{
 		common.AppendTarget,
+		common.AppendAdditionalManifests,
 		ingress.AppendTargetIngresses,
 		r.filterDisabledIngresses,
 		r.appendExtensionManifests,
@@ -143,7 +144,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
-	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.transform}
+	stages := common.Stages{common.AppendInstalled, common.AppendAdditionalManifests, ingress.AppendInstalledIngresses, r.transform}
 	err := stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }

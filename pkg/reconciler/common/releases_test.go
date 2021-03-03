@@ -622,70 +622,12 @@ func TestTargetManifest(t *testing.T) {
 					}, {
 						Url: "testdata/kodata/knative-serving/0.16.1/serving-hpa.yaml",
 					}, {
-						Url: "testdata/kodata/knative-serving/0.16.1/additional-resource.yaml",
+						Url: "testdata/kodata/knative-serving/0.16.1/serving-crd.yaml",
 					}},
 				},
 			},
 		},
 		expectedNumResources: 3,
-		expectedError:        nil,
-	}, {
-		name: "knative-serving with additional manifests only",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
-					AdditionalManifests: []v1alpha1.Manifest{{
-						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
-					}},
-				},
-			},
-		},
-		expectedNumResources: 4,
-		expectedError:        nil,
-	}, {
-		name: "knative-serving with manifests and additional manifests",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
-					Manifests: []v1alpha1.Manifest{{
-						Url: "testdata/kodata/knative-serving/0.16.1/serving-core.yaml",
-					}},
-					AdditionalManifests: []v1alpha1.Manifest{{
-						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
-					}},
-				},
-			},
-		},
-		expectedNumResources: 2,
-		expectedError:        nil,
-	}, {
-		name: "knative-eventing with additional manifests only",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
-					AdditionalManifests: []v1alpha1.Manifest{{
-						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
-					}},
-				},
-			},
-		},
-		expectedNumResources: 3,
-		expectedError:        nil,
-	}, {
-		name: "knative-eventing with manifests and additional manifests",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
-					Manifests: []v1alpha1.Manifest{{
-						Url: "testdata/kodata/knative-eventing/0.16.0/eventing-core.yaml",
-					}},
-					AdditionalManifests: []v1alpha1.Manifest{{
-						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
-					}},
-				},
-			},
-		},
-		expectedNumResources: 2,
 		expectedError:        nil,
 	}, {
 		name: "knative-serving with spec.version available",
@@ -768,6 +710,64 @@ func TestTargetManifest(t *testing.T) {
 		},
 		expectedNumResources: 2,
 		expectedError:        nil,
+	}, {
+		name: "knative-serving with additional manifests only",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedNumResources: 3,
+		expectedError:        nil,
+	}, {
+		name: "knative-serving with manifests and additional manifests",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/knative-serving/0.16.1/serving-core.yaml",
+					}},
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedNumResources: 1,
+		expectedError:        nil,
+	}, {
+		name: "knative-eventing with additional manifests only",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedNumResources: 2,
+		expectedError:        nil,
+	}, {
+		name: "knative-eventing with manifests and additional manifests",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/knative-eventing/0.16.0/eventing-core.yaml",
+					}},
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedNumResources: 1,
+		expectedError:        nil,
 	}}
 
 	koPath := "testdata/kodata"
@@ -777,6 +777,102 @@ func TestTargetManifest(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			m, err := TargetManifest(test.component)
+			util.AssertEqual(t, len(m.Resources()), test.expectedNumResources)
+			if err != test.expectedError {
+				if err != nil {
+					util.AssertEqual(t, err.Error(), test.expectedError.Error())
+				} else {
+					util.AssertEqual(t, nil, test.expectedError.Error())
+				}
+			}
+		})
+	}
+}
+
+func TestTargetAdditionalManifest(t *testing.T) {
+	tests := []struct {
+		name                 string
+		component            v1alpha1.KComponent
+		expectedNumResources int
+		expectedError        error
+	}{{
+		name: "knative-serving with additional manifests only",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedNumResources: 1,
+		expectedError:        nil,
+	}, {
+		name: "knative-serving with manifests and additional manifests",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/knative-serving/0.16.1/serving-core.yaml",
+					}},
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedNumResources: 1,
+		expectedError:        nil,
+	}, {
+		name: "knative-eventing with additional manifests only",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedNumResources: 1,
+		expectedError:        nil,
+	}, {
+		name: "knative-eventing with manifests and additional manifests",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Manifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/knative-eventing/0.16.0/eventing-core.yaml",
+					}},
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedNumResources: 1,
+		expectedError:        nil,
+	}, {
+		name: "knative-serving with the latest version available",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "latest",
+				},
+			},
+		},
+		expectedNumResources: 0,
+		expectedError:        nil,
+	}}
+
+	koPath := "testdata/kodata"
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			m, err := TargetAdditionalManifest(test.component)
 			util.AssertEqual(t, len(m.Resources()), test.expectedNumResources)
 			if err != test.expectedError {
 				if err != nil {

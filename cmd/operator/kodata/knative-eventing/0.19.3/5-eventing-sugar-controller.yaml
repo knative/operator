@@ -30,7 +30,7 @@ spec:
     spec:
       serviceAccountName: eventing-controller
       containers:
-        - name: controller
+        - name: sugar-controller
           image: gcr.io/knative-releases/knative.dev/eventing/cmd/sugar_controller@sha256:6219a96093c084e3aa246db0744ed88ac7e50f4ebbfa3b0a38fd5cae419b6e7f
           env:
             - name: CONFIG_LOGGING_NAME

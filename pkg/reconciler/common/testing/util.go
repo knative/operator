@@ -19,6 +19,10 @@ import (
 	"reflect"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/api/equality"
+
+	mf "github.com/manifestival/manifestival"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	corev1 "k8s.io/api/core/v1"
@@ -84,4 +88,93 @@ func AssertDeepEqual(t *testing.T, actual, expected interface{}) {
 		return
 	}
 	t.Fatalf("expected does not deep equal actual. \nExpected: %T %+v\nActual:   %T %+v", expected, expected, actual, actual)
+}
+
+func ResourceMatchWithPath(actual mf.Manifest, expectedManifestPath string) bool {
+	if expectedManifestPath == "" && len(actual.Resources()) == 0 {
+		return true
+	}
+	expected, err := mf.NewManifest(expectedManifestPath)
+	if err != nil {
+		return false
+	}
+	return ResourceMatch(actual, expected)
+}
+
+// ResourceMatch returns true if the resources in the actual manifest match the same resources in
+// the expected manifest, in terms of name, namespace, group and kind.
+func ResourceMatch(actual, expected mf.Manifest) bool {
+	// The resource match in terms of name, namespace, kind and group.
+	if len(actual.Filter(mf.Not(mf.In(expected))).Resources()) != 0 {
+		return false
+	}
+	if len(expected.Filter(mf.Not(mf.In(actual))).Resources()) != 0 {
+		return false
+	}
+	return true
+}
+
+func DeepMatchWithPath(actual mf.Manifest, expectedManifestPath string) bool {
+	if expectedManifestPath == "" && len(actual.Resources()) == 0 {
+		return true
+	}
+	expected, err := mf.NewManifest(expectedManifestPath)
+	if err != nil {
+		return false
+	}
+	return ResourceDeepMatch(actual, expected)
+}
+
+// ResourceDeepMatch returns true if the resources in the actual manifest match exactly the same resources in
+// the expected manifest.
+func ResourceDeepMatch(actual, expected mf.Manifest) bool {
+	if len(expected.Resources()) != len(actual.Resources()) {
+		return false
+	}
+
+	if !ResourceMatch(actual, expected) {
+		return false
+	}
+	return manifestCompare(actual, expected)
+}
+
+func ResourceContainingWithPath(actual mf.Manifest, expectedManifestPath string) bool {
+	expected, err := mf.NewManifest(expectedManifestPath)
+	if err != nil {
+		return false
+	}
+	return ResourceContaining(actual, expected)
+}
+
+// ResourceContaining returns true if the resources in the actual manifest match exactly the same resources in
+// the expected manifest, but the number of resources is not necessarily the same.
+func ResourceContaining(actual, expected mf.Manifest) bool {
+	if len(expected.Resources()) > len(actual.Resources()) {
+		return false
+	}
+
+	// All resources in the expected exist in the actual manifest, but the actual may contain more.
+	if len(expected.Filter(mf.Not(mf.In(actual))).Resources()) != 0 {
+		return false
+	}
+
+	return manifestCompare(actual, expected)
+}
+
+func manifestCompare(actual, expected mf.Manifest) bool {
+	for _, expectedU := range expected.Resources() {
+		match := false
+		for _, actualU := range actual.Resources() {
+			if equality.Semantic.DeepEqual(actualU, expectedU) {
+				// If we find the matched resource, stop the iteration for this resource.
+				match = true
+				break
+			}
+		}
+		// When one expected resource has finished the checking, we know whether a match is found or not.
+		if !match {
+			return false
+		}
+	}
+	return true
 }

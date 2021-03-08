@@ -17,35 +17,35 @@ limitations under the License.
 package testing
 
 import (
-	v1 "k8s.io/api/core/v1"
+	"time"
+
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ConfigMapOption enables further configuration of a ConfigMap.
-type ConfigMapOption func(*v1.ConfigMap)
+// NamespaceOption enables further configuration of a Namespace.
+type NamespaceOption func(*corev1.Namespace)
 
-// NewConfigMap creates a new ConfigMap.
-func NewConfigMap(name, namespace string, o ...ConfigMapOption) *v1.ConfigMap {
-	cm := &v1.ConfigMap{
+// NewNamespace creates a Namespace with NamespaceOptions
+func NewNamespace(name string, o ...NamespaceOption) *corev1.Namespace {
+	s := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: namespace,
-			Name:      name,
+			Name: name,
 		},
 	}
 	for _, opt := range o {
-		opt(cm)
+		opt(s)
 	}
-	return cm
+	return s
 }
 
-func WithConfigMapLabels(labels metav1.LabelSelector) ConfigMapOption {
-	return func(cm *v1.ConfigMap) {
-		cm.ObjectMeta.Labels = labels.MatchLabels
-	}
+func WithNamespaceDeleted(n *corev1.Namespace) {
+	t := metav1.NewTime(time.Unix(1e9, 0))
+	n.ObjectMeta.SetDeletionTimestamp(&t)
 }
 
-func WithConfigMapData(data map[string]string) ConfigMapOption {
-	return func(cm *v1.ConfigMap) {
-		cm.Data = data
+func WithNamespaceLabeled(labels map[string]string) NamespaceOption {
+	return func(n *corev1.Namespace) {
+		n.Labels = labels
 	}
 }

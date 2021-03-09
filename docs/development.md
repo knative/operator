@@ -1,7 +1,7 @@
 # Knative Operator Development
 
 Most of the same tools required for
-[Knative Serving development](https://github.com/knative/serving/blob/master/DEVELOPMENT.md)
+[Knative Serving development](https://github.com/knative/serving/blob/main/DEVELOPMENT.md)
 are required for the operator, too.
 
 You'll probably need to

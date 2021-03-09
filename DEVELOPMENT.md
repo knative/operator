@@ -32,3 +32,4 @@ The operator bundles the last N=4 releases of Knative components in
   operator to pick up different yaml files. You can combine this with
   a `ReadWriteMany` volume (or a sidecar) to be able to update the
   yaml files live on-cluster without rebuilding the operator image.
+

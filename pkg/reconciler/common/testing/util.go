@@ -19,17 +19,13 @@ import (
 	"reflect"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/api/equality"
-
 	mf "github.com/manifestival/manifestival"
-
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/scheme"
-
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 func MakeDeployment(name string, podSpec corev1.PodSpec) *appsv1.Deployment {
@@ -90,6 +86,9 @@ func AssertDeepEqual(t *testing.T, actual, expected interface{}) {
 	t.Fatalf("expected does not deep equal actual. \nExpected: %T %+v\nActual:   %T %+v", expected, expected, actual, actual)
 }
 
+// ResourceMatchWithPath returns true if the resources in the actual manifest match the same resources in
+// the expected manifest of the expected path, in terms of name, namespace, group and kind. The number of
+// resources does not necessarily have to match.
 func ResourceMatchWithPath(actual mf.Manifest, expectedManifestPath string) bool {
 	if expectedManifestPath == "" && len(actual.Resources()) == 0 {
 		return true
@@ -98,12 +97,10 @@ func ResourceMatchWithPath(actual mf.Manifest, expectedManifestPath string) bool
 	if err != nil {
 		return false
 	}
-	return ResourceMatch(actual, expected)
+	return resourceMatch(actual, expected)
 }
 
-// ResourceMatch returns true if the resources in the actual manifest match the same resources in
-// the expected manifest, in terms of name, namespace, group and kind.
-func ResourceMatch(actual, expected mf.Manifest) bool {
+func resourceMatch(actual, expected mf.Manifest) bool {
 	// The resource match in terms of name, namespace, kind and group.
 	if len(actual.Filter(mf.Not(mf.In(expected))).Resources()) != 0 {
 		return false
@@ -114,6 +111,9 @@ func ResourceMatch(actual, expected mf.Manifest) bool {
 	return true
 }
 
+// DeepMatchWithPath returns true if the resources in the actual manifest match exactly the same resources in
+// the expected manifest of the expected path. Two manifests are identical, in terms of every attribute. The number of the resources
+// has to match.
 func DeepMatchWithPath(actual mf.Manifest, expectedManifestPath string) bool {
 	if expectedManifestPath == "" && len(actual.Resources()) == 0 {
 		return true
@@ -122,33 +122,32 @@ func DeepMatchWithPath(actual mf.Manifest, expectedManifestPath string) bool {
 	if err != nil {
 		return false
 	}
-	return ResourceDeepMatch(actual, expected)
+	return resourceDeepMatch(actual, expected)
 }
 
-// ResourceDeepMatch returns true if the resources in the actual manifest match exactly the same resources in
-// the expected manifest.
-func ResourceDeepMatch(actual, expected mf.Manifest) bool {
+func resourceDeepMatch(actual, expected mf.Manifest) bool {
 	if len(expected.Resources()) != len(actual.Resources()) {
 		return false
 	}
 
-	if !ResourceMatch(actual, expected) {
+	if !resourceMatch(actual, expected) {
 		return false
 	}
 	return manifestCompare(actual, expected)
 }
 
+// ResourceContainingWithPath returns true if the resources in the actual manifest contains all the resources in
+// the expected manifest of the expected path, but the number of resources is not necessarily the same. For the
+// identical resources, they need to match in terms of every attribute.
 func ResourceContainingWithPath(actual mf.Manifest, expectedManifestPath string) bool {
 	expected, err := mf.NewManifest(expectedManifestPath)
 	if err != nil {
 		return false
 	}
-	return ResourceContaining(actual, expected)
+	return resourceContaining(actual, expected)
 }
 
-// ResourceContaining returns true if the resources in the actual manifest match exactly the same resources in
-// the expected manifest, but the number of resources is not necessarily the same.
-func ResourceContaining(actual, expected mf.Manifest) bool {
+func resourceContaining(actual, expected mf.Manifest) bool {
 	if len(expected.Resources()) > len(actual.Resources()) {
 		return false
 	}

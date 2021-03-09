@@ -18,6 +18,7 @@ package ingress
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
@@ -38,21 +39,21 @@ func TestGetIngress(t *testing.T) {
 	tests := []struct {
 		name                string
 		version             string
-		expectedNoErr       bool
 		expectedIngressPath string
+		expectedErr         error
 	}{{
 		name:                "Available ingresses",
 		version:             "0.18.1",
-		expectedNoErr:       true,
+		expectedErr:         nil,
 		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/0.18",
 	}, {
-		name:          "Unavailable ingresses",
-		version:       "0.16.1",
-		expectedNoErr: false,
+		name:        "Unavailable ingresses",
+		version:     "0.16.1",
+		expectedErr: fmt.Errorf("stat testdata/kodata/ingress/0.16: no such file or directory"),
 	}, {
 		name:                "Missing version",
 		version:             "",
-		expectedNoErr:       true,
+		expectedErr:         nil,
 		expectedIngressPath: "",
 	}}
 
@@ -60,10 +61,11 @@ func TestGetIngress(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
 			err := getIngress(tt.version, &manifest)
-			util.AssertEqual(t, err == nil, tt.expectedNoErr)
 			if err != nil {
+				util.AssertEqual(t, err.Error(), tt.expectedErr.Error())
 				util.AssertEqual(t, len(manifest.Resources()), 0)
 			} else {
+				util.AssertEqual(t, err, tt.expectedErr)
 				util.AssertEqual(t, util.DeepMatchWithPath(manifest, tt.expectedIngressPath), true)
 			}
 		})
@@ -75,11 +77,10 @@ func TestAppendInstalledIngresses(t *testing.T) {
 	defer os.Unsetenv(common.KoEnvKey)
 
 	tests := []struct {
-		name                 string
-		instance             servingv1alpha1.KnativeServing
-		expectedNoErr        bool
-		expectedResourcesNum int
-		expectedIngressPath  string
+		name                string
+		instance            servingv1alpha1.KnativeServing
+		expectedIngressPath string
+		expectedErr         error
 	}{{
 		name: "Available installed ingresses",
 		instance: servingv1alpha1.KnativeServing{
@@ -88,9 +89,8 @@ func TestAppendInstalledIngresses(t *testing.T) {
 				Version: "0.18.1",
 			},
 		},
-		expectedNoErr:        true,
-		expectedResourcesNum: 0,
-		expectedIngressPath:  os.Getenv(common.KoEnvKey) + "/ingress/0.18",
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/0.18",
+		expectedErr:         nil,
 	}, {
 		name: "Available installed ingresses for missing status.version",
 		instance: servingv1alpha1.KnativeServing{
@@ -101,21 +101,16 @@ func TestAppendInstalledIngresses(t *testing.T) {
 			},
 			Status: servingv1alpha1.KnativeServingStatus{},
 		},
-		expectedNoErr:        true,
-		expectedResourcesNum: 0,
-		expectedIngressPath:  os.Getenv(common.KoEnvKey) + "/ingress/0.18",
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/0.18",
+		expectedErr:         nil,
 	}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
 			err := AppendInstalledIngresses(context.TODO(), &manifest, &tt.instance)
-			util.AssertEqual(t, err == nil, tt.expectedNoErr)
-			if err != nil {
-				util.AssertEqual(t, len(manifest.Resources()), 0)
-			} else {
-				util.AssertEqual(t, util.DeepMatchWithPath(manifest, tt.expectedIngressPath), true)
-			}
+			util.AssertEqual(t, err, tt.expectedErr)
+			util.AssertEqual(t, util.DeepMatchWithPath(manifest, tt.expectedIngressPath), true)
 		})
 	}
 }

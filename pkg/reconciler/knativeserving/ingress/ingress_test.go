@@ -103,14 +103,28 @@ func TestAppendInstalledIngresses(t *testing.T) {
 		},
 		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/0.18",
 		expectedErr:         nil,
+	}, {
+		name: "Unavailable installed ingresses for the unavailable status.version",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{},
+			Status: servingv1alpha1.KnativeServingStatus{
+				Version: "0.12.1",
+			},
+		},
+		expectedErr: fmt.Errorf("stat testdata/kodata/ingress/0.12: no such file or directory"),
 	}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
 			err := AppendInstalledIngresses(context.TODO(), &manifest, &tt.instance)
-			util.AssertEqual(t, err, tt.expectedErr)
-			util.AssertEqual(t, util.DeepMatchWithPath(manifest, tt.expectedIngressPath), true)
+			if err != nil {
+				util.AssertEqual(t, err.Error(), tt.expectedErr.Error())
+				util.AssertEqual(t, len(manifest.Resources()), 0)
+			} else {
+				util.AssertEqual(t, err, tt.expectedErr)
+				util.AssertEqual(t, util.DeepMatchWithPath(manifest, tt.expectedIngressPath), true)
+			}
 		})
 	}
 }

@@ -256,12 +256,23 @@ func targetManifestPath(version string, instance v1alpha1.KComponent) string {
 }
 
 func targetManifestPathArray(instance v1alpha1.KComponent) []string {
-	if len(instance.GetSpec().GetManifests()) > 0 || len(instance.GetSpec().GetAdditionalManifests()) > 0 {
-		// If either spec.manifests or spec.additionalManifests is not empty, we leverage status.manifests
+	pathArrayPath := ""
+	if len(instance.GetSpec().GetAdditionalManifests()) > 0 {
+		// If either spec.additionalManifests is not empty, we leverage status.manifests
 		// to save the complete manifest path.
-		return strings.Split(targetManifestPath(TargetVersion(instance), instance), COMMA)
-	}
+		version := TargetVersion(instance)
+		pathArrayPath = targetManifestPath(version, instance)
+		additionalManifestPath := additionalManifestPath(version, instance)
+		pathArrayPath = strings.Join([]string{pathArrayPath, additionalManifestPath}, COMMA)
 
+	} else if len(instance.GetSpec().GetManifests()) > 0 {
+		// If either spec.manifests is not empty, we leverage status.manifests
+		// to save the complete manifest path.
+		pathArrayPath = targetManifestPath(TargetVersion(instance), instance)
+	}
+	if pathArrayPath != "" {
+		return strings.Split(pathArrayPath, COMMA)
+	}
 	return nil
 }
 

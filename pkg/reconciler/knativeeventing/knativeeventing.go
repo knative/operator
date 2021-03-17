@@ -129,7 +129,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
-	stages := common.Stages{common.AppendInstalled, common.AppendAdditionalManifests, r.transform}
+	stages := common.Stages{common.AppendInstalled, r.transform}
 	err := stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }

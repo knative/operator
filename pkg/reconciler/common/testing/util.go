@@ -112,8 +112,8 @@ func resourceMatch(actual, expected mf.Manifest) bool {
 }
 
 // DeepMatchWithPath returns true if the resources in the actual manifest match exactly the same resources in
-// the expected manifest of the expected path. Two manifests are identical, in terms of every attribute. The number of the resources
-// has to match.
+// the expected manifest of the expected path. Two manifests are identical, in terms of every attribute. The number
+// of the resources has to match.
 func DeepMatchWithPath(actual mf.Manifest, expectedManifestPath string) bool {
 	if expectedManifestPath == "" && len(actual.Resources()) == 0 {
 		return true

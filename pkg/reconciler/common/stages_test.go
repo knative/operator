@@ -30,10 +30,15 @@ import (
 )
 
 func TestStagesExecute(t *testing.T) {
+	koPath := "testdata/kodata"
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
+
 	tests := []struct {
-		name                 string
-		component            v1alpha1.KComponent
-		expectedNumResources int
+		name                   string
+		component              v1alpha1.KComponent
+		expectedManifestsPath  string
+		expectedContainingPath string
 	}{{
 		name: "knative-serving with additional manifests",
 		component: &v1alpha1.KnativeServing{
@@ -46,7 +51,9 @@ func TestStagesExecute(t *testing.T) {
 				},
 			},
 		},
-		expectedNumResources: 6,
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1" + "," + os.Getenv(KoEnvKey) +
+			"/additional-manifests/additional-resource.yaml",
+		expectedContainingPath: os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
 	}, {
 		name: "knative-serving with no additional manifests",
 		component: &v1alpha1.KnativeServing{
@@ -56,24 +63,151 @@ func TestStagesExecute(t *testing.T) {
 				},
 			},
 		},
-		expectedNumResources: 6,
+		expectedManifestsPath:  os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+		expectedContainingPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
 	}}
-
-	koPath := "testdata/kodata"
-	os.Setenv(KoEnvKey, koPath)
-	defer os.Unsetenv(KoEnvKey)
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
-			stages := Stages{AppendTarget, AppendAdditionalManifests, AppendInstalled}
+			stages := Stages{AppendTarget, AppendAdditionalManifests}
 			util.AssertEqual(t, len(manifest.Resources()), 0)
 			err := stages.Execute(context.TODO(), &manifest, test.component)
-			util.AssertEqual(t, len(manifest.Resources()), test.expectedNumResources)
 			util.AssertEqual(t, err, nil)
+			util.AssertEqual(t, util.DeepMatchWithPath(manifest, test.expectedManifestsPath), true)
 		})
 	}
+}
 
+func TestStagesExecuteWithRepetition(t *testing.T) {
+	koPath := "testdata/kodata"
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
+
+	testRepetition := []struct {
+		name                      string
+		component                 v1alpha1.KComponent
+		expectedContainingPath    string
+		expectedManifestsPath     string
+		expectedNotContainingPath string
+	}{{
+		name: "knative-serving with the same resource in additional manifests",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.1",
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests-repetition/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedNotContainingPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1/serving-core.yaml",
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1" + "," + os.Getenv(KoEnvKey) +
+			"/additional-manifests-repetition/additional-resource.yaml",
+		expectedContainingPath: os.Getenv(KoEnvKey) + "/additional-manifests-repetition/additional-resource.yaml",
+	}}
+
+	for _, test := range testRepetition {
+		t.Run(test.name, func(t *testing.T) {
+			manifest, _ := mf.ManifestFrom(mf.Slice{})
+			stages := Stages{AppendTarget, AppendAdditionalManifests}
+			util.AssertEqual(t, len(manifest.Resources()), 0)
+			err := stages.Execute(context.TODO(), &manifest, test.component)
+			util.AssertEqual(t, err, nil)
+			// The expected manifests are not 100% identical to the actual manifests, since the additional manifests
+			// have the repeated resource.
+			util.AssertEqual(t, util.DeepMatchWithPath(manifest, test.expectedManifestsPath), false)
+			// The actual manifests match in terms of name, namespace, group and kind.
+			util.AssertEqual(t, util.ResourceMatchWithPath(manifest, test.expectedManifestsPath), true)
+			// The actual manifests contain every resource available in the expectedContainingPath.
+			util.AssertEqual(t, util.ResourceContainingWithPath(manifest, test.expectedContainingPath), true)
+			// The actual manifests do not contain the resource available in the expectedNotContainingPath.
+			util.AssertEqual(t, util.ResourceContainingWithPath(manifest, test.expectedNotContainingPath), false)
+		})
+	}
+}
+
+func TestStagesExecuteInstalledManifests(t *testing.T) {
+	koPath := "testdata/kodata"
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
+
+	testRepetition := []struct {
+		name                      string
+		component                 v1alpha1.KComponent
+		expectedContainingPath    string
+		expectedManifestsPath     string
+		expectedNotContainingPath string
+	}{{
+		name: "knative-serving with no status.manifests",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.1",
+				},
+			},
+		},
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+	}, {
+		name: "knative-serving with status.manifests",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.1",
+				},
+			},
+			Status: v1alpha1.KnativeServingStatus{
+				Version: "0.16.1",
+				Manifests: []string{
+					os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+					os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
+				},
+			},
+		},
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1" + "," + os.Getenv(KoEnvKey) +
+			"/additional-manifests/additional-resource.yaml",
+	}, {
+		name: "knative-serving with the additional manifests in spec",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.1",
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+	}, {
+		name: "knative-serving with the additional manifests in spec",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.1",
+					Manifests: []v1alpha1.Manifest{{
+						Url: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+					}},
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+	}}
+
+	for _, test := range testRepetition {
+		t.Run(test.name, func(t *testing.T) {
+			manifest, _ := mf.ManifestFrom(mf.Slice{})
+			stages := Stages{AppendInstalled}
+			util.AssertEqual(t, len(manifest.Resources()), 0)
+			err := stages.Execute(context.TODO(), &manifest, test.component)
+			util.AssertEqual(t, err, nil)
+			util.AssertEqual(t, util.DeepMatchWithPath(manifest, test.expectedManifestsPath), true)
+		})
+	}
 }
 
 func TestDeleteObsoleteResources(t *testing.T) {

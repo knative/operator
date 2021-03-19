@@ -82,14 +82,6 @@ func AppendInstalled(ctx context.Context, manifest *mf.Manifest, instance v1alph
 		// TODO: return the oldest instead of the latest?
 		logger.Error("Unable to fetch installed manifest, trying target", err)
 		m, err = TargetManifest(instance)
-		if err != nil {
-			return err
-		}
-		additionalM, additionalErr := TargetAdditionalManifest(instance)
-		if additionalErr != nil {
-			return additionalErr
-		}
-		m = m.Append(additionalM)
 	}
 	if err != nil {
 		return err

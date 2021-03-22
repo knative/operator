@@ -43,19 +43,28 @@ func TestRetrieveManifestPath(t *testing.T) {
 
 	tests := []struct {
 		component v1alpha1.KComponent
-		version   string
 		name      string
 		expected  string
 	}{{
-		name:      "Valid Knative Serving Version",
-		component: &v1alpha1.KnativeServing{},
-		version:   "0.14.0",
-		expected:  koPath + "/knative-serving/0.14.0",
+		name: "Valid Knative Serving Version",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.14.0",
+				},
+			},
+		},
+		expected: koPath + "/knative-serving/0.14.0",
 	}, {
-		name:      "Valid Knative Eventing Version",
-		component: &v1alpha1.KnativeEventing{},
-		version:   "0.14.2",
-		expected:  koPath + "/knative-eventing/0.14.2",
+		name: "Valid Knative Eventing Version",
+		component: &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.14.2",
+				},
+			},
+		},
+		expected: koPath + "/knative-eventing/0.14.2",
 	}, {
 		name: "Valid Knative Serving URLs",
 		component: &v1alpha1.KnativeServing{
@@ -66,10 +75,10 @@ func TestRetrieveManifestPath(t *testing.T) {
 					}, {
 						Url: SERVING_HPA,
 					}},
+					Version: "0.16.0",
 				},
 			},
 		},
-		version:  "0.16.0",
 		expected: SERVING_CORE + "," + SERVING_HPA,
 	}, {
 		name: "Valid Knative Eventing URLs",
@@ -81,10 +90,10 @@ func TestRetrieveManifestPath(t *testing.T) {
 					}, {
 						Url: IN_MEMORY_CHANNEL,
 					}},
+					Version: "0.16.0",
 				},
 			},
 		},
-		version:  "0.16.0",
 		expected: EVENTING_CORE + "," + IN_MEMORY_CHANNEL,
 	}, {
 		name: "Valid Knative Serving URLs with the version parameter",
@@ -96,16 +105,16 @@ func TestRetrieveManifestPath(t *testing.T) {
 					}, {
 						Url: SERVING_VERSION_HPA,
 					}},
+					Version: "0.16.1",
 				},
 			},
 		},
-		version:  "0.16.1",
 		expected: SERVING_CORE + "," + SERVING_HPA,
 	}}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			manifestPath := targetManifestPath(test.version, test.component)
+			manifestPath := targetManifestPath(test.component)
 			util.AssertEqual(t, manifestPath, test.expected)
 			manifest, err := mf.NewManifest(manifestPath)
 			util.AssertEqual(t, err, nil)
@@ -115,19 +124,23 @@ func TestRetrieveManifestPath(t *testing.T) {
 
 	invalidPathTests := []struct {
 		component v1alpha1.KComponent
-		version   string
 		name      string
 		expected  string
 	}{{
-		name:      "Invalid Knative Serving Version",
-		component: &v1alpha1.KnativeServing{},
-		version:   "invalid-version",
-		expected:  "",
+		name: "Invalid Knative Serving Version",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "invalid-version",
+				},
+			},
+		},
+		expected: "",
 	}}
 
 	for _, test := range invalidPathTests {
 		t.Run(test.name, func(t *testing.T) {
-			manifestPath := targetManifestPath(test.version, test.component)
+			manifestPath := targetManifestPath(test.component)
 			util.AssertEqual(t, manifestPath, test.expected)
 			manifest, err := mf.NewManifest(manifestPath)
 			util.AssertEqual(t, err != nil, true)
@@ -860,6 +873,22 @@ func TestTargetAdditionalManifest(t *testing.T) {
 			},
 		},
 		expectedManifestsPath: "",
+	}, {
+		name: "knative-serving with multiple paths in the additional manifests",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.1",
+					AdditionalManifests: []v1alpha1.Manifest{{
+						Url: "testdata/kodata/additional-manifests/additional-sa.yaml",
+					}, {
+						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}},
+				},
+			},
+		},
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/additional-manifests/additional-sa.yaml" + "," +
+			os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
 	}}
 
 	for _, test := range tests {
@@ -907,7 +936,7 @@ func TestTargetManifestPathArray(t *testing.T) {
 				},
 			},
 		},
-		expectedManifestsPath: nil,
+		expectedManifestsPath: []string{os.Getenv(KoEnvKey) + "/knative-serving/0.16.1"},
 	}, {
 		name: "knative-serving with spec.manifests and spec.additionalManifests",
 		component: &v1alpha1.KnativeServing{

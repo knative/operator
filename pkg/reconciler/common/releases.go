@@ -65,19 +65,17 @@ func TargetVersion(instance v1alpha1.KComponent) string {
 // TargetManifest returns the default manifest for the TargetVersion or the manifest for the TargetVersion specified
 // with spec.manifests
 func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
-	version := TargetVersion(instance)
-	manifestsPath := targetManifestPath(version, instance)
-	return getManifestWithVersionValidation(version, manifestsPath, instance)
+	manifestsPath := targetManifestPath(instance)
+	return getManifestWithVersionValidation(manifestsPath, instance)
 }
 
 // TargetAdditionalManifest returns the manifest for the TargetVersion specified with spec.additionalManifests.
 func TargetAdditionalManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
-	version := TargetVersion(instance)
-	additionalManifestsPath := additionalManifestPath(version, instance)
+	additionalManifestsPath := additionalManifestPath(instance)
 	if additionalManifestsPath == "" {
 		return mf.Manifest{}, nil
 	}
-	return getManifestWithVersionValidation(version, additionalManifestsPath, instance)
+	return getManifestWithVersionValidation(additionalManifestsPath, instance)
 }
 
 // InstalledManifest returns the version currently installed, which is
@@ -155,7 +153,8 @@ func getVersionKey(instance v1alpha1.KComponent) string {
 	return ""
 }
 
-func getManifestWithVersionValidation(version, manifestsPath string, instance v1alpha1.KComponent) (mf.Manifest, error) {
+func getManifestWithVersionValidation(manifestsPath string, instance v1alpha1.KComponent) (mf.Manifest, error) {
+	version := TargetVersion(instance)
 	manifests, err := FetchManifest(manifestsPath)
 	if err != nil {
 		if len(instance.GetSpec().GetManifests()) == 0 && len(instance.GetSpec().GetAdditionalManifests()) == 0 {
@@ -225,18 +224,19 @@ func componentDir(instance v1alpha1.KComponent) string {
 	return ""
 }
 
-func additionalManifestPath(version string, instance v1alpha1.KComponent) string {
+func additionalManifestPath(instance v1alpha1.KComponent) string {
 	// Create the comma-separated string for URLs in spec.additionalManifests
 	addManifests := instance.GetSpec().GetAdditionalManifests()
 	urls := make([]string, 0, len(addManifests))
 	for _, manifest := range addManifests {
-		url := strings.ReplaceAll(manifest.Url, VersionVariable, version)
+		url := strings.ReplaceAll(manifest.Url, VersionVariable, TargetVersion(instance))
 		urls = append(urls, url)
 	}
 	return strings.Join(urls, COMMA)
 }
 
-func targetManifestPath(version string, instance v1alpha1.KComponent) string {
+func targetManifestPath(instance v1alpha1.KComponent) string {
+	version := TargetVersion(instance)
 	manifests := instance.GetSpec().GetManifests()
 	// Create the comma-separated string as the URL to retrieve the manifest
 	urls := make([]string, 0, len(manifests))
@@ -257,26 +257,13 @@ func targetManifestPath(version string, instance v1alpha1.KComponent) string {
 }
 
 func targetManifestPathArray(instance v1alpha1.KComponent) []string {
-	pathArrayPath := ""
+	pathArrayPath := targetManifestPath(instance)
 	if len(instance.GetSpec().GetAdditionalManifests()) > 0 {
-		// If spec.additionalManifests is not empty, we leverage status.manifests
-		// to save the complete manifest path.
-		version := TargetVersion(instance)
-		pathArrayPath = targetManifestPath(version, instance)
-		additionalManifestPath := additionalManifestPath(version, instance)
-		pathArrayPath = strings.Join([]string{pathArrayPath, additionalManifestPath}, COMMA)
-
-	} else if len(instance.GetSpec().GetManifests()) > 0 {
-		// If spec.manifests is not empty, we leverage status.manifests
-		// to save the complete manifest path.
-		pathArrayPath = targetManifestPath(TargetVersion(instance), instance)
+		// If spec.additionalManifests is not empty, we append it to the target path.
+		additionalMPath := additionalManifestPath(instance)
+		pathArrayPath = strings.Join([]string{pathArrayPath, additionalMPath}, COMMA)
 	}
-	if pathArrayPath != "" {
-		return strings.Split(pathArrayPath, COMMA)
-	}
-	// If both spec.additionalManifests and spec.manifests are empty, there is no need to save
-	// the manifest path in the status, because the default manifests will be loaded under kodata directory.
-	return nil
+	return strings.Split(pathArrayPath, COMMA)
 }
 
 func installedManifestPath(version string, instance v1alpha1.KComponent) string {

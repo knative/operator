@@ -101,7 +101,7 @@ type ManifestFetcher func(ctx context.Context, instance v1alpha1.KComponent) (*m
 func DeleteObsoleteResources(ctx context.Context, instance v1alpha1.KComponent, fetch ManifestFetcher) Stage {
 	version := TargetVersion(instance)
 	if version == instance.GetStatus().GetVersion() &&
-		targetManifestPath(version, instance) == installedManifestPath(version, instance) {
+		targetManifestPath(instance) == installedManifestPath(version, instance) {
 		return NoOp
 	}
 	logger := logging.FromContext(ctx)

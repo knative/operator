@@ -35,10 +35,9 @@ func TestStagesExecute(t *testing.T) {
 	defer os.Unsetenv(KoEnvKey)
 
 	tests := []struct {
-		name                   string
-		component              v1alpha1.KComponent
-		expectedManifestsPath  string
-		expectedContainingPath string
+		name                  string
+		component             v1alpha1.KComponent
+		expectedManifestsPath string
 	}{{
 		name: "knative-serving with additional manifests",
 		component: &v1alpha1.KnativeServing{
@@ -53,7 +52,6 @@ func TestStagesExecute(t *testing.T) {
 		},
 		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1" + "," + os.Getenv(KoEnvKey) +
 			"/additional-manifests/additional-resource.yaml",
-		expectedContainingPath: os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
 	}, {
 		name: "knative-serving with no additional manifests",
 		component: &v1alpha1.KnativeServing{
@@ -63,8 +61,7 @@ func TestStagesExecute(t *testing.T) {
 				},
 			},
 		},
-		expectedManifestsPath:  os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
-		expectedContainingPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
 	}}
 
 	for _, test := range tests {
@@ -134,11 +131,9 @@ func TestStagesExecuteInstalledManifests(t *testing.T) {
 	defer os.Unsetenv(KoEnvKey)
 
 	testRepetition := []struct {
-		name                      string
-		component                 v1alpha1.KComponent
-		expectedContainingPath    string
-		expectedManifestsPath     string
-		expectedNotContainingPath string
+		name                  string
+		component             v1alpha1.KComponent
+		expectedManifestsPath string
 	}{{
 		name: "knative-serving with no status.manifests",
 		component: &v1alpha1.KnativeServing{

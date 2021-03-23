@@ -257,13 +257,13 @@ func targetManifestPath(instance v1alpha1.KComponent) string {
 }
 
 func targetManifestPathArray(instance v1alpha1.KComponent) []string {
-	pathArrayPath := targetManifestPath(instance)
+	targetMPath := targetManifestPath(instance)
 	if len(instance.GetSpec().GetAdditionalManifests()) > 0 {
 		// If spec.additionalManifests is not empty, we append it to the target path.
 		additionalMPath := additionalManifestPath(instance)
-		pathArrayPath = strings.Join([]string{pathArrayPath, additionalMPath}, COMMA)
+		targetMPath = strings.Join([]string{targetMPath, additionalMPath}, COMMA)
 	}
-	return strings.Split(pathArrayPath, COMMA)
+	return strings.Split(targetMPath, COMMA)
 }
 
 func installedManifestPath(version string, instance v1alpha1.KComponent) string {

@@ -101,6 +101,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 	}
 	stages := common.Stages{
 		common.AppendTarget,
+		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
 		r.transform,
 		common.Install,

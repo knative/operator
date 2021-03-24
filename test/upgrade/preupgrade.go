@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler/common"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 	"knative.dev/operator/test"
@@ -75,7 +75,16 @@ func servingCRPreUpgrade(t *testing.T) {
 		resources.SetKodataDir()
 		// Based on the status.version, get the deployment resources.
 		defer os.Unsetenv(common.KoEnvKey)
-		manifest, err := common.InstalledManifest(kserving)
+		// The operator and the test cases do not share the same path of the kodata, we need to retrieve the
+		// installed manifests in terms of the spec.
+		kservingInstalled := &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: kserving.GetStatus().GetVersion(),
+				},
+			},
+		}
+		manifest, err := common.TargetManifest(kservingInstalled)
 		if err != nil {
 			t.Fatalf("Failed to get the manifest for Knative: %v", err)
 		}
@@ -108,7 +117,16 @@ func eventingCRPreUpgrade(t *testing.T) {
 		resources.SetKodataDir()
 		// Based on the status.version, get the deployment resources.
 		defer os.Unsetenv(common.KoEnvKey)
-		manifest, err := common.InstalledManifest(keventing)
+		// The operator and the test cases do not share the same path of the kodata, we need to retrieve the
+		// installed manifests in terms of the spec.
+		keventingInstalled := &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: keventing.GetStatus().GetVersion(),
+				},
+			},
+		}
+		manifest, err := common.TargetManifest(keventingInstalled)
 		if err != nil {
 			t.Fatalf("Failed to get the manifest for Knative: %v", err)
 		}

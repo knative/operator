@@ -19,6 +19,25 @@ You can install the Knative Operator from the source code using the
    ko apply -f config/
    ```
 
+1. To verify the installation:
+
+   ```
+   kubectl get deployment
+   ```
+
+   The following result indicates the installation is fine:
+
+   ```
+   NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+   knative-operator   1/1     1            1           17m
+   ```
+
+1. Check the log via the command:
+
+   ```
+   kubectl logs -f deploy/knative-operator
+   ```
+
 ## Release yamls
 
 The operator bundles the last N=4 releases of Knative components in
@@ -33,3 +52,60 @@ The operator bundles the last N=4 releases of Knative components in
   different yaml files. You can combine this with a `ReadWriteMany` volume (or a
   sidecar) to be able to update the yaml files live on-cluster without
   rebuilding the operator image.
+
+## To run the unit tests:
+
+```
+go test -v ./...
+```
+
+## To run the integration tests:
+
+First, install the Knative Operator. The integration tests use two environment variables: `TEST_NAMESPACE` for Knative
+Serving tests and `TEST_EVENTING_NAMESPACE` for Knative Eventing tests.
+
+```
+export TEST_NAMESPACE=knative-serving
+export TEST_EVENTING_NAMESPACE=knative-eventing
+```
+
+You can choose any names, but the Knative Serving and Knative Eventing should have different namespaces.
+
+Create the namespaces:
+
+```
+kubectl create namespace $TEST_NAMESPACE
+kubectl create namespace $TEST_EVENTING_NAMESPACE
+```
+
+All the integration tests are tagged with `e2e`. Run the integration tests for Knative Serving and Eventing:
+
+```
+go test -v -tags=e2e -count=1 ./test/e2e
+```
+
+You should get all the tests passed, which means your installation is successful. If you run into any issues, log your
+issues [here](https://github.com/knative/operator/issues).
+
+## To run the upgrade tests:
+
+The upgrade tests have taken everything into account. You do not even need to install Knative Operator or Istio before
+running the tests. Make sure you have set two of these environment variables: `TEST_NAMESPACE` and `TEST_EVENTING_NAMESPACE`.
+
+```
+export TEST_NAMESPACE=knative-serving
+export TEST_EVENTING_NAMESPACE=knative-eventing
+```
+
+IMPORTANT: Before running ANY upgrade tests, run the following commands to clean up the existing resources:
+
+```
+kubectl delete KnativeServing --all -n $TEST_NAMESPACE
+kubectl delete KnativeEventing --all -n $TEST_EVENTING_NAMESPACE
+```
+
+Run the upgrade tests for the Serving and Eventing CRs:
+
+```
+go test -v -tags=upgrade -count=1 ./test/upgrade
+```

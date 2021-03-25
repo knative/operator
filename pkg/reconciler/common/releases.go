@@ -213,6 +213,11 @@ func FetchManifest(path string) (mf.Manifest, error) {
 	return result, err
 }
 
+// ClearCache removes all the records saved in the cache.
+func ClearCache() {
+	cache = map[string]mf.Manifest{}
+}
+
 func componentDir(instance v1alpha1.KComponent) string {
 	koDataDir := os.Getenv(KoEnvKey)
 	switch instance.(type) {

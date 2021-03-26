@@ -66,7 +66,10 @@ func TargetVersion(instance v1alpha1.KComponent) string {
 // with spec.manifests
 func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 	manifestsPath := targetManifestPath(instance)
-	return getManifestWithVersionValidation(manifestsPath, instance)
+	if len(instance.GetSpec().GetManifests()) == 0 {
+		getManifestWithVersionValidation(manifestsPath, instance, FetchManifest)
+	}
+	return getManifestWithVersionValidation(manifestsPath, instance, FetchManifestNoCache)
 }
 
 // TargetAdditionalManifest returns the manifest for the TargetVersion specified with spec.additionalManifests.
@@ -75,7 +78,7 @@ func TargetAdditionalManifest(instance v1alpha1.KComponent) (mf.Manifest, error)
 	if additionalManifestsPath == "" {
 		return mf.Manifest{}, nil
 	}
-	return getManifestWithVersionValidation(additionalManifestsPath, instance)
+	return getManifestWithVersionValidation(additionalManifestsPath, instance, FetchManifestNoCache)
 }
 
 // InstalledManifest returns the version currently installed, which is
@@ -87,7 +90,26 @@ func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 	if len(instance.GetStatus().GetManifests()) == 0 && current == "" {
 		return TargetManifest(instance)
 	}
-	return FetchManifest(installedManifestPath(current, instance))
+	// If status.manifests is not empty, get the manifests from the cache if available, and get them from
+	// the path if not available in the cache.
+	// Read the path one by one, in order to leverage the cache, because the whole comma-separated path is
+	// not saved in the cache, but each path is saved as the key of the cache.
+	paths := installedManifestPath(current, instance)
+	if len(paths) == 0 {
+		return mf.Manifest{}, nil
+	}
+	manifest, err := FetchManifest(paths[0])
+	if err != nil {
+		return manifest, err
+	}
+	for i := 1; i < len(paths); i++ {
+		m, er := FetchManifest(paths[i])
+		if er != nil {
+			return manifest, er
+		}
+		manifest = manifest.Append(m)
+	}
+	return manifest, err
 }
 
 // IsVersionValidMigrationEligible returns the bool indicate whether the target version is valid and the installed
@@ -153,9 +175,11 @@ func getVersionKey(instance v1alpha1.KComponent) string {
 	return ""
 }
 
-func getManifestWithVersionValidation(manifestsPath string, instance v1alpha1.KComponent) (mf.Manifest, error) {
+type manifestFetcher func(string) (mf.Manifest, error)
+
+func getManifestWithVersionValidation(manifestsPath string, instance v1alpha1.KComponent, fn manifestFetcher) (mf.Manifest, error) {
 	version := TargetVersion(instance)
-	manifests, err := FetchManifest(manifestsPath)
+	manifests, err := fn(manifestsPath)
 	if err != nil {
 		if len(instance.GetSpec().GetManifests()) == 0 && len(instance.GetSpec().GetAdditionalManifests()) == 0 {
 			// If we cannot access the manifests, there is no need to check whether the versions match.
@@ -213,6 +237,15 @@ func FetchManifest(path string) (mf.Manifest, error) {
 	return result, err
 }
 
+// FetchManifestNoCache returns the manifest by reading them from the path, and saves them in the cache.
+func FetchManifestNoCache(path string) (mf.Manifest, error) {
+	result, err := mf.NewManifest(path)
+	if err == nil {
+		cache[path] = result
+	}
+	return result, err
+}
+
 // ClearCache removes all the records saved in the cache.
 func ClearCache() {
 	cache = map[string]mf.Manifest{}
@@ -262,26 +295,29 @@ func targetManifestPath(instance v1alpha1.KComponent) string {
 }
 
 func targetManifestPathArray(instance v1alpha1.KComponent) []string {
+	manifestPaths := make([]string, 0)
 	targetMPath := targetManifestPath(instance)
+	manifestPaths = append(manifestPaths, targetMPath)
 	if len(instance.GetSpec().GetAdditionalManifests()) > 0 {
 		// If spec.additionalManifests is not empty, we append it to the target path.
 		additionalMPath := additionalManifestPath(instance)
-		targetMPath = strings.Join([]string{targetMPath, additionalMPath}, COMMA)
+		manifestPaths = append(manifestPaths, additionalMPath)
 	}
-	return strings.Split(targetMPath, COMMA)
+	return manifestPaths
 }
 
-func installedManifestPath(version string, instance v1alpha1.KComponent) string {
+func installedManifestPath(version string, instance v1alpha1.KComponent) []string {
 	if manifests := instance.GetStatus().GetManifests(); len(manifests) != 0 {
-		return strings.Join(manifests, COMMA)
+		return manifests
 	}
 
+	manifestPaths := make([]string, 0)
 	localPath := filepath.Join(componentDir(instance), version)
 	if _, err := os.Stat(localPath); !os.IsNotExist(err) {
-		return localPath
+		manifestPaths = append(manifestPaths, localPath)
 	}
 
-	return ""
+	return manifestPaths
 }
 
 // SanitizeSemver always adds `v` in front of the version.

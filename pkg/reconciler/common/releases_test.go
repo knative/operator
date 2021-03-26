@@ -1067,3 +1067,15 @@ func TestInstalledManifest(t *testing.T) {
 		})
 	}
 }
+
+func TestCache(t *testing.T) {
+	util.AssertEqual(t, len(cache), 0)
+	expectedPath := "testdata/kodata/knative-serving/0.16.1/"
+	manifest, _ := mf.NewManifest(expectedPath)
+	cache["key"] = manifest
+	util.AssertEqual(t, len(cache), 1)
+	m := cache["key"]
+	util.AssertEqual(t, util.DeepMatchWithPath(m, expectedPath), true)
+	ClearCache()
+	util.AssertEqual(t, len(cache), 0)
+}

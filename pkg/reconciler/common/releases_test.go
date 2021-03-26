@@ -988,3 +988,82 @@ func TestTargetManifestPathArray(t *testing.T) {
 		})
 	}
 }
+
+func TestInstalledManifest(t *testing.T) {
+	koPath := "testdata/kodata"
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
+
+	tests := []struct {
+		name                  string
+		component             v1alpha1.KComponent
+		expectedManifestsPath string
+	}{{
+		name: "knative-serving with the version and manifests in the status",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.1",
+				},
+			},
+			Status: v1alpha1.KnativeServingStatus{
+				Version:   "0.16.1",
+				Manifests: []string{"testdata/kodata/knative-serving/0.16.1"},
+			},
+		},
+		expectedManifestsPath: "testdata/kodata/knative-serving/0.16.1",
+	}, {
+		name: "knative-serving with the version in the status",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.1",
+				},
+			},
+			Status: v1alpha1.KnativeServingStatus{
+				Version: "0.16.0",
+			},
+		},
+		expectedManifestsPath: "testdata/kodata/knative-serving/0.16.0",
+	}, {
+		name: "knative-serving with multiple paths in status.manifests",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.1",
+				},
+			},
+			Status: v1alpha1.KnativeServingStatus{
+				Version: "0.16.1",
+				Manifests: []string{"testdata/kodata/knative-serving/0.16.1/serving-crd.yaml" + "," +
+					"testdata/kodata/knative-serving/0.16.1/serving-core.yaml",
+					"testdata/kodata/additional-manifests/additional-resource.yaml"},
+			},
+		},
+		expectedManifestsPath: "testdata/kodata/knative-serving/0.16.1/serving-crd.yaml" + "," +
+			"testdata/kodata/knative-serving/0.16.1/serving-core.yaml" + "," +
+			"testdata/kodata/additional-manifests/additional-resource.yaml",
+	}, {
+		name: "knative-serving with status.version unavailable in kodata",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "0.16.1",
+				},
+			},
+			Status: v1alpha1.KnativeServingStatus{
+				Version: "0.12.0",
+			},
+		},
+		expectedManifestsPath: "testdata/kodata/empty/empty-resource.yaml",
+	}}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			m, _ := InstalledManifest(test.component)
+			// The InstalledManifest should never raise the error, even of the manifests are not available.
+			// If the installed manifests are unable to retrieve, it returns a manifest with no resource.
+			util.AssertEqual(t, util.DeepMatchWithPath(m, test.expectedManifestsPath), true)
+		})
+	}
+}

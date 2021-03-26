@@ -1069,6 +1069,8 @@ func TestInstalledManifest(t *testing.T) {
 }
 
 func TestCache(t *testing.T) {
+	// Make sure to start with empty cache
+	ClearCache()
 	util.AssertEqual(t, len(cache), 0)
 	expectedPath := "testdata/kodata/knative-serving/0.16.1/"
 	manifest, _ := mf.NewManifest(expectedPath)

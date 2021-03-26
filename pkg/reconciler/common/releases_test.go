@@ -938,22 +938,30 @@ func TestTargetManifestPathArray(t *testing.T) {
 		},
 		expectedManifestsPath: []string{os.Getenv(KoEnvKey) + "/knative-serving/0.16.1"},
 	}, {
-		name: "knative-serving with spec.manifests and spec.additionalManifests",
+		name: "knative-serving with multiple paths in spec.manifests and spec.additionalManifests",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
 					Version: "0.16.1",
 					Manifests: []v1alpha1.Manifest{{
-						Url: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+						Url: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1/serving-crd.yaml",
+					}, {
+						Url: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1/serving-core.yaml",
+					}, {
+						Url: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1/serving-hpa.yaml",
 					}},
 					AdditionalManifests: []v1alpha1.Manifest{{
 						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
+					}, {
+						Url: "testdata/kodata/additional-manifests/additional-sa.yaml",
 					}},
 				},
 			},
 		},
-		expectedManifestsPath: []string{os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
-			os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml"},
+		expectedManifestsPath: []string{os.Getenv(KoEnvKey) + "/knative-serving/0.16.1/serving-crd.yaml" + "," +
+			os.Getenv(KoEnvKey) + "/knative-serving/0.16.1/serving-core.yaml" + "," +
+			os.Getenv(KoEnvKey) + "/knative-serving/0.16.1/serving-hpa.yaml",
+			os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml" + "," + os.Getenv(KoEnvKey) + "/additional-manifests/additional-sa.yaml"},
 	}, {
 		name: "knative-serving with spec.manifests",
 		component: &v1alpha1.KnativeServing{

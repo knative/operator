@@ -1060,10 +1060,11 @@ func TestInstalledManifest(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			m, _ := InstalledManifest(test.component)
+			m, err := InstalledManifest(test.component)
 			// The InstalledManifest should never raise the error, even of the manifests are not available.
 			// If the installed manifests are unable to retrieve, it returns a manifest with no resource.
 			util.AssertEqual(t, util.DeepMatchWithPath(m, test.expectedManifestsPath), true)
+			util.AssertEqual(t, err, nil)
 		})
 	}
 }

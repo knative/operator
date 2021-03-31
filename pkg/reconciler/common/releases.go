@@ -295,8 +295,8 @@ func targetManifestPath(instance v1alpha1.KComponent) string {
 }
 
 func targetManifestPathArray(instance v1alpha1.KComponent) []string {
-	manifestPaths := make([]string, 0)
 	targetMPath := targetManifestPath(instance)
+	manifestPaths := []string{targetMPath}
 	manifestPaths = append(manifestPaths, targetMPath)
 	if len(instance.GetSpec().GetAdditionalManifests()) > 0 {
 		// If spec.additionalManifests is not empty, we append it to the target path.
@@ -311,13 +311,11 @@ func installedManifestPath(version string, instance v1alpha1.KComponent) []strin
 		return manifests
 	}
 
-	manifestPaths := make([]string, 0)
 	localPath := filepath.Join(componentDir(instance), version)
 	if _, err := os.Stat(localPath); !os.IsNotExist(err) {
-		manifestPaths = append(manifestPaths, localPath)
+		return []string{localPath}
 	}
-
-	return manifestPaths
+	return []string{}
 }
 
 // SanitizeSemver always adds `v` in front of the version.

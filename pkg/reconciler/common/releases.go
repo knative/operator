@@ -297,7 +297,6 @@ func targetManifestPath(instance v1alpha1.KComponent) string {
 func targetManifestPathArray(instance v1alpha1.KComponent) []string {
 	targetMPath := targetManifestPath(instance)
 	manifestPaths := []string{targetMPath}
-	manifestPaths = append(manifestPaths, targetMPath)
 	if len(instance.GetSpec().GetAdditionalManifests()) > 0 {
 		// If spec.additionalManifests is not empty, we append it to the target path.
 		additionalMPath := additionalManifestPath(instance)

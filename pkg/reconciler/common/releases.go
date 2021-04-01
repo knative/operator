@@ -69,7 +69,7 @@ func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 	if len(instance.GetSpec().GetManifests()) == 0 {
 		getManifestWithVersionValidation(manifestsPath, instance, FetchManifest)
 	}
-	return getManifestWithVersionValidation(manifestsPath, instance, FetchManifestNoCache)
+	return getManifestWithVersionValidation(manifestsPath, instance, FetchManifestFromPath)
 }
 
 // TargetAdditionalManifest returns the manifest for the TargetVersion specified with spec.additionalManifests.
@@ -78,7 +78,7 @@ func TargetAdditionalManifest(instance v1alpha1.KComponent) (mf.Manifest, error)
 	if additionalManifestsPath == "" {
 		return mf.Manifest{}, nil
 	}
-	return getManifestWithVersionValidation(additionalManifestsPath, instance, FetchManifestNoCache)
+	return getManifestWithVersionValidation(additionalManifestsPath, instance, FetchManifestFromPath)
 }
 
 // InstalledManifest returns the version currently installed, which is
@@ -237,8 +237,8 @@ func FetchManifest(path string) (mf.Manifest, error) {
 	return result, err
 }
 
-// FetchManifestNoCache returns the manifest by reading them from the path, and saves them in the cache.
-func FetchManifestNoCache(path string) (mf.Manifest, error) {
+// FetchManifestFromPath returns the manifest by reading them from the path, and saves them in the cache.
+func FetchManifestFromPath(path string) (mf.Manifest, error) {
 	result, err := mf.NewManifest(path)
 	if err == nil {
 		cache[path] = result

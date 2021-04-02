@@ -56,6 +56,9 @@ var _ knereconciler.Finalizer = (*Reconciler)(nil)
 func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1alpha1.KnativeEventing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
 
+	// Clean up the cache, if the Serving CR is deleted.
+	common.ClearCache()
+
 	// List all KnativeEventings to determine if cluster-scoped resources should be deleted.
 	kes, err := r.operatorClientSet.OperatorV1alpha1().KnativeEventings("").List(ctx, metav1.ListOptions{})
 	if err != nil {

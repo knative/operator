@@ -16,7 +16,7 @@ kind: Namespace
 metadata:
   name: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 
 ---
 # Copyright 2018 The Knative Authors
@@ -39,14 +39,14 @@ metadata:
   name: eventing-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: eventing-controller
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 subjects:
   - kind: ServiceAccount
     name: eventing-controller
@@ -61,7 +61,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-controller-resolver
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 subjects:
   - kind: ServiceAccount
     name: eventing-controller
@@ -76,7 +76,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-controller-source-observer
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 subjects:
   - kind: ServiceAccount
     name: eventing-controller
@@ -91,7 +91,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-controller-sources-controller
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 subjects:
   - kind: ServiceAccount
     name: eventing-controller
@@ -106,7 +106,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-controller-manipulator
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 subjects:
   - kind: ServiceAccount
     name: eventing-controller
@@ -137,14 +137,14 @@ metadata:
   name: pingsource-mt-adapter
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-pingsource-mt-adapter
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 subjects:
   - kind: ServiceAccount
     name: pingsource-mt-adapter
@@ -175,14 +175,14 @@ metadata:
   name: eventing-webhook
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: eventing-webhook
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 subjects:
   - kind: ServiceAccount
     name: eventing-webhook
@@ -193,11 +193,27 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: knative-eventing
+  name: eventing-webhook
+  labels:
+    eventing.knative.dev/release: "v0.22.0"
+subjects:
+  - kind: ServiceAccount
+    name: eventing-webhook
+    namespace: knative-eventing
+roleRef:
+  kind: Role
+  name: knative-eventing-webhook
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: eventing-webhook-resolver
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 subjects:
   - kind: ServiceAccount
     name: eventing-webhook
@@ -212,7 +228,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-webhook-podspecable-binding
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 subjects:
   - kind: ServiceAccount
     name: eventing-webhook
@@ -243,7 +259,7 @@ metadata:
   name: config-br-default-channel
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 data:
   channelTemplateSpec: |
     apiVersion: messaging.knative.dev/v1
@@ -270,7 +286,7 @@ metadata:
   name: config-br-defaults
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 data:
   # Configuration for defaulting channels that do not specify CRD implementations.
   default-br-config: |
@@ -302,7 +318,7 @@ metadata:
   name: default-ch-webhook
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 data:
   # Configuration for defaulting channels that do not specify CRD implementations.
   default-ch-config: |
@@ -313,6 +329,51 @@ data:
       some-namespace:
         apiVersion: messaging.knative.dev/v1
         kind: InMemoryChannel
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-ping-defaults
+  namespace: knative-eventing
+  labels:
+    eventing.knative.dev/release: "v0.22.0"
+  annotations:
+    knative.dev/example-checksum: "f8e5a744"
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # Max number of bytes allowed to be sent for message excluding any
+    # base64 decoding. Default is no limit set for data
+    dataMaxSize: -1
 
 ---
 # Copyright 2018 The Knative Authors
@@ -335,9 +396,9 @@ metadata:
   name: config-leader-election
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
   annotations:
-    knative.dev/example-checksum: "6cf53e10"
+    knative.dev/example-checksum: "96896b00"
 data:
   _example: |
     ################################
@@ -364,8 +425,15 @@ data:
     renewDeadline: "10s"
 
     # retryPeriod is how long the leader election client waits between tries of
-    # actions; 2 seconds is the value used by core kuberntes controllers.
+    # actions; 2 seconds is the value used by core kubernetes controllers.
     retryPeriod: "2s"
+
+    # buckets is the number of buckets used to partition key space of each
+    # Reconciler. If this number is M and the replica number of the controller
+    # is N, the N replicas will compete for the M buckets. The owner of a
+    # bucket will take care of the reconciling for the keys partitioned into
+    # that bucket.
+    buckets: "1"
 
 ---
 # Copyright 2018 The Knative Authors
@@ -388,7 +456,7 @@ metadata:
   name: config-logging
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
 data:
@@ -440,7 +508,7 @@ metadata:
   name: config-observability
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
   annotations:
@@ -515,7 +583,7 @@ metadata:
   name: config-tracing
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
   annotations:
@@ -576,10 +644,9 @@ metadata:
   name: eventing-controller
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     knative.dev/high-availability: "true"
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: eventing-controller
@@ -587,7 +654,7 @@ spec:
     metadata:
       labels:
         app: eventing-controller
-        eventing.knative.dev/release: "v0.18.5"
+        eventing.knative.dev/release: "v0.22.0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -600,10 +667,11 @@ spec:
                 topologyKey: kubernetes.io/hostname
               weight: 100
       serviceAccountName: eventing-controller
+      enableServiceLinks: false
       containers:
         - name: eventing-controller
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/controller@sha256:ee9c78c5b0b13c918bbf7bf37551cad73d8b331a7ac9c6bd3434383735a8255c
+          image: gcr.io/knative-releases/knative.dev/eventing/cmd/controller@sha256:b02cfc6d0858de1ae6d5d5acbe1ac2ed1c5411f2adcec417c2b113b3b3274e4a
           resources:
             requests:
               cpu: 100m
@@ -621,7 +689,7 @@ spec:
               value: knative.dev/eventing
             # APIServerSource
             - name: APISERVER_RA_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing/cmd/apiserver_receive_adapter@sha256:79662218f63a987697e0dc39101e2136db73a3665d1126bef10157c44b2732b0
+              value: gcr.io/knative-releases/knative.dev/eventing/cmd/apiserver_receive_adapter@sha256:65de192a61150c6f97371a77e2ac462d5e62fc91909662fcdaa285d9602476c3
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -665,7 +733,7 @@ metadata:
   name: pingsource-mt-adapter
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 spec:
   # when set to 0 (and only 0) will be set to 1 when the first PingSource is created.
   replicas: 0
@@ -678,11 +746,12 @@ spec:
       labels:
         eventing.knative.dev/source: ping-source-controller
         sources.knative.dev/role: adapter
-        eventing.knative.dev/release: "v0.18.5"
+        eventing.knative.dev/release: "v0.22.0"
     spec:
+      enableServiceLinks: false
       containers:
         - name: dispatcher
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:de5eeeed625f2bed2a7d7c10cd5fd6fc668f91a7f78acf9c10a02c1c938bd910
+          image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:ac30b62fa390b01c24a9bb891c4b8aa7a8c6c747a5182592d81af58d65eaa65c
           env:
             - name: SYSTEM_NAMESPACE
               value: ''
@@ -701,7 +770,7 @@ spec:
             - name: K_NO_SHUTDOWN_AFTER
               value: ''
             - name: K_SINK_TIMEOUT
-              value: ''
+              value: '-1'
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -718,6 +787,57 @@ spec:
               cpu: 1000m
               memory: 2048Mi
       serviceAccountName: pingsource-mt-adapter
+
+---
+# Copyright 2021 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: eventing-webhook
+  namespace: knative-eventing
+  labels:
+    eventing.knative.dev/release: "v0.22.0"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: eventing-webhook
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 100
+---
+# Webhook PDB.
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: eventing-webhook
+  namespace: knative-eventing
+  labels:
+    eventing.knative.dev/release: "v0.22.0"
+spec:
+  minAvailable: 80%
+  selector:
+    matchLabels:
+      app: eventing-webhook
 
 ---
 # Copyright 2018 The Knative Authors
@@ -740,9 +860,8 @@ metadata:
   name: eventing-webhook
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 spec:
-  replicas: 1
   selector:
     matchLabels: &labels
       app: eventing-webhook
@@ -762,17 +881,18 @@ spec:
                 topologyKey: kubernetes.io/hostname
               weight: 100
       serviceAccountName: eventing-webhook
+      enableServiceLinks: false
       containers:
         - name: eventing-webhook
           terminationMessagePolicy: FallbackToLogsOnError
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/webhook@sha256:684fa97991921857191e23ea9a5fea5b33ba186203adb7074f02348947328b75
+          image: gcr.io/knative-releases/knative.dev/eventing/cmd/webhook@sha256:5f037fe6755fb85fb0a155f9892c8519a058dbf395d2d04b2c6769ffd2d68950
           resources:
             requests:
               # taken from serving.
-              cpu: 20m
-              memory: 20Mi
+              cpu: 100m
+              memory: 50Mi
             limits:
               # taken from serving.
               cpu: 200m
@@ -831,7 +951,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     role: eventing-webhook
   name: eventing-webhook
   namespace: knative-eventing
@@ -863,7 +983,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -1248,8 +1368,16 @@ spec:
     - !!merge <<: *version
       name: v1beta1
       served: true
-      storage: true
+      storage: false
       # the schema of v1beta1 is exactly the same as v1alpha2 schema
+      schema:
+        openAPIV3Schema:
+          !!merge <<: *openAPIV3Schema
+    - !!merge <<: *version
+      name: v1
+      served: true
+      storage: true
+      # the schema of v1 is exactly the same as v1beta1 schema
       schema:
         openAPIV3Schema:
           !!merge <<: *openAPIV3Schema
@@ -1260,6 +1388,7 @@ spec:
       - sources
     kind: ApiServerSource
     plural: apiserversources
+    singular: apiserversource
   scope: Namespaced
   conversion:
     strategy: Webhook
@@ -1290,7 +1419,7 @@ kind: CustomResourceDefinition
 metadata:
   name: brokers.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -1304,19 +1433,19 @@ spec:
         status: {}
       schema:
         openAPIV3Schema: &openAPIV3Schema
-          type: object
           description: 'Broker collects a pool of events that are consumable using Triggers. Brokers provide a well-known endpoint for event delivery that senders can use with minimal knowledge of the event routing strategy. Subscribers use Triggers to request delivery of events from a Broker''s pool to a specific URL or Addressable endpoint.'
+          type: object
           properties:
             spec:
-              description: 'Spec defines the desired state of the Broker.'
+              description: Spec defines the desired state of the Broker.
               type: object
               properties:
                 config:
-                  description: 'Config is a KReference to the configuration that specifies configuration options for this Broker. For example, this could be a pointer to a ConfigMap.'
+                  description: Config is a KReference to the configuration that specifies configuration options for this Broker. For example, this could be a pointer to a ConfigMap.
                   type: object
                   properties:
                     apiVersion:
-                      description: 'API version of the referent.'
+                      description: API version of the referent.
                       type: string
                     kind:
                       description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
@@ -1328,25 +1457,25 @@ spec:
                       description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
                       type: string
                 delivery:
-                  description: 'Delivery is the delivery specification for Events within the Broker mesh. This includes things like retries, DLQ, etc.'
+                  description: Delivery contains the delivery spec for each trigger to this Broker. Each trigger delivery spec, if any, overrides this global delivery spec.
                   type: object
                   properties:
                     backoffDelay:
-                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is the time interval between retries. For exponential policy , backoff delay is backoffDelay*2^<numberOfRetries>.'
+                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
                       type: string
                     backoffPolicy:
-                      description: ' BackoffPolicy is the retry backoff policy (linear, exponential).'
+                      description: BackoffPolicy is the retry backoff policy (linear, exponential).
                       type: string
                     deadLetterSink:
-                      description: 'DeadLetterSink is the sink receiving event that could not be sent to a destination.'
+                      description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
                       type: object
                       properties:
                         ref:
-                          description: 'Ref points to an Addressable.'
+                          description: Ref points to an Addressable.
                           type: object
                           properties:
                             apiVersion:
-                              description: 'API version of the referent.'
+                              description: API version of the referent.
                               type: string
                             kind:
                               description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
@@ -1358,28 +1487,28 @@ spec:
                               description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
                               type: string
                         uri:
-                          description: 'URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.'
+                          description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                           type: string
                     retry:
-                      description: 'Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.'
+                      description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
                       type: integer
                       format: int32
             status:
-              description: 'Status represents the current state of the Broker. This data may be out of date.'
+              description: Status represents the current state of the Broker. This data may be out of date.
               type: object
               properties:
                 address:
-                  description: 'Broker is Addressable. It exposes the endpoint as an URI to get events delivered into the Broker mesh.'
+                  description: Broker is Addressable. It exposes the endpoint as an URI to get events delivered into the Broker mesh.
                   type: object
                   properties:
                     url:
                       type: string
                 annotations:
-                  description: 'Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.'
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
                 conditions:
-                  description: 'Conditions the latest available observations of a resource''s current state.'
+                  description: Conditions the latest available observations of a resource's current state.
                   type: array
                   items:
                     type: object
@@ -1406,7 +1535,7 @@ spec:
                         description: 'Type of condition.'
                         type: string
                 observedGeneration:
-                  description: 'ObservedGeneration is the ''Generation'' of the Service that was last processed by the controller.'
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
                   type: integer
                   format: int64
       additionalPrinterColumns:
@@ -1468,7 +1597,7 @@ kind: CustomResourceDefinition
 metadata:
   name: channels.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -1514,13 +1643,14 @@ spec:
                       type: string
                     spec:
                       description: Spec defines the Spec to use for each channel created. Passed in verbatim to the Channel CRD as Spec section.
-                      type: string
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
                 delivery: &deliverySpec
                   description: DeliverySpec contains options controlling the event delivery
                   type: object
                   properties:
                     backoffDelay:
-                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is the time interval between retries. For exponential policy , backoff delay is backoffDelay*2^<numberOfRetries>.'
+                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
                       type: string
                     backoffPolicy:
                       description: BackoffPolicy is the retry backoff policy (linear, exponential).
@@ -1689,7 +1819,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -1917,8 +2047,16 @@ spec:
     - !!merge <<: *version
       name: v1beta1
       served: true
-      storage: true
+      storage: false
       # the schema of v1beta1 is exactly the same as v1alpha2 schema
+      schema:
+        openAPIV3Schema:
+          !!merge <<: *openAPIV3Schema
+    - !!merge <<: *version
+      name: v1
+      served: true
+      storage: true
+      # the schema of v1 is exactly the same as v1beta1 schema
       schema:
         openAPIV3Schema:
           !!merge <<: *openAPIV3Schema
@@ -1929,6 +2067,7 @@ spec:
       - sources
     kind: ContainerSource
     plural: containersources
+    singular: containersource
   scope: Namespaced
   conversion:
     strategy: Webhook
@@ -1958,7 +2097,7 @@ kind: CustomResourceDefinition
 metadata:
   name: eventtypes.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
 spec:
   group: eventing.knative.dev
@@ -2102,7 +2241,7 @@ kind: CustomResourceDefinition
 metadata:
   name: parallels.flows.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -2134,7 +2273,7 @@ spec:
                         type: object
                         properties:
                           backoffDelay:
-                            description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is the time interval between retries. For exponential policy , backoff delay is backoffDelay*2^<numberOfRetries>.'
+                            description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
                             type: string
                           backoffPolicy:
                             description: BackoffPolicy is the retry backoff policy (linear, exponential).
@@ -2370,7 +2509,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -2496,6 +2635,9 @@ spec:
         - name: Sink
           type: string
           jsonPath: .status.sinkUri
+        - name: Schedule
+          type: string
+          jsonPath: .spec.schedule
         - name: Age
           type: date
           jsonPath: .metadata.creationTimestamp
@@ -2508,7 +2650,7 @@ spec:
     - !!merge <<: *version
       name: v1beta1
       served: true
-      storage: true
+      storage: false
       schema:
         openAPIV3Schema:
           type: object
@@ -2614,6 +2756,121 @@ spec:
                 sinkUri:
                   description: 'SinkURI is the current active sink URI that has been configured for the Source.'
                   type: string
+    - !!merge <<: *version
+      name: v1beta2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: 'PingSource describes an event source with a fixed payload produced on a specified cron schedule.'
+          properties:
+            spec:
+              type: object
+              description: 'PingSourceSpec defines the desired state of the PingSource (from the client).'
+              properties:
+                ceOverrides:
+                  description: 'CloudEventOverrides defines overrides to control the output format and modifications of the event sent to the sink.'
+                  type: object
+                  properties:
+                    extensions:
+                      description: 'Extensions specify what attribute are added or overridden on the outbound event. Each `Extensions` key-value pair are set on the event as an attribute extension independently.'
+                      type: object
+                      additionalProperties:
+                        type: string
+                      x-kubernetes-preserve-unknown-fields: true
+                contentType:
+                  description: 'ContentType is the media type of `data` or `dataBase64`. Default is empty.'
+                  type: string
+                data:
+                  description: 'Data is data used as the body of the event posted to the sink. Default is empty. Mutually exclusive with `dataBase64`.'
+                  type: string
+                dataBase64:
+                  description: "DataBase64 is the base64-encoded string of the actual event's body posted to the sink. Default is empty. Mutually exclusive with `data`."
+                  type: string
+                schedule:
+                  description: 'Schedule is the cron schedule. Defaults to `* * * * *`.'
+                  type: string
+                sink:
+                  description: 'Sink is a reference to an object that will resolve to a uri to use as the sink.'
+                  type: object
+                  properties:
+                    ref:
+                      description: 'Ref points to an Addressable.'
+                      type: object
+                      properties:
+                        apiVersion:
+                          description: 'API version of the referent.'
+                          type: string
+                        kind:
+                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                          type: string
+                        name:
+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                          type: string
+                        namespace:
+                          description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                          type: string
+                    uri:
+                      description: 'URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.'
+                      type: string
+                timezone:
+                  description: 'Timezone modifies the actual time relative to the specified timezone. Defaults to the system time zone. More general information about time zones: https://www.iana.org/time-zones List of valid timezone values: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones'
+                  type: string
+            status:
+              type: object
+              description: 'PingSourceStatus defines the observed state of PingSource (from the controller).'
+              properties:
+                annotations:
+                  description: 'Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.'
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                ceAttributes:
+                  description: 'CloudEventAttributes are the specific attributes that the Source uses as part of its CloudEvents.'
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      source:
+                        description: 'Source is the CloudEvents source attribute.'
+                        type: string
+                      type:
+                        description: 'Type refers to the CloudEvent type attribute.'
+                        type: string
+                conditions:
+                  description: 'Conditions the latest available observations of a resource''s current state.'
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - type
+                      - status
+                    properties:
+                      lastTransitionTime:
+                        description: 'LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).'
+                        type: string
+                      message:
+                        description: 'A human readable message indicating details about the transition.'
+                        type: string
+                      reason:
+                        description: 'The reason for the condition''s last transition.'
+                        type: string
+                      severity:
+                        description: 'Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.'
+                        type: string
+                      status:
+                        description: 'Status of the condition, one of True, False, Unknown.'
+                        type: string
+                      type:
+                        description: 'Type of condition.'
+                        type: string
+                observedGeneration:
+                  description: 'ObservedGeneration is the "Generation" of the Service that was last processed by the controller.'
+                  type: integer
+                  format: int64
+                sinkUri:
+                  description: 'SinkURI is the current active sink URI that has been configured for the Source.'
+                  type: string
   names:
     categories:
       - all
@@ -2621,6 +2878,7 @@ spec:
       - sources
     kind: PingSource
     plural: pingsources
+    singular: pingsource
   scope: Namespaced
   conversion:
     strategy: Webhook
@@ -2650,7 +2908,7 @@ kind: CustomResourceDefinition
 metadata:
   name: sequences.flows.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -2719,7 +2977,7 @@ spec:
                         type: object
                         properties:
                           backoffDelay:
-                            description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is the time interval between retries. For exponential policy , backoff delay is backoffDelay*2^<numberOfRetries>.'
+                            description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
                             type: string
                           backoffPolicy:
                             description: BackoffPolicy is the retry backoff policy (linear, exponential).
@@ -2881,7 +3139,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     duck.knative.dev/binding: "true"
@@ -2923,6 +3181,10 @@ spec:
       storage: false
     - !!merge <<: *version
       name: v1beta1
+      served: true
+      storage: false
+    - !!merge <<: *version
+      name: v1
       served: true
       storage: true
       schema:
@@ -3069,6 +3331,7 @@ spec:
       - bindings
     kind: SinkBinding
     plural: sinkbindings
+    singular: sinkbinding
   scope: Namespaced
   conversion:
     strategy: Webhook
@@ -3098,7 +3361,7 @@ kind: CustomResourceDefinition
 metadata:
   name: subscriptions.messaging.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
 spec:
   group: messaging.knative.dev
@@ -3150,7 +3413,7 @@ spec:
                   type: object
                   properties:
                     backoffDelay:
-                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is the time interval between retries. For exponential policy , backoff delay is backoffDelay*2^<numberOfRetries>.'
+                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
                       type: string
                     backoffPolicy:
                       description: 'BackoffPolicy is the retry backoff policy (linear, exponential).'
@@ -3335,7 +3598,7 @@ kind: CustomResourceDefinition
 metadata:
   name: triggers.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
 spec:
   group: eventing.knative.dev
@@ -3367,110 +3630,248 @@ spec:
           type: object
           properties:
             spec:
-              required:
-                - subscriber
+              description: Spec defines the desired state of the Trigger.
               type: object
               properties:
                 broker:
+                  description: Broker is the broker that this trigger receives events from. If not specified, will default to ''default''.'
                   type: string
-                  description: 'Broker that this trigger receives events from. If not specified, will default to ''default''.'
+                delivery:
+                  description: Delivery contains the delivery spec for this specific trigger.
+                  type: object
+                  properties:
+                    backoffDelay:
+                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
+                      type: string
+                    backoffPolicy:
+                      description: BackoffPolicy is the retry backoff policy (linear, exponential).
+                      type: string
+                    deadLetterSink:
+                      description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
+                      type: object
+                      properties:
+                        ref:
+                          description: Ref points to an Addressable.
+                          type: object
+                          properties:
+                            apiVersion:
+                              description: API version of the referent.
+                              type: string
+                            kind:
+                              description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                              type: string
+                            namespace:
+                              description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                              type: string
+                        uri:
+                          description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                          type: string
+                    retry:
+                      description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
+                      type: integer
+                      format: int32
                 filter:
+                  description: 'Filter is the filter to apply against all events from the Broker. Only events that pass this filter will be sent to the Subscriber. If not specified, will default to allowing all events. '
                   type: object
                   properties:
                     attributes:
+                      description: 'Attributes filters events by exact match on event context attributes. Each key in the map is compared with the equivalent key in the event context. An event passes the filter if all values are equal to the specified values.  Nested context attributes are not supported as keys. Only string values are supported. '
                       type: object
-                      description: 'Map of CloudEvents attributes used for filtering events. If not specified, will default to all events'
-                      additionalProperties:
-                        type: string
+                      x-kubernetes-preserve-unknown-fields: true
                 subscriber:
+                  description: Subscriber is the addressable that receives events from the Broker that pass the Filter. It is required.
                   type: object
-                  description: 'the destination that should receive events.'
                   properties:
                     ref:
+                      description: Ref points to an Addressable.
                       type: object
-                      description: 'a reference to a Kubernetes object from which to retrieve the target URI.'
-                      required:
-                        - apiVersion
-                        - kind
-                        - name
                       properties:
                         apiVersion:
+                          description: API version of the referent.
                           type: string
-                          minLength: 1
                         kind:
+                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
                           type: string
-                          minLength: 1
-                        namespace:
-                          type: string
-                          minLength: 1
                         name:
+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                           type: string
-                          minLength: 1
+                        namespace:
+                          description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                          type: string
                     uri:
+                      description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                       type: string
-                      description: 'the target URI or, if ref is provided, a relative URI reference that will be combined with ref to produce a target URI.'
             status:
+              description: Status represents the current state of the Trigger. This data may be out of date.
               type: object
-              x-kubernetes-preserve-unknown-fields: true
+              properties:
+                annotations:
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                conditions:
+                  description: Conditions the latest available observations of a resource's current state.
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - type
+                      - status
+                    properties:
+                      lastTransitionTime:
+                        description: 'LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).'
+                        type: string
+                      message:
+                        description: 'A human readable message indicating details about the transition.'
+                        type: string
+                      reason:
+                        description: 'The reason for the condition''s last transition.'
+                        type: string
+                      severity:
+                        description: 'Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.'
+                        type: string
+                      status:
+                        description: 'Status of the condition, one of True, False, Unknown.'
+                        type: string
+                      type:
+                        description: 'Type of condition.'
+                        type: string
+                observedGeneration:
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                  type: integer
+                  format: int64
+                subscriberUri:
+                  description: SubscriberURI is the resolved URI of the receiver for this Trigger.
+                  type: string
     - !!merge <<: *version
       name: v1
       served: true
       storage: true
       schema:
         openAPIV3Schema:
-          type: object
           description: 'Trigger represents a request to have events delivered to a subscriber from a Broker''s event pool.'
+          type: object
           properties:
             spec:
-              description: 'Spec defines the desired state of the Trigger.'
-              required:
-                - subscriber
-                - broker
+              description: Spec defines the desired state of the Trigger.
               type: object
               properties:
                 broker:
+                  description: Broker is the broker that this trigger receives events from.
                   type: string
-                  description: 'Broker that this trigger receives events from.'
-                filter:
+                delivery:
+                  description: Delivery contains the delivery spec for this specific trigger.
                   type: object
-                  description: 'Filter is the filter to apply against all events from the Broker. Only events that pass this filter will be sent to the Subscriber. If not specified, will default to allowing all events.'
+                  properties:
+                    backoffDelay:
+                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
+                      type: string
+                    backoffPolicy:
+                      description: BackoffPolicy is the retry backoff policy (linear, exponential).
+                      type: string
+                    deadLetterSink:
+                      description: DeadLetterSink is the sink receiving event that could not be sent to a destination.
+                      type: object
+                      properties:
+                        ref:
+                          description: Ref points to an Addressable.
+                          type: object
+                          properties:
+                            apiVersion:
+                              description: API version of the referent.
+                              type: string
+                            kind:
+                              description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                              type: string
+                            namespace:
+                              description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                              type: string
+                        uri:
+                          description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                          type: string
+                    retry:
+                      description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
+                      type: integer
+                      format: int32
+                filter:
+                  description: 'Filter is the filter to apply against all events from the Broker. Only events that pass this filter will be sent to the Subscriber. If not specified, will default to allowing all events. '
+                  type: object
                   properties:
                     attributes:
+                      description: 'Attributes filters events by exact match on event context attributes. Each key in the map is compared with the equivalent key in the event context. An event passes the filter if all values are equal to the specified values.  Nested context attributes are not supported as keys. Only string values are supported. '
                       type: object
-                      description: 'Map of CloudEvents attributes used for filtering events. If not specified, will default to all events'
-                      additionalProperties:
-                        type: string
+                      x-kubernetes-preserve-unknown-fields: true
                 subscriber:
+                  description: Subscriber is the addressable that receives events from the Broker that pass the Filter. It is required.
                   type: object
-                  description: 'the destination that should receive events.'
                   properties:
                     ref:
+                      description: Ref points to an Addressable.
                       type: object
-                      description: 'a reference to a Kubernetes object from which to retrieve the target URI.'
-                      required:
-                        - apiVersion
-                        - kind
-                        - name
                       properties:
                         apiVersion:
+                          description: API version of the referent.
                           type: string
-                          minLength: 1
                         kind:
+                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
                           type: string
-                          minLength: 1
-                        namespace:
-                          type: string
-                          minLength: 1
                         name:
+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                           type: string
-                          minLength: 1
+                        namespace:
+                          description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                          type: string
                     uri:
+                      description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
                       type: string
-                      description: 'the target URI or, if ref is provided, a relative URI reference that will be combined with ref to produce a target URI.'
             status:
-              description: 'Status represents the current state of the Trigger. This data may be out of date.'
+              description: Status represents the current state of the Trigger. This data may be out of date.
               type: object
-              x-kubernetes-preserve-unknown-fields: true
+              properties:
+                annotations:
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                conditions:
+                  description: Conditions the latest available observations of a resource's current state.
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - type
+                      - status
+                    properties:
+                      lastTransitionTime:
+                        description: 'LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).'
+                        type: string
+                      message:
+                        description: 'A human readable message indicating details about the transition.'
+                        type: string
+                      reason:
+                        description: 'The reason for the condition''s last transition.'
+                        type: string
+                      severity:
+                        description: 'Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.'
+                        type: string
+                      status:
+                        description: 'Status of the condition, one of True, False, Unknown.'
+                        type: string
+                      type:
+                        description: 'Type of condition.'
+                        type: string
+                observedGeneration:
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                  type: integer
+                  format: int64
+                subscriberUri:
+                  description: SubscriberURI is the resolved URI of the receiver for this Trigger.
+                  type: string
   names:
     kind: Trigger
     plural: triggers
@@ -3510,7 +3911,7 @@ kind: ClusterRole
 metadata:
   name: addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
@@ -3522,7 +3923,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: service-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -3540,7 +3941,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: serving-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -3561,7 +3962,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: channel-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -3586,7 +3987,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: broker-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -3605,7 +4006,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: messaging-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -3626,7 +4027,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flows-addressable-resolver
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -3662,7 +4063,7 @@ kind: ClusterRole
 metadata:
   name: eventing-broker-filter
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 rules:
   - apiGroups:
       - ""
@@ -3687,7 +4088,7 @@ kind: ClusterRole
 metadata:
   name: eventing-broker-ingress
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 rules:
   - apiGroups:
       - ""
@@ -3703,7 +4104,7 @@ kind: ClusterRole
 metadata:
   name: eventing-config-reader
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 rules:
   - apiGroups:
       - ""
@@ -3735,7 +4136,7 @@ kind: ClusterRole
 metadata:
   name: channelable-manipulator
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
@@ -3747,7 +4148,7 @@ kind: ClusterRole
 metadata:
   name: meta-channelable-manipulator
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -3784,7 +4185,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-eventing-namespaced-admin
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:
   - apiGroups: ["eventing.knative.dev"]
@@ -3796,7 +4197,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-messaging-namespaced-admin
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:
   - apiGroups: ["messaging.knative.dev"]
@@ -3808,7 +4209,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-flows-namespaced-admin
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:
   - apiGroups: ["flows.knative.dev"]
@@ -3820,7 +4221,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-sources-namespaced-admin
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:
   - apiGroups: ["sources.knative.dev"]
@@ -3832,7 +4233,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-bindings-namespaced-admin
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:
   - apiGroups: ["bindings.knative.dev"]
@@ -3845,7 +4246,7 @@ metadata:
   name: knative-eventing-namespaced-edit
   labels:
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 rules:
   - apiGroups: ["eventing.knative.dev", "messaging.knative.dev", "sources.knative.dev", "flows.knative.dev", "bindings.knative.dev"]
     resources: ["*"]
@@ -3857,7 +4258,7 @@ metadata:
   name: knative-eventing-namespaced-view
   labels:
     rbac.authorization.k8s.io/aggregate-to-view: "true"
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 rules:
   - apiGroups: ["eventing.knative.dev", "messaging.knative.dev", "sources.knative.dev", "flows.knative.dev", "bindings.knative.dev"]
     resources: ["*"]
@@ -3883,7 +4284,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-controller
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 rules:
   - apiGroups:
       - ""
@@ -4017,7 +4418,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-pingsource-mt-adapter
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 rules:
   - apiGroups:
       - ""
@@ -4077,13 +4478,13 @@ rules:
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Use this aggregated ClusterRole when you need readonly access to "Addressables"
+# Use this aggregated ClusterRole when you need readonly access to "PodSpecables"
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: podspecable-binding
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
@@ -4095,7 +4496,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: builtin-podspecable-binding
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     duck.knative.dev/podspecable: "true"
 # Do not use this role directly. These rules will be added to the "podspecable-binding role.
 rules:
@@ -4141,7 +4542,7 @@ kind: ClusterRole
 metadata:
   name: source-observer
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
@@ -4153,7 +4554,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: eventing-sources-source-observer
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
     duck.knative.dev/source: "true"
 # Do not use this role directly. These rules will be added to the "source-observer" role.
 rules:
@@ -4189,7 +4590,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-sources-controller
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 rules:
   - apiGroups:
       - ""
@@ -4274,7 +4675,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-webhook
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:
@@ -4289,7 +4690,6 @@ rules:
   - apiGroups:
       - ""
     resources:
-      - "secrets"
       - "namespaces"
     verbs:
       - "get"
@@ -4346,6 +4746,42 @@ rules:
     verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
 
 ---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: knative-eventing
+  name: knative-eventing-webhook
+  labels:
+    eventing.knative.dev/release: "v0.22.0"
+rules:
+  # For manipulating certs into secrets.
+  - apiGroups:
+      - ""
+    resources:
+      - "secrets"
+    verbs:
+      - "get"
+      - "create"
+      - "update"
+      - "list"
+      - "watch"
+      - "patch"
+
+---
 # Copyright 2018 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -4365,7 +4801,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: config.webhook.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -4373,13 +4809,13 @@ webhooks:
         name: eventing-webhook
         namespace: knative-eventing
     sideEffects: None
-    failurePolicy: Fail
+    failurePolicy: Ignore
     name: config.webhook.eventing.knative.dev
     namespaceSelector:
       matchExpressions:
         - key: eventing.knative.dev/release
           operator: Exists
-    timeoutSeconds: 2
+    timeoutSeconds: 10
 
 ---
 # Copyright 2018 The Knative Authors
@@ -4401,7 +4837,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: webhook.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -4411,7 +4847,7 @@ webhooks:
     sideEffects: None
     failurePolicy: Fail
     name: webhook.eventing.knative.dev
-    timeoutSeconds: 2
+    timeoutSeconds: 10
 
 ---
 # Copyright 2018 The Knative Authors
@@ -4433,7 +4869,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.eventing.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -4443,7 +4879,7 @@ webhooks:
     sideEffects: None
     failurePolicy: Fail
     name: validation.webhook.eventing.knative.dev
-    timeoutSeconds: 2
+    timeoutSeconds: 10
 
 ---
 # Copyright 2018 The Knative Authors
@@ -4466,7 +4902,7 @@ metadata:
   name: eventing-webhook-certs
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 # The data is populated at install time.
 
 ---
@@ -4489,7 +4925,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: sinkbindings.webhook.sources.knative.dev
   labels:
-    eventing.knative.dev/release: "v0.18.5"
+    eventing.knative.dev/release: "v0.22.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -4499,6 +4935,6 @@ webhooks:
     failurePolicy: Fail
     sideEffects: None
     name: sinkbindings.webhook.sources.knative.dev
-    timeoutSeconds: 2
+    timeoutSeconds: 10
 
 ---

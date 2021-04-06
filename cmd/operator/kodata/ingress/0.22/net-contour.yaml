@@ -12,7 +12,6 @@ rules:
     resources: ["httpproxies"]
     verbs: ["get", "list", "create", "update", "delete", "deletecollection", "patch", "watch"]
 
----
 # Copyright 2019 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +25,7 @@ rules:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -34,7 +33,7 @@ metadata:
   namespace: knative-serving
   labels:
     networking.knative.dev/ingress-provider: contour
-    serving.knative.dev/release: "v0.18.2"
+    serving.knative.dev/release: "v0.22.0"
 data:
   _example: |
     ################################
@@ -42,6 +41,12 @@ data:
     #    EXAMPLE CONFIGURATION     #
     #                              #
     ################################
+
+    # timeout-policy-idle sets TimeoutPolicy.Idle in contour HTTPProxy spec
+    timeout-policy-idle: "infinity"
+
+    # timeout-policy-response sets TimeoutPolicy.Response in contour HTTPProxy spec
+    timeout-policy-response: "infinity"
 
     # If auto-TLS is disabled fallback to the following certificate
     #
@@ -62,7 +67,6 @@ data:
         class: contour-internal
         service: contour-internal/envoy
 
----
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,7 +80,7 @@ data:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -99,7 +103,7 @@ spec:
         - name: controller
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:08cb83665b61a91ab1a508cdadf38ebf23296c336aed1c21bf8eac0cb6797415
+          image: gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:705ac18c11352a874ed35d7404eed1792d599bbd5fcdaed7b945484b1d567bd9
           resources:
             requests:
               cpu: 40m
@@ -125,5 +129,10 @@ spec:
               containerPort: 8008
           securityContext:
             allowPrivilegeEscalation: false
-
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - all
 ---
+

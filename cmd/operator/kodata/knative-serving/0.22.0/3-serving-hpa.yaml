@@ -18,7 +18,7 @@ metadata:
   name: autoscaler-hpa
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.18.3"
+    serving.knative.dev/release: "v0.22.0"
     autoscaling.knative.dev/autoscaler-provider: hpa
 spec:
   selector:
@@ -30,7 +30,7 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
       labels:
         app: autoscaler-hpa
-        serving.knative.dev/release: "v0.18.3"
+        serving.knative.dev/release: "v0.22.0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -47,7 +47,7 @@ spec:
         - name: autoscaler-hpa
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler-hpa@sha256:34eeb5629fbc2c1461d220728ff9144da0918c71a4684a2bf6ed594f926af570
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler-hpa@sha256:da6b79df4d841c6c84d58519978567b909ca4273f38dd54b2115cfcd70b7f823
           resources:
             requests:
               cpu: 30m
@@ -69,6 +69,11 @@ spec:
               value: knative.dev/serving
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - all
           ports:
             - name: metrics
               containerPort: 9090
@@ -80,7 +85,7 @@ kind: Service
 metadata:
   labels:
     app: autoscaler-hpa
-    serving.knative.dev/release: "v0.18.3"
+    serving.knative.dev/release: "v0.22.0"
     autoscaling.knative.dev/autoscaler-provider: hpa
   name: autoscaler-hpa
   namespace: knative-serving

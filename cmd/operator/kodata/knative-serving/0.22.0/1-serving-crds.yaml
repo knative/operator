@@ -17,7 +17,7 @@ kind: CustomResourceDefinition
 metadata:
   name: certificates.networking.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.18.2"
+    serving.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -73,16 +73,15 @@ kind: CustomResourceDefinition
 metadata:
   name: configurations.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.18.2"
+    serving.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/podspecable: "true"
 spec:
   group: serving.knative.dev
   versions:
-    - &version
-      name: v1alpha1
+    - name: v1
       served: true
-      storage: false
+      storage: true
       subresources:
         status: {}
       schema:
@@ -106,11 +105,6 @@ spec:
         - name: Reason
           type: string
           jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
-    - !!merge <<: *version
-      name: v1beta1
-    - !!merge <<: *version
-      name: v1
-      storage: true
   names:
     kind: Configuration
     plural: configurations
@@ -123,14 +117,6 @@ spec:
       - config
       - cfg
   scope: Namespaced
-  conversion:
-    strategy: Webhook
-    webhook:
-      conversionReviewVersions: ["v1", "v1beta1"]
-      clientConfig:
-        service:
-          name: webhook
-          namespace: knative-serving
 
 ---
 # Copyright 2020 The Knative Authors
@@ -152,7 +138,7 @@ kind: CustomResourceDefinition
 metadata:
   name: ingresses.networking.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.18.2"
+    serving.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -209,7 +195,7 @@ kind: CustomResourceDefinition
 metadata:
   name: metrics.autoscaling.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.18.2"
+    serving.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -263,7 +249,7 @@ kind: CustomResourceDefinition
 metadata:
   name: podautoscalers.autoscaling.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.18.2"
+    serving.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -326,15 +312,14 @@ kind: CustomResourceDefinition
 metadata:
   name: revisions.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.18.2"
+    serving.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
   versions:
-    - &version
-      name: v1alpha1
+    - name: v1
       served: true
-      storage: false
+      storage: true
       subresources:
         status: {}
       schema:
@@ -361,11 +346,6 @@ spec:
         - name: Reason
           type: string
           jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
-    - !!merge <<: *version
-      name: v1beta1
-    - !!merge <<: *version
-      name: v1
-      storage: true
   names:
     kind: Revision
     plural: revisions
@@ -377,14 +357,6 @@ spec:
     shortNames:
       - rev
   scope: Namespaced
-  conversion:
-    strategy: Webhook
-    webhook:
-      conversionReviewVersions: ["v1", "v1beta1"]
-      clientConfig:
-        service:
-          name: webhook
-          namespace: knative-serving
 
 ---
 # Copyright 2019 The Knative Authors
@@ -406,16 +378,15 @@ kind: CustomResourceDefinition
 metadata:
   name: routes.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.18.2"
+    serving.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
   group: serving.knative.dev
   versions:
-    - &version
-      name: v1alpha1
+    - name: v1
       served: true
-      storage: false
+      storage: true
       subresources:
         status: {}
       schema:
@@ -436,11 +407,6 @@ spec:
         - name: Reason
           type: string
           jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
-    - !!merge <<: *version
-      name: v1beta1
-    - !!merge <<: *version
-      name: v1
-      storage: true
   names:
     kind: Route
     plural: routes
@@ -452,14 +418,6 @@ spec:
     shortNames:
       - rt
   scope: Namespaced
-  conversion:
-    strategy: Webhook
-    webhook:
-      conversionReviewVersions: ["v1", "v1beta1"]
-      clientConfig:
-        service:
-          name: webhook
-          namespace: knative-serving
 
 ---
 # Copyright 2019 The Knative Authors
@@ -481,7 +439,7 @@ kind: CustomResourceDefinition
 metadata:
   name: serverlessservices.networking.internal.knative.dev
   labels:
-    serving.knative.dev/release: "v0.18.2"
+    serving.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -549,27 +507,88 @@ kind: CustomResourceDefinition
 metadata:
   name: services.serving.knative.dev
   labels:
-    serving.knative.dev/release: "v0.18.2"
+    serving.knative.dev/release: "v0.22.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
     duck.knative.dev/podspecable: "true"
 spec:
   group: serving.knative.dev
   versions:
-    - &version
-      name: v1alpha1
+    - name: v1
       served: true
-      storage: false
+      storage: true
       subresources:
         status: {}
       schema:
         openAPIV3Schema:
           type: object
-          # this is a work around so we don't need to flush out the
-          # schema for each version at this time
-          #
-          # see issue: https://github.com/knative/serving/issues/912
           x-kubernetes-preserve-unknown-fields: true
+          properties:
+            spec:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+              properties:
+                template:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                  description: |
+                    A template for the current desired application state.
+                    Changes to `template` will cause a new Revision to be created as
+                    defined in the lifecycle section. The contents of the Service's
+                    RevisionTemplateSpec is used to create a corresponding Configuration.
+                traffic:
+                  x-kubernetes-preserve-unknown-fields: true
+                  type: array
+                  description: |
+                    Traffic specifies how to distribute traffic over a
+                    collection of Revisions belonging to the Service. If traffic is
+                    empty or not provided, defaults to 100% traffic to the latest
+                    `Ready` Revision. The contents of the Service's TrafficTarget is
+                    used to create a corresponding Route.
+                  items:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                    properties:
+                      revisionName:
+                        type: string
+                        description: |
+                          A specific revision to which to send this portion
+                          of traffic.
+                          This is mutually exclusive with configurationName.
+                      configurationName:
+                        type: string
+                        description: |
+                          ConfigurationName of a configuration to whose latest revision we will send
+                          this portion of traffic. When the "status.latestReadyRevisionName" of the
+                          referenced configuration changes, we will automatically migrate traffic
+                          from the prior "latest ready" revision to the new one.  This field is never
+                          set in Route's status, only its spec.
+                          This is mutually exclusive with RevisionName.
+                      latestRevision:
+                        type: boolean
+                        description: |
+                          `latestRevision` may be optionally provided to indicate
+                          that the latest ready Revision of the Configuration should be used
+                          for this traffic target. When provided latestRevision MUST be true
+                          if revisionName is empty, and it MUST be false when revisionName is non-empty.
+                      tag:
+                        type: string
+                        description: |
+                          Tag is optionally used to expose a dedicated URL for
+                          referencing this target exclusively. The dedicated URL MUST include
+                          in it the string provided by tag.
+                      percent:
+                        type: integer
+                        description: |
+                          The percentage of requests which should be allocated
+                          from the main Route domain name to the specified `revisionName` or
+                          `configurationName`.
+                          All `percent` values in `traffic` MUST sum to 100.
+                        minimum: 0
+                        maximum: 100
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
       additionalPrinterColumns:
         - name: URL
           type: string
@@ -586,11 +605,6 @@ spec:
         - name: Reason
           type: string
           jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
-    - !!merge <<: *version
-      name: v1beta1
-    - !!merge <<: *version
-      name: v1
-      storage: true
   names:
     kind: Service
     plural: services
@@ -603,14 +617,6 @@ spec:
       - kservice
       - ksvc
   scope: Namespaced
-  conversion:
-    strategy: Webhook
-    webhook:
-      conversionReviewVersions: ["v1", "v1beta1"]
-      clientConfig:
-        service:
-          name: webhook
-          namespace: knative-serving
 
 ---
 # Copyright 2018 The Knative Authors
@@ -659,5 +665,9 @@ spec:
           #
           # see issue: https://github.com/knative/serving/issues/912
           x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+        - name: Image
+          type: string
+          jsonPath: .spec.image
 
 ---

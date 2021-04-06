@@ -18,16 +18,16 @@
 source "$(dirname "${BASH_SOURCE[0]}")/../vendor/knative.dev/hack/e2e-tests.sh"
 
 # The previous serving release, installed by the operator. This value should be in the semantic format of major.minor.
-readonly PREVIOUS_SERVING_RELEASE_VERSION="0.22"
+readonly PREVIOUS_SERVING_RELEASE_VERSION="0.21"
 # The previous eventing release, installed by the operator. This value should be in the semantic format of major.minor.
 readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.21"
 # The target serving/eventing release to upgrade, installed by the operator. It can be a release available under
 # kodata or an incoming new release. This value should be in the semantic format of major.minor.
-readonly TARGET_RELEASE_VERSION="latest"
+readonly TARGET_RELEASE_VERSION="0.22"
 # This is the branch name of knative repos, where we run the upgrade tests.
-readonly KNATIVE_REPO_BRANCH="${PULL_BASE_REF}"
+readonly KNATIVE_REPO_BRANCH="release-0.22"
 # The branch of the net-istio repository.
-readonly NET_ISTIO_BRANCH="${PULL_BASE_REF}"
+readonly NET_ISTIO_BRANCH="release-0.22"
 # Istio version we test with
 readonly ISTIO_VERSION="stable"
 # Test without Istio mesh enabled

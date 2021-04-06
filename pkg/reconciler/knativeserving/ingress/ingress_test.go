@@ -43,9 +43,9 @@ func TestGetIngress(t *testing.T) {
 		expectedErr         error
 	}{{
 		name:                "Available ingresses",
-		version:             "0.18.1",
+		version:             "0.21.0",
 		expectedErr:         nil,
-		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/0.18",
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/0.21",
 	}, {
 		name:        "Unavailable ingresses",
 		version:     "0.16.1",
@@ -86,22 +86,22 @@ func TestAppendInstalledIngresses(t *testing.T) {
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{},
 			Status: servingv1alpha1.KnativeServingStatus{
-				Version: "0.18.1",
+				Version: "0.21.0",
 			},
 		},
-		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/0.18",
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/0.21",
 		expectedErr:         nil,
 	}, {
 		name: "Available installed ingresses for missing status.version",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				CommonSpec: servingv1alpha1.CommonSpec{
-					Version: "0.18.1",
+					Version: "0.21.0",
 				},
 			},
 			Status: servingv1alpha1.KnativeServingStatus{},
 		},
-		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/0.18",
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/0.21",
 		expectedErr:         nil,
 	}, {
 		name: "Unavailable installed ingresses for the unavailable status.version",
@@ -132,7 +132,7 @@ func TestAppendInstalledIngresses(t *testing.T) {
 func TestGetIngressWithFilters(t *testing.T) {
 	os.Setenv(common.KoEnvKey, "testdata/kodata")
 	defer os.Unsetenv(common.KoEnvKey)
-	version := "0.18"
+	version := "0.21"
 	tests := []struct {
 		name                 string
 		instance             servingv1alpha1.KnativeServing

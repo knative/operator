@@ -91,14 +91,6 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 			// Currently, the network ingress resource is still specified together with the knative serving.
 			// It is possible that network ingress resource is not using the same version as knative serving.
 			// This is the reason why we skip the version checking for network ingress resource.
-			fmt.Println("deploy name is")
-			fmt.Println(d.Name)
-			fmt.Println("key is")
-			fmt.Println(key)
-			fmt.Println("val is")
-			fmt.Println(val)
-			fmt.Println("version is")
-			fmt.Println(version)
 			if val == fmt.Sprintf("v%s", version) || version == common.LATEST_VERSION || key == "networking.knative.dev/ingress-provider" {
 				for _, c := range d.Status.Conditions {
 					if c.Type == v1.DeploymentAvailable && c.Status == corev1.ConditionTrue {

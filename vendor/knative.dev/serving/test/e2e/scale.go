@@ -30,6 +30,7 @@ import (
 	"knative.dev/pkg/ptr"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/spoof"
+	"knative.dev/serving/pkg/apis/autoscaling"
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
 	rtesting "knative.dev/serving/pkg/testing/v1"
 	"knative.dev/serving/test"
@@ -98,7 +99,7 @@ func ScaleToWithin(t *testing.T, scale int, duration time.Duration, latencies La
 			}
 
 			t.Cleanup(func() {
-				// Wait for all ksvcs to have been created before exitting the test.
+				// Wait for all ksvcs to have been created before exiting the test.
 				t.Log("Waiting for all to become ready")
 				wg.Wait()
 				pm.Stop()
@@ -143,7 +144,7 @@ func ScaleToWithin(t *testing.T, scale int, duration time.Duration, latencies La
 						},
 					}),
 					rtesting.WithConfigAnnotations(map[string]string{
-						"autoscaling.knative.dev/maxScale": "1",
+						autoscaling.MaxScaleAnnotationKey: "1",
 					}),
 					rtesting.WithReadinessProbe(&corev1.Probe{
 						Handler: corev1.Handler{
@@ -154,8 +155,8 @@ func ScaleToWithin(t *testing.T, scale int, duration time.Duration, latencies La
 					}),
 					rtesting.WithRevisionTimeoutSeconds(10))
 				if err != nil {
-					t.Error("CreateLatestService() =", err)
-					return fmt.Errorf("CreateLatestService() failed: %w", err)
+					t.Error("CreateService() =", err)
+					return fmt.Errorf("CreateService() failed: %w", err)
 				}
 
 				// Record the time it took to create the service.

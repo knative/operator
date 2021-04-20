@@ -11,15 +11,15 @@ require (
 	go.uber.org/zap v1.16.0
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.4.1
-	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
+	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
 	k8s.io/api v0.19.7
 	k8s.io/apimachinery v0.19.7
 	k8s.io/client-go v0.19.7
 	k8s.io/code-generator v0.19.7
-	knative.dev/caching v0.0.0-20210413050859-bfe63795ede2
-	knative.dev/eventing v0.22.1-0.20210414182901-fc115ae011e1
+	knative.dev/caching v0.0.0-20210419160001-a6535156c89c
+	knative.dev/eventing v0.22.1-0.20210419234200-56631a5ec82a
 	knative.dev/hack v0.0.0-20210325223819-b6ab329907d3
-	knative.dev/pkg v0.0.0-20210412173742-b51994e3b312
-	knative.dev/serving v0.22.1-0.20210414212701-09f07d70f1c7
+	knative.dev/pkg v0.0.0-20210419184201-942c621ec54d
+	knative.dev/serving v0.22.1-0.20210419165900-e4c7848e2e34
 	sigs.k8s.io/yaml v1.2.0
 )

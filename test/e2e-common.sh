@@ -26,12 +26,6 @@ readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.22"
 readonly TARGET_RELEASE_VERSION="latest"
 # This is the branch name of knative repos, where we run the upgrade tests.
 readonly KNATIVE_REPO_BRANCH="${PULL_BASE_REF}"
-# The branch of the net-istio repository.
-readonly NET_ISTIO_BRANCH="${PULL_BASE_REF}"
-# Istio version we test with
-readonly ISTIO_VERSION="stable"
-# Test without Istio mesh enabled
-readonly ISTIO_MESH=0
 # Namespaces used for tests
 # This environment variable TEST_NAMESPACE defines the namespace to install Knative Serving.
 export TEST_NAMESPACE="${TEST_NAMESPACE:-knative-operator-testing}"
@@ -171,13 +165,12 @@ function install_operator() {
 # Uninstalls Knative Serving from the current cluster.
 function knative_teardown() {
   echo ">> Uninstalling Knative serving"
-  echo "Istio YAML: ${INSTALL_ISTIO_YAML}"
   echo ">> Bringing down Serving"
   kubectl delete -n $TEST_NAMESPACE KnativeServing --all
   echo ">> Bringing down Eventing"
   kubectl delete -n $TEST_NAMESPACE KnativeEventing --all
   echo ">> Bringing down Istio"
-  kubectl delete --ignore-not-found=true -f "${INSTALL_ISTIO_YAML}" || return 1
+  $HOME/istioctl x uninstall --purge
   kubectl delete --ignore-not-found=true clusterrolebinding cluster-admin-binding
   echo ">> Bringing down Operator"
   ko delete --ignore-not-found=true -f config/ || return 1

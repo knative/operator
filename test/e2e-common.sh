@@ -115,31 +115,9 @@ function download_knative() {
 
 # Install Istio.
 function install_istio() {
-  if [[ -z "${ISTIO_VERSION}" ]]; then
-    readonly ISTIO_VERSION="stable"
-  fi
-
-  # And checkout the setup script based on that commit.
-  local NET_ISTIO_DIR=$(mktemp -d)
-  (
-    cd $NET_ISTIO_DIR \
-      && git init \
-      && git remote add origin https://github.com/knative-sandbox/net-istio.git \
-      && git fetch --depth 1 origin $NET_ISTIO_BRANCH \
-      && git checkout FETCH_HEAD
-  )
-
-  ISTIO_PROFILE="istio-ci"
-  if [[ $ISTIO_MESH -eq 0 ]]; then
-    ISTIO_PROFILE+="-no"
-  fi
-  ISTIO_PROFILE+="-mesh"
-  ISTIO_PROFILE+=".yaml"
-
   echo ">> Installing Istio"
-  echo "Istio version: ${ISTIO_VERSION}"
-  echo "Istio profile: ${ISTIO_PROFILE}"
-  ${NET_ISTIO_DIR}/third_party/istio-${ISTIO_VERSION}/install-istio.sh ${ISTIO_PROFILE}
+  curl -sL https://istio.io/downloadIstioctl | sh -
+  $HOME/.istioctl/bin/istioctl install -y
 }
 
 function create_namespace() {

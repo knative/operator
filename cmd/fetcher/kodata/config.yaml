@@ -56,3 +56,76 @@ knative-eventing:
         exclude:
           # v0.18 has a pre-install job
           - "eventing.yaml"
+eventing-source:
+  alternatives: true
+  primary:
+    s3:
+      bucket: "gs-noauth://knative-releases"
+      prefix: "eventing/previous"
+  additional:
+    - s3:
+        bucket: "gs-noauth://knative-releases"
+        prefix: "eventing-couchdb/previous"
+      eventingService: couchdb
+      include:
+        - "couchdb.yaml"
+    - s3:
+        bucket: "gs-noauth://knative-releases"
+        prefix: "eventing-kafka/previous"
+      eventingService: kafka
+      include:
+        - "source.yaml"
+      exclude:
+        - "mt-source.yaml"
+    - s3:
+        bucket: "gs-noauth://knative-releases"
+        prefix: "eventing-github/previous"
+      eventingService: github
+      include:
+        - "github.yaml"
+      exclude:
+        - "mt-github.yaml"
+    - s3:
+        bucket: "gs-noauth://knative-releases"
+        prefix: "eventing-redis/previous"
+      eventingService: redis
+      include:
+        - "redis-source.yaml"
+      exclude:
+        - "mt-github.yaml"
+    - s3:
+        bucket: "gs-noauth://knative-releases"
+        prefix: "eventing-prometheus/previous"
+      eventingService: prometheus
+      include:
+        - "prometheus-source.yaml"
+    - s3:
+        bucket: "gs-noauth://knative-releases"
+        prefix: "eventing-natss/previous"
+      eventingService: natss
+      include:
+        - "eventing-natss.yaml"
+    - s3:
+        bucket: "gs-noauth://knative-releases"
+        prefix: "eventing-rabbitmq/previous"
+      eventingService: rabbitmq
+      include:
+        - "rabbitmq-source.yaml"
+    - s3:
+        bucket: "gs-noauth://knative-releases"
+        prefix: "eventing-awssqs/previous"
+      eventingService: awssqs
+      include:
+        - "awssqs.yaml"
+    - s3:
+        bucket: "gs-noauth://knative-releases"
+        prefix: "eventing-gitlab/previous"
+      eventingService: gitlab
+      include:
+        - "gitlab.yaml"
+    - s3:
+        bucket: "gs-noauth://knative-releases"
+        prefix: "eventing-ceph/previous"
+      eventingService: ceph
+      include:
+        - "ceph.yaml"

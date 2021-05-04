@@ -61,7 +61,8 @@ type Source struct {
 	// S3 represents software manifests stored in an blob storage service under
 	// a specified prefix. The blob paths should end with "vX.Y.Z/<asset name>"
 	S3 S3Source `json:"s3,omitempty"`
-	// TODO: add other sources here as needed.
+	// EventingService represents the name of the service for the eventing source
+	EventingService string `json:"eventingService,omitempty"`
 
 	// Overrides provides a mechanism for modifying include/exclude (and
 	// possibly other settings) on a per-release or per-minor-version basis, to

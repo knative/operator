@@ -247,11 +247,19 @@ func handleAlternatives(ctx context.Context, client *http.Client, p Package, r R
 
 	for _, src := range p.Additional {
 		candidates := allReleases[src.String()]
+		resourcePath := path
+		if src.EventingService != "" {
+			resourcePath = filepath.Join(path, src.EventingService)
+			err := os.MkdirAll(resourcePath, 0755)
+			if err != nil {
+				return err
+			}
+		}
 		release := latestMinor(minor, candidates)
 		// Download assets and concatenate them.
 		assets := release.Assets.FilterAssets(src.Accept(release.TagName))
 		for _, a := range assets {
-			fileName := filepath.Join(path, a.Name)
+			fileName := filepath.Join(resourcePath, a.Name)
 			file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				return fmt.Errorf("Unable to open %s: %w", fileName, err)

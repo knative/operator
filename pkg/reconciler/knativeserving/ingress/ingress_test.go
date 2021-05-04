@@ -449,6 +449,25 @@ func TestFilters(t *testing.T) {
 		},
 		labels:   []string{"istio", "contour", "kourier", ""},
 		expected: []bool{true, true, true, true},
+	}, {
+		name: "Disabled All ingress",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{
+				Ingress: &servingv1alpha1.IngressConfigs{
+					Istio: servingv1alpha1.IstioIngressConfiguration{
+						Enabled: false,
+					},
+					Kourier: servingv1alpha1.KourierIngressConfiguration{
+						Enabled: false,
+					},
+					Contour: servingv1alpha1.ContourIngressConfiguration{
+						Enabled: false,
+					},
+				},
+			},
+		},
+		labels:   []string{"istio", "contour", "kourier", ""},
+		expected: []bool{false, false, false, true},
 	}}
 
 	for _, tt := range tests {

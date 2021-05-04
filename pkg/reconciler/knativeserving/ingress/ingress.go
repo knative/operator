@@ -40,11 +40,17 @@ func ingressFilter(name string) mf.Predicate {
 	}
 }
 
+// noneFilter drops all ingresses but allows everything else.
+func noneFilter(u *unstructured.Unstructured) bool {
+	_, hasLabel := u.GetLabels()[providerLabel]
+	return !hasLabel
+}
+
 // Filters makes sure the disabled ingress resources are removed from the manifest.
 func Filters(ks *v1alpha1.KnativeServing) mf.Predicate {
 	var filters []mf.Predicate
 	if ks.Spec.Ingress == nil {
-		return mf.Any(istioFilter)
+		return istioFilter
 	}
 	if ks.Spec.Ingress.Istio.Enabled {
 		filters = append(filters, istioFilter)
@@ -54,6 +60,9 @@ func Filters(ks *v1alpha1.KnativeServing) mf.Predicate {
 	}
 	if ks.Spec.Ingress.Contour.Enabled {
 		filters = append(filters, contourFilter)
+	}
+	if len(filters) == 0 {
+		return noneFilter
 	}
 	return mf.Any(filters...)
 }

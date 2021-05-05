@@ -91,5 +91,3 @@ go_test_e2e -tags=upgradeserving -timeout=${TIMEOUT} \
 # This is for preventing too many large log files to be uploaded to GCS in CI.
 rm "${ARTIFACTS}/k8s.log-$(basename "${E2E_SCRIPT}").txt"
 success
-
-}

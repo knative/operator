@@ -35,15 +35,14 @@ export GO111MODULE=auto
 
 source "$(dirname "${BASH_SOURCE[0]}")/e2e-common.sh"
 
+export SERVING_TESTS_NAMESPACE="serving-tests"
+export SERVING_TESTS_ALT_NAMESPACE="serving-tests-alt"
+
 # Create test resources and images
 function test_setup() {
   create_namespace
   download_knative "knative/serving" serving "${KNATIVE_REPO_BRANCH}"
-  echo ">> Creating test resources (test/config/) in Knative Serving repository"
-  cd ${KNATIVE_DIR}/serving
-  for i in $(ls test/config/*.yaml); do
-    sed s/knative-serving/${TEST_NAMESPACE}/ $i | ko apply ${KO_FLAGS} -f -
-  done || return 1
+  create_test_namespace_serving
 
   echo ">> Uploading test images..."
   # We only need to build and publish two images among all the test images
@@ -67,6 +66,12 @@ function test_setup() {
   cd ${OPERATOR_DIR}
 }
 
+# Create test namespaces for serving
+function create_test_namespace_serving() {
+  kubectl get ns ${SERVING_TESTS_NAMESPACE} || kubectl create namespace ${SERVING_TESTS_NAMESPACE}
+  kubectl get ns ${SERVING_TESTS_ALT_NAMESPACE} || kubectl create namespace ${SERVING_TESTS_ALT_NAMESPACE}
+}
+
 # Skip installing istio as an add-on.
 # Temporarily increasing the cluster size for serving tests to rule out
 # resource/eviction as causes of flakiness.
@@ -86,3 +91,5 @@ go_test_e2e -tags=upgradeserving -timeout=${TIMEOUT} \
 # This is for preventing too many large log files to be uploaded to GCS in CI.
 rm "${ARTIFACTS}/k8s.log-$(basename "${E2E_SCRIPT}").txt"
 success
+
+}

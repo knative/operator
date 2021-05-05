@@ -44,8 +44,6 @@ function test_setup() {
   for i in $(ls test/config/*.yaml); do
     sed s/knative-serving/${TEST_NAMESPACE}/ $i | ko apply ${KO_FLAGS} -f -
   done || return 1
-  # Disable the chaosduck deployment as in Serving upgrade prow
-  kubectl -n "${TEST_NAMESPACE}" scale deployment "chaosduck" --replicas=0 || fail_test
 
   echo ">> Uploading test images..."
   # We only need to build and publish two images among all the test images
@@ -70,7 +68,11 @@ function test_setup() {
 }
 
 # Skip installing istio as an add-on.
-initialize "$@" --skip-istio-addon
+# Temporarily increasing the cluster size for serving tests to rule out
+# resource/eviction as causes of flakiness.
+# Pin to 1.18 since scale test is super flakey on 1.19
+initialize "$@" --skip-istio-addon  --min-nodes=4 --max-nodes=4 --cluster-version=1.18 \
+  --install-latest-release
 
 TIMEOUT=30m
 
@@ -81,4 +83,7 @@ go_test_e2e -tags=upgradeserving -timeout=${TIMEOUT} \
   --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" \
   || fail_test
 
+# Remove the kail log file if the test flow passes.
+# This is for preventing too many large log files to be uploaded to GCS in CI.
+rm "${ARTIFACTS}/k8s.log-$(basename "${E2E_SCRIPT}").txt"
 success

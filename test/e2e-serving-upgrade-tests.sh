@@ -71,8 +71,7 @@ function test_setup() {
 # Temporarily increasing the cluster size for serving tests to rule out
 # resource/eviction as causes of flakiness.
 # Pin to 1.18 since scale test is super flakey on 1.19
-initialize "$@" --skip-istio-addon  --min-nodes=4 --max-nodes=4 --cluster-version=1.18 \
-  --install-latest-release
+initialize "$@" --skip-istio-addon  --min-nodes=4 --max-nodes=4 --cluster-version=1.18
 
 TIMEOUT=30m
 

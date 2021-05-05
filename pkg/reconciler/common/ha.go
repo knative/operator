@@ -29,7 +29,7 @@ const (
 	configMapName           = "config-leader-election"
 	enabledComponentsKey    = "enabledComponents"
 	servingComponentsValue  = "controller,hpaautoscaler,certcontroller,istiocontroller,nscontroller"
-	eventingComponentsValue = "eventing-controller,sugar-controller,imc-controller,imc-dispatcher,mt-broker-controller"
+	eventingComponentsValue = "eventing-controller,sugar-controller,imc-controller,imc-dispatcher,mt-broker-controller,mt-broker-filter,mt-broker-ingress"
 )
 
 func haSupport(obj v1alpha1.KComponent) sets.String {
@@ -44,6 +44,8 @@ func haSupport(obj v1alpha1.KComponent) sets.String {
 		"imc-controller",
 		"imc-dispatcher",
 		"mt-broker-controller",
+		"mt-broker-filter",
+		"mt-broker-ingress",
 	)
 
 	// HA for autoscaler is supported since v0.19+.

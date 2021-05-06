@@ -170,7 +170,7 @@ function knative_teardown() {
   echo ">> Bringing down Eventing"
   kubectl delete -n $TEST_NAMESPACE KnativeEventing --all
   echo ">> Bringing down Istio"
-  $HOME/istioctl x uninstall --purge
+  $HOME/.istioctl/bin/istioctl x uninstall --purge
   kubectl delete --ignore-not-found=true clusterrolebinding cluster-admin-binding
   echo ">> Bringing down Operator"
   ko delete --ignore-not-found=true -f config/ || return 1

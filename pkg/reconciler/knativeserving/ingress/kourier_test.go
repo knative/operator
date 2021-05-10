@@ -89,7 +89,7 @@ func TestTransformKourierManifest(t *testing.T) {
 				}
 			}
 
-			manifest, err = manifest.Transform(replaceGWNamespace(tt.instance))
+			manifest, err = manifest.Transform(replaceGWNamespace())
 			if err != nil {
 				t.Fatalf("Failed to transform manifest: %v", err)
 			}

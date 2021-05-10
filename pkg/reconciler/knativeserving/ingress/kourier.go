@@ -38,13 +38,14 @@ var kourierFilter = ingressFilter("kourier")
 
 func kourierTransformers(ctx context.Context, instance *v1alpha1.KnativeServing) []mf.Transformer {
 	return []mf.Transformer{
-		replaceGWNamespace(instance),
+		replaceGWNamespace(),
 		configureGWServiceType(instance),
 	}
 }
 
-// replaceGWNamespace replace the environment variable KOURIER_GATEWAY_NAMESPACE with the namespace of the Knative Serving CR
-func replaceGWNamespace(instance *v1alpha1.KnativeServing) mf.Transformer {
+// replaceGWNamespace replace the environment variable KOURIER_GATEWAY_NAMESPACE with the
+// namespace of the deployment its set on.
+func replaceGWNamespace() mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" && u.GetName() == kourierControllerDeploymentName && hasProviderLabel(u) {
 			deployment := &appsv1.Deployment{}
@@ -57,7 +58,7 @@ func replaceGWNamespace(instance *v1alpha1.KnativeServing) mf.Transformer {
 				for j := range c.Env {
 					envVar := &c.Env[j]
 					if envVar.Name == kourierGatewayNSEnvVarKey {
-						envVar.Value = instance.GetNamespace()
+						envVar.Value = deployment.GetNamespace()
 					}
 				}
 			}

@@ -49,6 +49,10 @@ var cache = map[string]mf.Manifest{}
 // version known to the operator is returned.
 func TargetVersion(instance v1alpha1.KComponent) string {
 	version := instance.GetSpec().GetVersion()
+	if strings.EqualFold(version, LATEST_VERSION) {
+		return getLatestRelease(instance, version)
+	}
+
 	if len(instance.GetSpec().GetManifests()) == 0 {
 		if version == "" {
 			return latestRelease(instance)
@@ -373,6 +377,17 @@ func getLatestRelease(instance v1alpha1.KComponent, version string) string {
 	}
 
 	if version == "" {
+		return vers[0]
+	}
+
+	if strings.EqualFold(version, LATEST_VERSION) {
+		// If spec.version is set to latest, look up if the directory latest is available.
+		// If not, return the newest available version instead.
+		for _, val := range vers {
+			if val == version {
+				return val
+			}
+		}
 		return vers[0]
 	}
 

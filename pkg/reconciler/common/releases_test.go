@@ -282,6 +282,35 @@ func TestTargetVersion(t *testing.T) {
 	}
 }
 
+func TestTargetVersionNoLatestDir(t *testing.T) {
+	koPath := "testdata/kodata-no-latest"
+
+	tests := []struct {
+		name      string
+		component v1alpha1.KComponent
+		expected  string
+	}{{
+		name: "serving CR with the version latest",
+		component: &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: "latest",
+				},
+			},
+		},
+		expected: "0.16.1",
+	}}
+
+	os.Setenv(KoEnvKey, koPath)
+	defer os.Unsetenv(KoEnvKey)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			version := TargetVersion(test.component)
+			util.AssertEqual(t, version, test.expected)
+		})
+	}
+}
+
 func TestGetLatestRelease(t *testing.T) {
 	koPath := "testdata/kodata"
 

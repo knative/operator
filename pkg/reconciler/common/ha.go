@@ -39,6 +39,8 @@ func haSupport(obj v1alpha1.KComponent) sets.String {
 		"networking-certmanager",
 		"networking-ns-cert",
 		"networking-istio",
+		"3scale-kourier-control",
+		"3scale-kourier-gateway",
 		"eventing-controller",
 		"sugar-controller",
 		"imc-controller",

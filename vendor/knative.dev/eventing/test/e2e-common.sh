@@ -173,8 +173,6 @@ function install_knative_eventing() {
 
   scale_controlplane eventing-webhook eventing-controller
 
-  if (( SCALE_CHAOSDUCK_TO_ZERO )); then kubectl -n "${SYSTEM_NAMESPACE}" scale deployment/chaosduck --replicas=0; fi
-
   wait_until_pods_running ${SYSTEM_NAMESPACE} || fail_test "Knative Eventing did not come up"
 
   echo "check the config map"
@@ -204,9 +202,15 @@ function install_head {
 function install_latest_release() {
   header ">> Installing Knative Eventing latest public release"
 
+  # Delete InMemoryController Webhook for downgrade 0.22 from 0.23.
+  kubectl delete ValidatingWebhookConfiguration validation.inmemorychannel.eventing.knative.dev || true
+  kubectl delete MutatingWebhookConfiguration inmemorychannel.eventing.knative.dev || true
+
   install_knative_eventing \
     "latest-release" || \
     fail_test "Knative latest release installation failed"
+
+
 }
 
 function install_mt_broker() {
@@ -254,6 +258,7 @@ function unleash_duck() {
   cat test/config/chaosduck.yaml | \
     sed "s/namespace: ${KNATIVE_DEFAULT_NAMESPACE}/namespace: ${SYSTEM_NAMESPACE}/g" | \
     ko apply ${KO_FLAGS} -f - || return $?
+    if (( SCALE_CHAOSDUCK_TO_ZERO )); then kubectl -n "${SYSTEM_NAMESPACE}" scale deployment/chaosduck --replicas=0; fi
 }
 
 # Teardown the Knative environment after tests finish.

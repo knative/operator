@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Knative Authors
+Copyright 2021 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1beta1
+package v1
 
 import (
 	"knative.dev/pkg/apis"
@@ -58,7 +58,7 @@ type PingSourceSpec struct {
 	//   and modifications of the event sent to the sink.
 	duckv1.SourceSpec `json:",inline"`
 
-	// Schedule is the cronjob schedule. Defaults to `* * * * *`.
+	// Schedule is the cron schedule. Defaults to `* * * * *`.
 	// +optional
 	Schedule string `json:"schedule,omitempty"`
 
@@ -68,11 +68,19 @@ type PingSourceSpec struct {
 	// List of valid timezone values: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 	Timezone string `json:"timezone,omitempty"`
 
-	// JsonData is json encoded data used as the body of the event posted to
-	// the sink. Default is empty. If set, datacontenttype will also be set
-	// to "application/json".
+	// ContentType is the media type of Data or DataBase64. Default is empty.
 	// +optional
-	JsonData string `json:"jsonData,omitempty"`
+	ContentType string `json:"contentType,omitempty"`
+
+	// Data is data used as the body of the event posted to the sink. Default is empty.
+	// Mutually exclusive with DataBase64.
+	// +optional
+	Data string `json:"data,omitempty"`
+
+	// DataBase64 is the base64-encoded string of the actual event's body posted to the sink. Default is empty.
+	// Mutually exclusive with Data.
+	// +optional
+	DataBase64 string `json:"dataBase64,omitempty"`
 }
 
 // PingSourceStatus defines the observed state of PingSource.

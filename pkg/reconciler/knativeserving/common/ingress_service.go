@@ -22,10 +22,13 @@ import (
 )
 
 // IngressServiceTransform pins the namespace to istio-system for the service named knative-local-gateway.
+// It also removes the OwnerReference to the operator, as they are in different namespaces, which is
+// invalid in Kubernetes 1.20+.
 func IngressServiceTransform() mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetAPIVersion() == "v1" && u.GetKind() == "Service" && u.GetName() == "knative-local-gateway" {
 			u.SetNamespace("istio-system")
+			u.SetOwnerReferences(nil)
 		}
 		return nil
 	}

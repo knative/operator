@@ -65,7 +65,7 @@ func TestIngressServiceTransform(t *testing.T) {
 			},
 			Spec: servingv1alpha1.KnativeServingSpec{
 				CommonSpec: servingv1alpha1.CommonSpec{
-					Config: map[string]map[string]string{"istio": map[string]string{"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-1.svc.cluster.local"}},
+					Config: map[string]map[string]string{"istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-1.svc.cluster.local"}},
 				},
 			},
 		},
@@ -82,7 +82,7 @@ func TestIngressServiceTransform(t *testing.T) {
 			},
 			Spec: servingv1alpha1.KnativeServingSpec{
 				CommonSpec: servingv1alpha1.CommonSpec{
-					Config: map[string]map[string]string{"config-istio": map[string]string{"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-1.svc.cluster.local"}},
+					Config: map[string]map[string]string{"config-istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-1.svc.cluster.local"}},
 				},
 			},
 		},
@@ -99,8 +99,8 @@ func TestIngressServiceTransform(t *testing.T) {
 			},
 			Spec: servingv1alpha1.KnativeServingSpec{
 				CommonSpec: servingv1alpha1.CommonSpec{
-					Config: map[string]map[string]string{"istio": map[string]string{"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-2.svc.cluster.local"},
-						"config-istio": map[string]string{"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-3.svc.cluster.local"}},
+					Config: map[string]map[string]string{"istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-2.svc.cluster.local"},
+						"config-istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-3.svc.cluster.local"}},
 				},
 			},
 		},
@@ -117,7 +117,7 @@ func TestIngressServiceTransform(t *testing.T) {
 			},
 			Spec: servingv1alpha1.KnativeServingSpec{
 				CommonSpec: servingv1alpha1.CommonSpec{
-					Config: map[string]map[string]string{"config-istio": map[string]string{"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway"}},
+					Config: map[string]map[string]string{"config-istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway"}},
 				},
 			},
 		},

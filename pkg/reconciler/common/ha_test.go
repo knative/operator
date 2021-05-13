@@ -101,6 +101,11 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		config:   makeHa(2),
 		in:       makeUnstructuredHPA(t, "activator", 3),
 		expected: makeUnstructuredHPA(t, "activator", 3),
+	}, {
+		name:     "HA; pingsource-mt-adapter",
+		config:   makeHa(2),
+		in:       makeUnstructuredDeployment(t, "pingsource-mt-adapter"),
+		expected: makeUnstructuredDeploymentReplicas(t, "pingsource-mt-adapter", 2),
 	}}
 
 	for _, tc := range cases {

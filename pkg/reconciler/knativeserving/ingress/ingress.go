@@ -97,6 +97,9 @@ func getIngress(version string, manifest *mf.Manifest) error {
 	if !strings.EqualFold(version, common.LATEST_VERSION) {
 		ingressVersion = semver.MajorMinor(common.SanitizeSemver(version))[1:]
 	}
+
+	// This line can make sure a valid available ingress version is returned.
+	ingressVersion = common.GetLatestIngressRelease(ingressVersion)
 	ingressPath := filepath.Join(koDataDir, "ingress", ingressVersion)
 	m, err := common.FetchManifest(ingressPath)
 	if err != nil {

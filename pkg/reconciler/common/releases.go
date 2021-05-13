@@ -266,6 +266,11 @@ func componentDir(instance v1alpha1.KComponent) string {
 	return ""
 }
 
+func componentIngressDir() string {
+	koDataDir := os.Getenv(KoEnvKey)
+	return filepath.Join(koDataDir, "ingress")
+}
+
 func additionalManifestPath(instance v1alpha1.KComponent) string {
 	// Create the comma-separated string for URLs in spec.additionalManifests
 	addManifests := instance.GetSpec().GetAdditionalManifests()
@@ -328,11 +333,25 @@ func SanitizeSemver(version string) string {
 	return fmt.Sprintf("v%s", version)
 }
 
+// allIngressReleases returns the all the available release versions
+// available under kodata directory for Knative component.
+func allIngressReleases() ([]string, error) {
+	// List all the directories available under kodata
+	pathname := componentIngressDir()
+	return allReleasesUnderPath(pathname)
+}
+
 // allReleases returns the all the available release versions
 // available under kodata directory for Knative component.
 func allReleases(instance v1alpha1.KComponent) ([]string, error) {
 	// List all the directories available under kodata
 	pathname := componentDir(instance)
+	return allReleasesUnderPath(pathname)
+}
+
+// allComponentReleases returns the all the available release versions
+// available under kodata directory for a certain path.
+func allReleasesUnderPath(pathname string) ([]string, error) {
 	fileList, err := ioutil.ReadDir(pathname)
 	if err != nil {
 		return nil, err
@@ -350,7 +369,7 @@ func allReleases(instance v1alpha1.KComponent) ([]string, error) {
 		}
 	}
 	if len(releaseTags) == 0 {
-		return nil, fmt.Errorf("unable to find any version number for %v", instance)
+		return nil, fmt.Errorf("unable to find any version number under the path %v", pathname)
 	}
 
 	// This function makes sure the versions are sorted in a descending order.
@@ -367,6 +386,17 @@ func latestRelease(instance v1alpha1.KComponent) string {
 	return getLatestRelease(instance, "")
 }
 
+// GetLatestIngressRelease returns the latest release tag available under kodata directory for the ingress
+// based on spec.version.
+func GetLatestIngressRelease(version string) string {
+	// The versions are in a descending order, so the first one will be the latest version.
+	vers, err := allIngressReleases()
+	if err != nil {
+		panic(err)
+	}
+	return getLatestReleaseFromList(vers, version)
+}
+
 // getLatestRelease returns the latest release tag available under kodata directory for Knative component
 // based on spec.version.
 func getLatestRelease(instance v1alpha1.KComponent, version string) string {
@@ -375,7 +405,12 @@ func getLatestRelease(instance v1alpha1.KComponent, version string) string {
 	if err != nil {
 		panic(err)
 	}
+	return getLatestReleaseFromList(vers, version)
+}
 
+// getLatestReleaseFromList returns the latest release tag available under kodata directory for Knative component
+// based on spec.version.
+func getLatestReleaseFromList(vers []string, version string) string {
 	if version == "" {
 		return vers[0]
 	}

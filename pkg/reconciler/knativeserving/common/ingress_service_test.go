@@ -21,9 +21,9 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/scheme"
-
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/kubernetes/scheme"
+	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -33,26 +33,103 @@ func TestIngressServiceTransform(t *testing.T) {
 		namespace         string
 		serviceName       string
 		expectedNamespace string
+		instance          *servingv1alpha1.KnativeServing
 		expected          bool
 	}{{
 		name:              "KeepKnativeIngressServiceNamespace",
 		namespace:         "test-namespace",
 		serviceName:       "knative-local-gateway",
 		expectedNamespace: "istio-system",
-		expected:          true,
+		instance: &servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{},
+		},
+		expected: true,
 	}, {
 		name:              "DoNotKeepKnativeIngressServiceNamespace",
 		namespace:         "test-namespace",
 		serviceName:       "knative-local-gateway-other",
 		expectedNamespace: "istio-system",
-		expected:          false,
+		instance: &servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{},
+		},
+		expected: false,
+	}, {
+		name:              "IstioNotUnderDefaultNS with istio",
+		namespace:         "test-namespace",
+		serviceName:       "knative-local-gateway",
+		expectedNamespace: "istio-system-1",
+		instance: &servingv1alpha1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-instance",
+				Namespace: "test-namespace",
+			},
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Config: map[string]map[string]string{"istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-1.svc.cluster.local"}},
+				},
+			},
+		},
+		expected: true,
+	}, {
+		name:              "IstioNotUnderDefaultNS with config-istio",
+		namespace:         "test-namespace",
+		serviceName:       "knative-local-gateway",
+		expectedNamespace: "istio-system-1",
+		instance: &servingv1alpha1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-instance",
+				Namespace: "test-namespace",
+			},
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Config: map[string]map[string]string{"config-istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-1.svc.cluster.local"}},
+				},
+			},
+		},
+		expected: true,
+	}, {
+		name:              "IstioNotUnderDefaultNS with both istio and config-istio",
+		namespace:         "test-namespace",
+		serviceName:       "knative-local-gateway",
+		expectedNamespace: "istio-system-3",
+		instance: &servingv1alpha1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-instance",
+				Namespace: "test-namespace",
+			},
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Config: map[string]map[string]string{"istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-2.svc.cluster.local"},
+						"config-istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-3.svc.cluster.local"}},
+				},
+			},
+		},
+		expected: true,
+	}, {
+		name:              "IstioNotUnderDefaultNS with invalid config-istio data",
+		namespace:         "test-namespace",
+		serviceName:       "knative-local-gateway",
+		expectedNamespace: "istio-system",
+		instance: &servingv1alpha1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-instance",
+				Namespace: "test-namespace",
+			},
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Config: map[string]map[string]string{"config-istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway"}},
+				},
+			},
+		},
+		expected: true,
 	}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			service := makeIngressService(t, tt.serviceName, tt.namespace)
-			IngressServiceTransform()(service)
+			IngressServiceTransform(tt.instance)(service)
 			util.AssertEqual(t, service.GetNamespace() == tt.expectedNamespace, tt.expected)
+			util.AssertEqual(t, service.GetOwnerReferences() == nil, true)
 		})
 	}
 }

@@ -17,19 +17,50 @@ limitations under the License.
 package common
 
 import (
+	"fmt"
+	"strings"
+
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+)
+
+const (
+	IstioName       = "istio"
+	ConfigIstioName = "config-istio"
 )
 
 // IngressServiceTransform pins the namespace to istio-system for the service named knative-local-gateway.
 // It also removes the OwnerReference to the operator, as they are in different namespaces, which is
 // invalid in Kubernetes 1.20+.
-func IngressServiceTransform() mf.Transformer {
+func IngressServiceTransform(ks *v1alpha1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetAPIVersion() == "v1" && u.GetKind() == "Service" && u.GetName() == "knative-local-gateway" {
 			u.SetNamespace("istio-system")
 			u.SetOwnerReferences(nil)
+			config := ks.GetSpec().GetConfig()
+			if data, ok := config[IstioName]; ok {
+				UpdateNamespace(u, data, ks.GetNamespace())
+			}
+
+			// The "config-" prefix is optional
+			if data, ok := config[ConfigIstioName]; ok {
+				UpdateNamespace(u, data, ks.GetNamespace())
+			}
 		}
 		return nil
+	}
+}
+
+// UpdateNamespace set correct namespace of istio to the service knative-local-gateway
+func UpdateNamespace(u *unstructured.Unstructured, data map[string]string, ns string) {
+	key := fmt.Sprintf("%s.%s.%s", "local-gateway", ns, "knative-local-gateway")
+	if val, ok := data[key]; ok {
+		fields := strings.Split(val, ".")
+		// The value is in the format of knative-local-gateway.{istio-namespace}.svc.cluster.local
+		// The second item is the istio namespace
+		if len(fields) >= 2 {
+			u.SetNamespace(fields[1])
+		}
 	}
 }

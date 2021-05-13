@@ -25,11 +25,6 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
-const (
-	IstioName       = "istio"
-	ConfigIstioName = "config-istio"
-)
-
 // IngressServiceTransform pins the namespace to istio-system for the service named knative-local-gateway.
 // It also removes the OwnerReference to the operator, as they are in different namespaces, which is
 // invalid in Kubernetes 1.20+.
@@ -39,12 +34,12 @@ func IngressServiceTransform(ks *v1alpha1.KnativeServing) mf.Transformer {
 			u.SetNamespace("istio-system")
 			u.SetOwnerReferences(nil)
 			config := ks.GetSpec().GetConfig()
-			if data, ok := config[IstioName]; ok {
+			if data, ok := config["istio"]; ok {
 				UpdateNamespace(u, data, ks.GetNamespace())
 			}
 
 			// The "config-" prefix is optional
-			if data, ok := config[ConfigIstioName]; ok {
+			if data, ok := config["config-istio"]; ok {
 				UpdateNamespace(u, data, ks.GetNamespace())
 			}
 		}

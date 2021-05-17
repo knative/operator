@@ -129,6 +129,64 @@ func TestAppendInstalledIngresses(t *testing.T) {
 	}
 }
 
+func TestAppendTargetIngresses(t *testing.T) {
+	os.Setenv(common.KoEnvKey, "testdata/kodata")
+	defer os.Unsetenv(common.KoEnvKey)
+
+	tests := []struct {
+		name                string
+		instance            servingv1alpha1.KnativeServing
+		expectedIngressPath string
+		expectedErr         error
+	}{{
+		name: "Available target ingresses",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Version: "0.21.0",
+				},
+			},
+		},
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/0.21",
+		expectedErr:         nil,
+	}, {
+		name: "Unavailable target ingresses",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Version: "0.12.1",
+				},
+			},
+		},
+		expectedErr: fmt.Errorf("stat testdata/kodata/ingress/0.12: no such file or directory"),
+	}, {
+		name: "Get the latest target ingresses when the directory latest is unavailable",
+		instance: servingv1alpha1.KnativeServing{
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Version: "latest",
+				},
+			},
+		},
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/0.22",
+		expectedErr:         nil,
+	}}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			manifest, _ := mf.ManifestFrom(mf.Slice{})
+			err := AppendTargetIngresses(context.TODO(), &manifest, &tt.instance)
+			if err != nil {
+				util.AssertEqual(t, err.Error(), tt.expectedErr.Error())
+				util.AssertEqual(t, len(manifest.Resources()), 0)
+			} else {
+				util.AssertEqual(t, err, tt.expectedErr)
+				util.AssertEqual(t, util.DeepMatchWithPath(manifest, tt.expectedIngressPath), true)
+			}
+		})
+	}
+}
+
 func TestGetIngressWithFilters(t *testing.T) {
 	os.Setenv(common.KoEnvKey, "testdata/kodata")
 	defer os.Unsetenv(common.KoEnvKey)

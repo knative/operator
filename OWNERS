@@ -3,6 +3,7 @@
 approvers:
 - technical-oversight-committee
 - operations-writers
+- knative-release-leads
 
 reviewers:
 - operations-reviewers

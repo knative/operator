@@ -12,7 +12,6 @@ rules:
     resources: ["httpproxies"]
     verbs: ["get", "list", "create", "update", "delete", "deletecollection", "patch", "watch"]
 
----
 # Copyright 2019 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +25,7 @@ rules:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -34,7 +33,7 @@ metadata:
   namespace: knative-serving
   labels:
     networking.knative.dev/ingress-provider: contour
-    serving.knative.dev/release: "v0.19.0"
+    serving.knative.dev/release: "v0.23.0"
 data:
   _example: |
     ################################
@@ -47,7 +46,7 @@ data:
     timeout-policy-idle: "infinity"
 
     # timeout-policy-response sets TimeoutPolicy.Response in contour HTTPProxy spec
-    timeou-policy-response: "infinity"
+    timeout-policy-response: "infinity"
 
     # If auto-TLS is disabled fallback to the following certificate
     #
@@ -68,7 +67,6 @@ data:
         class: contour-internal
         service: contour-internal/envoy
 
----
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -82,7 +80,7 @@ data:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -105,7 +103,7 @@ spec:
         - name: controller
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:bdff6f57bbded077639f223459acd92a9b2639ffb0f8569736019c2e0ece9612
+          image: gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:ba223ef1d2d88ef96bb5d61521fff3555952b6ad2d15f539224e1a0b81004158
           resources:
             requests:
               cpu: 40m
@@ -136,5 +134,5 @@ spec:
             capabilities:
               drop:
                 - all
-
 ---
+

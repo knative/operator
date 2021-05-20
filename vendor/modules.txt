@@ -261,8 +261,11 @@ github.com/openzipkin/zipkin-go/model
 github.com/openzipkin/zipkin-go/propagation
 github.com/openzipkin/zipkin-go/reporter
 github.com/openzipkin/zipkin-go/reporter/http
-# github.com/pelletier/go-toml v1.8.0
-github.com/pelletier/go-toml
+# github.com/pelletier/go-toml/v2 v2.0.0-beta.2
+github.com/pelletier/go-toml/v2
+github.com/pelletier/go-toml/v2/internal/ast
+github.com/pelletier/go-toml/v2/internal/tracker
+github.com/pelletier/go-toml/v2/internal/unsafe
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
@@ -295,7 +298,7 @@ github.com/robfig/cron/v3
 github.com/sirupsen/logrus
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
-# github.com/stretchr/testify v1.6.1
+# github.com/stretchr/testify v1.7.0
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/tsenart/vegeta/v12 v12.8.4
@@ -980,11 +983,11 @@ k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20210518062915-3c39f8fd811a
+# knative.dev/caching v0.0.0-20210520062216-dd477657763e
 ## explicit
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.23.1-0.20210519124016-453e4c06d61c
+# knative.dev/eventing v0.23.1-0.20210520114617-5af518d57612
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1068,14 +1071,14 @@ knative.dev/eventing/test/upgrade/prober/wathola/receiver
 ## explicit
 knative.dev/hack
 knative.dev/hack/shell
-# knative.dev/networking v0.0.0-20210512050647-ace2d3306f0b
+# knative.dev/networking v0.0.0-20210519080815-4a780203e35b
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
 knative.dev/networking/pkg/apis/networking/v1alpha1
 knative.dev/networking/pkg/client/clientset/versioned
 knative.dev/networking/pkg/client/clientset/versioned/scheme
 knative.dev/networking/pkg/client/clientset/versioned/typed/networking/v1alpha1
-# knative.dev/pkg v0.0.0-20210518131015-67897f4ec290
+# knative.dev/pkg v0.0.0-20210520062216-e749d6a2ad0e
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -1145,7 +1148,7 @@ knative.dev/pkg/tracker
 knative.dev/pkg/version
 knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
-# knative.dev/serving v0.23.1-0.20210519111215-20c2c828d8e4
+# knative.dev/serving v0.23.1-0.20210520131016-8f2988d6895d
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

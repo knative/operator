@@ -1466,8 +1466,8 @@ k8s.io/utils v0.0.0-20210111153108-fddb29f9d009/go.mod h1:jPW/WVKK9YHAvNhRxK0md/
 knative.dev/caching v0.0.0-20210518062915-3c39f8fd811a/go.mod h1:d+fIY/LkAZAM6HsRJwmfirNDMCc1+hqGlQctLP1CmzE=
 knative.dev/caching v0.0.0-20210520062216-dd477657763e h1:uczeyVaKQ4WY2sxt6SclwkNA3m9VTKY8qXTDZJ2At8o=
 knative.dev/caching v0.0.0-20210520062216-dd477657763e/go.mod h1:d+fIY/LkAZAM6HsRJwmfirNDMCc1+hqGlQctLP1CmzE=
-knative.dev/eventing v0.23.1-0.20210520114617-5af518d57612 h1:FOXGMay+XyWFmzMWlB6u+5kMeONOMOB4Mjl7yblVtJA=
-knative.dev/eventing v0.23.1-0.20210520114617-5af518d57612/go.mod h1:4WewoHOfKYH1nGMrFrZzNz4ZXnCy8WThWley770Zyjc=
+knative.dev/eventing v0.23.1-0.20210524085620-e48c80d7f969 h1:o1EN/8udcyE1zh1ni1GZsyhFHJfY2sOLgh/wmMSLv8k=
+knative.dev/eventing v0.23.1-0.20210524085620-e48c80d7f969/go.mod h1:4WewoHOfKYH1nGMrFrZzNz4ZXnCy8WThWley770Zyjc=
 knative.dev/hack v0.0.0-20210428122153-93ad9129c268 h1:lBIj9Epd9UQ55NEaHzAdY/UZbuaegCdGPKVC2+Z68Q0=
 knative.dev/hack v0.0.0-20210428122153-93ad9129c268/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
 knative.dev/hack/schema v0.0.0-20210428122153-93ad9129c268/go.mod h1:ffjwmdcrH5vN3mPhO8RrF2KfNnbHeCE2C60A+2cv3U0=
@@ -1478,8 +1478,8 @@ knative.dev/pkg v0.0.0-20210518131015-67897f4ec290/go.mod h1:fIl4l4OmZodkElyaHoT
 knative.dev/pkg v0.0.0-20210520062216-e749d6a2ad0e h1:BTHdk8J4PQ1UQIZlpBQaN4sw+vYqap4P97OWP/qytbo=
 knative.dev/pkg v0.0.0-20210520062216-e749d6a2ad0e/go.mod h1:fIl4l4OmZodkElyaHoT0LCF5wT+3+P/kinawQ4XlLtE=
 knative.dev/reconciler-test v0.0.0-20210514214942-8d70771450f1/go.mod h1:ZHvzjwe5aUnWDx+u5y9EPaZ++5PM9Yapp/IvBDiS+Yk=
-knative.dev/serving v0.23.1-0.20210520131016-8f2988d6895d h1:114T7i81PBAbsd16DUYwNQmVZs756oB3bQ3cGGa4U6w=
-knative.dev/serving v0.23.1-0.20210520131016-8f2988d6895d/go.mod h1:ExgWB8J6EdPfCaaVylkdAZkZXskORb9hQ3kq69NbWvc=
+knative.dev/serving v0.23.1-0.20210522031118-9cd446ead73f h1:9IhjPLREELrLrRHEtqPQnXZTk2MEzMuCXsrXl/C9jiM=
+knative.dev/serving v0.23.1-0.20210522031118-9cd446ead73f/go.mod h1:ExgWB8J6EdPfCaaVylkdAZkZXskORb9hQ3kq69NbWvc=
 modernc.org/cc v1.0.0/go.mod h1:1Sk4//wdnYJiUIxnW8ddKpaOJCF37yAdqYnkxUpaYxw=
 modernc.org/golex v1.0.0/go.mod h1:b/QX9oBD/LhixY6NDh+IdGv17hgB+51fET1i2kPSmvk=
 modernc.org/mathutil v1.0.0/go.mod h1:wU0vUrJsVWBZ4P6e7xtFJEhFSNsfRLJ8H458uRjg03k=

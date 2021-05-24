@@ -68,7 +68,7 @@ TIMEOUT=30m
 
 header "Running upgrade tests"
 
-go_test_e2e -tags=upgradeeventing -timeout=${TIMEOUT} \
+go_test_e2e -v -tags=upgradeeventing -timeout=${TIMEOUT} \
   ./test/upgrade \
   --preservingversion="${PREVIOUS_SERVING_RELEASE_VERSION}" --preeventingversion="${PREVIOUS_EVENTING_RELEASE_VERSION}" \
   || fail_test

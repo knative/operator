@@ -273,11 +273,21 @@ func handleAlternatives(ctx context.Context, client *http.Client, p Package, r R
 
 // LastN selects the last N minor releases (including all patch releases) for a
 // given sequence of releases, which need not be sorted.
-func LastN(minors int, allReleases []Release) []Release {
+func LastN(latestVersion string, minors int, allReleases []Release) []Release {
 	retval := make(releaseList, len(allReleases))
-
 	copy(retval, allReleases)
 	sort.Sort(retval)
+
+	if "latest" != latestVersion {
+		startIndex := 0
+		for i, r := range retval {
+			if semver.MajorMinor(r.TagName) == latestVersion {
+				startIndex = i
+				break
+			}
+		}
+		retval = retval[startIndex:]
+	}
 
 	previous := semver.MajorMinor(retval[0].TagName)
 	for i, r := range retval {

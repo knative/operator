@@ -34,7 +34,7 @@ KNATIVE_CODEGEN_PKG=${KNATIVE_CODEGEN_PKG:-$(cd ${REPO_ROOT_DIR}; ls -d -1 ./ven
 
 # download all the configurations for different release versions
 echo "Downloading releases"
-(cd ${REPO_ROOT_DIR}; go run ./cmd/fetcher)
+(cd ${REPO_ROOT_DIR}; go run ./cmd/fetcher "$@")
 
 # generate the code with:
 # --output-base    because this script should also be able to run inside the vendor dir of

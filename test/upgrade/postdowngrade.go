@@ -92,7 +92,7 @@ func eventingCRPostDowngrade(t *testing.T) {
 		}
 		expectedDeployments := resources.GetExpectedDeployments(preManifest)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
-		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(instance),
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(instance), "",
 			expectedDeployments)
 	})
 }
@@ -136,7 +136,7 @@ func servingCRPostDowngrade(t *testing.T) {
 		}
 		expectedDeployments := resources.GetExpectedDeployments(preManifest.Filter(ingress.Filters(instance)))
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
-		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(instance),
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(instance), "",
 			expectedDeployments)
 	})
 }

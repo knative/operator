@@ -80,7 +80,7 @@ func servingCRPostUpgrade(t *testing.T) {
 		}
 		expectedDeployments := resources.GetExpectedDeployments(targetManifest.Filter(ingress.Filters(ks)))
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
-		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(ks),
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(ks), test.OperatorFlags.PreviousServingVersion,
 			expectedDeployments)
 		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
 
@@ -130,7 +130,7 @@ func eventingCRPostUpgrade(t *testing.T) {
 		}
 		expectedDeployments := resources.GetExpectedDeployments(targetManifest)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
-		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(ke),
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(ke), test.OperatorFlags.PreviousEventingVersion,
 			expectedDeployments)
 
 		instance := &v1alpha1.KnativeEventing{

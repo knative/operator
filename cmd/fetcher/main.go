@@ -22,6 +22,7 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -33,9 +34,21 @@ import (
 	"knative.dev/operator/pkg/blob"
 	"knative.dev/operator/pkg/github"
 	"knative.dev/operator/pkg/packages"
+	"knative.dev/operator/pkg/reconciler/common"
 )
 
+var (
+	version *string
+)
+
+func init() {
+	version = flag.String("release", common.LATEST_VERSION, "the target version")
+}
+
 func main() {
+	flag.Parse()
+	latestVersion := *version
+
 	cfg, err := packages.ReadConfig("cmd/fetcher/kodata/config.yaml")
 	if err != nil {
 		log.Print("Unable to read config: ", err)
@@ -65,7 +78,7 @@ func main() {
 			os.Exit(3)
 		}
 
-		for _, release := range packages.LastN(4, repos[v.Primary.String()]) {
+		for _, release := range packages.LastN(latestVersion, 4, repos[v.Primary.String()]) {
 			if err := packages.HandleRelease(ctx, http.DefaultClient, *v, release, repos); err != nil {
 				log.Printf("Unable to fetch %s: %v", release, err)
 			}

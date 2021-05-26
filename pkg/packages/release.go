@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"golang.org/x/mod/semver"
+	"knative.dev/operator/pkg/reconciler/common"
 )
 
 // Asset provides an abstract interface for describing a resource which should be stored on the disk.
@@ -278,7 +279,7 @@ func LastN(latestVersion string, minors int, allReleases []Release) []Release {
 	copy(retval, allReleases)
 	sort.Sort(retval)
 
-	if "latest" != latestVersion {
+	if !strings.EqualFold(latestVersion, common.LATEST_VERSION) {
 		startIndex := 0
 		for i, r := range retval {
 			if semver.MajorMinor(r.TagName) == latestVersion {

@@ -34,6 +34,7 @@ import (
 	"knative.dev/operator/pkg/blob"
 	"knative.dev/operator/pkg/github"
 	"knative.dev/operator/pkg/packages"
+	"knative.dev/operator/pkg/reconciler/common"
 )
 
 var (
@@ -41,7 +42,7 @@ var (
 )
 
 func init() {
-	version = flag.String("release", "latest", "the latest version")
+	version = flag.String("release", common.LATEST_VERSION, "the target version")
 }
 
 func main() {

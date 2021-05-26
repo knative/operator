@@ -26,6 +26,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"knative.dev/operator/pkg/reconciler/common"
 )
 
 var (
@@ -215,24 +216,33 @@ func TestLastN(t *testing.T) {
 	sort.Sort(releases)
 
 	tests := []struct {
-		count  int
-		oldest string
+		latestVersion string
+		count         int
+		oldest        string
 	}{
-		{5, "v0.1"},
-		{4, "v0.2"},
-		{3, "v0.3"},
-		{2, "v0.4"},
-		{1, "v0.5"},
-		{0, "v0.1"},
-		{8, "v0.1"},
+		{common.LATEST_VERSION, 5, "v0.1"},
+		{common.LATEST_VERSION, 4, "v0.2"},
+		{common.LATEST_VERSION, 3, "v0.3"},
+		{common.LATEST_VERSION, 2, "v0.4"},
+		{common.LATEST_VERSION, 1, "v0.5"},
+		{common.LATEST_VERSION, 0, "v0.1"},
+		{common.LATEST_VERSION, 8, "v0.1"},
+		{"v0.3", 2, "v0.2"},
 	}
 	ignore := cmpopts.IgnoreUnexported(Asset{})
 	for _, tt := range tests {
 		t.Run(tt.oldest, func(t *testing.T) {
-			subset := LastN(tt.count, releases)
+			subset := LastN(tt.latestVersion, tt.count, releases)
+			margin := 0
+			for i := range releases {
+				if releases[i].TagName == subset[0].TagName {
+					margin = i
+					break
+				}
+			}
 
 			for i := range subset {
-				if diff := cmp.Diff(releases[i], subset[i], ignore); diff != "" {
+				if diff := cmp.Diff(releases[i+margin], subset[i], ignore); diff != "" {
 					t.Errorf("Unexpect release at %d (-want +got): %s", i, diff)
 				}
 			}

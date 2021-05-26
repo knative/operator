@@ -54,21 +54,21 @@ const (
 
 // WaitForKnativeDeploymentState polls the status of the Knative deployments every `interval`
 // until `inState` returns `true` indicating the deployments match the desired deployments.
-func WaitForKnativeDeploymentState(clients *test.Clients, namespace string, version string, expectedDeployments []string, logf logging.FormatLogger,
-	inState func(deps *v1.DeploymentList, expectedDeployments []string, version string, err error, logf logging.FormatLogger) (bool, error)) error {
+func WaitForKnativeDeploymentState(clients *test.Clients, namespace string, version string, existingVersion string, expectedDeployments []string, logf logging.FormatLogger,
+	inState func(deps *v1.DeploymentList, expectedDeployments []string, version string, existingVersion string, err error, logf logging.FormatLogger) (bool, error)) error {
 	span := logging.GetEmitableSpan(context.Background(), fmt.Sprintf("WaitForKnativeDeploymentState/%s/%s", expectedDeployments, "KnativeDeploymentIsReady"))
 	defer span.End()
 
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 		dpList, err := clients.KubeClient.AppsV1().Deployments(namespace).List(context.TODO(), metav1.ListOptions{})
-		return inState(dpList, expectedDeployments, version, err, logf)
+		return inState(dpList, expectedDeployments, version, existingVersion, err, logf)
 	})
 
 	return waitErr
 }
 
 // IsKnativeDeploymentReady will check the status conditions of the deployments and return true if the deployments meet the desired status.
-func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []string, version string, err error,
+func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []string, version string, existingVersion string, err error,
 	logf logging.FormatLogger) (bool, error) {
 	if err != nil {
 		return false, err
@@ -91,7 +91,31 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 			// Currently, the network ingress resource is still specified together with the knative serving.
 			// It is possible that network ingress resource is not using the same version as knative serving.
 			// This is the reason why we skip the version checking for network ingress resource.
-			if val == fmt.Sprintf("v%s", version) || version == common.LATEST_VERSION || key == "networking.knative.dev/ingress-provider" {
+			if val == fmt.Sprintf("v%s", version) && version != common.LATEST_VERSION {
+				for _, c := range d.Status.Conditions {
+					if c.Type == v1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
+						return true
+					}
+				}
+			}
+
+			if key == "networking.knative.dev/ingress-provider" {
+				for _, c := range d.Status.Conditions {
+					if c.Type == v1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
+						return true
+					}
+				}
+			}
+
+			if version == common.LATEST_VERSION && version == existingVersion {
+				for _, c := range d.Status.Conditions {
+					if c.Type == v1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
+						return true
+					}
+				}
+			}
+
+			if version == common.LATEST_VERSION && version != existingVersion && (key == "serving.knative.dev/release" || key == "eventing.knative.dev/release") && val != fmt.Sprintf("v%s", existingVersion) {
 				for _, c := range d.Status.Conditions {
 					if c.Type == v1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
 						return true

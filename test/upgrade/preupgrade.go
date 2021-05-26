@@ -90,7 +90,7 @@ func servingCRPreUpgrade(t *testing.T) {
 		}
 		expectedDeployments := resources.GetExpectedDeployments(manifest)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
-		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, kserving.GetStatus().GetVersion(),
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, kserving.GetStatus().GetVersion(), "",
 			expectedDeployments)
 	})
 }
@@ -132,7 +132,7 @@ func eventingCRPreUpgrade(t *testing.T) {
 		}
 		expectedDeployments := resources.GetExpectedDeployments(manifest)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
-		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, keventing.GetStatus().GetVersion(),
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, keventing.GetStatus().GetVersion(), "",
 			expectedDeployments)
 	})
 }

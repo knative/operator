@@ -263,7 +263,6 @@ metadata:
 spec:
   version: "${TARGET_RELEASE_VERSION}"
 EOF
-  sleep 5m
 }
 
 function if_version_exists() {

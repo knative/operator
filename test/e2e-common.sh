@@ -263,6 +263,11 @@ metadata:
 spec:
   version: "${TARGET_RELEASE_VERSION}"
 EOF
+  # Operator has the issue making sure all deployments are ready before running the postupgrade
+	# tests, especially when spec.version is set to latest. Before figuring out the optimal approach,
+	# we add a timeout of 3 mins here to make sure all the deployments are up and running for the
+	# target version.
+	sleep 3m
 }
 
 function if_version_exists() {

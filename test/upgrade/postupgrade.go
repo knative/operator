@@ -73,7 +73,13 @@ func servingCRPostUpgrade(t *testing.T) {
 		// TODO: We only verify the deployment, but we need to add other resources as well, like ServiceAccount, ClusterRoleBinding, etc.
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
-		ks := &v1alpha1.KnativeServing{}
+		ks := &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: common.LATEST_VERSION,
+				},
+			},
+		}
 		targetManifest, err := common.TargetManifest(ks)
 		if err != nil {
 			t.Fatalf("Failed to get the manifest for Knative: %v", err)
@@ -123,7 +129,13 @@ func eventingCRPostUpgrade(t *testing.T) {
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
 		// Based on the latest release version, get the deployment resources.
-		ke := &v1alpha1.KnativeEventing{}
+		ke := &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: common.LATEST_VERSION,
+				},
+			},
+		}
 		targetManifest, err := common.TargetManifest(ke)
 		if err != nil {
 			t.Fatalf("Failed to get the manifest for Knative: %v", err)

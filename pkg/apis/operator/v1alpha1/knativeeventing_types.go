@@ -66,6 +66,10 @@ type KnativeEventingSpec struct {
 	// The default is `exclusion`.
 	// +optional
 	SinkBindingSelectionMode string `json:"sinkBindingSelectionMode,omitempty"`
+
+	// Source allows configuration of different eventing sources to be shipped.
+	// +optional
+	Source *SourceConfigs `json:"source,omitempty"`
 }
 
 // KnativeEventingStatus defines the observed state of KnativeEventing
@@ -87,4 +91,68 @@ type KnativeEventingList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []KnativeEventing `json:"items"`
+}
+
+// SourceConfigs specifies options for the eventing sources.
+type SourceConfigs struct {
+	Awssqs     AwssqsSourceConfiguration     `json:"awssqs"`
+	Ceph       CephSourceConfiguration       `json:"ceph"`
+	Couchdb    CouchdbSourceConfiguration    `json:"couchdb"`
+	Github     GithubSourceConfiguration     `json:"github"`
+	Gitlab     GitlabSourceConfiguration     `json:"gitlab"`
+	Kafka      KafkaSourceConfiguration      `json:"kafka"`
+	Natss      NatssSourceConfiguration      `json:"natss"`
+	Prometheus PrometheusSourceConfiguration `json:"prometheus"`
+	Rabbitmq   RabbitmqSourceConfiguration   `json:"rabbitmq"`
+	Redis      RedisSourceConfiguration      `json:"redis"`
+}
+
+// AwssqsSourceConfiguration specifies whether to enable the awssqs source.
+type AwssqsSourceConfiguration struct {
+	Enabled bool `json:"enabled"`
+}
+
+// CephSourceConfiguration specifies whether to enable the ceph source.
+type CephSourceConfiguration struct {
+	Enabled bool `json:"enabled"`
+}
+
+// CouchdbSourceConfiguration specifies whether to enable the couchdb source.
+type CouchdbSourceConfiguration struct {
+	Enabled bool `json:"enabled"`
+}
+
+// GithubSourceConfiguration specifies whether to enable the github source.
+type GithubSourceConfiguration struct {
+	Enabled bool `json:"enabled"`
+}
+
+// GitlabSourceConfiguration specifies whether to enable the gitlab source.
+type GitlabSourceConfiguration struct {
+	Enabled bool `json:"enabled"`
+}
+
+// KafkaSourceConfiguration specifies whether to enable the kafka source.
+type KafkaSourceConfiguration struct {
+	Enabled bool `json:"enabled"`
+}
+
+// NatssSourceConfiguration specifies whether to enable the natss source.
+type NatssSourceConfiguration struct {
+	Enabled bool `json:"enabled"`
+}
+
+// PrometheusSourceConfiguration specifies whether to enable the prometheus source.
+type PrometheusSourceConfiguration struct {
+	Enabled bool `json:"enabled"`
+}
+
+// RabbitmqSourceConfiguration specifies whether to enable the rabbitmq source.
+type RabbitmqSourceConfiguration struct {
+	Enabled bool `json:"enabled"`
+}
+
+// RedisSourceConfiguration specifies whether to enable the redis source.
+type RedisSourceConfiguration struct {
+	Enabled bool `json:"enabled"`
 }

@@ -21,6 +21,8 @@ package resources
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
 
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -58,6 +60,19 @@ func WaitForKnativeServingState(clients servingv1alpha1.KnativeServingInterface,
 
 // EnsureKnativeServingExists creates a KnativeServing with the name names.KnativeServing under the namespace names.Namespace, if it does not exist.
 func EnsureKnativeServingExists(clients servingv1alpha1.KnativeServingInterface, names test.ResourceNames) (*v1alpha1.KnativeServing, error) {
+	ingressClass := "istio.ingress.networking.knative.dev"
+	if ingressClassOverride := os.Getenv("INGRESS_CLASS"); ingressClassOverride != "" {
+		ingressClass = ingressClassOverride
+	}
+	var istioEnabled, contourEnabled, kourierEnabled bool
+	switch strings.Split(ingressClass, ".")[0] {
+	case "istio":
+		istioEnabled = true
+	case "contour":
+		contourEnabled = true
+	case "kourier":
+		kourierEnabled = true
+	}
 	// If this function is called by the upgrade tests, we only create the custom resource, if it does not exist.
 	ks, err := clients.Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 	if apierrs.IsNotFound(err) {
@@ -65,6 +80,16 @@ func EnsureKnativeServingExists(clients servingv1alpha1.KnativeServingInterface,
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      names.KnativeServing,
 				Namespace: names.Namespace,
+			},
+			Spec: v1alpha1.KnativeServingSpec{
+				Ingress: &v1alpha1.IngressConfigs{
+					Istio:   v1alpha1.IstioIngressConfiguration{Enabled: istioEnabled},
+					Contour: v1alpha1.ContourIngressConfiguration{Enabled: contourEnabled},
+					Kourier: v1alpha1.KourierIngressConfiguration{Enabled: kourierEnabled},
+				},
+				CommonSpec: v1alpha1.CommonSpec{
+					Config: v1alpha1.ConfigMapData{"network": {"ingress.class": ingressClass}},
+				},
 			},
 		}
 		return clients.Create(context.TODO(), ks, metav1.CreateOptions{})

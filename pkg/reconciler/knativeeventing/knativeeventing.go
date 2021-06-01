@@ -29,6 +29,7 @@ import (
 	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeeventing"
 	"knative.dev/operator/pkg/reconciler/common"
 	kec "knative.dev/operator/pkg/reconciler/knativeeventing/common"
+	"knative.dev/operator/pkg/reconciler/knativeeventing/source"
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
 )
@@ -104,6 +105,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1alpha1.KnativeEven
 	}
 	stages := common.Stages{
 		common.AppendTarget,
+		source.AppendTargetSources,
 		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
 		r.transform,
@@ -132,7 +134,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
-	stages := common.Stages{common.AppendInstalled, r.transform}
+	stages := common.Stages{common.AppendInstalled, source.AppendInstalledSources, r.transform}
 	err := stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }

@@ -35,6 +35,7 @@ func TestEventingUpgrades(t *testing.T) {
 				eventingupgrade.PreUpgradeTest(),
 			},
 			PostUpgrade: []pkgupgrade.Operation{
+				EventingTimeoutForUpgrade(),
 				EventingCRPostUpgradeTests(),
 				eventingupgrade.PostUpgradeTest(),
 			},

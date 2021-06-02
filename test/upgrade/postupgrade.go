@@ -19,6 +19,7 @@ package upgrade
 import (
 	"os"
 	"testing"
+	"time"
 
 	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
 
@@ -30,6 +31,11 @@ import (
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
+)
+
+const (
+	// TIMEOUT_UPGRADE specifies the timeout for Knative eventing upgrade.
+	TIMEOUT_UPGRADE = 180 * time.Second
 )
 
 // OperatorPostUpgradeTests verifies the KnativeServing and KnativeEventing creation, deployment recreation, and
@@ -52,6 +58,17 @@ func ServingCRPostUpgradeTests() pkgupgrade.Operation {
 func EventingCRPostUpgradeTests() pkgupgrade.Operation {
 	return pkgupgrade.NewOperation("EventingCRPostUpgradeTests", func(c pkgupgrade.Context) {
 		eventingCRPostUpgrade(c.T)
+	})
+}
+
+// EventingTimeoutForUpgrade adds a timeout for Knative Eventing to complete the upgrade for readiness.
+func EventingTimeoutForUpgrade() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("EventingTimeoutForUpgrade", func(c pkgupgrade.Context) {
+		// Operator has the issue making sure all deployments are ready before running the postupgrade
+		// tests, especially when spec.version is set to latest. Before figuring out the optimal approach,
+		// we add a timeout of 20 seconds here to make sure all the deployments are up and running for the
+		// target version.
+		time.Sleep(TIMEOUT_UPGRADE)
 	})
 }
 

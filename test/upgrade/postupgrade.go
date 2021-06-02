@@ -19,6 +19,7 @@ package upgrade
 import (
 	"os"
 	"testing"
+	"time"
 
 	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
 
@@ -30,6 +31,11 @@ import (
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
+)
+
+const (
+	// TimeoutUpgrade specifies the timeout for Knative eventing upgrade.
+	TimeoutUpgrade = 20 * time.Second
 )
 
 // OperatorPostUpgradeTests verifies the KnativeServing and KnativeEventing creation, deployment recreation, and
@@ -55,6 +61,17 @@ func EventingCRPostUpgradeTests() pkgupgrade.Operation {
 	})
 }
 
+// EventingTimeoutForUpgrade adds a timeout for Knative Eventing to complete the upgrade for readiness.
+func EventingTimeoutForUpgrade() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("EventingTimeoutForUpgrade", func(c pkgupgrade.Context) {
+		// Operator has the issue making sure all deployments are ready before running the postupgrade
+		// tests, especially when spec.version is set to latest. Before figuring out the optimal approach,
+		// we add a timeout of 20 seconds here to make sure all the deployments are up and running for the
+		// target version.
+		time.Sleep(TimeoutUpgrade)
+	})
+}
+
 func servingCRPostUpgrade(t *testing.T) {
 	clients := client.Setup(t)
 
@@ -73,14 +90,20 @@ func servingCRPostUpgrade(t *testing.T) {
 		// TODO: We only verify the deployment, but we need to add other resources as well, like ServiceAccount, ClusterRoleBinding, etc.
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
-		ks := &v1alpha1.KnativeServing{}
+		ks := &v1alpha1.KnativeServing{
+			Spec: v1alpha1.KnativeServingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: common.LATEST_VERSION,
+				},
+			},
+		}
 		targetManifest, err := common.TargetManifest(ks)
 		if err != nil {
 			t.Fatalf("Failed to get the manifest for Knative: %v", err)
 		}
 		expectedDeployments := resources.GetExpectedDeployments(targetManifest.Filter(ingress.Filters(ks)))
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
-		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(ks),
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(ks), test.OperatorFlags.PreviousServingVersion,
 			expectedDeployments)
 		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
 
@@ -123,14 +146,20 @@ func eventingCRPostUpgrade(t *testing.T) {
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
 		// Based on the latest release version, get the deployment resources.
-		ke := &v1alpha1.KnativeEventing{}
+		ke := &v1alpha1.KnativeEventing{
+			Spec: v1alpha1.KnativeEventingSpec{
+				CommonSpec: v1alpha1.CommonSpec{
+					Version: common.LATEST_VERSION,
+				},
+			},
+		}
 		targetManifest, err := common.TargetManifest(ke)
 		if err != nil {
 			t.Fatalf("Failed to get the manifest for Knative: %v", err)
 		}
 		expectedDeployments := resources.GetExpectedDeployments(targetManifest)
 		util.AssertEqual(t, len(expectedDeployments) > 0, true)
-		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(ke),
+		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(ke), test.OperatorFlags.PreviousEventingVersion,
 			expectedDeployments)
 
 		instance := &v1alpha1.KnativeEventing{

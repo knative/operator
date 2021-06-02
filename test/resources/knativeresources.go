@@ -103,10 +103,9 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 			// we need to verify the value of the key serving.knative.dev/release or eventing.knative.dev/release
 			// matches the version.
 			if version != common.LATEST_VERSION {
-				if (key == "serving.knative.dev/release" || key == "eventing.knative.dev/release") && val == fmt.Sprintf("v%s", existingVersion) {
+				if (key == "serving.knative.dev/release" || key == "eventing.knative.dev/release") && val == fmt.Sprintf("v%s", version) {
 					statusCheck = true
 				}
-				statusCheck = true
 			}
 
 			// If the deployment resource is for ingress, we will check the status of the deployment.

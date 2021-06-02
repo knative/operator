@@ -34,8 +34,8 @@ import (
 )
 
 const (
-	// TIMEOUT_UPGRADE specifies the timeout for Knative eventing upgrade.
-	TIMEOUT_UPGRADE = 180 * time.Second
+	// TimeoutUpgrade specifies the timeout for Knative eventing upgrade.
+	TimeoutUpgrade = 20 * time.Second
 )
 
 // OperatorPostUpgradeTests verifies the KnativeServing and KnativeEventing creation, deployment recreation, and
@@ -68,7 +68,7 @@ func EventingTimeoutForUpgrade() pkgupgrade.Operation {
 		// tests, especially when spec.version is set to latest. Before figuring out the optimal approach,
 		// we add a timeout of 20 seconds here to make sure all the deployments are up and running for the
 		// target version.
-		time.Sleep(TIMEOUT_UPGRADE)
+		time.Sleep(TimeoutUpgrade)
 	})
 }
 

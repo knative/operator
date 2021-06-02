@@ -83,6 +83,15 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 		return nil
 	}
 
+	isStatusReady := func(status v1.DeploymentStatus) bool {
+		for _, c := range status.Conditions {
+			if c.Type == v1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
+				return true
+			}
+		}
+		return false
+	}
+
 	isReady := func(d *v1.Deployment) bool {
 		for key, val := range d.GetObjectMeta().GetLabels() {
 			// Check if the version matches. As long as we find a value equals to the version, we can determine
@@ -95,57 +104,38 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 			// The parameter version means the target version of Knative component to be installed.
 			// The parameter existingVersion means the installed version of Knative component. It is set to empty, if
 			// there is no Knative installation.
-			statusCheck := false
-
-			// When on of the following conditions is met:
-			// * spec.version is set to latest, but operator returns an actual semantic version
-			// * spec.version is set to a valid semantic version
-			// we need to verify the value of the key serving.knative.dev/release or eventing.knative.dev/release
-			// matches the version.
-			if version != common.LATEST_VERSION {
-				if (key == "serving.knative.dev/release" || key == "eventing.knative.dev/release") && val == fmt.Sprintf("v%s", version) {
-					statusCheck = true
-				}
-			}
 
 			// If the deployment resource is for ingress, we will check the status of the deployment.
 			if key == "networking.knative.dev/ingress-provider" {
-				statusCheck = true
+				return isStatusReady(d.Status)
+			}
+
+			if key == "serving.knative.dev/release" || key == "eventing.knative.dev/release" {
+				if val == fmt.Sprintf("v%s", version) {
+					// When on of the following conditions is met:
+					// * spec.version is set to latest, but operator returns an actual semantic version
+					// * spec.version is set to a valid semantic version
+					// we need to verify the value of the key serving.knative.dev/release or eventing.knative.dev/release
+					// matches the version.
+					return isStatusReady(d.Status)
+				} else if version == common.LATEST_VERSION && version != existingVersion {
+					// If spec.version is set to latest and operator bundles a directory called latest, it is possible that the
+					// version is the NOT same as the existing version. In this case, we need to look up
+					// the key serving.knative.dev/release or eventing.knative.dev/release and locate the its value, but we cannot
+					// verify by checking whether version equals to latest, because the nightly built manifests set some random
+					// commit number as the value. We can only check if the value is not equal to the existing the version, to
+					// determine the deployment has the correct version.
+					return isStatusReady(d.Status)
+				}
 			}
 
 			// If spec.version is set to latest and operator bundles a directory called latest, it is possible that both
 			// the version and the existing version are latest. In this case, the knative component to be installed is the
 			// same as the existing one, and we will check the status of the deployment.
 			if version == common.LATEST_VERSION && version == existingVersion {
-				statusCheck = true
-			}
-
-			// If spec.version is set to latest and operator bundles a directory called latest, it is possible that the
-			// version is the NOT same as the existing version. In this case, we need to look up
-			// the key serving.knative.dev/release or eventing.knative.dev/release and locate the its value, but we cannot
-			// verify by checking whether version equals to latest, because the nightly built manifests set some random
-			// commit number as the value. We can only check if the value is not equal to the existing the version, to
-			// determine the deployment has the correct version.
-			if version == common.LATEST_VERSION && version != existingVersion {
-				if (key == "serving.knative.dev/release" || key == "eventing.knative.dev/release") && val != fmt.Sprintf("v%s", existingVersion) {
-					statusCheck = true
-				}
-			}
-
-			// There is an exceptional case, we cannot cover.
-			// If spec.version is set to latest and operator bundles a directory called latest, it is possible that the
-			// version is the NOT same as the existing version, but the manifests contain the resources with the same semantic version.
-			// It only happens when users intentionally customize a directory called latest with the same manifests in
-			// one of the prior version. So far, the test cases do not include this scenario.
-			if statusCheck {
-				for _, c := range d.Status.Conditions {
-					if c.Type == v1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
-						return true
-					}
-				}
+				return isStatusReady(d.Status)
 			}
 		}
-
 		return false
 	}
 

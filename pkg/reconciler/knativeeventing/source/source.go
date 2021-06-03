@@ -68,10 +68,6 @@ func getSourcePath(version string, ke *v1alpha1.KnativeEventing) string {
 		url := filepath.Join(sourcePath, "couchdb")
 		urls = append(urls, url)
 	}
-	if ke.Spec.Source.Couchdb.Enabled {
-		url := filepath.Join(sourcePath, "couchdb")
-		urls = append(urls, url)
-	}
 	if ke.Spec.Source.Github.Enabled {
 		url := filepath.Join(sourcePath, "github")
 		urls = append(urls, url)

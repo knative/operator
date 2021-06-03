@@ -99,6 +99,70 @@ spec:
                       description: The number of replicas that HA parts of the control plane will be scaled to
                       type: integer
                       minimum: 1
+              source:
+                description: The source configuration for Knative Eventing
+                properties:
+                  awssqs:
+                    description: Awssqs settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  ceph:
+                    description: Ceph settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  couchdb:
+                    description: Couchdb settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  github:
+                    description: Github settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  gitlab:
+                    description: Gitlab settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  kafka:
+                    description: Kafka settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  natss:
+                    description: Natss settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  prometheus:
+                    description: Prometheus settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  rabbitmq:
+                    description: Rabbitmq settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                  redis:
+                    description: Redis settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                type: object
               manifests:
                 description: A list of eventing manifests, which will be installed
                   by the operator

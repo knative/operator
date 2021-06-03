@@ -103,7 +103,7 @@ spec:
                 description: The source configuration for Knative Eventing
                 properties:
                   awssqs:
-                    description: Awssqs settings
+                    description: Amazon SQS settings
                     properties:
                       enabled:
                         type: boolean
@@ -115,31 +115,31 @@ spec:
                         type: boolean
                     type: object
                   couchdb:
-                    description: Couchdb settings
+                    description: Apache CouchDB settings
                     properties:
                       enabled:
                         type: boolean
                     type: object
                   github:
-                    description: Github settings
+                    description: GitHub settings
                     properties:
                       enabled:
                         type: boolean
                     type: object
                   gitlab:
-                    description: Gitlab settings
+                    description: GitLab settings
                     properties:
                       enabled:
                         type: boolean
                     type: object
                   kafka:
-                    description: Kafka settings
+                    description: Apache Kafka settings
                     properties:
                       enabled:
                         type: boolean
                     type: object
                   natss:
-                    description: Natss settings
+                    description: NATS Streaming settings
                     properties:
                       enabled:
                         type: boolean
@@ -151,7 +151,7 @@ spec:
                         type: boolean
                     type: object
                   rabbitmq:
-                    description: Rabbitmq settings
+                    description: RabbitMQ settings
                     properties:
                       enabled:
                         type: boolean

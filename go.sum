@@ -1465,8 +1465,9 @@ knative.dev/caching v0.0.0-20210512050647-922782660f7c h1:R3EdV7m7ZeCkgm8Vhl1pRQ
 knative.dev/caching v0.0.0-20210512050647-922782660f7c/go.mod h1:d+fIY/LkAZAM6HsRJwmfirNDMCc1+hqGlQctLP1CmzE=
 knative.dev/eventing v0.23.1 h1:jbf64BrAoBvyPG5HNtw21tqtNdmODJoeC0oP/x+Yfdc=
 knative.dev/eventing v0.23.1/go.mod h1:vGob3H6BTseZP+/dA5ze89gM+iNHlB2Cez8FFI7A9KM=
-knative.dev/hack v0.0.0-20210428122153-93ad9129c268 h1:lBIj9Epd9UQ55NEaHzAdY/UZbuaegCdGPKVC2+Z68Q0=
 knative.dev/hack v0.0.0-20210428122153-93ad9129c268/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
+knative.dev/hack v0.0.0-20210602212444-509255f29a24 h1:eFcqwqJueFb2yY7tJVhLnDmdZCfaewfj4+MxR1CAWGo=
+knative.dev/hack v0.0.0-20210602212444-509255f29a24/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
 knative.dev/hack/schema v0.0.0-20210428122153-93ad9129c268/go.mod h1:ffjwmdcrH5vN3mPhO8RrF2KfNnbHeCE2C60A+2cv3U0=
 knative.dev/networking v0.0.0-20210512050647-ace2d3306f0b h1:Ea6ym1Jfd/Hci1EGj+uPaE3d6SS1s/Br+6fFAWdJCeM=
 knative.dev/networking v0.0.0-20210512050647-ace2d3306f0b/go.mod h1:y7RmP2/dHO/DAC1QmpUtgTVF6/Z8whaL+wjgey+HthU=

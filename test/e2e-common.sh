@@ -35,6 +35,7 @@ export SYSTEM_NAMESPACE=${TEST_NAMESPACE}
 # We will use only one namespace, when Knative supports both components can coexist under one namespace.
 export TEST_EVENTING_NAMESPACE="knative-eventing"
 export TEST_RESOURCE="knative"
+export KO_FLAGS="${KO_FLAGS:-}"
 
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_SERVING_REPO_BRANCH.
 GENERATE_SERVING_YAML=0
@@ -158,7 +159,7 @@ function install_operator() {
   download_latest_release
   header "Installing Knative operator"
   # Deploy the operator
-  ko apply -f config/
+  ko apply ${KO_FLAGS} -f config/
   wait_until_pods_running default || fail_test "Operator did not come up"
 }
 

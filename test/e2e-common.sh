@@ -36,6 +36,7 @@ export SYSTEM_NAMESPACE=${TEST_NAMESPACE}
 export TEST_EVENTING_NAMESPACE="knative-eventing"
 export TEST_RESOURCE="knative"
 export KO_FLAGS="${KO_FLAGS:-}"
+export INGRESS_CLASS=${INGRESS_CLASS:-istio.ingress.networking.knative.dev}
 
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_SERVING_REPO_BRANCH.
 GENERATE_SERVING_YAML=0
@@ -48,6 +49,10 @@ release_eventing_yaml="$(mktemp)"
 readonly SERVING_ARTIFACTS=("serving" "serving-crds.yaml" "serving-core.yaml" "serving-hpa.yaml" "serving-post-install-jobs.yaml")
 readonly EVENTING_ARTIFACTS=("eventing" "eventing-crds.yaml" "eventing-core.yaml" "in-memory-channel.yaml" "mt-channel-broker.yaml"
   "eventing-sugar-controller.yaml" "eventing-post-install.yaml")
+
+function is_ingress_class() {
+  [[ "${INGRESS_CLASS}" == *"${1}"* ]]
+}
 
 # Add function call to trap
 # Parameters: $1 - Function to call
@@ -154,7 +159,9 @@ function download_nightly_artifacts() {
 
 function install_operator() {
   create_namespace
-  install_istio || fail_test "Istio installation failed"
+  if is_ingress_class istio; then
+    install_istio || fail_test "Istio installation failed"
+  fi
   cd ${OPERATOR_DIR}
   download_latest_release
   header "Installing Knative operator"

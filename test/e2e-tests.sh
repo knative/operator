@@ -29,7 +29,9 @@
 source $(dirname $0)/e2e-common.sh
 
 function knative_setup() {
-  install_istio || fail_test "Istio installation failed"
+  if is_ingress_class istio; then
+    install_istio || fail_test "Istio installation failed"
+  fi
   create_namespace
   install_operator
 }

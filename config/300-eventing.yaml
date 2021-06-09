@@ -102,12 +102,6 @@ spec:
               source:
                 description: The source configuration for Knative Eventing
                 properties:
-                  awssqs:
-                    description: Amazon SQS settings
-                    properties:
-                      enabled:
-                        type: boolean
-                    type: object
                   ceph:
                     description: Ceph settings
                     properties:

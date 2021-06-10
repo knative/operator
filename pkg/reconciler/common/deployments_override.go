@@ -43,6 +43,7 @@ func DeploymentsTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Tr
 				replaceLabels(&override, deployment)
 				replaceAnnotations(&override, deployment)
 				replaceReplicas(&override, deployment)
+				replaceNodeSelector(&override, deployment)
 				if err := scheme.Scheme.Convert(deployment, u, nil); err != nil {
 					return err
 				}
@@ -84,5 +85,11 @@ func replaceLabels(override *v1alpha1.DeploymentOverride, deployment *appsv1.Dep
 func replaceReplicas(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
 	if override.Replicas > 0 {
 		deployment.Spec.Replicas = &override.Replicas
+	}
+}
+
+func replaceNodeSelector(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
+	if len(override.NodeSelector) > 0 {
+		deployment.Spec.Template.Spec.NodeSelector = override.NodeSelector
 	}
 }

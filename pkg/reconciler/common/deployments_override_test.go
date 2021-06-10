@@ -32,6 +32,7 @@ type expDeployments struct {
 	expAnnotations         map[string]string
 	expTemplateAnnotations map[string]string
 	expReplicas            int32
+	expNodeSelector        map[string]string
 }
 
 func TestDeploymentsTransform(t *testing.T) {
@@ -49,15 +50,17 @@ func TestDeploymentsTransform(t *testing.T) {
 			expAnnotations:         nil,
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            0,
+			expNodeSelector:        nil,
 		}},
 	}, {
 		name: "simple override",
 		override: []servingv1alpha1.DeploymentOverride{
 			{
-				Name:        "controller",
-				Labels:      map[string]string{"a": "b"},
-				Annotations: map[string]string{"c": "d"},
-				Replicas:    5,
+				Name:         "controller",
+				Labels:       map[string]string{"a": "b"},
+				Annotations:  map[string]string{"c": "d"},
+				Replicas:     5,
+				NodeSelector: map[string]string{"env": "prod"},
 			},
 		},
 		globalReplicas: 10,
@@ -67,6 +70,7 @@ func TestDeploymentsTransform(t *testing.T) {
 			expAnnotations:         map[string]string{"c": "d"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true", "c": "d"},
 			expReplicas:            5,
+			expNodeSelector:        map[string]string{"env": "prod"},
 		}},
 	}, {
 		name: "no replicas in deploymentoverride, use global replicas",
@@ -95,16 +99,18 @@ func TestDeploymentsTransform(t *testing.T) {
 		name: "multiple override",
 		override: []servingv1alpha1.DeploymentOverride{
 			{
-				Name:        "controller",
-				Labels:      map[string]string{"a": "b"},
-				Annotations: map[string]string{"c": "d"},
-				Replicas:    5,
+				Name:         "controller",
+				Labels:       map[string]string{"a": "b"},
+				Annotations:  map[string]string{"c": "d"},
+				Replicas:     5,
+				NodeSelector: map[string]string{"env": "dev"},
 			},
 			{
-				Name:        "webhook",
-				Labels:      map[string]string{"e": "f"},
-				Annotations: map[string]string{"g": "h"},
-				Replicas:    4,
+				Name:         "webhook",
+				Labels:       map[string]string{"e": "f"},
+				Annotations:  map[string]string{"g": "h"},
+				Replicas:     4,
+				NodeSelector: map[string]string{"env": "prod"},
 			},
 		},
 		globalReplicas: 10,
@@ -115,6 +121,7 @@ func TestDeploymentsTransform(t *testing.T) {
 				expAnnotations:         map[string]string{"c": "d"},
 				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true", "c": "d"},
 				expReplicas:            5,
+				expNodeSelector:        map[string]string{"env": "dev"},
 			},
 			"webhook": {
 				expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0", "e": "f"},
@@ -122,6 +129,7 @@ func TestDeploymentsTransform(t *testing.T) {
 				expAnnotations:         map[string]string{"g": "h"},
 				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false", "g": "h"},
 				expReplicas:            4,
+				expNodeSelector:        map[string]string{"env": "prod"},
 			},
 		},
 	}}
@@ -164,6 +172,10 @@ func TestDeploymentsTransform(t *testing.T) {
 						}
 						if diff := cmp.Diff(replicas, d.expReplicas); diff != "" {
 							t.Fatalf("Unexpected replicas: %v", diff)
+						}
+
+						if diff := cmp.Diff(got.Spec.Template.Spec.NodeSelector, d.expNodeSelector); diff != "" {
+							t.Fatalf("Unexpected nodeSelector: %v", diff)
 						}
 
 						if diff := cmp.Diff(got.GetLabels(), d.expLabels); diff != "" {

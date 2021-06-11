@@ -54,7 +54,7 @@ func getSourcePath(version string, ke *v1alpha1.KnativeEventing) string {
 
 	// This line can make sure a valid available source version is returned.
 	sourcePath := filepath.Join(koDataDir, "eventing-source", sourceVersion)
-	urls := make([]string, 0, 100)
+	urls := make([]string, 0)
 
 	if ke.Spec.Source.Awssqs.Enabled {
 		url := filepath.Join(sourcePath, "awssqs")

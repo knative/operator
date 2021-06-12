@@ -233,6 +233,10 @@ type DeploymentOverride struct {
 	// will be scaled to.
 	// +optional
 	Replicas int32 `json:"replicas,omitempty"`
+
+	// NodeSelector overrides nodeSelector for the deployment.
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
 // ResourceRequirementsOverride enables the user to override any container's

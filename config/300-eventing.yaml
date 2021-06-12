@@ -99,6 +99,11 @@ spec:
                       description: The number of replicas that HA parts of the control plane will be scaled to
                       type: integer
                       minimum: 1
+                    nodeSelector:
+                      additionalProperties:
+                        type: string
+                      description: NodeSelector overrides nodeSelector for the deployment.
+                      type: object
               source:
                 description: The source configuration for Knative Eventing
                 properties:

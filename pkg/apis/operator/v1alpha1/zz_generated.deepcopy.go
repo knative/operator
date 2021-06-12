@@ -217,6 +217,13 @@ func (in *DeploymentOverride) DeepCopyInto(out *DeploymentOverride) {
 			(*out)[key] = val
 		}
 	}
+	if in.NodeSelector != nil {
+		in, out := &in.NodeSelector, &out.NodeSelector
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 

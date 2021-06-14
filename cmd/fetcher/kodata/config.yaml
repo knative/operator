@@ -111,12 +111,6 @@ eventing-source:
         - "rabbitmq-source.yaml"
     - s3:
         bucket: "gs-noauth://knative-releases"
-        prefix: "eventing-awssqs/previous"
-      eventingService: awssqs
-      include:
-        - "awssqs.yaml"
-    - s3:
-        bucket: "gs-noauth://knative-releases"
         prefix: "eventing-gitlab/previous"
       eventingService: gitlab
       include:

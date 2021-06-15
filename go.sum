@@ -1819,12 +1819,13 @@ k8s.io/utils v0.0.0-20210111153108-fddb29f9d009/go.mod h1:jPW/WVKK9YHAvNhRxK0md/
 knative.dev/caching v0.0.0-20210611150244-0b10d08733b8/go.mod h1:jCSfxGELxSl5A+4xocpQCusT/INVRh6Rjy5LR2RJdUU=
 knative.dev/caching v0.0.0-20210614053220-cf2ffd2d05a4 h1:d+4PtgwkO3siUJGjlhbs8cxNN7CdywyE05EYx5ncY/w=
 knative.dev/caching v0.0.0-20210614053220-cf2ffd2d05a4/go.mod h1:iONyDJsQEPxbJXtM4bveQKDd9oo5yavCHqzwsnfEVjQ=
-knative.dev/eventing v0.23.1-0.20210614100620-03c2a69132d0 h1:8yXRKkZyYIZrpk6/mam7DQCGwa/dFLi/+b65t5lbtGU=
-knative.dev/eventing v0.23.1-0.20210614100620-03c2a69132d0/go.mod h1:Sj5cayK681U8tzvVGutFTwshYNxxTNduSMavntLNzTo=
+knative.dev/eventing v0.23.1-0.20210614135520-b0b32c47d7d3 h1:Vp7z61PpAOjfifV03XTyCIEbWfX4n/v9BuT3upi7MvY=
+knative.dev/eventing v0.23.1-0.20210614135520-b0b32c47d7d3/go.mod h1:Sj5cayK681U8tzvVGutFTwshYNxxTNduSMavntLNzTo=
 knative.dev/hack v0.0.0-20210601210329-de04b70e00d0/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
 knative.dev/hack v0.0.0-20210609124042-e35bcb8f21ec/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
-knative.dev/hack v0.0.0-20210610231243-3d4b264d9472 h1:sPXp3IChxDMPFRyP9LGvb+hoa6xP9NhnLhT16Y6Icx0=
 knative.dev/hack v0.0.0-20210610231243-3d4b264d9472/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
+knative.dev/hack v0.0.0-20210614141220-66ab1a098940 h1:Aao7SsI087Pa8x+LDLaBdj/ylduPh2bJ8HbB7UjXElE=
+knative.dev/hack v0.0.0-20210614141220-66ab1a098940/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
 knative.dev/hack/schema v0.0.0-20210609124042-e35bcb8f21ec/go.mod h1:ffjwmdcrH5vN3mPhO8RrF2KfNnbHeCE2C60A+2cv3U0=
 knative.dev/networking v0.0.0-20210611092143-1be893df2498 h1:sKwfl3RtisxMihzxpnvIjiChH2asmTN0srADZny8pNs=
 knative.dev/networking v0.0.0-20210611092143-1be893df2498/go.mod h1:aalQ4+Zh5sGsqCy9SA5XwHzCyshcA55Q6y5WG7RDj8w=
@@ -1836,8 +1837,8 @@ knative.dev/pkg v0.0.0-20210611140445-82f39735d3c6/go.mod h1:h/VU5MVS8Wq4Nkp9JCM
 knative.dev/pkg v0.0.0-20210614053220-ed09cd052101 h1:NOazo3BZX5+sv7exBfRKMJDB4hVy6Rd08siVCKJUaVM=
 knative.dev/pkg v0.0.0-20210614053220-ed09cd052101/go.mod h1:h/VU5MVS8Wq4Nkp9JCMRAAUWdmiTqhzkJjyuZgzULw0=
 knative.dev/reconciler-test v0.0.0-20210603210445-0071c48281c7/go.mod h1:Ggh7/FyaVr9R1kQiuB9KpNsvaKVoPlZ0w8OoxUGi9Ys=
-knative.dev/serving v0.23.1-0.20210614131926-beb3f55e07d7 h1:bMjRJEeMXUPYzLhe+3cvHAp7s4uyp9RkchI1b04QQ6A=
-knative.dev/serving v0.23.1-0.20210614131926-beb3f55e07d7/go.mod h1:+Wt9IJZ9k/mzNKU2Looz4NfGUq+Pm7ARsoAhWEb/sHQ=
+knative.dev/serving v0.23.1-0.20210614141420-380a090c2039 h1:DT7zA9zkZBoj1XCeHjqF4NSHYv3HHtn8JAAdGyrDLrI=
+knative.dev/serving v0.23.1-0.20210614141420-380a090c2039/go.mod h1:+Wt9IJZ9k/mzNKU2Looz4NfGUq+Pm7ARsoAhWEb/sHQ=
 modernc.org/cc v1.0.0/go.mod h1:1Sk4//wdnYJiUIxnW8ddKpaOJCF37yAdqYnkxUpaYxw=
 modernc.org/golex v1.0.0/go.mod h1:b/QX9oBD/LhixY6NDh+IdGv17hgB+51fET1i2kPSmvk=
 modernc.org/mathutil v1.0.0/go.mod h1:wU0vUrJsVWBZ4P6e7xtFJEhFSNsfRLJ8H458uRjg03k=

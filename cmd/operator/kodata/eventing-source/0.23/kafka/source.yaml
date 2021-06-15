@@ -18,7 +18,7 @@ metadata:
   name: kafka-controller-manager
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -40,7 +40,7 @@ kind: ClusterRole
 metadata:
   name: eventing-sources-kafka-controller
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
 rules:
   - apiGroups:
       - sources.knative.dev
@@ -153,7 +153,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: eventing-kafka-source-observer
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
     duck.knative.dev/source: "true"
 rules:
   - apiGroups:
@@ -185,7 +185,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-kafka-controller
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
 subjects:
   - kind: ServiceAccount
     name: kafka-controller-manager
@@ -200,7 +200,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-kafka-controller-addressable-resolver
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
 subjects:
   - kind: ServiceAccount
     name: kafka-controller-manager
@@ -217,7 +217,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-kafka-controller-podspecable-binding
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
 subjects:
   - kind: ServiceAccount
     name: kafka-controller-manager
@@ -248,7 +248,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
     duck.knative.dev/binding: "true"
     knative.dev/crd-install: "true"
   name: kafkabindings.bindings.knative.dev
@@ -326,7 +326,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -422,7 +422,7 @@ metadata:
   name: kafka-controller
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
     control-plane: kafka-controller-manager
 spec:
   selector:
@@ -452,7 +452,7 @@ metadata:
   name: kafka-controller-manager
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
     control-plane: kafka-controller-manager
 spec:
   replicas: 1
@@ -466,7 +466,7 @@ spec:
       serviceAccountName: kafka-controller-manager
       containers:
         - name: manager
-          image: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/source/controller@sha256:3e1ef0194c9e6f68fbcbfa950a80627db860649821d5b053eb20f207ccb14fd4
+          image: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/source/controller@sha256:6be308a95b5f7c4f31deb54ff8fc6dc9d7d73bdce47e23af3be19bd8c3efe31b
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:
@@ -479,7 +479,7 @@ spec:
             - name: CONFIG_LEADERELECTION_NAME
               value: config-leader-election
             - name: KAFKA_RA_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/source/receive_adapter@sha256:f523377d72207ef479db05b81bcc627d269127ddbca9c94d33a95056bfe5e79b
+              value: gcr.io/knative-releases/knative.dev/eventing-kafka/cmd/source/receive_adapter@sha256:5396dd6baf232c5d32482476001475875634389f9097a446dbd330033c8c8731
           volumeMounts:
           resources:
             requests:
@@ -504,7 +504,7 @@ kind: Service
 metadata:
   labels:
     role: webhook
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
   name: kafka-source-webhook
   namespace: knative-eventing
 spec:
@@ -535,7 +535,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.kafka.sources.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -551,7 +551,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: kafkabindings.webhook.kafka.sources.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -567,7 +567,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.kafka.sources.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -583,7 +583,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: config.webhook.kafka.sources.knative.dev
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -604,7 +604,7 @@ metadata:
   name: kafka-source-webhook-certs
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "v0.23.1"
+    kafka.eventing.knative.dev/release: "v0.23.2"
 # The data is populated at install time.
 
 ---

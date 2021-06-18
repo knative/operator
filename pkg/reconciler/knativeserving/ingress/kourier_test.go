@@ -108,7 +108,7 @@ func TestTransformKourierManifest(t *testing.T) {
 }
 
 func verifyControllerNamespace(t *testing.T, u *unstructured.Unstructured, expNamespace string) {
-	if u.GetKind() == "Deployment" && u.GetName() == kourierControllerDeploymentName {
+	if u.GetKind() == "Deployment" && kourierControllerDeploymentNames.Has(u.GetName()) {
 		deployment := &appsv1.Deployment{}
 		err := scheme.Scheme.Convert(u, deployment, nil)
 		util.AssertEqual(t, err, nil)

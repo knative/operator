@@ -24,15 +24,17 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 const (
-	kourierGatewayNSEnvVarKey       = "KOURIER_GATEWAY_NAMESPACE"
-	kourierControllerDeploymentName = "3scale-kourier-control"
-	kourierGatewayServiceName       = "kourier"
+	kourierGatewayNSEnvVarKey = "KOURIER_GATEWAY_NAMESPACE"
+	kourierGatewayServiceName = "kourier"
 )
+
+var kourierControllerDeploymentNames = sets.NewString("3scale-kourier-control", "net-kourier-controller")
 
 var kourierFilter = ingressFilter("kourier")
 
@@ -47,7 +49,7 @@ func kourierTransformers(ctx context.Context, instance *v1alpha1.KnativeServing)
 // namespace of the deployment its set on.
 func replaceGWNamespace() mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Deployment" && u.GetName() == kourierControllerDeploymentName && hasProviderLabel(u) {
+		if u.GetKind() == "Deployment" && kourierControllerDeploymentNames.Has(u.GetName()) && hasProviderLabel(u) {
 			deployment := &appsv1.Deployment{}
 			if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
 				return err

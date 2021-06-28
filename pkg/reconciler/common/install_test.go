@@ -36,9 +36,13 @@ func TestInstall(t *testing.T) {
 	roleBinding := NamespacedResource("rbac.authorization.k8s.io/v1", "RoleBinding", "test", "test-role-binding")
 	clusterRole := ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRole", "test-cluster-role")
 	clusterRoleBinding := ClusterScopedResource("rbac.authorization.k8s.io/v1", "ClusterRoleBinding", "test-cluster-role-binding")
+	mutatingWebhookConfiguration := ClusterScopedResource("admissionregistration.k8s.io/v1", "MutatingWebhookConfiguration", "test-mutating-webhook-configuration")
+	validatingWebhookConfiguration := ClusterScopedResource("admissionregistration.k8s.io/v1", "ValidatingWebhookConfiguration", "test-validating-webhook-configuration")
 
 	// Deliberately mixing the order in the manifest.
 	in := []unstructured.Unstructured{
+		*mutatingWebhookConfiguration,
+		*validatingWebhookConfiguration,
 		*deployment,
 		*role,
 		*roleBinding,
@@ -52,6 +56,8 @@ func TestInstall(t *testing.T) {
 		*roleBinding.DeepCopy(),
 		*clusterRoleBinding.DeepCopy(),
 		*deployment.DeepCopy(),
+		*mutatingWebhookConfiguration.DeepCopy(),
+		*validatingWebhookConfiguration.DeepCopy(),
 	}
 
 	client := &fakeClient{}

@@ -23,9 +23,9 @@ readonly PREVIOUS_SERVING_RELEASE_VERSION="0.23"
 readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.23"
 # The target serving/eventing release to upgrade, installed by the operator. It can be a release available under
 # kodata or an incoming new release. This value should be in the semantic format of major.minor.
-readonly TARGET_RELEASE_VERSION="latest"
+readonly TARGET_RELEASE_VERSION="0.24"
 # This is the branch name of knative repos, where we run the upgrade tests.
-readonly KNATIVE_REPO_BRANCH="${PULL_BASE_REF}"
+readonly KNATIVE_REPO_BRANCH="release-0.24"
 # Namespaces used for tests
 # This environment variable TEST_NAMESPACE defines the namespace to install Knative Serving.
 export TEST_NAMESPACE="${TEST_NAMESPACE:-knative-operator-testing}"

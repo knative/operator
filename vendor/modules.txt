@@ -989,11 +989,11 @@ k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20210701025702-e6e703d9557b
+# knative.dev/caching v0.0.0-20210708183523-95b78f1aecfe
 ## explicit
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.24.1-0.20210706174220-9ced57400dce
+# knative.dev/eventing v0.24.1-0.20210708130023-221dfdfced62
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1087,7 +1087,7 @@ knative.dev/networking/pkg/apis/networking/v1alpha1
 knative.dev/networking/pkg/client/clientset/versioned
 knative.dev/networking/pkg/client/clientset/versioned/scheme
 knative.dev/networking/pkg/client/clientset/versioned/typed/networking/v1alpha1
-# knative.dev/pkg v0.0.0-20210706174620-fe90576475ca
+# knative.dev/pkg v0.0.0-20210708145023-4a3e56dc13b2
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -1159,7 +1159,7 @@ knative.dev/pkg/unstructured
 knative.dev/pkg/version
 knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
-# knative.dev/serving v0.24.1-0.20210707164118-f096587040c6
+# knative.dev/serving v0.24.1-0.20210712124421-4104e5591ecd
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

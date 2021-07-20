@@ -19,6 +19,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -26,9 +27,10 @@ import (
 )
 
 var (
-	role        mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
-	rolebinding mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
-	webhook     mf.Predicate = mf.Any(mf.ByKind("MutatingWebhookConfiguration"), mf.ByKind("ValidatingWebhookConfiguration"))
+	role            mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
+	rolebinding     mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
+	webhook         mf.Predicate = mf.Any(mf.ByKind("MutatingWebhookConfiguration"), mf.ByKind("ValidatingWebhookConfiguration"))
+	gatewayNotMatch              = "no matches for kind \"Gateway\""
 )
 
 // Install applies the manifest resources for the given version and updates the given
@@ -50,6 +52,13 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComp
 	}
 	if err := manifest.Filter(mf.Not(mf.Any(role, rolebinding, webhook))).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())
+		if ks, ok := instance.(*v1alpha1.KnativeServing); ok && strings.Contains(err.Error(), gatewayNotMatch) &&
+			(ks.Spec.Ingress == nil || ks.Spec.Ingress.Istio.Enabled) {
+			errMessage := fmt.Errorf("please install istio or disable the istio ingress plugin: %w", err)
+			status.MarkInstallFailed(errMessage.Error())
+			return errMessage
+		}
+
 		return fmt.Errorf("failed to apply non rbac manifest: %w", err)
 	}
 	if err := manifest.Filter(webhook).Apply(); err != nil {

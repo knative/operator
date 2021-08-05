@@ -1856,8 +1856,8 @@ k8s.io/utils v0.0.0-20210111153108-fddb29f9d009 h1:0T5IaWHO3sJTEmCP6mUlBvMukxPKU
 k8s.io/utils v0.0.0-20210111153108-fddb29f9d009/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 knative.dev/caching v0.0.0-20210803185815-4e553d2275a0 h1:yJX4R/DntDpiHTYjbyj0EKWVzXFh47nCFS3d8Tgu+yk=
 knative.dev/caching v0.0.0-20210803185815-4e553d2275a0/go.mod h1:Vs+HND39+KKaIQp9M3m3Jmt4YtznpitDQ3n53gxbDYQ=
-knative.dev/eventing v0.24.1-0.20210803173815-5c7b55336efd h1:ygV2agIpofSLAp34xT5MDYFBhoEHUVCIO8O2BtdH35g=
-knative.dev/eventing v0.24.1-0.20210803173815-5c7b55336efd/go.mod h1:mYN9AeU95zB9QT9ATmYiq0i7k41u69xD0jW1udHdPrc=
+knative.dev/eventing v0.24.1-0.20210805053652-85516254d10c h1:sT3g8pgbmHcOaFhIpmAxIoN3Jezbre+NNy2DLhQ4byI=
+knative.dev/eventing v0.24.1-0.20210805053652-85516254d10c/go.mod h1:mYN9AeU95zB9QT9ATmYiq0i7k41u69xD0jW1udHdPrc=
 knative.dev/hack v0.0.0-20210622141627-e28525d8d260 h1:f2eMtOubAOc/Q7JlvFPDKXiPlJVK+VpX2Cot8hRzCgQ=
 knative.dev/hack v0.0.0-20210622141627-e28525d8d260/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
 knative.dev/hack/schema v0.0.0-20210622141627-e28525d8d260/go.mod h1:ffjwmdcrH5vN3mPhO8RrF2KfNnbHeCE2C60A+2cv3U0=
@@ -1868,8 +1868,8 @@ knative.dev/pkg v0.0.0-20210803032247-552bbc106170/go.mod h1:NYZRIPU+Pv39VfbZV1B
 knative.dev/pkg v0.0.0-20210803160015-21eb4c167cc5 h1:jpOTmAXg1oLS8u5HPBrFP1XsOSFCQIvlTRxP8TDGg2E=
 knative.dev/pkg v0.0.0-20210803160015-21eb4c167cc5/go.mod h1:RPk5txNA3apR9X40D4MpUOP9/VqOG8CrtABWfOwGVS4=
 knative.dev/reconciler-test v0.0.0-20210714231231-91e5b206e1d5/go.mod h1:Zp2WHfJuh6+rOpOAq78My82drT4Bxjm/K4etmKcA7ko=
-knative.dev/serving v0.24.1-0.20210804131732-db42cb6e3711 h1:QYA78irCMkrsXlNWsHbeGdypXlUnDbcLeED/SOzHEQg=
-knative.dev/serving v0.24.1-0.20210804131732-db42cb6e3711/go.mod h1:24E4fVyViFnz8aAaafzdrYKB7CAsQr4FMU7QXoIE6CI=
+knative.dev/serving v0.24.1-0.20210805130859-cbbffd95b5c5 h1:P07eAx+8pJ9b8FAquUIdv2eqVcxkiXKt11KVqPb2AUY=
+knative.dev/serving v0.24.1-0.20210805130859-cbbffd95b5c5/go.mod h1:24E4fVyViFnz8aAaafzdrYKB7CAsQr4FMU7QXoIE6CI=
 nhooyr.io/websocket v1.8.6/go.mod h1:B70DZP8IakI65RVQ51MsWP/8jndNma26DVA/nFSCgW0=
 pgregory.net/rapid v0.3.3 h1:jCjBsY4ln4Atz78QoBWxUEvAHaFyNDQg9+WU62aCn1U=
 pgregory.net/rapid v0.3.3/go.mod h1:UYpPVyjFHzYBGHIxLFoupi8vwk6rXNzRY9OMvVxFIOU=

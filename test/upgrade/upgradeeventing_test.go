@@ -1,3 +1,4 @@
+//go:build upgradeeventing
 // +build upgradeeventing
 
 /*

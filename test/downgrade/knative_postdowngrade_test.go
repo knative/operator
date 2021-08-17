@@ -1,3 +1,4 @@
+//go:build postdowngrade
 // +build postdowngrade
 
 /*

@@ -19,7 +19,6 @@ package common
 import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
-	"golang.org/x/mod/semver"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
 	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -33,8 +32,9 @@ const (
 )
 
 func haSupport(obj v1alpha1.KComponent) sets.String {
-	deploymentNames := sets.NewString(
+	return sets.NewString(
 		"controller",
+		"autoscaler",
 		"autoscaler-hpa",
 		"networking-certmanager",
 		"networking-ns-cert",
@@ -53,14 +53,6 @@ func haSupport(obj v1alpha1.KComponent) sets.String {
 		"mt-broker-controller",
 		"pingsource-mt-adapter",
 	)
-
-	// HA for autoscaler is supported since v0.19+.
-	version := obj.GetStatus().GetVersion()
-	if semver.Compare(SanitizeSemver(version), "v0.19") >= 0 {
-		deploymentNames.Insert("autoscaler")
-	}
-
-	return deploymentNames
 }
 
 // HighAvailabilityTransform mutates configmaps and replicacounts of certain

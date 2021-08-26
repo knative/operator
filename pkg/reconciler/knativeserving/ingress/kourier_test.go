@@ -17,6 +17,7 @@ limitations under the License.
 package ingress
 
 import (
+	"fmt"
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
@@ -56,6 +57,7 @@ func TestTransformKourierManifest(t *testing.T) {
 		dropLabel      bool
 		expNamespace   string
 		expServiceType string
+		expError       error
 	}{{
 		name:           "Replaces Kourier Gateway Namespace and ServiceType",
 		instance:       servingInstance(servingNamespace, "ClusterIP"),
@@ -66,6 +68,18 @@ func TestTransformKourierManifest(t *testing.T) {
 		instance:       servingInstance(servingNamespace, "" /* empty service type */),
 		expNamespace:   servingNamespace,
 		expServiceType: "LoadBalancer", // kourier GW default service type
+	}, {
+		name:           "Use unsupported service type",
+		instance:       servingInstance(servingNamespace, "ExternalName"),
+		expNamespace:   servingNamespace,
+		expServiceType: "ExternalName",
+		expError:       fmt.Errorf("unsupported service type \"ExternalName\""),
+	}, {
+		name:           "Use unknown service type",
+		instance:       servingInstance(servingNamespace, "Foo"),
+		expNamespace:   servingNamespace,
+		expServiceType: "Foo",
+		expError:       fmt.Errorf("unknown service type \"Foo\""),
 	}, {
 		name:           "Do not transform without the ingress provier label",
 		dropLabel:      true,
@@ -96,7 +110,9 @@ func TestTransformKourierManifest(t *testing.T) {
 
 			manifest, err = manifest.Transform(configureGWServiceType(tt.instance))
 			if err != nil {
-				t.Fatalf("Failed to transform manifest: %v", err)
+				util.AssertEqual(t, err.Error(), tt.expError.Error())
+			} else {
+				util.AssertEqual(t, err, tt.expError)
 			}
 
 			for _, u := range manifest.Resources() {

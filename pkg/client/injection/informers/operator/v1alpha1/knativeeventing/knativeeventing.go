@@ -21,8 +21,15 @@ package knativeeventing
 import (
 	context "context"
 
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	labels "k8s.io/apimachinery/pkg/labels"
+	cache "k8s.io/client-go/tools/cache"
+	apisoperatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	versioned "knative.dev/operator/pkg/client/clientset/versioned"
 	v1alpha1 "knative.dev/operator/pkg/client/informers/externalversions/operator/v1alpha1"
+	client "knative.dev/operator/pkg/client/injection/client"
 	factory "knative.dev/operator/pkg/client/injection/informers/factory"
+	operatorv1alpha1 "knative.dev/operator/pkg/client/listers/operator/v1alpha1"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 	logging "knative.dev/pkg/logging"
@@ -30,6 +37,7 @@ import (
 
 func init() {
 	injection.Default.RegisterInformer(withInformer)
+	injection.Dynamic.RegisterDynamicInformer(withDynamicInformer)
 }
 
 // Key is used for associating the Informer inside the context.Context.
@@ -41,6 +49,11 @@ func withInformer(ctx context.Context) (context.Context, controller.Informer) {
 	return context.WithValue(ctx, Key{}, inf), inf.Informer()
 }
 
+func withDynamicInformer(ctx context.Context) context.Context {
+	inf := &wrapper{client: client.Get(ctx)}
+	return context.WithValue(ctx, Key{}, inf)
+}
+
 // Get extracts the typed informer from the context.
 func Get(ctx context.Context) v1alpha1.KnativeEventingInformer {
 	untyped := ctx.Value(Key{})
@@ -49,4 +62,45 @@ func Get(ctx context.Context) v1alpha1.KnativeEventingInformer {
 			"Unable to fetch knative.dev/operator/pkg/client/informers/externalversions/operator/v1alpha1.KnativeEventingInformer from context.")
 	}
 	return untyped.(v1alpha1.KnativeEventingInformer)
+}
+
+type wrapper struct {
+	client versioned.Interface
+
+	namespace string
+}
+
+var _ v1alpha1.KnativeEventingInformer = (*wrapper)(nil)
+var _ operatorv1alpha1.KnativeEventingLister = (*wrapper)(nil)
+
+func (w *wrapper) Informer() cache.SharedIndexInformer {
+	return cache.NewSharedIndexInformer(nil, &apisoperatorv1alpha1.KnativeEventing{}, 0, nil)
+}
+
+func (w *wrapper) Lister() operatorv1alpha1.KnativeEventingLister {
+	return w
+}
+
+func (w *wrapper) KnativeEventings(namespace string) operatorv1alpha1.KnativeEventingNamespaceLister {
+	return &wrapper{client: w.client, namespace: namespace}
+}
+
+func (w *wrapper) List(selector labels.Selector) (ret []*apisoperatorv1alpha1.KnativeEventing, err error) {
+	lo, err := w.client.OperatorV1alpha1().KnativeEventings(w.namespace).List(context.TODO(), v1.ListOptions{
+		LabelSelector: selector.String(),
+		// TODO(mattmoor): Incorporate resourceVersion bounds based on staleness criteria.
+	})
+	if err != nil {
+		return nil, err
+	}
+	for idx := range lo.Items {
+		ret = append(ret, &lo.Items[idx])
+	}
+	return ret, nil
+}
+
+func (w *wrapper) Get(name string) (*apisoperatorv1alpha1.KnativeEventing, error) {
+	return w.client.OperatorV1alpha1().KnativeEventings(w.namespace).Get(context.TODO(), name, v1.GetOptions{
+		// TODO(mattmoor): Incorporate resourceVersion bounds based on staleness criteria.
+	})
 }

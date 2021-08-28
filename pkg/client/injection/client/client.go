@@ -20,25 +20,44 @@ package client
 
 import (
 	context "context"
+	json "encoding/json"
+	errors "errors"
+	fmt "fmt"
 
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	runtime "k8s.io/apimachinery/pkg/runtime"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
+	discovery "k8s.io/client-go/discovery"
+	dynamic "k8s.io/client-go/dynamic"
 	rest "k8s.io/client-go/rest"
+	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	versioned "knative.dev/operator/pkg/client/clientset/versioned"
+	typedoperatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
 	injection "knative.dev/pkg/injection"
+	dynamicclient "knative.dev/pkg/injection/clients/dynamicclient"
 	logging "knative.dev/pkg/logging"
 )
 
 func init() {
-	injection.Default.RegisterClient(withClient)
+	injection.Default.RegisterClient(withClientFromConfig)
 	injection.Default.RegisterClientFetcher(func(ctx context.Context) interface{} {
 		return Get(ctx)
 	})
+	injection.Dynamic.RegisterDynamicClient(withClientFromDynamic)
 }
 
 // Key is used as the key for associating information with a context.Context.
 type Key struct{}
 
-func withClient(ctx context.Context, cfg *rest.Config) context.Context {
+func withClientFromConfig(ctx context.Context, cfg *rest.Config) context.Context {
 	return context.WithValue(ctx, Key{}, versioned.NewForConfigOrDie(cfg))
+}
+
+func withClientFromDynamic(ctx context.Context) context.Context {
+	return context.WithValue(ctx, Key{}, &wrapClient{dyn: dynamicclient.Get(ctx)})
 }
 
 // Get extracts the versioned.Interface client from the context.
@@ -54,4 +73,302 @@ func Get(ctx context.Context) versioned.Interface {
 		}
 	}
 	return untyped.(versioned.Interface)
+}
+
+type wrapClient struct {
+	dyn dynamic.Interface
+}
+
+var _ versioned.Interface = (*wrapClient)(nil)
+
+func (w *wrapClient) Discovery() discovery.DiscoveryInterface {
+	panic("Discovery called on dynamic client!")
+}
+
+func convert(from interface{}, to runtime.Object) error {
+	bs, err := json.Marshal(from)
+	if err != nil {
+		return fmt.Errorf("Marshal() = %w", err)
+	}
+	if err := json.Unmarshal(bs, to); err != nil {
+		return fmt.Errorf("Unmarshal() = %w", err)
+	}
+	return nil
+}
+
+// OperatorV1alpha1 retrieves the OperatorV1alpha1Client
+func (w *wrapClient) OperatorV1alpha1() typedoperatorv1alpha1.OperatorV1alpha1Interface {
+	return &wrapOperatorV1alpha1{
+		dyn: w.dyn,
+	}
+}
+
+type wrapOperatorV1alpha1 struct {
+	dyn dynamic.Interface
+}
+
+func (w *wrapOperatorV1alpha1) RESTClient() rest.Interface {
+	panic("RESTClient called on dynamic client!")
+}
+
+func (w *wrapOperatorV1alpha1) KnativeEventings(namespace string) typedoperatorv1alpha1.KnativeEventingInterface {
+	return &wrapOperatorV1alpha1KnativeEventingImpl{
+		dyn: w.dyn.Resource(schema.GroupVersionResource{
+			Group:    "operator.knative.dev",
+			Version:  "v1alpha1",
+			Resource: "knativeeventings",
+		}),
+
+		namespace: namespace,
+	}
+}
+
+type wrapOperatorV1alpha1KnativeEventingImpl struct {
+	dyn dynamic.NamespaceableResourceInterface
+
+	namespace string
+}
+
+var _ typedoperatorv1alpha1.KnativeEventingInterface = (*wrapOperatorV1alpha1KnativeEventingImpl)(nil)
+
+func (w *wrapOperatorV1alpha1KnativeEventingImpl) Create(ctx context.Context, in *v1alpha1.KnativeEventing, opts v1.CreateOptions) (*v1alpha1.KnativeEventing, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "operator.knative.dev",
+		Version: "v1alpha1",
+		Kind:    "KnativeEventing",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Namespace(w.namespace).Create(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1alpha1.KnativeEventing{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapOperatorV1alpha1KnativeEventingImpl) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
+	return w.dyn.Namespace(w.namespace).Delete(ctx, name, opts)
+}
+
+func (w *wrapOperatorV1alpha1KnativeEventingImpl) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	return w.dyn.Namespace(w.namespace).DeleteCollection(ctx, opts, listOpts)
+}
+
+func (w *wrapOperatorV1alpha1KnativeEventingImpl) Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.KnativeEventing, error) {
+	uo, err := w.dyn.Namespace(w.namespace).Get(ctx, name, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1alpha1.KnativeEventing{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapOperatorV1alpha1KnativeEventingImpl) List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.KnativeEventingList, error) {
+	uo, err := w.dyn.Namespace(w.namespace).List(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1alpha1.KnativeEventingList{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapOperatorV1alpha1KnativeEventingImpl) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.KnativeEventing, err error) {
+	uo, err := w.dyn.Namespace(w.namespace).Patch(ctx, name, pt, data, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1alpha1.KnativeEventing{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapOperatorV1alpha1KnativeEventingImpl) Update(ctx context.Context, in *v1alpha1.KnativeEventing, opts v1.UpdateOptions) (*v1alpha1.KnativeEventing, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "operator.knative.dev",
+		Version: "v1alpha1",
+		Kind:    "KnativeEventing",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Namespace(w.namespace).Update(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1alpha1.KnativeEventing{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapOperatorV1alpha1KnativeEventingImpl) UpdateStatus(ctx context.Context, in *v1alpha1.KnativeEventing, opts v1.UpdateOptions) (*v1alpha1.KnativeEventing, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "operator.knative.dev",
+		Version: "v1alpha1",
+		Kind:    "KnativeEventing",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Namespace(w.namespace).UpdateStatus(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1alpha1.KnativeEventing{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapOperatorV1alpha1KnativeEventingImpl) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
+	return nil, errors.New("NYI: Watch")
+}
+
+func (w *wrapOperatorV1alpha1) KnativeServings(namespace string) typedoperatorv1alpha1.KnativeServingInterface {
+	return &wrapOperatorV1alpha1KnativeServingImpl{
+		dyn: w.dyn.Resource(schema.GroupVersionResource{
+			Group:    "operator.knative.dev",
+			Version:  "v1alpha1",
+			Resource: "knativeservings",
+		}),
+
+		namespace: namespace,
+	}
+}
+
+type wrapOperatorV1alpha1KnativeServingImpl struct {
+	dyn dynamic.NamespaceableResourceInterface
+
+	namespace string
+}
+
+var _ typedoperatorv1alpha1.KnativeServingInterface = (*wrapOperatorV1alpha1KnativeServingImpl)(nil)
+
+func (w *wrapOperatorV1alpha1KnativeServingImpl) Create(ctx context.Context, in *v1alpha1.KnativeServing, opts v1.CreateOptions) (*v1alpha1.KnativeServing, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "operator.knative.dev",
+		Version: "v1alpha1",
+		Kind:    "KnativeServing",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Namespace(w.namespace).Create(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1alpha1.KnativeServing{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapOperatorV1alpha1KnativeServingImpl) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
+	return w.dyn.Namespace(w.namespace).Delete(ctx, name, opts)
+}
+
+func (w *wrapOperatorV1alpha1KnativeServingImpl) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	return w.dyn.Namespace(w.namespace).DeleteCollection(ctx, opts, listOpts)
+}
+
+func (w *wrapOperatorV1alpha1KnativeServingImpl) Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.KnativeServing, error) {
+	uo, err := w.dyn.Namespace(w.namespace).Get(ctx, name, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1alpha1.KnativeServing{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapOperatorV1alpha1KnativeServingImpl) List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.KnativeServingList, error) {
+	uo, err := w.dyn.Namespace(w.namespace).List(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1alpha1.KnativeServingList{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapOperatorV1alpha1KnativeServingImpl) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.KnativeServing, err error) {
+	uo, err := w.dyn.Namespace(w.namespace).Patch(ctx, name, pt, data, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1alpha1.KnativeServing{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapOperatorV1alpha1KnativeServingImpl) Update(ctx context.Context, in *v1alpha1.KnativeServing, opts v1.UpdateOptions) (*v1alpha1.KnativeServing, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "operator.knative.dev",
+		Version: "v1alpha1",
+		Kind:    "KnativeServing",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Namespace(w.namespace).Update(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1alpha1.KnativeServing{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapOperatorV1alpha1KnativeServingImpl) UpdateStatus(ctx context.Context, in *v1alpha1.KnativeServing, opts v1.UpdateOptions) (*v1alpha1.KnativeServing, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "operator.knative.dev",
+		Version: "v1alpha1",
+		Kind:    "KnativeServing",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Namespace(w.namespace).UpdateStatus(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1alpha1.KnativeServing{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapOperatorV1alpha1KnativeServingImpl) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
+	return nil, errors.New("NYI: Watch")
 }

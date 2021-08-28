@@ -21,7 +21,6 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -38,17 +37,6 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		expected *unstructured.Unstructured
 		err      error
 	}{{
-		name:     "No HA; ConfigMap",
-		config:   nil,
-		in:       makeUnstructuredConfigMap(t, nil),
-		expected: makeUnstructuredConfigMap(t, nil),
-	}, {
-		name:   "HA; ConfigMap",
-		config: makeHa(2),
-		in:     makeUnstructuredConfigMap(t, nil),
-		expected: makeUnstructuredConfigMap(t, map[string]string{
-			enabledComponentsKey: servingComponentsValue}),
-	}, {
 		name:     "HA; controller",
 		config:   makeHa(2),
 		in:       makeUnstructuredDeployment(t, "controller"),
@@ -123,22 +111,6 @@ func makeHa(replicas int32) *v1alpha1.HighAvailability {
 	return &v1alpha1.HighAvailability{
 		Replicas: replicas,
 	}
-}
-
-func makeUnstructuredConfigMap(t *testing.T, data map[string]string) *unstructured.Unstructured {
-	cm := &v1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: configMapName,
-		},
-	}
-	cm.Data = data
-	result := &unstructured.Unstructured{}
-	err := scheme.Scheme.Convert(cm, result, nil)
-	if err != nil {
-		t.Fatalf("Could not create unstructured ConfigMap: %v, err: %v", cm, err)
-	}
-
-	return result
 }
 
 func makeUnstructuredDeployment(t *testing.T, name string) *unstructured.Unstructured {

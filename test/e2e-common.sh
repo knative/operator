@@ -18,9 +18,9 @@
 source "$(dirname "${BASH_SOURCE[0]}")/../vendor/knative.dev/hack/e2e-tests.sh"
 
 # The previous serving release, installed by the operator. This value should be in the semantic format of major.minor.
-readonly PREVIOUS_SERVING_RELEASE_VERSION="0.24"
+readonly PREVIOUS_SERVING_RELEASE_VERSION="0.25"
 # The previous eventing release, installed by the operator. This value should be in the semantic format of major.minor.
-readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.24"
+readonly PREVIOUS_EVENTING_RELEASE_VERSION="0.25"
 # The target serving/eventing release to upgrade, installed by the operator. It can be a release available under
 # kodata or an incoming new release. This value should be in the semantic format of major.minor.
 readonly TARGET_RELEASE_VERSION="latest"

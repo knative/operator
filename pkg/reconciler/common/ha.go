@@ -24,13 +24,6 @@ import (
 	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
-const (
-	configMapName           = "config-leader-election"
-	enabledComponentsKey    = "enabledComponents"
-	servingComponentsValue  = "controller,hpaautoscaler,certcontroller,istiocontroller,nscontroller"
-	eventingComponentsValue = "eventing-controller,sugar-controller,imc-controller,imc-dispatcher,mt-broker-controller"
-)
-
 func haSupport(obj v1alpha1.KComponent) sets.String {
 	return sets.NewString(
 		"controller",
@@ -70,27 +63,6 @@ func HighAvailabilityTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) 
 		ha := obj.GetSpec().GetHighAvailability()
 		if ha == nil {
 			return nil
-		}
-
-		// Transform the leader election config.
-		if u.GetKind() == "ConfigMap" && u.GetName() == "config-leader-election" {
-			data, ok, err := unstructured.NestedStringMap(u.UnstructuredContent(), "data")
-			if err != nil {
-				return nil
-			}
-			if !ok {
-				data = map[string]string{}
-			}
-
-			if _, ok := obj.(*v1alpha1.KnativeServing); ok {
-				data[enabledComponentsKey] = servingComponentsValue
-			}
-			if _, ok := obj.(*v1alpha1.KnativeEventing); ok {
-				data[enabledComponentsKey] = eventingComponentsValue
-			}
-			if err := unstructured.SetNestedStringMap(u.Object, data, "data"); err != nil {
-				return err
-			}
 		}
 
 		replicas := int64(ha.Replicas)

@@ -12,14 +12,14 @@ require (
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.4.2
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
-	k8s.io/api v0.20.7
-	k8s.io/apimachinery v0.20.7
-	k8s.io/client-go v0.20.7
-	k8s.io/code-generator v0.20.7
+	k8s.io/api v0.21.4
+	k8s.io/apimachinery v0.21.4
+	k8s.io/client-go v0.21.4
+	k8s.io/code-generator v0.21.4
 	knative.dev/caching v0.0.0-20210827131338-f4b23a326276
-	knative.dev/eventing v0.25.1-0.20210827062638-348cfb2a80fd
+	knative.dev/eventing v0.25.1-0.20210827141738-ea5ed9adf51f
 	knative.dev/hack v0.0.0-20210806075220-815cd312d65c
-	knative.dev/pkg v0.0.0-20210827112638-4472e04552d3
-	knative.dev/serving v0.25.1-0.20210827131137-64a145caa09f
+	knative.dev/pkg v0.0.0-20210827184538-2bd91f75571c
+	knative.dev/serving v0.25.1-0.20210827140938-e6a7166509e6
 	sigs.k8s.io/yaml v1.2.0
 )

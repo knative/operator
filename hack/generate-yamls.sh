@@ -52,8 +52,8 @@ rm -fr ${YAML_OUTPUT_DIR}/*.yaml
 # Generated Knative Operator component YAML files
 readonly OPERATOR_YAML=${YAML_OUTPUT_DIR}/operator.yaml
 
-if [[ -n "${TAG}" ]]; then
-  LABEL_YAML_CMD=(sed -e "s|operator.knative.dev/release: devel|operator.knative.dev/release: \"${TAG}\"|")
+if [[ -n "${TAG:-}" ]]; then
+  LABEL_YAML_CMD=(sed -e "s|operator.knative.dev/release: devel|operator.knative.dev/release: \"${TAG}\"|" -e "s|app.kubernetes.io/version: devel|app.kubernetes.io/version: \"${TAG:1}\"|")
 else
   LABEL_YAML_CMD=(cat)
 fi

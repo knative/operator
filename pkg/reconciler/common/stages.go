@@ -18,6 +18,7 @@ package common
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	mf "github.com/manifestival/manifestival"
@@ -110,6 +111,11 @@ func DeleteObsoleteResources(ctx context.Context, instance v1alpha1.KComponent, 
 	installed, err := fetch(ctx, instance)
 	if err != nil {
 		logger.Error("Unable to obtain the installed manifest; obsolete resources may linger", err)
+		// Report an error in `Status`, issue ref: https://github.com/knative/operator/issues/741
+		instance.GetStatus().MarkInstallFailed(
+			fmt.Sprintf("Unable to obtain the installed manifest, maybe the version %s is not supported, please check. " +
+				"The Knative Operator supports up to the last three major releases",
+				instance.GetSpec().GetVersion()))
 		return NoOp
 	}
 	return func(_ context.Context, manifest *mf.Manifest, _ v1alpha1.KComponent) error {

@@ -44,7 +44,6 @@ func haSupport(obj v1alpha1.KComponent) sets.String {
 		"imc-controller",
 		"imc-dispatcher",
 		"mt-broker-controller",
-		"pingsource-mt-adapter",
 	)
 }
 

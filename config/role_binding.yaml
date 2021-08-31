@@ -18,6 +18,8 @@ metadata:
   name: knative-serving-operator
   labels:
     operator.knative.dev/release: devel
+    app.kubernetes.io/version: devel
+    app.kubernetes.io/part-of: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -33,6 +35,8 @@ metadata:
   name: knative-serving-operator-aggregated
   labels:
     operator.knative.dev/release: devel
+    app.kubernetes.io/version: devel
+    app.kubernetes.io/part-of: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -49,6 +53,8 @@ metadata:
   name: knative-eventing-operator
   labels:
     operator.knative.dev/release: devel
+    app.kubernetes.io/version: devel
+    app.kubernetes.io/part-of: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -64,6 +70,8 @@ metadata:
   name: knative-eventing-operator-aggregated
   labels:
     operator.knative.dev/release: devel
+    app.kubernetes.io/version: devel
+    app.kubernetes.io/part-of: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

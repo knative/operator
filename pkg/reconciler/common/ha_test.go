@@ -47,31 +47,6 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		in:       makeUnstructuredDeployment(t, "autoscaler"),
 		expected: makeUnstructuredDeploymentReplicas(t, "autoscaler", 2),
 	}, {
-		name:     "HA; autoscaler-hpa",
-		config:   makeHa(2),
-		in:       makeUnstructuredDeployment(t, "autoscaler-hpa"),
-		expected: makeUnstructuredDeploymentReplicas(t, "autoscaler-hpa", 2),
-	}, {
-		name:     "HA; networking-certmanager",
-		config:   makeHa(2),
-		in:       makeUnstructuredDeployment(t, "networking-certmanager"),
-		expected: makeUnstructuredDeploymentReplicas(t, "networking-certmanager", 2),
-	}, {
-		name:     "HA; networking-ns-cert",
-		config:   makeHa(2),
-		in:       makeUnstructuredDeployment(t, "networking-ns-cert"),
-		expected: makeUnstructuredDeploymentReplicas(t, "networking-ns-cert", 2),
-	}, {
-		name:     "HA; networking-istio",
-		config:   makeHa(2),
-		in:       makeUnstructuredDeployment(t, "networking-istio"),
-		expected: makeUnstructuredDeploymentReplicas(t, "networking-istio", 2),
-	}, {
-		name:     "HA; some-unsupported-controller",
-		config:   makeHa(2),
-		in:       makeUnstructuredDeployment(t, "some-unsupported-controller"),
-		expected: makeUnstructuredDeployment(t, "some-unsupported-controller"),
-	}, {
 		name:     "HA; adjust hpa",
 		config:   makeHa(2),
 		in:       makeUnstructuredHPA(t, "activator", 1),

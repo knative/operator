@@ -74,13 +74,23 @@ func TestHighAvailabilityTransform(t *testing.T) {
 	}, {
 		name:     "HA; adjust hpa",
 		config:   makeHa(2),
-		in:       makeUnstructuredHPA(t, "activator", 1),
-		expected: makeUnstructuredHPA(t, "activator", 2),
+		in:       makeUnstructuredHPA(t, "activator", 1, 4),
+		expected: makeUnstructuredHPA(t, "activator", 2, 5),
 	}, {
 		name:     "HA; keep higher hpa value",
 		config:   makeHa(2),
-		in:       makeUnstructuredHPA(t, "activator", 3),
-		expected: makeUnstructuredHPA(t, "activator", 3),
+		in:       makeUnstructuredHPA(t, "activator", 3, 5),
+		expected: makeUnstructuredHPA(t, "activator", 3, 5),
+	}, {
+		name:     "HA; do nothing when replicas is equal to minReplicas",
+		config:   makeHa(2),
+		in:       makeUnstructuredHPA(t, "activator", 2, 5),
+		expected: makeUnstructuredHPA(t, "activator", 2, 5),
+	}, {
+		name:     "HA; adjust hpa when replicas is lerger than maxReplicas",
+		config:   makeHa(6),
+		in:       makeUnstructuredHPA(t, "activator", 2, 5),
+		expected: makeUnstructuredHPA(t, "activator", 6, 9),
 	}}
 
 	for _, tc := range cases {
@@ -130,13 +140,14 @@ func makeUnstructuredDeploymentReplicas(t *testing.T, name string, replicas int3
 	return result
 }
 
-func makeUnstructuredHPA(t *testing.T, name string, minReplicas int32) *unstructured.Unstructured {
+func makeUnstructuredHPA(t *testing.T, name string, minReplicas, maxReplicas int32) *unstructured.Unstructured {
 	hpa := &autoscalingv2beta1.HorizontalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
 		Spec: autoscalingv2beta1.HorizontalPodAutoscalerSpec{
 			MinReplicas: &minReplicas,
+			MaxReplicas: maxReplicas,
 		},
 	}
 

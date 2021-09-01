@@ -237,6 +237,10 @@ type DeploymentOverride struct {
 	// NodeSelector overrides nodeSelector for the deployment.
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+
+	// Tolerations overrides tolerations for the deployment.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 }
 
 // ResourceRequirementsOverride enables the user to override any container's

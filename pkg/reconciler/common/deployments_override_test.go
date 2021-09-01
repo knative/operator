@@ -22,6 +22,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
@@ -33,6 +34,7 @@ type expDeployments struct {
 	expTemplateAnnotations map[string]string
 	expReplicas            int32
 	expNodeSelector        map[string]string
+	expTolerations         []corev1.Toleration
 }
 
 func TestDeploymentsTransform(t *testing.T) {
@@ -51,6 +53,7 @@ func TestDeploymentsTransform(t *testing.T) {
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            0,
 			expNodeSelector:        nil,
+			expTolerations:         nil,
 		}},
 	}, {
 		name: "simple override",
@@ -61,6 +64,11 @@ func TestDeploymentsTransform(t *testing.T) {
 				Annotations:  map[string]string{"c": "d"},
 				Replicas:     5,
 				NodeSelector: map[string]string{"env": "prod"},
+				Tolerations: []corev1.Toleration{{
+					Key:      corev1.TaintNodeNotReady,
+					Operator: corev1.TolerationOpExists,
+					Effect:   corev1.TaintEffectNoSchedule,
+				}},
 			},
 		},
 		globalReplicas: 10,
@@ -71,6 +79,11 @@ func TestDeploymentsTransform(t *testing.T) {
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true", "c": "d"},
 			expReplicas:            5,
 			expNodeSelector:        map[string]string{"env": "prod"},
+			expTolerations: []corev1.Toleration{{
+				Key:      corev1.TaintNodeNotReady,
+				Operator: corev1.TolerationOpExists,
+				Effect:   corev1.TaintEffectNoSchedule,
+			}},
 		}},
 	}, {
 		name: "no replicas in deploymentoverride, use global replicas",
@@ -104,6 +117,11 @@ func TestDeploymentsTransform(t *testing.T) {
 				Annotations:  map[string]string{"c": "d"},
 				Replicas:     5,
 				NodeSelector: map[string]string{"env": "dev"},
+				Tolerations: []corev1.Toleration{{
+					Key:      corev1.TaintNodeNotReady,
+					Operator: corev1.TolerationOpExists,
+					Effect:   corev1.TaintEffectNoSchedule,
+				}},
 			},
 			{
 				Name:         "webhook",
@@ -111,6 +129,11 @@ func TestDeploymentsTransform(t *testing.T) {
 				Annotations:  map[string]string{"g": "h"},
 				Replicas:     4,
 				NodeSelector: map[string]string{"env": "prod"},
+				Tolerations: []corev1.Toleration{{
+					Key:      corev1.TaintNodeUnschedulable,
+					Operator: corev1.TolerationOpExists,
+					Effect:   corev1.TaintEffectNoSchedule,
+				}},
 			},
 		},
 		globalReplicas: 10,
@@ -122,6 +145,11 @@ func TestDeploymentsTransform(t *testing.T) {
 				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true", "c": "d"},
 				expReplicas:            5,
 				expNodeSelector:        map[string]string{"env": "dev"},
+				expTolerations: []corev1.Toleration{{
+					Key:      corev1.TaintNodeNotReady,
+					Operator: corev1.TolerationOpExists,
+					Effect:   corev1.TaintEffectNoSchedule,
+				}},
 			},
 			"webhook": {
 				expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0", "e": "f"},
@@ -130,6 +158,11 @@ func TestDeploymentsTransform(t *testing.T) {
 				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false", "g": "h"},
 				expReplicas:            4,
 				expNodeSelector:        map[string]string{"env": "prod"},
+				expTolerations: []corev1.Toleration{{
+					Key:      corev1.TaintNodeUnschedulable,
+					Operator: corev1.TolerationOpExists,
+					Effect:   corev1.TaintEffectNoSchedule,
+				}},
 			},
 		},
 	}}
@@ -176,6 +209,10 @@ func TestDeploymentsTransform(t *testing.T) {
 
 						if diff := cmp.Diff(got.Spec.Template.Spec.NodeSelector, d.expNodeSelector); diff != "" {
 							t.Fatalf("Unexpected nodeSelector: %v", diff)
+						}
+
+						if diff := cmp.Diff(got.Spec.Template.Spec.Tolerations, d.expTolerations); diff != "" {
+							t.Fatalf("Unexpected tolerations: %v", diff)
 						}
 
 						if diff := cmp.Diff(got.GetLabels(), d.expLabels); diff != "" {

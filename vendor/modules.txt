@@ -176,7 +176,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/go-containerregistry v0.5.2-0.20210709161016-b448abac9a70
+# github.com/google/go-containerregistry v0.6.0
 github.com/google/go-containerregistry/pkg/name
 # github.com/google/go-github/v33 v33.0.0
 ## explicit
@@ -1039,7 +1039,7 @@ k8s.io/utils/trace
 ## explicit
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.25.1-0.20210831131755-75b9159a5549
+# knative.dev/eventing v0.25.1-0.20210901071032-7412ab7c679f
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1205,7 +1205,7 @@ knative.dev/pkg/unstructured
 knative.dev/pkg/version
 knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
-# knative.dev/serving v0.25.1-0.20210831101555-5b9face00af3
+# knative.dev/serving v0.25.1-0.20210901121033-24c59e05bc3a
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

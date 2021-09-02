@@ -91,6 +91,11 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		config:   makeHa(6),
 		in:       makeUnstructuredHPA(t, "activator", 2, 5),
 		expected: makeUnstructuredHPA(t, "activator", 6, 9),
+	}, {
+		name:     "HA; adjust hpa when minReplica is equal to maxReplicas",
+		config:   makeHa(3),
+		in:       makeUnstructuredHPA(t, "activator", 2, 2),
+		expected: makeUnstructuredHPA(t, "activator", 3, 3),
 	}}
 
 	for _, tc := range cases {

@@ -1068,7 +1068,7 @@ knative.dev/networking/pkg/apis/networking/v1alpha1
 knative.dev/networking/pkg/client/clientset/versioned
 knative.dev/networking/pkg/client/clientset/versioned/scheme
 knative.dev/networking/pkg/client/clientset/versioned/typed/networking/v1alpha1
-# knative.dev/pkg v0.0.0-20210803160015-21eb4c167cc5
+# knative.dev/pkg v0.0.0-20210902173607-844a6bc45596
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck

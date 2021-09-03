@@ -97,7 +97,8 @@ func HighAvailabilityTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) 
 				return nil
 			}
 
-			// Increase maxReplicas to the amount that we increased.
+			// Increase maxReplicas to the amount that we increased,
+			// because we need to avoid minReplicas > maxReplicas happenning.
 			if err := unstructured.SetNestedField(u.Object, max+(replicas-min), "spec", "maxReplicas"); err != nil {
 				return err
 			}

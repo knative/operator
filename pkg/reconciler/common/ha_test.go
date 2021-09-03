@@ -90,7 +90,7 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		name:     "HA; adjust hpa when replicas is lerger than maxReplicas",
 		config:   makeHa(6),
 		in:       makeUnstructuredHPA(t, "activator", 2, 5),
-		expected: makeUnstructuredHPA(t, "activator", 6, 9),
+		expected: makeUnstructuredHPA(t, "activator", 6, 9), // maxReplicas is increased by max+(replicas-min) to avoid minReplicas > maxReplicas happenning.
 	}, {
 		name:     "HA; adjust hpa when minReplica is equal to maxReplicas",
 		config:   makeHa(3),

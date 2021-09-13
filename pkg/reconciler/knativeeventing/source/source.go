@@ -104,7 +104,7 @@ func AppendTargetSources(ctx context.Context, manifest *mf.Manifest, instance v1
 	}
 	if len(instance.GetSpec().GetManifests()) != 0 {
 		// If spec.manifests is not empty, it is possible that the eventing source is not available with the
-		// specified version. The user can specify the ingress link in the spec.manifests.
+		// specified version. The user can specify the eventing source link in the spec.manifests.
 		return nil
 	}
 	return err
@@ -125,7 +125,7 @@ func AppendInstalledSources(ctx context.Context, manifest *mf.Manifest, instance
 	// It is possible that the eventing source is not available with the specified version.
 	// If the user specified a version with a minor version, which is not supported by the current operator, the operator
 	// can still work, as long as spec.manifests contains all the manifest links. This function can always return nil,
-	// even if the ingress is not available.
+	// even if the eventing source is not available.
 	return nil
 }
 

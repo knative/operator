@@ -51,7 +51,6 @@ func haSupport(obj v1alpha1.KComponent) sets.String {
 		"imc-controller",
 		"imc-dispatcher",
 		"mt-broker-controller",
-		"pingsource-mt-adapter",
 	)
 
 	// HA for autoscaler is supported since v0.19+.

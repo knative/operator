@@ -60,11 +60,12 @@ func TestGetIngress(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
-			err := getIngress(tt.version, &manifest)
+			m, err := getIngress(tt.version)
 			if err != nil {
 				util.AssertEqual(t, err.Error(), tt.expectedErr.Error())
 				util.AssertEqual(t, len(manifest.Resources()), 0)
 			} else {
+				manifest = manifest.Append(m)
 				util.AssertEqual(t, err, tt.expectedErr)
 				util.AssertEqual(t, util.DeepMatchWithPath(manifest, tt.expectedIngressPath), true)
 			}
@@ -111,7 +112,8 @@ func TestAppendInstalledIngresses(t *testing.T) {
 				Version: "0.12.1",
 			},
 		},
-		expectedErr: fmt.Errorf("stat testdata/kodata/ingress/0.12: no such file or directory"),
+		// We still return nil, even if the ingress is not available.
+		expectedErr: nil,
 	}}
 
 	for _, tt := range tests {
@@ -333,8 +335,9 @@ func TestGetIngressWithFilters(t *testing.T) {
 			targetIngressManifests, err := common.FetchManifest(tt.expectedManifestPath)
 			util.AssertEqual(t, err, nil)
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
-			err = getIngress(version, &manifest)
+			m, err := getIngress(version)
 			util.AssertEqual(t, err == nil, tt.expected)
+			manifest = manifest.Append(m)
 			manifest = manifest.Filter(Filters(&tt.instance))
 			// The resources loaded with the enabled istio ingress returns exactly the same resources as we
 			// expect from the ingress yaml file.

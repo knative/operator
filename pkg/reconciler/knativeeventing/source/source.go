@@ -28,16 +28,11 @@ import (
 	"knative.dev/operator/pkg/reconciler/common"
 )
 
-func getSource(manifest *mf.Manifest, path string) error {
+func getSource(manifest *mf.Manifest, path string) (mf.Manifest, error) {
 	if path == "" {
-		return nil
+		return mf.Manifest{}, nil
 	}
-	m, err := common.FetchManifest(path)
-	if err != nil {
-		return err
-	}
-	*manifest = manifest.Append(m)
-	return nil
+	return common.FetchManifest(path)
 }
 
 func getSourcePath(version string, ke *v1alpha1.KnativeEventing) string {
@@ -103,7 +98,16 @@ func getSourcePath(version string, ke *v1alpha1.KnativeEventing) string {
 func AppendTargetSources(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
 	version := common.TargetVersion(instance)
 	sourcePath := getSourcePath(version, convertToKE(instance))
-	return getSource(manifest, sourcePath)
+	m, err := getSource(manifest, sourcePath)
+	if err == nil {
+		*manifest = manifest.Append(m)
+	}
+	if len(instance.GetSpec().GetManifests()) != 0 {
+		// If spec.manifests is not empty, it is possible that the eventing source is not available with the
+		// specified version. The user can specify the eventing source link in the spec.manifests.
+		return nil
+	}
+	return err
 }
 
 // AppendInstalledSources appends the installed manifests of the eventing sources
@@ -113,7 +117,16 @@ func AppendInstalledSources(ctx context.Context, manifest *mf.Manifest, instance
 		version = common.TargetVersion(instance)
 	}
 	sourcePath := getSourcePath(version, convertToKE(instance))
-	return getSource(manifest, sourcePath)
+	m, err := getSource(manifest, sourcePath)
+	if err == nil {
+		*manifest = manifest.Append(m)
+	}
+
+	// It is possible that the eventing source is not available with the specified version.
+	// If the user specified a version with a minor version, which is not supported by the current operator, the operator
+	// can still work, as long as spec.manifests contains all the manifest links. This function can always return nil,
+	// even if the eventing source is not available.
+	return nil
 }
 
 func convertToKE(instance v1alpha1.KComponent) *v1alpha1.KnativeEventing {

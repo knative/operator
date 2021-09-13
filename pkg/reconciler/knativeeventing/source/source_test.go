@@ -111,6 +111,16 @@ func TestAppendInstalledSources(t *testing.T) {
 		},
 		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/empty.yaml",
 		expectedErr:         nil,
+	}, {
+		name: "Unavailable eventing source",
+		instance: eventingv1alpha1.KnativeEventing{
+			Spec: eventingv1alpha1.KnativeEventingSpec{},
+			Status: eventingv1alpha1.KnativeEventingStatus{
+				Version: "0.21",
+			},
+		},
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/empty.yaml",
+		expectedErr:         nil,
 	}}
 
 	for _, tt := range tests {
@@ -216,6 +226,24 @@ func TestAppendTargetSources(t *testing.T) {
 			},
 		},
 		expectedErr: fmt.Errorf("stat testdata/kodata/eventing-source/0.12/awssqs: no such file or directory"),
+	}, {
+		name: "Unavailable target source wih spec.manifests",
+		instance: eventingv1alpha1.KnativeEventing{
+			Spec: eventingv1alpha1.KnativeEventingSpec{
+				CommonSpec: eventingv1alpha1.CommonSpec{
+					Version: "0.12.1",
+					Manifests: []eventingv1alpha1.Manifest{{
+						Url: "testdata/kodata/eventing-source/empty.yaml",
+					}},
+				},
+				Source: &eventingv1alpha1.SourceConfigs{
+					Awssqs: eventingv1alpha1.AwssqsSourceConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expectedErr: nil,
 	}, {
 		name: "Get the latest target source when the directory latest is unavailable",
 		instance: eventingv1alpha1.KnativeEventing{

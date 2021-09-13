@@ -86,10 +86,10 @@ func Transformers(ctx context.Context, ks *v1alpha1.KnativeServing) []mf.Transfo
 	return transformers
 }
 
-func getIngress(version string, manifest *mf.Manifest) error {
+func getIngress(version string) (mf.Manifest, error) {
 	// If we can not determine the version, append no ingress manifest.
 	if version == "" {
-		return nil
+		return mf.Manifest{}, nil
 	}
 	koDataDir := os.Getenv(common.KoEnvKey)
 	// Ingresses are saved in the directory named major.minor. We remove the patch number.
@@ -101,17 +101,22 @@ func getIngress(version string, manifest *mf.Manifest) error {
 	// This line can make sure a valid available ingress version is returned.
 	ingressVersion = common.GetLatestIngressRelease(ingressVersion)
 	ingressPath := filepath.Join(koDataDir, "ingress", ingressVersion)
-	m, err := common.FetchManifest(ingressPath)
-	if err != nil {
-		return err
-	}
-	*manifest = manifest.Append(m)
-	return nil
+	return common.FetchManifest(ingressPath)
 }
 
 // AppendTargetIngresses appends the manifests of ingresses to be installed
 func AppendTargetIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
-	return getIngress(common.TargetVersion(instance), manifest)
+	m, err := getIngress(common.TargetVersion(instance))
+	if err == nil {
+		*manifest = manifest.Append(m)
+	}
+
+	if len(instance.GetSpec().GetManifests()) != 0 {
+		// If spec.manifests is not empty, it is possible that the ingress is not available with the specified version.
+		// The user can specify the ingress link in the spec.manifests.
+		return nil
+	}
+	return err
 }
 
 // AppendInstalledIngresses appends the installed manifests of ingresses
@@ -120,7 +125,17 @@ func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instan
 	if version == "" {
 		version = common.TargetVersion(instance)
 	}
-	return getIngress(version, manifest)
+
+	m, err := getIngress(version)
+	if err == nil {
+		*manifest = manifest.Append(m)
+	}
+
+	// It is possible that the ingress is not available with the specified version.
+	// If the user specified a version with a minor version, which is not supported by the current operator, as long as
+	// spec.manifests contains all the manifest links, the operator can still work. This function can always return nil,
+	// even if the ingress is not available.
+	return nil
 }
 
 func hasProviderLabel(u *unstructured.Unstructured) bool {

@@ -17,7 +17,7 @@ kind: ClusterRole
 metadata:
   name: natss-addressable-resolver
   labels:
-    natss.eventing.knative.dev/release: "v0.23.2"
+    natss.eventing.knative.dev/release: "v0.23.3"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -51,7 +51,7 @@ kind: ClusterRole
 metadata:
   name: natss-channelable-manipulator
   labels:
-    natss.eventing.knative.dev/release: "v0.23.2"
+    natss.eventing.knative.dev/release: "v0.23.3"
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -88,7 +88,7 @@ kind: ClusterRole
 metadata:
   name: natss-ch-controller
   labels:
-    natss.eventing.knative.dev/release: "v0.23.2"
+    natss.eventing.knative.dev/release: "v0.23.3"
 rules:
   - apiGroups:
       - messaging.knative.dev
@@ -248,7 +248,7 @@ metadata:
   name: natss-ch-dispatcher
   namespace: knative-eventing
   labels:
-    natss.eventing.knative.dev/release: "v0.23.2"
+    natss.eventing.knative.dev/release: "v0.23.3"
     messaging.knative.dev/channel: natss-channel
     messaging.knative.dev/role: dispatcher
 spec:
@@ -282,7 +282,7 @@ metadata:
   name: natss-ch-controller
   namespace: knative-eventing
   labels:
-    natss.eventing.knative.dev/release: "v0.23.2"
+    natss.eventing.knative.dev/release: "v0.23.3"
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -290,7 +290,7 @@ metadata:
   name: natss-ch-dispatcher
   namespace: knative-eventing
   labels:
-    natss.eventing.knative.dev/release: "v0.23.2"
+    natss.eventing.knative.dev/release: "v0.23.3"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -390,7 +390,7 @@ kind: ClusterRoleBinding
 metadata:
   name: natss-ch-controller
   labels:
-    natss.eventing.knative.dev/release: "v0.23.2"
+    natss.eventing.knative.dev/release: "v0.23.3"
 subjects:
   - kind: ServiceAccount
     name: natss-ch-controller
@@ -434,14 +434,14 @@ metadata:
   name: natss-webhook
   namespace: knative-eventing
   labels:
-    natss.eventing.knative.dev/release: "v0.23.2"
+    natss.eventing.knative.dev/release: "v0.23.3"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: natss-webhook
   labels:
-    natss.eventing.knative.dev/release: "v0.23.2"
+    natss.eventing.knative.dev/release: "v0.23.3"
 subjects:
   - kind: ServiceAccount
     name: natss-webhook
@@ -471,7 +471,7 @@ kind: CustomResourceDefinition
 metadata:
   name: natsschannels.messaging.knative.dev
   labels:
-    natss.eventing.knative.dev/release: "v0.23.2"
+    natss.eventing.knative.dev/release: "v0.23.3"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -559,7 +559,7 @@ metadata:
   name: natss-ch-controller
   namespace: knative-eventing
   labels:
-    natss.eventing.knative.dev/release: "v0.23.2"
+    natss.eventing.knative.dev/release: "v0.23.3"
 spec:
   replicas: 1
   selector:
@@ -573,7 +573,7 @@ spec:
       serviceAccountName: natss-ch-controller
       containers:
         - name: controller
-          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/channel_controller@sha256:c66a8a43c6a1ce9f66e001f91d8cdccff12667708f0c5c1e80dad3e9ac9002d4
+          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/channel_controller@sha256:292998bf3b9a3e254ccc7f3aedd531c084b74d9a0fd764f55a18749ed25888df
           env:
             - name: CONFIG_LOGGING_NAME
               value: config-logging
@@ -619,7 +619,7 @@ metadata:
   name: natss-ch-dispatcher
   namespace: knative-eventing
   labels:
-    natss.eventing.knative.dev/release: "v0.23.2"
+    natss.eventing.knative.dev/release: "v0.23.3"
 spec:
   replicas: 1
   selector:
@@ -633,7 +633,7 @@ spec:
       serviceAccountName: natss-ch-dispatcher
       containers:
         - name: dispatcher
-          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/channel_dispatcher@sha256:5ca0e1284826f5e2f3e631ef19885fdcf77879af3d804ac5d703d43d97ac4f31
+          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/channel_dispatcher@sha256:318eeeb3ef55cd8e151bfb11a0b8e6a04e107dc1919fb48063a24f5c16c1032e
           readinessProbe: &probe
             failureThreshold: 3
             httpGet:
@@ -787,7 +787,7 @@ spec:
           terminationMessagePolicy: FallbackToLogsOnError
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/webhook@sha256:4586dcc5beaf41d68a9b3fcb8ca55e3583b31a8589f0022452577ada03f8a07f
+          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/webhook@sha256:8ac57108a68c14885de3cf3951f1c0e63510cac9b5c06d74d73fb8eea412ca4a
           resources:
             requests:
               # taken from serving.
@@ -838,7 +838,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    natss.eventing.knative.dev/release: "v0.23.2"
+    natss.eventing.knative.dev/release: "v0.23.3"
     role: natss-webhook
   name: natss-webhook
   namespace: knative-eventing

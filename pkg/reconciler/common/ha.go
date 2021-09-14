@@ -79,11 +79,27 @@ func HighAvailabilityTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) 
 				return err
 			}
 			// Do nothing if the HPA ships with even more replicas out of the box.
-			if min > replicas {
+			if min >= replicas {
 				return nil
 			}
 
 			if err := unstructured.SetNestedField(u.Object, replicas, "spec", "minReplicas"); err != nil {
+				return err
+			}
+
+			max, found, err := unstructured.NestedInt64(u.Object, "spec", "maxReplicas")
+			if err != nil {
+				return err
+			}
+
+			// Do nothing if maxReplicas is not defined.
+			if !found {
+				return nil
+			}
+
+			// Increase maxReplicas to the amount that we increased,
+			// because we need to avoid minReplicas > maxReplicas happenning.
+			if err := unstructured.SetNestedField(u.Object, max+(replicas-min), "spec", "maxReplicas"); err != nil {
 				return err
 			}
 		}

@@ -129,7 +129,7 @@ type CommonSpec struct {
 	// +optional
 	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
 
-	// DeploymentOverride overrides Deploymeet configurations such as resources and replicas.
+	// DeploymentOverride overrides Deployment configurations such as resources and replicas.
 	// +optional
 	DeploymentOverride []DeploymentOverride `json:"deployments,omitempty"`
 
@@ -241,6 +241,10 @@ type DeploymentOverride struct {
 	// Tolerations overrides tolerations for the deployment.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	// Affinities overrides affinity for the deployment.
+	// +optional
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 }
 
 // ResourceRequirementsOverride enables the user to override any container's

@@ -282,7 +282,7 @@ func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.Resourc
 		t.Fatalf("KnativeServing %q failed to get: %v", names.KnativeServing, err)
 	}
 	ks.Spec.HighAvailability = &v1alpha1.HighAvailability{Replicas: 2}
-	ks, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
+	_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
@@ -308,6 +308,11 @@ func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.Resourc
 		t.Fatal("Timed out waiting on KnativeServing to delete", err)
 	}
 
+	// Get KnativeServing CR again to avoid "the object has been modified" error.
+	ks, err = clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("KnativeServing %q failed to get: %v", names.KnativeServing, err)
+	}
 	ks.Spec.HighAvailability = nil
 	_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
 	if err != nil {

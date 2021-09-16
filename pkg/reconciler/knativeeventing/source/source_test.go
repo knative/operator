@@ -227,7 +227,7 @@ func TestAppendTargetSources(t *testing.T) {
 		},
 		expectedErr: fmt.Errorf("stat testdata/kodata/eventing-source/0.12/awssqs: no such file or directory"),
 	}, {
-		name: "Unavailable target source wih spec.manifests",
+		name: "Unavailable target source with spec.manifests",
 		instance: eventingv1alpha1.KnativeEventing{
 			Spec: eventingv1alpha1.KnativeEventingSpec{
 				CommonSpec: eventingv1alpha1.CommonSpec{

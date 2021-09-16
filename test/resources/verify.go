@@ -70,6 +70,9 @@ func KSOperatorCRVerifyConfiguration(t *testing.T, clients *test.Clients, names 
 
 	// Now remove the config from the spec and update
 	verifyEmptySpec(t, loggingConfigMapName, clients, names)
+
+	// Verify HA config
+	VerifyHADeployments(t, clients, names)
 }
 
 func verifyDefaultConfig(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConfigMapName string, clients *test.Clients, names test.ResourceNames) {
@@ -269,6 +272,44 @@ func AssertKEOperatorCRReadyStatus(t *testing.T, clients *test.Clients, names te
 	if _, err := WaitForKnativeEventingState(clients.KnativeEventing(), names.KnativeEventing,
 		IsKnativeEventingReady); err != nil {
 		t.Fatalf("KnativeService %q failed to get to the READY status: %v", names.KnativeEventing, err)
+	}
+}
+
+// VerifyHADeployments verify whether all the deployments has scaled up.
+func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.ResourceNames) {
+	ks, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("Existing KS operator CR gone: %s", names.KnativeServing)
+	}
+	ks.Spec.HighAvailability = &v1alpha1.HighAvailability{Replicas: 2}
+	_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
+	if err != nil {
+		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
+	}
+
+	deployments, err := clients.KubeClient.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		t.Fatalf("Failed to get any deployment under the namespace %q: %v", names.Namespace, err)
+	}
+	if len(deployments.Items) == 0 {
+		t.Fatalf("No deployment under the namespace %q was found", names.Namespace)
+	}
+
+	for _, deploy := range deployments.Items {
+		if got, want := deploy.Status.Replicas, int32(2); got != want {
+			t.Errorf("deployment %q: Status.Replicas = %d, want: %d", deploy.Name, got, want)
+		}
+	}
+
+	ks.Spec.HighAvailability = nil
+	_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
+	if err != nil {
+		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
+	}
+	for _, deploy := range deployments.Items {
+		if got, want := deploy.Status.Replicas, int32(1); got != want {
+			t.Errorf("deployment %q: Status.Replicas = %d, want: %d", deploy.Name, got, want)
+		}
 	}
 }
 

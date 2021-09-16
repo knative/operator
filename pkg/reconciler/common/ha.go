@@ -24,7 +24,7 @@ import (
 	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
-func unSupported(obj v1alpha1.KComponent) sets.String {
+func haUnSupported(obj v1alpha1.KComponent) sets.String {
 	return sets.NewString(
 		"pingsource-mt-adapter",
 	)
@@ -50,7 +50,7 @@ func HighAvailabilityTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) 
 		replicas := int64(ha.Replicas)
 
 		// Transform deployments that support HA.
-		if u.GetKind() == "Deployment" && !unSupported(obj).Has(u.GetName()) {
+		if u.GetKind() == "Deployment" && !haUnSupported(obj).Has(u.GetName()) {
 			if err := unstructured.SetNestedField(u.Object, replicas, "spec", "replicas"); err != nil {
 				return err
 			}

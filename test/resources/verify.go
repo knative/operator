@@ -282,7 +282,7 @@ func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.Resourc
 		t.Fatalf("KnativeServing %q failed to get: %v", names.KnativeServing, err)
 	}
 	ks.Spec.HighAvailability = &v1alpha1.HighAvailability{Replicas: 2}
-	_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
+	ks, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
@@ -298,6 +298,7 @@ func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.Resourc
 		for _, deploy := range deployments.Items {
 			if got, want := deploy.Status.Replicas, int32(2); got != want {
 				t.Logf("deployment %q: Status.Replicas = %d, want: %d", deploy.Name, got, want)
+				t.Logf("Retrying...")
 				return false, nil
 			}
 		}
@@ -323,6 +324,7 @@ func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.Resourc
 		for _, deploy := range deployments.Items {
 			if got, want := deploy.Status.Replicas, int32(2); got != want {
 				t.Logf("deployment %q: Status.Replicas = %d, want: %d", deploy.Name, got, want)
+				t.Logf("Retrying...")
 				return false, nil
 			}
 		}

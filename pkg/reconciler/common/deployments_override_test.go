@@ -23,6 +23,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
@@ -35,6 +36,7 @@ type expDeployments struct {
 	expReplicas            int32
 	expNodeSelector        map[string]string
 	expTolerations         []corev1.Toleration
+	expAffinity            *corev1.Affinity
 }
 
 func TestDeploymentsTransform(t *testing.T) {
@@ -54,6 +56,7 @@ func TestDeploymentsTransform(t *testing.T) {
 			expReplicas:            0,
 			expNodeSelector:        nil,
 			expTolerations:         nil,
+			expAffinity:            nil,
 		}},
 	}, {
 		name: "simple override",
@@ -69,6 +72,11 @@ func TestDeploymentsTransform(t *testing.T) {
 					Operator: corev1.TolerationOpExists,
 					Effect:   corev1.TaintEffectNoSchedule,
 				}},
+				Affinity: &corev1.Affinity{
+					NodeAffinity:    &corev1.NodeAffinity{},
+					PodAffinity:     &corev1.PodAffinity{},
+					PodAntiAffinity: &corev1.PodAntiAffinity{},
+				},
 			},
 		},
 		globalReplicas: 10,
@@ -84,6 +92,11 @@ func TestDeploymentsTransform(t *testing.T) {
 				Operator: corev1.TolerationOpExists,
 				Effect:   corev1.TaintEffectNoSchedule,
 			}},
+			expAffinity: &corev1.Affinity{
+				NodeAffinity:    &corev1.NodeAffinity{},
+				PodAffinity:     &corev1.PodAffinity{},
+				PodAntiAffinity: &corev1.PodAntiAffinity{},
+			},
 		}},
 	}, {
 		name: "no replicas in deploymentoverride, use global replicas",
@@ -122,6 +135,20 @@ func TestDeploymentsTransform(t *testing.T) {
 					Operator: corev1.TolerationOpExists,
 					Effect:   corev1.TaintEffectNoSchedule,
 				}},
+				Affinity: &corev1.Affinity{
+					NodeAffinity: &corev1.NodeAffinity{},
+					PodAffinity:  &corev1.PodAffinity{},
+					PodAntiAffinity: &corev1.PodAntiAffinity{
+						PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
+							{
+								PodAffinityTerm: v1.PodAffinityTerm{
+									Namespaces: []string{"test"},
+								},
+								Weight: 10,
+							},
+						},
+					},
+				},
 			},
 			{
 				Name:         "webhook",
@@ -134,6 +161,20 @@ func TestDeploymentsTransform(t *testing.T) {
 					Operator: corev1.TolerationOpExists,
 					Effect:   corev1.TaintEffectNoSchedule,
 				}},
+				Affinity: &corev1.Affinity{
+					NodeAffinity: &corev1.NodeAffinity{},
+					PodAffinity: &corev1.PodAffinity{
+						PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
+							{
+								PodAffinityTerm: v1.PodAffinityTerm{
+									Namespaces: []string{"test"},
+								},
+								Weight: 10,
+							},
+						},
+					},
+					PodAntiAffinity: &corev1.PodAntiAffinity{},
+				},
 			},
 		},
 		globalReplicas: 10,
@@ -150,6 +191,20 @@ func TestDeploymentsTransform(t *testing.T) {
 					Operator: corev1.TolerationOpExists,
 					Effect:   corev1.TaintEffectNoSchedule,
 				}},
+				expAffinity: &corev1.Affinity{
+					NodeAffinity: &corev1.NodeAffinity{},
+					PodAffinity:  &corev1.PodAffinity{},
+					PodAntiAffinity: &corev1.PodAntiAffinity{
+						PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
+							{
+								PodAffinityTerm: v1.PodAffinityTerm{
+									Namespaces: []string{"test"},
+								},
+								Weight: 10,
+							},
+						},
+					},
+				},
 			},
 			"webhook": {
 				expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0", "e": "f"},
@@ -163,6 +218,20 @@ func TestDeploymentsTransform(t *testing.T) {
 					Operator: corev1.TolerationOpExists,
 					Effect:   corev1.TaintEffectNoSchedule,
 				}},
+				expAffinity: &corev1.Affinity{
+					NodeAffinity: &corev1.NodeAffinity{},
+					PodAffinity: &corev1.PodAffinity{
+						PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
+							{
+								PodAffinityTerm: v1.PodAffinityTerm{
+									Namespaces: []string{"test"},
+								},
+								Weight: 10,
+							},
+						},
+					},
+					PodAntiAffinity: &corev1.PodAntiAffinity{},
+				},
 			},
 		},
 	}}
@@ -213,6 +282,10 @@ func TestDeploymentsTransform(t *testing.T) {
 
 						if diff := cmp.Diff(got.Spec.Template.Spec.Tolerations, d.expTolerations); diff != "" {
 							t.Fatalf("Unexpected tolerations: %v", diff)
+						}
+
+						if diff := cmp.Diff(got.Spec.Template.Spec.Affinity, d.expAffinity); diff != "" {
+							t.Fatalf("Unexpected affinity: %v", diff)
 						}
 
 						if diff := cmp.Diff(got.GetLabels(), d.expLabels); diff != "" {

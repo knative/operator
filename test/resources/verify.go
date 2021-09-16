@@ -279,7 +279,7 @@ func AssertKEOperatorCRReadyStatus(t *testing.T, clients *test.Clients, names te
 func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.ResourceNames) {
 	ks, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 	if err != nil {
-		t.Fatalf("Existing KS operator CR gone: %s", names.KnativeServing)
+		t.Fatalf("KnativeServing %q failed to get: %v", names.KnativeServing, err)
 	}
 	ks.Spec.HighAvailability = &v1alpha1.HighAvailability{Replicas: 2}
 	_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
@@ -287,18 +287,24 @@ func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.Resourc
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
 
-	deployments, err := clients.KubeClient.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		t.Fatalf("Failed to get any deployment under the namespace %q: %v", names.Namespace, err)
-	}
-	if len(deployments.Items) == 0 {
-		t.Fatalf("No deployment under the namespace %q was found", names.Namespace)
-	}
-
-	for _, deploy := range deployments.Items {
-		if got, want := deploy.Status.Replicas, int32(2); got != want {
-			t.Errorf("deployment %q: Status.Replicas = %d, want: %d", deploy.Name, got, want)
+	err = wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+		deployments, err := clients.KubeClient.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			t.Fatalf("Failed to get any deployment under the namespace %q: %v", names.Namespace, err)
 		}
+		if len(deployments.Items) == 0 {
+			t.Fatalf("No deployment under the namespace %q was found", names.Namespace)
+		}
+		for _, deploy := range deployments.Items {
+			if got, want := deploy.Status.Replicas, int32(2); got != want {
+				t.Logf("deployment %q: Status.Replicas = %d, want: %d", deploy.Name, got, want)
+				return false, nil
+			}
+		}
+		return true, nil
+	})
+	if err != nil {
+		t.Fatal("Timed out waiting on KnativeServing to delete", err)
 	}
 
 	ks.Spec.HighAvailability = nil
@@ -306,10 +312,24 @@ func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.Resourc
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
-	for _, deploy := range deployments.Items {
-		if got, want := deploy.Status.Replicas, int32(1); got != want {
-			t.Errorf("deployment %q: Status.Replicas = %d, want: %d", deploy.Name, got, want)
+	err = wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+		deployments, err := clients.KubeClient.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			t.Fatalf("Failed to get any deployment under the namespace %q: %v", names.Namespace, err)
 		}
+		if len(deployments.Items) == 0 {
+			t.Fatalf("No deployment under the namespace %q was found", names.Namespace)
+		}
+		for _, deploy := range deployments.Items {
+			if got, want := deploy.Status.Replicas, int32(2); got != want {
+				t.Logf("deployment %q: Status.Replicas = %d, want: %d", deploy.Name, got, want)
+				return false, nil
+			}
+		}
+		return true, nil
+	})
+	if err != nil {
+		t.Fatal("Timed out waiting on KnativeServing to delete", err)
 	}
 }
 

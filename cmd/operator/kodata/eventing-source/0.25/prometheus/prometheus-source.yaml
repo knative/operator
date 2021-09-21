@@ -44,7 +44,7 @@ metadata:
   name: prometheus-source-webhook
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v0.25.0"
+    contrib.eventing.knative.dev/release: "v0.25.1"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -199,7 +199,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-prometheus-webhook
   labels:
-    contrib.eventing.knative.dev/release: "v0.25.0"
+    contrib.eventing.knative.dev/release: "v0.25.1"
 subjects:
   - kind: ServiceAccount
     name: prometheus-source-webhook
@@ -229,7 +229,7 @@ kind: ClusterRole
 metadata:
   name: prometheus-source-webhook
   labels:
-    contrib.eventing.knative.dev/release: "v0.25.0"
+    contrib.eventing.knative.dev/release: "v0.25.1"
 rules:
   # Sources admin
   - apiGroups:
@@ -349,7 +349,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    contrib.eventing.knative.dev/release: "v0.25.0"
+    contrib.eventing.knative.dev/release: "v0.25.1"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -539,7 +539,7 @@ metadata:
   name: prometheus-controller-manager
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v0.25.0"
+    contrib.eventing.knative.dev/release: "v0.25.1"
     control-plane: prometheus-controller-manager
 spec:
   selector:
@@ -552,7 +552,7 @@ spec:
     spec:
       serviceAccountName: prometheus-controller-manager
       containers:
-        - image: gcr.io/knative-releases/knative.dev/eventing-prometheus/cmd/controller@sha256:1e4a24eade5ffd44c06bb491daa90ce00cccdcf3b7944dffb7f096ae79ccec91
+        - image: gcr.io/knative-releases/knative.dev/eventing-prometheus/cmd/controller@sha256:b25c82f75b7a811acae7b071fc55f94a8b14104df055af1d00bd09a4c7eb8dcf
           name: manager
           env:
             - name: SYSTEM_NAMESPACE
@@ -568,7 +568,7 @@ spec:
             - name: CONFIG_LEADERELECTION_NAME
               value: config-leader-election-prometheus
             - name: PROMETHEUS_RA_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing-prometheus/cmd/receive_adapter@sha256:40d25487a6b779fffb73112c6b498239bbe5e61fe878f7841732415daa219672
+              value: gcr.io/knative-releases/knative.dev/eventing-prometheus/cmd/receive_adapter@sha256:58eb1e19d11e5a59023c4594de9fda63980cef12fb89bb65712570bc7f769e3a
           resources:
             requests:
               cpu: 100m
@@ -602,7 +602,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.prometheus.sources.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v0.25.0"
+    contrib.eventing.knative.dev/release: "v0.25.1"
 webhooks:
   - admissionReviewVersions:
       - v1beta1
@@ -618,7 +618,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.prometheus.sources.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v0.25.0"
+    contrib.eventing.knative.dev/release: "v0.25.1"
 webhooks:
   - admissionReviewVersions:
       - v1beta1
@@ -650,7 +650,7 @@ metadata:
   name: prometheus-source-webhook-certs
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v0.25.0"
+    contrib.eventing.knative.dev/release: "v0.25.1"
 # The data is populated at install time.
 ---
 apiVersion: apps/v1
@@ -659,7 +659,7 @@ metadata:
   name: prometheus-source-webhook
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v0.25.0"
+    contrib.eventing.knative.dev/release: "v0.25.1"
 spec:
   replicas: 1
   selector:
@@ -676,7 +676,7 @@ spec:
       containers:
         - name: prometheus-source-webhook
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing-prometheus/cmd/webhook@sha256:a9dc401bd6c9211798b92cefc0f7144e3d79bcd1c39b24305c057fb0f7099c07
+          image: gcr.io/knative-releases/knative.dev/eventing-prometheus/cmd/webhook@sha256:046dc9c7a14a2e8fb66ee5d8488be925bbb8fb5e0cc32249945ed00f4144eed9
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:

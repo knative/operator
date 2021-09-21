@@ -171,7 +171,7 @@ kind: ClusterRole
 metadata:
   name: couchdb-webhook
   labels:
-    contrib.eventing.knative.dev/release: "v0.24.0"
+    contrib.eventing.knative.dev/release: "v0.24.1"
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:
@@ -314,7 +314,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    contrib.eventing.knative.dev/release: "v0.24.0"
+    contrib.eventing.knative.dev/release: "v0.24.1"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -515,7 +515,7 @@ metadata:
   name: couchdb-controller-manager
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v0.24.0"
+    contrib.eventing.knative.dev/release: "v0.24.1"
     control-plane: couchdb-controller-manager
 spec:
   selector:
@@ -528,7 +528,7 @@ spec:
     spec:
       serviceAccountName: couchdb-controller-manager
       containers:
-        - image: gcr.io/knative-releases/knative.dev/eventing-couchdb/source/cmd/controller@sha256:ccb94757b210b9b133551fb515df80ea8c923cd1f1392b7f0b6e24252139c8ff
+        - image: gcr.io/knative-releases/knative.dev/eventing-couchdb/source/cmd/controller@sha256:bf02c7faa8d2e00ec934f19f099553fddfb04bb41e4db405aca45e5e16d9f385
           name: manager
           env:
             - name: SYSTEM_NAMESPACE
@@ -544,7 +544,7 @@ spec:
             - name: CONFIG_LEADERELECTION_NAME
               value: config-leader-election-couchdb
             - name: COUCHDB_RA_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing-couchdb/source/cmd/receive_adapter@sha256:8979eec600a5c4abde3cdcb12064c9d7837e01fd6745c30fb5642d20c0864517
+              value: gcr.io/knative-releases/knative.dev/eventing-couchdb/source/cmd/receive_adapter@sha256:f79a46ecb67c37b6c372d673646b150ba772544cc6eb42aae037ef7acd6b562f
           resources:
             requests:
               cpu: 100m
@@ -578,7 +578,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.couchdb.messaging.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v0.24.0"
+    contrib.eventing.knative.dev/release: "v0.24.1"
 webhooks:
   - admissionReviewVersions:
       - v1beta1
@@ -594,7 +594,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.couchdb.messaging.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v0.24.0"
+    contrib.eventing.knative.dev/release: "v0.24.1"
 webhooks:
   - admissionReviewVersions:
       - v1beta1
@@ -611,7 +611,7 @@ metadata:
   name: eventing-webhook-certs
   namespace: knative-eventing
   labels:
-    contrib.eventing.knative.dev/release: "v0.24.0"
+    contrib.eventing.knative.dev/release: "v0.24.1"
 # The data is populated at install time.
 
 ---
@@ -635,7 +635,7 @@ metadata:
   name: couchdb-webhook
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v0.24.0"
+    contrib.eventing.knative.dev/release: "v0.24.1"
 spec:
   replicas: 1
   selector:
@@ -652,7 +652,7 @@ spec:
       containers:
         - name: couchdb-webhook
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing-couchdb/source/cmd/webhook@sha256:6453256d24fc606e85958b4ac4b00fb8e97d0e48979159e55257a134cae2a359
+          image: gcr.io/knative-releases/knative.dev/eventing-couchdb/source/cmd/webhook@sha256:a5bf8c6d3ced982a401ffab4b464314c8148cb7b4088f493e15b63cfb2649b8e
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:
@@ -700,7 +700,7 @@ metadata:
   name: config-leader-election-couchdb
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v0.24.0"
+    contrib.eventing.knative.dev/release: "v0.24.1"
 data:
   # An inactive but valid configuration follows; see example.
   resourceLock: "leases"

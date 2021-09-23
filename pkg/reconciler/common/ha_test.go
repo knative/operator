@@ -47,11 +47,6 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		in:       makeUnstructuredDeployment(t, "autoscaler"),
 		expected: makeUnstructuredDeploymentReplicas(t, "autoscaler", 2),
 	}, {
-		name:     "HA; unsupported deployment",
-		config:   makeHa(2),
-		in:       makeUnstructuredDeployment(t, "pingsource-mt-adapter"),
-		expected: makeUnstructuredDeployment(t, "pingsource-mt-adapter"),
-	}, {
 		name:     "HA; adjust hpa",
 		config:   makeHa(2),
 		in:       makeUnstructuredHPA(t, "activator", 1, 4),

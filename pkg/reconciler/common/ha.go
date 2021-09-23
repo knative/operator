@@ -24,26 +24,9 @@ import (
 	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
-func haSupport(obj v1alpha1.KComponent) sets.String {
+func haUnSupported(obj v1alpha1.KComponent) sets.String {
 	return sets.NewString(
-		"controller",
-		"autoscaler",
-		"autoscaler-hpa",
-		"networking-certmanager",
-		"networking-ns-cert",
-		"networking-istio",
-		"3scale-kourier-control",
-		"3scale-kourier-gateway",
-		"net-nscert-controller",
-		"net-certmanager-controller",
-		"net-istio-controller",
-		"net-kourier-controller",
-		"net-kourier-gateway",
-		"eventing-controller",
-		"sugar-controller",
-		"imc-controller",
-		"imc-dispatcher",
-		"mt-broker-controller",
+		"pingsource-mt-adapter",
 	)
 }
 
@@ -67,7 +50,7 @@ func HighAvailabilityTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) 
 		replicas := int64(ha.Replicas)
 
 		// Transform deployments that support HA.
-		if u.GetKind() == "Deployment" && haSupport(obj).Has(u.GetName()) {
+		if u.GetKind() == "Deployment" && !haUnSupported(obj).Has(u.GetName()) {
 			if err := unstructured.SetNestedField(u.Object, replicas, "spec", "replicas"); err != nil {
 				return err
 			}

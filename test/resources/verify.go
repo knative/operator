@@ -70,6 +70,9 @@ func KSOperatorCRVerifyConfiguration(t *testing.T, clients *test.Clients, names 
 
 	// Now remove the config from the spec and update
 	verifyEmptySpec(t, loggingConfigMapName, clients, names)
+
+	// Verify HA config
+	VerifyHADeployments(t, clients, names)
 }
 
 func verifyDefaultConfig(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConfigMapName string, clients *test.Clients, names test.ResourceNames) {
@@ -269,6 +272,71 @@ func AssertKEOperatorCRReadyStatus(t *testing.T, clients *test.Clients, names te
 	if _, err := WaitForKnativeEventingState(clients.KnativeEventing(), names.KnativeEventing,
 		IsKnativeEventingReady); err != nil {
 		t.Fatalf("KnativeService %q failed to get to the READY status: %v", names.KnativeEventing, err)
+	}
+}
+
+// VerifyHADeployments verify whether all the deployments has scaled up.
+func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.ResourceNames) {
+	ks, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("KnativeServing %q failed to get: %v", names.KnativeServing, err)
+	}
+	ks.Spec.HighAvailability = &v1alpha1.HighAvailability{Replicas: 2}
+	_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
+	if err != nil {
+		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
+	}
+
+	err = wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+		deployments, err := clients.KubeClient.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			t.Fatalf("Failed to get any deployment under the namespace %q: %v", names.Namespace, err)
+		}
+		if len(deployments.Items) == 0 {
+			t.Fatalf("No deployment under the namespace %q was found", names.Namespace)
+		}
+		for _, deploy := range deployments.Items {
+			if got, want := deploy.Status.Replicas, int32(2); got != want {
+				t.Logf("deployment %q: Status.Replicas = %d, want: %d", deploy.Name, got, want)
+				t.Logf("Retrying...")
+				return false, nil
+			}
+		}
+		return true, nil
+	})
+	if err != nil {
+		t.Fatal("Timed out waiting on KnativeServing to delete", err)
+	}
+
+	// Get KnativeServing CR again to avoid "the object has been modified" error.
+	ks, err = clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("KnativeServing %q failed to get: %v", names.KnativeServing, err)
+	}
+	ks.Spec.HighAvailability = nil
+	_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
+	if err != nil {
+		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
+	}
+	err = wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+		deployments, err := clients.KubeClient.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			t.Fatalf("Failed to get any deployment under the namespace %q: %v", names.Namespace, err)
+		}
+		if len(deployments.Items) == 0 {
+			t.Fatalf("No deployment under the namespace %q was found", names.Namespace)
+		}
+		for _, deploy := range deployments.Items {
+			if got, want := deploy.Status.Replicas, int32(2); got != want {
+				t.Logf("deployment %q: Status.Replicas = %d, want: %d", deploy.Name, got, want)
+				t.Logf("Retrying...")
+				return false, nil
+			}
+		}
+		return true, nil
+	})
+	if err != nil {
+		t.Fatal("Timed out waiting on KnativeServing to delete", err)
 	}
 }
 

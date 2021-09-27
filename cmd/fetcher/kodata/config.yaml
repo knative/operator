@@ -48,6 +48,7 @@ knative-eventing:
       - "appender.yaml"
       - "event-display.yaml"
       - "heartbeats.yaml"
+      - "recordevents.yaml"
       - "websocket-source.yaml"
     # Eventing packaging has evolved in non-standard ways over the last few releases.
     overrides:

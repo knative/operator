@@ -20,6 +20,7 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/pkg/controller"
 )
 
 // Extension enables platform-specific features
@@ -31,10 +32,10 @@ type Extension interface {
 }
 
 // ExtensionGenerator creates an Extension from a Context
-type ExtensionGenerator func(context.Context) Extension
+type ExtensionGenerator func(context.Context, *controller.Impl) Extension
 
 // NoPlatform "generates" a NilExtension
-func NoExtension(context.Context) Extension {
+func NoExtension(context.Context, *controller.Impl) Extension {
 	return nilExtension{}
 }
 

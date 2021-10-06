@@ -20,8 +20,15 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/sets"
 	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
+
+func haUnSupported(obj v1alpha1.KComponent) sets.String {
+	return sets.NewString(
+		"pingsource-mt-adapter",
+	)
+}
 
 // HighAvailabilityTransform mutates configmaps and replicacounts of certain
 // controllers when HA control plane is specified.
@@ -43,7 +50,7 @@ func HighAvailabilityTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) 
 		replicas := int64(ha.Replicas)
 
 		// Transform deployments that support HA.
-		if u.GetKind() == "Deployment" {
+		if u.GetKind() == "Deployment" && !haUnSupported(obj).Has(u.GetName()) {
 			if err := unstructured.SetNestedField(u.Object, replicas, "spec", "replicas"); err != nil {
 				return err
 			}

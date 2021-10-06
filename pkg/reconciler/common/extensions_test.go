@@ -67,7 +67,7 @@ func TestExtensions(t *testing.T) {
 		length:   0,
 	}, {
 		name:     "no path",
-		platform: NoExtension(context.TODO()),
+		platform: NoExtension(context.TODO(), nil),
 		length:   0,
 	}}
 

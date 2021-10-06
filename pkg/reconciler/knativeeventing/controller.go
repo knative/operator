@@ -59,10 +59,10 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 		c := &Reconciler{
 			kubeClientSet:     kubeClient,
 			operatorClientSet: operatorclient.Get(ctx),
-			extension:         generator(ctx),
 			manifest:          manifest,
 		}
 		impl := knereconciler.NewImpl(ctx, c)
+		c.extension = generator(ctx, impl)
 
 		logger.Info("Setting up event handlers")
 

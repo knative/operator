@@ -53,7 +53,7 @@ func TestKnativeServingHappyPath(t *testing.T) {
 	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
 
 	// Deployments are not available at first.
-	ks.MarkDeploymentsNotReady()
+	ks.MarkDeploymentsNotReady([]string{"test"})
 	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
 	apistest.CheckConditionFailed(ks, DeploymentsAvailable, t)
 	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)

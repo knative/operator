@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"strings"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/apis"
 )
@@ -91,11 +93,11 @@ func (es *KnativeEventingStatus) MarkVersionMigrationNotEligible(msg string) {
 
 // MarkDeploymentsNotReady marks the DeploymentsAvailable status as false and calls out
 // it's waiting for deployments.
-func (es *KnativeEventingStatus) MarkDeploymentsNotReady() {
+func (es *KnativeEventingStatus) MarkDeploymentsNotReady(deployments []string) {
 	eventingCondSet.Manage(es).MarkFalse(
 		DeploymentsAvailable,
 		"NotReady",
-		"Waiting on deployments")
+		"Waiting on deployments: %s", strings.Join(deployments, ", "))
 }
 
 // MarkDependenciesInstalled marks the DependenciesInstalled status as true.

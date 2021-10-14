@@ -83,7 +83,7 @@ type KComponentStatus interface {
 	MarkDeploymentsAvailable()
 	// MarkDeploymentsNotReady marks the DeploymentsAvailable status as false and calls out
 	// it's waiting for deployments.
-	MarkDeploymentsNotReady()
+	MarkDeploymentsNotReady([]string)
 
 	// MarkVersionMigrationEligible marks the VersionMigrationEligible status as true.
 	MarkVersionMigrationEligible()

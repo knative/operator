@@ -53,7 +53,7 @@ func TestKnativeEventingHappyPath(t *testing.T) {
 	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)
 
 	// Deployments are not available at first.
-	ke.MarkDeploymentsNotReady()
+	ke.MarkDeploymentsNotReady([]string{"test"})
 	apistest.CheckConditionSucceeded(ke, DependenciesInstalled, t)
 	apistest.CheckConditionFailed(ke, DeploymentsAvailable, t)
 	apistest.CheckConditionSucceeded(ke, InstallSucceeded, t)

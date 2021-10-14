@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"strings"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/apis"
 )
@@ -90,11 +92,11 @@ func (is *KnativeServingStatus) MarkDeploymentsAvailable() {
 
 // MarkDeploymentsNotReady marks the DeploymentsAvailable status as false and calls out
 // it's waiting for deployments.
-func (is *KnativeServingStatus) MarkDeploymentsNotReady() {
+func (is *KnativeServingStatus) MarkDeploymentsNotReady(deployments []string) {
 	servingCondSet.Manage(is).MarkFalse(
 		DeploymentsAvailable,
 		"NotReady",
-		"Waiting on deployments")
+		"Waiting on deployments: %s", strings.Join(deployments, ", "))
 }
 
 // MarkDependenciesInstalled marks the DependenciesInstalled status as true.

@@ -65,14 +65,14 @@ func KSOperatorCRVerifyConfiguration(t *testing.T, clients *test.Clients, names 
 	// Delete a single key/value pair
 	verifySingleKeyDeletion(t, LoggingConfigKey, loggingConfigMapName, clients, names)
 
+	// Verify HA config
+	VerifyHADeployments(t, clients, names)
+
 	// Use an empty map as the value
 	verifyEmptyKey(t, DefaultsConfigKey, defaultsConfigMapName, clients, names)
 
 	// Now remove the config from the spec and update
 	verifyEmptySpec(t, loggingConfigMapName, clients, names)
-
-	// Verify HA config
-	VerifyHADeployments(t, clients, names)
 }
 
 func verifyDefaultConfig(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConfigMapName string, clients *test.Clients, names test.ResourceNames) {

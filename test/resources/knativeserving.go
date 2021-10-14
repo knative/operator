@@ -60,19 +60,6 @@ func WaitForKnativeServingState(clients servingv1alpha1.KnativeServingInterface,
 
 // EnsureKnativeServingExists creates a KnativeServing with the name names.KnativeServing under the namespace names.Namespace, if it does not exist.
 func EnsureKnativeServingExists(clients servingv1alpha1.KnativeServingInterface, names test.ResourceNames) (*v1alpha1.KnativeServing, error) {
-	ingressClass := "istio.ingress.networking.knative.dev"
-	if ingressClassOverride := os.Getenv("INGRESS_CLASS"); ingressClassOverride != "" {
-		ingressClass = ingressClassOverride
-	}
-	var istioEnabled, contourEnabled, kourierEnabled bool
-	switch strings.Split(ingressClass, ".")[0] {
-	case "istio":
-		istioEnabled = true
-	case "contour":
-		contourEnabled = true
-	case "kourier":
-		kourierEnabled = true
-	}
 	// If this function is called by the upgrade tests, we only create the custom resource, if it does not exist.
 	ks, err := clients.Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 	if apierrs.IsNotFound(err) {
@@ -81,17 +68,8 @@ func EnsureKnativeServingExists(clients servingv1alpha1.KnativeServingInterface,
 				Name:      names.KnativeServing,
 				Namespace: names.Namespace,
 			},
-			Spec: v1alpha1.KnativeServingSpec{
-				Ingress: &v1alpha1.IngressConfigs{
-					Istio:   v1alpha1.IstioIngressConfiguration{Enabled: istioEnabled},
-					Contour: v1alpha1.ContourIngressConfiguration{Enabled: contourEnabled},
-					Kourier: v1alpha1.KourierIngressConfiguration{Enabled: kourierEnabled},
-				},
-				CommonSpec: v1alpha1.CommonSpec{
-					Config: v1alpha1.ConfigMapData{"network": {"ingress.class": ingressClass}},
-				},
-			},
 		}
+		configureIngressClass(&ks.Spec)
 		return clients.Create(context.TODO(), ks, metav1.CreateOptions{})
 	}
 	return ks, err
@@ -129,7 +107,7 @@ func getDeploymentStatus(d *v1.Deployment) corev1.ConditionStatus {
 }
 
 func getTestKSOperatorCRSpec() v1alpha1.KnativeServingSpec {
-	return v1alpha1.KnativeServingSpec{
+	spec := v1alpha1.KnativeServingSpec{
 		CommonSpec: v1alpha1.CommonSpec{
 			Config: v1alpha1.ConfigMapData{
 				DefaultsConfigKey: {
@@ -141,5 +119,37 @@ func getTestKSOperatorCRSpec() v1alpha1.KnativeServingSpec {
 				},
 			},
 		},
+	}
+	configureIngressClass(&spec)
+	return spec
+}
+
+func configureIngressClass(spec *v1alpha1.KnativeServingSpec) {
+	ingressClass := "istio.ingress.networking.knative.dev"
+	if ingressClassOverride := os.Getenv("INGRESS_CLASS"); ingressClassOverride != "" {
+		ingressClass = ingressClassOverride
+	}
+	var istioEnabled, contourEnabled, kourierEnabled bool
+	switch strings.Split(ingressClass, ".")[0] {
+	case "istio":
+		istioEnabled = true
+	case "contour":
+		contourEnabled = true
+	case "kourier":
+		kourierEnabled = true
+	}
+
+	if !istioEnabled {
+		spec.Ingress = &v1alpha1.IngressConfigs{
+			Istio:   v1alpha1.IstioIngressConfiguration{Enabled: istioEnabled},
+			Contour: v1alpha1.ContourIngressConfiguration{Enabled: contourEnabled},
+			Kourier: v1alpha1.KourierIngressConfiguration{Enabled: kourierEnabled},
+		}
+
+		if spec.CommonSpec.Config == nil {
+			spec.CommonSpec.Config = v1alpha1.ConfigMapData{"network": {"ingress.class": ingressClass}}
+		} else {
+			spec.CommonSpec.Config["network"] = map[string]string{"ingress.class": ingressClass}
+		}
 	}
 }

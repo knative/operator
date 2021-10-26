@@ -43,25 +43,25 @@ func TestStagesExecute(t *testing.T) {
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
-					Version: "0.16.1",
+					Version: "1.0.0",
 					AdditionalManifests: []v1alpha1.Manifest{{
 						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
 					}},
 				},
 			},
 		},
-		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1" + "," + os.Getenv(KoEnvKey) +
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/1.0.0" + "," + os.Getenv(KoEnvKey) +
 			"/additional-manifests/additional-resource.yaml",
 	}, {
 		name: "knative-serving with no additional manifests",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
-					Version: "0.16.1",
+					Version: "0.26.1",
 				},
 			},
 		},
-		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.26.1",
 	}}
 
 	for _, test := range tests {
@@ -92,15 +92,15 @@ func TestStagesExecuteWithRepetition(t *testing.T) {
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
-					Version: "0.16.1",
+					Version: "1.0.0",
 					AdditionalManifests: []v1alpha1.Manifest{{
 						Url: "testdata/kodata/additional-manifests-repetition/additional-resource.yaml",
 					}},
 				},
 			},
 		},
-		expectedNotContainingPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1/serving-core.yaml",
-		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1" + "," + os.Getenv(KoEnvKey) +
+		expectedNotContainingPath: os.Getenv(KoEnvKey) + "/knative-serving/1.0.0/serving-core.yaml",
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/1.0.0" + "," + os.Getenv(KoEnvKey) +
 			"/additional-manifests-repetition/additional-resource.yaml",
 		expectedContainingPath: os.Getenv(KoEnvKey) + "/additional-manifests-repetition/additional-resource.yaml",
 	}}
@@ -139,50 +139,50 @@ func TestStagesExecuteInstalledManifests(t *testing.T) {
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
-					Version: "0.16.1",
+					Version: "0.26.1",
 				},
 			},
 		},
-		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.26.1",
 	}, {
 		name: "knative-serving with status.manifests",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
-					Version: "0.16.1",
+					Version: "0.26.1",
 				},
 			},
 			Status: v1alpha1.KnativeServingStatus{
-				Version: "0.16.1",
+				Version: "0.26.1",
 				Manifests: []string{
-					os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+					os.Getenv(KoEnvKey) + "/knative-serving/0.26.1",
 					os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
 				},
 			},
 		},
-		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1" + "," + os.Getenv(KoEnvKey) +
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.26.1" + "," + os.Getenv(KoEnvKey) +
 			"/additional-manifests/additional-resource.yaml",
 	}, {
 		name: "knative-serving with the additional manifests in spec",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
-					Version: "0.16.1",
+					Version: "0.26.1",
 					AdditionalManifests: []v1alpha1.Manifest{{
 						Url: os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
 					}},
 				},
 			},
 		},
-		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.26.1",
 	}, {
 		name: "knative-serving with the additional manifests in spec",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
-					Version: "0.16.1",
+					Version: "0.26.1",
 					Manifests: []v1alpha1.Manifest{{
-						Url: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+						Url: os.Getenv(KoEnvKey) + "/knative-serving/0.26.1",
 					}},
 					AdditionalManifests: []v1alpha1.Manifest{{
 						Url: os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
@@ -190,7 +190,7 @@ func TestStagesExecuteInstalledManifests(t *testing.T) {
 				},
 			},
 		},
-		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.16.1",
+		expectedManifestsPath: os.Getenv(KoEnvKey) + "/knative-serving/0.26.1",
 	}}
 
 	for _, test := range testRepetition {

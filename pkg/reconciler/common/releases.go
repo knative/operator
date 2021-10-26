@@ -143,13 +143,6 @@ func IsVersionValidMigrationEligible(instance v1alpha1.KComponent) error {
 	current = SanitizeSemver(current)
 	currentMajor := semver.Major(current)
 	targetMajor := semver.Major(target)
-	if currentMajor != targetMajor {
-		// All the official releases of Knative are under the same Major version number. If target and current versions
-		// are different in terms of major version, upgrade or downgrade is not supported.
-		// TODO We need to deal with the the case of bumping major version later.
-		return fmt.Errorf("not supported to upgrade or downgrade across the MAJOR version. The "+
-			"installed KnativeServing version is %v.", current)
-	}
 
 	currentMinor, err := strconv.Atoi(strings.Split(current, ".")[1])
 	if err != nil {
@@ -158,6 +151,24 @@ func IsVersionValidMigrationEligible(instance v1alpha1.KComponent) error {
 	targetMinor, err := strconv.Atoi(strings.Split(target, ".")[1])
 	if err != nil {
 		return fmt.Errorf("minor number of the target version %v should be an integer.", target)
+	}
+
+	if currentMajor != targetMajor {
+		// All the official releases of Knative are under the same Major version number. If target and current versions
+		// are different in terms of major version, upgrade or downgrade is not supported.
+
+		// 0.26 is the version prior to 1.0.0. We need to support upgrade from 0.26 to 1.0.
+		if semver.MajorMinor(current) == "v0.26" && semver.MajorMinor(target) == "v1.0" {
+			return nil
+		}
+
+		// 0.26 is the version prior to 1.0.0. We need to support downgrade from 1.0 to 0.26.
+		if semver.MajorMinor(target) == "v0.26" && semver.MajorMinor(current) == "v1.0" {
+			return nil
+		}
+
+		return fmt.Errorf("not supported to upgrade or downgrade across the MAJOR version. The "+
+			"installed KnativeServing version is %v.", current)
 	}
 
 	// If the diff between minor versions are less than 2, return nil.
@@ -188,7 +199,7 @@ func getManifestWithVersionValidation(manifestsPath string, instance v1alpha1.KC
 		if len(instance.GetSpec().GetManifests()) == 0 {
 			// If we cannot access the manifests, there is no need to check whether the versions match.
 			// If spec.manifests is empty, there is no need to check whether the versions match.
-			return manifests, fmt.Errorf("The manifests of the target version %v are not available to this release.",
+			return manifests, fmt.Errorf("the manifests of the target version %v are not available to this release",
 				instance.GetSpec().GetVersion())
 		}
 		return manifests, err
@@ -196,7 +207,7 @@ func getManifestWithVersionValidation(manifestsPath string, instance v1alpha1.KC
 
 	if len(manifests.Resources()) == 0 {
 		// If we cannot find any resources in the manifests, we need to return an error.
-		return manifests, fmt.Errorf("There is no resource available in the target manifests %s.", manifestsPath)
+		return manifests, fmt.Errorf("there is no resource available in the target manifests %s", manifestsPath)
 	}
 
 	if version == "" || version == LATEST_VERSION {
@@ -212,8 +223,8 @@ func getManifestWithVersionValidation(manifestsPath string, instance v1alpha1.KC
 		// major.minor.
 		manifestVersion := u.GetLabels()[key]
 		if manifestVersion != "" && semver.MajorMinor(targetVersion) != semver.MajorMinor(manifestVersion) {
-			return mf.Manifest{}, fmt.Errorf("The version of the manifests %s does not match the target "+
-				"version of the operator CR %s. The resource name is %s.", manifestVersion, targetVersion, u.GetName())
+			return mf.Manifest{}, fmt.Errorf("the version of the manifests %s of the component %s does not match the target "+
+				"version of the operator CR %s", manifestVersion, u.GetName(), targetVersion)
 		}
 	}
 

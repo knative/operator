@@ -17,5 +17,5 @@ kind: Namespace
 metadata:
   name: knative-serving-core
   labels:
-    serving.knative.dev/release: "v0.16.1"
+    serving.knative.dev/release: "v1.0.0"
     tag: "additional"

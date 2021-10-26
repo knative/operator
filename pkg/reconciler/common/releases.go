@@ -143,13 +143,6 @@ func IsVersionValidMigrationEligible(instance v1alpha1.KComponent) error {
 	current = SanitizeSemver(current)
 	currentMajor := semver.Major(current)
 	targetMajor := semver.Major(target)
-	if currentMajor != targetMajor {
-		// All the official releases of Knative are under the same Major version number. If target and current versions
-		// are different in terms of major version, upgrade or downgrade is not supported.
-		// TODO We need to deal with the the case of bumping major version later.
-		return fmt.Errorf("not supported to upgrade or downgrade across the MAJOR version. The "+
-			"installed KnativeServing version is %v.", current)
-	}
 
 	currentMinor, err := strconv.Atoi(strings.Split(current, ".")[1])
 	if err != nil {
@@ -158,6 +151,24 @@ func IsVersionValidMigrationEligible(instance v1alpha1.KComponent) error {
 	targetMinor, err := strconv.Atoi(strings.Split(target, ".")[1])
 	if err != nil {
 		return fmt.Errorf("minor number of the target version %v should be an integer.", target)
+	}
+
+	if currentMajor != targetMajor {
+		// All the official releases of Knative are under the same Major version number. If target and current versions
+		// are different in terms of major version, upgrade or downgrade is not supported.
+
+		// 0.26 is the version prior to 1.0.0. We need to support upgrade from 0.26 to 1.0.
+		if semver.MajorMinor(current) == "v0.26" && semver.MajorMinor(target) == "v1.0" {
+			return nil
+		}
+
+		// 0.26 is the version prior to 1.0.0. We need to support downgrade from 1.0 to 0.26.
+		if semver.MajorMinor(target) == "v0.26" && semver.MajorMinor(current) == "v1.0" {
+			return nil
+		}
+
+		return fmt.Errorf("not supported to upgrade or downgrade across the MAJOR version. The "+
+			"installed KnativeServing version is %v.", current)
 	}
 
 	// If the diff between minor versions are less than 2, return nil.

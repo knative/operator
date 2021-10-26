@@ -199,7 +199,7 @@ func getManifestWithVersionValidation(manifestsPath string, instance v1alpha1.KC
 		if len(instance.GetSpec().GetManifests()) == 0 {
 			// If we cannot access the manifests, there is no need to check whether the versions match.
 			// If spec.manifests is empty, there is no need to check whether the versions match.
-			return manifests, fmt.Errorf("The manifests of the target version %v are not available to this release.",
+			return manifests, fmt.Errorf("the manifests of the target version %v are not available to this release",
 				instance.GetSpec().GetVersion())
 		}
 		return manifests, err
@@ -207,7 +207,7 @@ func getManifestWithVersionValidation(manifestsPath string, instance v1alpha1.KC
 
 	if len(manifests.Resources()) == 0 {
 		// If we cannot find any resources in the manifests, we need to return an error.
-		return manifests, fmt.Errorf("There is no resource available in the target manifests %s.", manifestsPath)
+		return manifests, fmt.Errorf("there is no resource available in the target manifests %s", manifestsPath)
 	}
 
 	if version == "" || version == LATEST_VERSION {
@@ -223,8 +223,8 @@ func getManifestWithVersionValidation(manifestsPath string, instance v1alpha1.KC
 		// major.minor.
 		manifestVersion := u.GetLabels()[key]
 		if manifestVersion != "" && semver.MajorMinor(targetVersion) != semver.MajorMinor(manifestVersion) {
-			return mf.Manifest{}, fmt.Errorf("The version of the manifests %s does not match the target "+
-				"version of the operator CR %s. The resource name is %s.", manifestVersion, targetVersion, u.GetName())
+			return mf.Manifest{}, fmt.Errorf("the version of the manifests %s of the component %s does not match the target "+
+				"version of the operator CR %s", manifestVersion, u.GetName(), targetVersion)
 		}
 	}
 

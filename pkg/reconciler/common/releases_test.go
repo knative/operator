@@ -28,12 +28,12 @@ import (
 )
 
 const (
-	SERVING_CORE         = "testdata/kodata/knative-serving/0.26.1/serving-core.yaml"
-	SERVING_HPA          = "testdata/kodata/knative-serving/0.26.1/serving-hpa.yaml"
-	EVENTING_CORE        = "testdata/kodata/knative-eventing/0.26.0/eventing-core.yaml"
-	IN_MEMORY_CHANNEL    = "testdata/kodata/knative-eventing/0.26.0/in-memory-channel.yaml"
-	SERVING_VERSION_CORE = "testdata/kodata/knative-serving/" + VersionVariable + "/serving-core.yaml"
-	SERVING_VERSION_HPA  = "testdata/kodata/knative-serving/" + VersionVariable + "/serving-hpa.yaml"
+	ServingCore        = "testdata/kodata/knative-serving/0.26.1/serving-core.yaml"
+	ServingHpa         = "testdata/kodata/knative-serving/0.26.1/serving-hpa.yaml"
+	EventingCore       = "testdata/kodata/knative-eventing/0.26.0/eventing-core.yaml"
+	InMemoryChannel    = "testdata/kodata/knative-eventing/0.26.0/in-memory-channel.yaml"
+	ServingVersionCore = "testdata/kodata/knative-serving/" + VersionVariable + "/serving-core.yaml"
+	ServingVersionHpa  = "testdata/kodata/knative-serving/" + VersionVariable + "/serving-hpa.yaml"
 )
 
 func TestRetrieveManifestPath(t *testing.T) {
@@ -71,45 +71,45 @@ func TestRetrieveManifestPath(t *testing.T) {
 			Spec: v1alpha1.KnativeServingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
 					Manifests: []v1alpha1.Manifest{{
-						Url: SERVING_CORE,
+						Url: ServingCore,
 					}, {
-						Url: SERVING_HPA,
+						Url: ServingHpa,
 					}},
 					Version: "0.26.0",
 				},
 			},
 		},
-		expected: SERVING_CORE + "," + SERVING_HPA,
+		expected: ServingCore + "," + ServingHpa,
 	}, {
 		name: "Valid Knative Eventing URLs",
 		component: &v1alpha1.KnativeEventing{
 			Spec: v1alpha1.KnativeEventingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
 					Manifests: []v1alpha1.Manifest{{
-						Url: EVENTING_CORE,
+						Url: EventingCore,
 					}, {
-						Url: IN_MEMORY_CHANNEL,
+						Url: InMemoryChannel,
 					}},
 					Version: "0.26.0",
 				},
 			},
 		},
-		expected: EVENTING_CORE + "," + IN_MEMORY_CHANNEL,
+		expected: EventingCore + "," + InMemoryChannel,
 	}, {
 		name: "Valid Knative Serving URLs with the version parameter",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
 				CommonSpec: v1alpha1.CommonSpec{
 					Manifests: []v1alpha1.Manifest{{
-						Url: SERVING_VERSION_CORE,
+						Url: ServingVersionCore,
 					}, {
-						Url: SERVING_VERSION_HPA,
+						Url: ServingVersionHpa,
 					}},
 					Version: "0.26.1",
 				},
 			},
 		},
-		expected: SERVING_CORE + "," + SERVING_HPA,
+		expected: ServingCore + "," + ServingHpa,
 	}}
 
 	for _, test := range tests {
@@ -187,9 +187,9 @@ func TestTargetVersion(t *testing.T) {
 				CommonSpec: v1alpha1.CommonSpec{
 					Version: "0.26",
 					Manifests: []v1alpha1.Manifest{{
-						Url: SERVING_VERSION_CORE,
+						Url: ServingVersionCore,
 					}, {
-						Url: SERVING_VERSION_HPA,
+						Url: ServingVersionHpa,
 					}},
 				},
 			},
@@ -202,9 +202,9 @@ func TestTargetVersion(t *testing.T) {
 				CommonSpec: v1alpha1.CommonSpec{
 					Version: "",
 					Manifests: []v1alpha1.Manifest{{
-						Url: SERVING_VERSION_CORE,
+						Url: ServingVersionCore,
 					}, {
-						Url: SERVING_VERSION_HPA,
+						Url: ServingVersionHpa,
 					}},
 				},
 			},
@@ -695,7 +695,7 @@ func TestTargetManifest(t *testing.T) {
 			},
 		},
 		expectedManifestsPath: "",
-		expectedError:         fmt.Errorf("The version of the manifests %s does not match the target version of the operator CR %s. The resource name is %s.", "v0.17.2", "v0.26.0", "knative-serving"),
+		expectedError:         fmt.Errorf("the version of the manifests %s of the component %s does not match the target version of the operator CR %s", "v0.17.2", "knative-serving", "v0.26.0"),
 	}, {
 		name: "knative-serving with spec.manifests matched but no spec.version",
 		component: &v1alpha1.KnativeServing{
@@ -752,7 +752,7 @@ func TestTargetManifest(t *testing.T) {
 			},
 		},
 		expectedManifestsPath: "",
-		expectedError:         fmt.Errorf("The manifests of the target version %v are not available to this release.", "0.22"),
+		expectedError:         fmt.Errorf("the manifests of the target version %v are not available to this release", "0.22"),
 	}, {
 		name: "knative-serving with major.minor.patch spec.version not available",
 		component: &v1alpha1.KnativeServing{
@@ -763,7 +763,7 @@ func TestTargetManifest(t *testing.T) {
 			},
 		},
 		expectedManifestsPath: "",
-		expectedError:         fmt.Errorf("The manifests of the target version %v are not available to this release.", "0.22.1"),
+		expectedError:         fmt.Errorf("the manifests of the target version %v are not available to this release", "0.22.1"),
 	}, {
 		name: "knative-serving with the latest version available",
 		component: &v1alpha1.KnativeServing{
@@ -785,7 +785,7 @@ func TestTargetManifest(t *testing.T) {
 			},
 		},
 		expectedManifestsPath: "",
-		expectedError:         fmt.Errorf("The manifests of the target version %v are not available to this release.", "0.22"),
+		expectedError:         fmt.Errorf("the manifests of the target version %v are not available to this release", "0.22"),
 	}, {
 		name: "knative-eventing with major.minor.patch spec.version not available",
 		component: &v1alpha1.KnativeEventing{
@@ -796,7 +796,7 @@ func TestTargetManifest(t *testing.T) {
 			},
 		},
 		expectedManifestsPath: "",
-		expectedError:         fmt.Errorf("The manifests of the target version %v are not available to this release.", "0.22.1"),
+		expectedError:         fmt.Errorf("the manifests of the target version %v are not available to this release", "0.22.1"),
 	}, {
 		name: "knative-eventing with the latest available",
 		component: &v1alpha1.KnativeEventing{

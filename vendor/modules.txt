@@ -1217,7 +1217,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/config
 knative.dev/eventing/test/upgrade/prober/wathola/event
 knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
-# knative.dev/hack v0.0.0-20211104075903-0f69979bbb7d
+# knative.dev/hack v0.0.0-20211105231158-29f86c2653b5
 ## explicit
 knative.dev/hack
 knative.dev/hack/shell
@@ -1300,7 +1300,7 @@ knative.dev/pkg/tracker
 knative.dev/pkg/version
 knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
-# knative.dev/serving v0.27.1-0.20211104194011-cad72a388cc8
+# knative.dev/serving v0.27.1-0.20211105235058-9f6115993432
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

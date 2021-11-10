@@ -79,6 +79,9 @@ func ImageTransform(registry *v1alpha1.Registry, log *zap.SugaredLogger) mf.Tran
 
 			obj = job
 			podSpec = &job.Spec.Template.Spec
+		default:
+			// No matches, exit early
+			return nil
 		}
 
 		log.Debugw("Updating", "name", obj.GetName(), "registry", registry)

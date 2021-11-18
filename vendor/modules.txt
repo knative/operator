@@ -1099,11 +1099,11 @@ k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20211117134235-da260af2ab4d
+# knative.dev/caching v0.0.0-20211118070729-77b107b17fef
 ## explicit
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.27.1-0.20211117135535-e7452e66b37c
+# knative.dev/eventing v0.27.1-0.20211118083529-11a40c649d54
 ## explicit
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1269,7 +1269,7 @@ knative.dev/pkg/tracker
 knative.dev/pkg/version
 knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates/resources
-# knative.dev/serving v0.27.1-0.20211117225128-0761bf7f5ac6
+# knative.dev/serving v0.27.1-0.20211118093028-b4768b159787
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

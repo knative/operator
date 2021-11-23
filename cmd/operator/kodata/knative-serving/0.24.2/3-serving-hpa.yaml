@@ -47,7 +47,7 @@ spec:
         - name: autoscaler-hpa
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler-hpa@sha256:577d8f8c44cb68df76ac3b425c123a0e60e0c65c3e0ca26b397f8cf89d4f0809
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler-hpa@sha256:b5b92d6e31bafa0d51e465edec1a8c3e41aa6d84ca8e1474321136553cfcf25b
           resources:
             requests:
               cpu: 30m

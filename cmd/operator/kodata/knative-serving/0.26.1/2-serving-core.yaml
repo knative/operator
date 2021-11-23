@@ -3514,7 +3514,7 @@ metadata:
 spec:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
-  image: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:2cb143433261a01917b11248f98634e1f25ef299b28c78328cde8e90a8fecd32
+  image: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:ba2b33f774c7437a82ef2978651a41266e1f6e807b92f8a3827e2b380b100b41
 
 ---
 # Copyright 2018 The Knative Authors
@@ -3889,7 +3889,7 @@ metadata:
 data:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
-  queueSidecarImage: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:2cb143433261a01917b11248f98634e1f25ef299b28c78328cde8e90a8fecd32
+  queueSidecarImage: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:ba2b33f774c7437a82ef2978651a41266e1f6e807b92f8a3827e2b380b100b41
   _example: |-
     ################################
     #                              #
@@ -4827,7 +4827,7 @@ spec:
         - name: activator
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:b2e5c674b9a836920e402a45385317644f9a5e50e99ea394a5766c81df1f245a
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:73df2b25b4f205e6d06eabce8ea1b2f668eaf7a7d0e52d451de681a080eecbb9
           # The numbers are based on performance test results from
           # https://github.com/knative/serving/issues/1625#issuecomment-511930023
           resources:
@@ -4986,7 +4986,7 @@ spec:
         - name: autoscaler
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:78a7270239e67b4180a91d2753ac60627ead95ee1efedf59434a355e35cb6f7c
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:c60f74e8295df772e2ef3776a02060f9397aeb4cb867549ec1403232ba1f81f3
           resources:
             requests:
               cpu: 100m
@@ -5123,7 +5123,7 @@ spec:
         - name: controller
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:d37161dbdfed90e361051d4e5c615b62245b716814115a2c61f897dc971f35bc
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:303374efdefa86639f9ae2fa76c5b6277471c30cf01b4bf08802282a76ce6b34
           resources:
             requests:
               cpu: 100m
@@ -5238,7 +5238,7 @@ spec:
         - name: domain-mapping
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:c6f01b953e58a73344dd11b4290506a3d8d3e54c55189aaf2678aaa3d483f732
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:71f8c70e86d8c0e2bfc67b1dff676c1c388733c7e6496ab4d8267e8a84e90461
           resources:
             requests:
               cpu: 30m
@@ -5328,7 +5328,7 @@ spec:
         - name: domainmapping-webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:999f47d3798784da83b8d12e6c5dbc8dcae68019d5e2bd78fd51ee8404eb5ed8
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:102e0f477833212f258f37fb294a5196431abafae5a47cb12e5dd31402f16da0
           resources:
             requests:
               cpu: 100m
@@ -5531,7 +5531,7 @@ spec:
         - name: webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:4e4c12bd24ab594a6c457b476543da9149efd416858c84e75e5b814f0c256004
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:dc57d97e9807933299a947a6716e47a5652bcd949594fda15025e3d0885c1d27
           resources:
             requests:
               cpu: 100m

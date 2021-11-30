@@ -1907,10 +1907,11 @@ k8s.io/utils v0.0.0-20200912215256-4140de9c8800/go.mod h1:jPW/WVKK9YHAvNhRxK0md/
 k8s.io/utils v0.0.0-20201110183641-67b214c5f920/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 k8s.io/utils v0.0.0-20210111153108-fddb29f9d009 h1:0T5IaWHO3sJTEmCP6mUlBvMukxPKUQWqiI/YuiBNMiQ=
 k8s.io/utils v0.0.0-20210111153108-fddb29f9d009/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
-knative.dev/caching v0.0.0-20211126074453-72ad79574e83 h1:cqFI1xSUvaRrm0e3Imah1qUb53D+cq+e9kTyq7yGWlI=
 knative.dev/caching v0.0.0-20211126074453-72ad79574e83/go.mod h1:q/8RJkWzHcAzFJkVdCfmGrOHFGgjNDiYf6pE+ZMwlaE=
-knative.dev/eventing v0.27.1-0.20211126120551-7fc053b79089 h1:CxTQ4uk9BpwWzXARM/20uENtwGwxOyS11ankbuz9GDE=
-knative.dev/eventing v0.27.1-0.20211126120551-7fc053b79089/go.mod h1:gGQdsi8sNQKIfCFJ58CngPFBrnO5Oqn8pNjZNFMDg88=
+knative.dev/caching v0.0.0-20211130013308-ee4a707ca228 h1:UOKauY+6Y9ZLKIAj/A9yaNVJOlGQ9oNI+jYCY9YkyvE=
+knative.dev/caching v0.0.0-20211130013308-ee4a707ca228/go.mod h1:/HIs+aQnqTopt22ezLsFNi2pp1EkR8gCGiJEdotFOkw=
+knative.dev/eventing v0.27.1-0.20211130054408-e73a69b875eb h1:C1neO/Z3+oVaPXA+wKXUvwQdYMlTmEN2kHWkfzRi1tM=
+knative.dev/eventing v0.27.1-0.20211130054408-e73a69b875eb/go.mod h1:UEnzKapiHxRsFUF8wbJXFMsfktaEtGltBZdTebSNRCU=
 knative.dev/hack v0.0.0-20211101195839-11d193bf617b/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
 knative.dev/hack v0.0.0-20211122162614-813559cefdda h1:WBfGcmu5pN+RCxDotKVYtWlJVI2V4Hvah+XD9mcSR/o=
 knative.dev/hack v0.0.0-20211122162614-813559cefdda/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
@@ -1923,8 +1924,8 @@ knative.dev/pkg v0.0.0-20211129153605-754f332c0c51/go.mod h1:RnaMfVuCsk4ikspMTTc
 knative.dev/pkg v0.0.0-20211129195804-438776b3c87c h1:TcVqa/i/E/KcusxjroLEaMB2bDV42lYzN2Z+4soudE8=
 knative.dev/pkg v0.0.0-20211129195804-438776b3c87c/go.mod h1:AKPae1Cmj+k0GWXWnF2tKY7q5qPa1mTD7oCP4OeMvEM=
 knative.dev/reconciler-test v0.0.0-20211112132636-ae9e2e21972f/go.mod h1:gTsbLk496j/M9xqMpx/liyCQ0X3bwDpRtcs2Zzws364=
-knative.dev/serving v0.27.1-0.20211129222808-a81da906c7b2 h1:fzeiw6zhQU1RlyeUzOmW43/fSHt8SEtCCQZLyKIiGs8=
-knative.dev/serving v0.27.1-0.20211129222808-a81da906c7b2/go.mod h1:N1EK1mAXdVEAg+5dX6rM7J/UGjUTAEIwOs+qqBeZQy8=
+knative.dev/serving v0.27.1-0.20211130120508-95f3fb7304cf h1:0Fn+X+IELc5pNN/GWEwRRU9qHcPu50Wx1p6/Co39iCo=
+knative.dev/serving v0.27.1-0.20211130120508-95f3fb7304cf/go.mod h1:N1EK1mAXdVEAg+5dX6rM7J/UGjUTAEIwOs+qqBeZQy8=
 nhooyr.io/websocket v1.8.6/go.mod h1:B70DZP8IakI65RVQ51MsWP/8jndNma26DVA/nFSCgW0=
 pgregory.net/rapid v0.3.3 h1:jCjBsY4ln4Atz78QoBWxUEvAHaFyNDQg9+WU62aCn1U=
 pgregory.net/rapid v0.3.3/go.mod h1:UYpPVyjFHzYBGHIxLFoupi8vwk6rXNzRY9OMvVxFIOU=

@@ -16,10 +16,10 @@ require (
 	k8s.io/apimachinery v0.21.4
 	k8s.io/client-go v0.21.4
 	k8s.io/code-generator v0.21.4
-	knative.dev/caching v0.0.0-20211126074453-72ad79574e83
-	knative.dev/eventing v0.27.1-0.20211126120551-7fc053b79089
+	knative.dev/caching v0.0.0-20211130013308-ee4a707ca228
+	knative.dev/eventing v0.27.1-0.20211130054408-e73a69b875eb
 	knative.dev/hack v0.0.0-20211122162614-813559cefdda
 	knative.dev/pkg v0.0.0-20211129195804-438776b3c87c
-	knative.dev/serving v0.27.1-0.20211129222808-a81da906c7b2
+	knative.dev/serving v0.27.1-0.20211130120508-95f3fb7304cf
 	sigs.k8s.io/yaml v1.3.0
 )

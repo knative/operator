@@ -72,7 +72,6 @@ github.com/Azure/azure-sdk-for-go v16.2.1+incompatible/go.mod h1:9XXNKU+eRnpl9mo
 github.com/Azure/azure-sdk-for-go v37.1.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/azure-sdk-for-go v43.0.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/azure-sdk-for-go v49.0.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
-github.com/Azure/azure-sdk-for-go v50.2.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/azure-service-bus-go v0.10.7/go.mod h1:o5z/3lDG1iT/T/G7vgIwIqVDTx9Qa2wndf5OdzSzpF8=
 github.com/Azure/azure-storage-blob-go v0.13.0 h1:lgWHvFh+UYBNVQLFHXkvul2f6yOPA9PIH82RTG2cSwc=
 github.com/Azure/azure-storage-blob-go v0.13.0/go.mod h1:pA9kNqtjUeQF2zOSu4s//nUdBD+e64lEuc4sVnuOfNs=
@@ -120,7 +119,6 @@ github.com/Azure/go-autorest/autorest/to v0.3.0/go.mod h1:MgwOyqaIuKdG4TL/2ywSsI
 github.com/Azure/go-autorest/autorest/to v0.4.0/go.mod h1:fE8iZBn7LQR7zH/9XU2NcPR4o9jEImooCeWJcYV/zLE=
 github.com/Azure/go-autorest/autorest/validation v0.1.0/go.mod h1:Ha3z/SqBeaalWQvokg3NZAlQTalVMtOIAs1aGK7G6u8=
 github.com/Azure/go-autorest/autorest/validation v0.3.0/go.mod h1:yhLgjC0Wda5DYXl6JAsWyUe4KVNffhoDhG0zVzUMo3E=
-github.com/Azure/go-autorest/autorest/validation v0.3.1/go.mod h1:yhLgjC0Wda5DYXl6JAsWyUe4KVNffhoDhG0zVzUMo3E=
 github.com/Azure/go-autorest/logger v0.1.0/go.mod h1:oExouG+K6PryycPJfVSxi/koC6LSNgds39diKLz7Vrc=
 github.com/Azure/go-autorest/logger v0.2.0 h1:e4RVHVZKC5p6UANLJHkM4OfR1UKZPj8Wt8Pcx+3oqrE=
 github.com/Azure/go-autorest/logger v0.2.0/go.mod h1:T9E3cAhj2VqvPOtCYAvby9aBXkZmbF5NWuPV8+WeEW8=
@@ -1910,8 +1908,8 @@ k8s.io/utils v0.0.0-20210111153108-fddb29f9d009/go.mod h1:jPW/WVKK9YHAvNhRxK0md/
 knative.dev/caching v0.0.0-20211126074453-72ad79574e83/go.mod h1:q/8RJkWzHcAzFJkVdCfmGrOHFGgjNDiYf6pE+ZMwlaE=
 knative.dev/caching v0.0.0-20211130013308-ee4a707ca228 h1:UOKauY+6Y9ZLKIAj/A9yaNVJOlGQ9oNI+jYCY9YkyvE=
 knative.dev/caching v0.0.0-20211130013308-ee4a707ca228/go.mod h1:/HIs+aQnqTopt22ezLsFNi2pp1EkR8gCGiJEdotFOkw=
-knative.dev/eventing v0.27.1-0.20211130054408-e73a69b875eb h1:C1neO/Z3+oVaPXA+wKXUvwQdYMlTmEN2kHWkfzRi1tM=
-knative.dev/eventing v0.27.1-0.20211130054408-e73a69b875eb/go.mod h1:UEnzKapiHxRsFUF8wbJXFMsfktaEtGltBZdTebSNRCU=
+knative.dev/eventing v0.27.1-0.20211201072356-24e133d1ad7a h1:nhNxJRArV6skh5BtqiqeJthy7ia6TjeVUVm91HxsaNo=
+knative.dev/eventing v0.27.1-0.20211201072356-24e133d1ad7a/go.mod h1:UEnzKapiHxRsFUF8wbJXFMsfktaEtGltBZdTebSNRCU=
 knative.dev/hack v0.0.0-20211101195839-11d193bf617b/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
 knative.dev/hack v0.0.0-20211122162614-813559cefdda h1:WBfGcmu5pN+RCxDotKVYtWlJVI2V4Hvah+XD9mcSR/o=
 knative.dev/hack v0.0.0-20211122162614-813559cefdda/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
@@ -1924,8 +1922,8 @@ knative.dev/pkg v0.0.0-20211129153605-754f332c0c51/go.mod h1:RnaMfVuCsk4ikspMTTc
 knative.dev/pkg v0.0.0-20211129195804-438776b3c87c h1:TcVqa/i/E/KcusxjroLEaMB2bDV42lYzN2Z+4soudE8=
 knative.dev/pkg v0.0.0-20211129195804-438776b3c87c/go.mod h1:AKPae1Cmj+k0GWXWnF2tKY7q5qPa1mTD7oCP4OeMvEM=
 knative.dev/reconciler-test v0.0.0-20211112132636-ae9e2e21972f/go.mod h1:gTsbLk496j/M9xqMpx/liyCQ0X3bwDpRtcs2Zzws364=
-knative.dev/serving v0.27.1-0.20211130120508-95f3fb7304cf h1:0Fn+X+IELc5pNN/GWEwRRU9qHcPu50Wx1p6/Co39iCo=
-knative.dev/serving v0.27.1-0.20211130120508-95f3fb7304cf/go.mod h1:N1EK1mAXdVEAg+5dX6rM7J/UGjUTAEIwOs+qqBeZQy8=
+knative.dev/serving v0.27.1-0.20211201052556-0a8ebfb242c8 h1:u/82bt8MQR1CTRqMiCbOIeu2Rfeclkzrhj3KydDNTnQ=
+knative.dev/serving v0.27.1-0.20211201052556-0a8ebfb242c8/go.mod h1:6cR8XjM/4CNpieXhqI2taLv2NCl0Tc9VddfRK29FNHQ=
 nhooyr.io/websocket v1.8.6/go.mod h1:B70DZP8IakI65RVQ51MsWP/8jndNma26DVA/nFSCgW0=
 pgregory.net/rapid v0.3.3 h1:jCjBsY4ln4Atz78QoBWxUEvAHaFyNDQg9+WU62aCn1U=
 pgregory.net/rapid v0.3.3/go.mod h1:UYpPVyjFHzYBGHIxLFoupi8vwk6rXNzRY9OMvVxFIOU=

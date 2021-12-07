@@ -17,6 +17,7 @@ limitations under the License.
 package common
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -35,42 +36,49 @@ var testdata = []byte(`
     metadata:
       name: no-overrides
   expected:
-    activator:
+    activator:activator:
       requests:
         cpu: 300m
         memory: 60Mi
       limits:
         cpu: 1
         memory: 600Mi
-    autoscaler:
+    autoscaler:autoscaler:
       requests:
         cpu: 30m
         memory: 40Mi
       limits:
         cpu: 300m
         memory: 400Mi
-    controller:
+    controller:controller:
       requests:
         cpu: 100m
         memory: 100Mi
       limits:
         cpu: 1
         memory: 1000Mi
-    webhook:
+    webhook:webhook:
       requests:
         cpu: 20m
         memory: 20Mi
       limits:
         cpu: 200m
         memory: 200Mi
-    autoscaler-hpa:
+    autoscaler-hpa:autoscaler-hpa:
       requests:
         cpu: 30m
         memory: 40Mi
       limits:
         cpu: 300m
         memory: 400Mi
-    networking-istio:
+    networking-istio:networking-istio:
+      requests:
+        cpu: 30m
+        memory: 40Mi
+      limits:
+        cpu: 300m
+        memory: 400Mi
+    net-istio-controller:controller:
       requests:
         cpu: 30m
         memory: 40Mi
@@ -89,42 +97,49 @@ var testdata = []byte(`
           cpu: 9999m
           memory: 999Mi
   expected:
-    activator:
+    activator:activator:
       requests:
         cpu: 300m
         memory: 60Mi
       limits:
         cpu: 9999m
         memory: 999Mi
-    autoscaler:
+    autoscaler:autoscaler:
       requests:
         cpu: 30m
         memory: 40Mi
       limits:
         cpu: 300m
         memory: 400Mi
-    controller:
+    controller:controller:
       requests:
         cpu: 100m
         memory: 100Mi
       limits:
         cpu: 1
         memory: 1000Mi
-    webhook:
+    webhook:webhook:
       requests:
         cpu: 20m
         memory: 20Mi
       limits:
         cpu: 200m
         memory: 200Mi
-    autoscaler-hpa:
+    autoscaler-hpa:autoscaler-hpa:
       requests:
         cpu: 30m
         memory: 40Mi
       limits:
         cpu: 300m
         memory: 400Mi
-    networking-istio:
+    networking-istio:networking-istio:
+      requests:
+        cpu: 30m
+        memory: 40Mi
+      limits:
+        cpu: 300m
+        memory: 400Mi
+    net-istio-controller:controller:
       requests:
         cpu: 30m
         memory: 40Mi
@@ -153,49 +168,56 @@ var testdata = []byte(`
           cpu: 330m
           memory: 420Mi
   expected:
-    webhook:
+    webhook:webhook:
       requests:
         cpu: 22m
         memory: 22Mi
       limits:
         cpu: 220m
         memory: 220Mi
-    another:
+    webhook:another:
       requests:
         cpu: 33m
         memory: 42Mi
       limits:
         cpu: 330m
         memory: 420Mi
-    activator:
+    activator:activator:
       requests:
         cpu: 300m
         memory: 60Mi
       limits:
         cpu: 1
         memory: 600Mi
-    autoscaler:
+    autoscaler:autoscaler:
       requests:
         cpu: 30m
         memory: 40Mi
       limits:
         cpu: 300m
         memory: 400Mi
-    controller:
+    controller:controller:
       requests:
         cpu: 100m
         memory: 100Mi
       limits:
         cpu: 1
         memory: 1000Mi
-    autoscaler-hpa:
+    autoscaler-hpa:autoscaler-hpa:
       requests:
         cpu: 30m
         memory: 40Mi
       limits:
         cpu: 300m
         memory: 400Mi
-    networking-istio:
+    networking-istio:networking-istio:
+      requests:
+        cpu: 30m
+        memory: 40Mi
+      limits:
+        cpu: 300m
+        memory: 400Mi
+    net-istio-controller:controller:
       requests:
         cpu: 30m
         memory: 40Mi
@@ -224,48 +246,55 @@ var testdata = []byte(`
           cpu: 9990m
           memory: 9990Mi
   expected:
-    autoscaler:
+    autoscaler:autoscaler:
       requests:
         cpu: 33m
         memory: 42Mi
       limits:
         cpu: 330m
         memory: 420Mi
-    controller:
+    controller:controller:
       requests:
         cpu: 999m
         memory: 999Mi
       limits:
         cpu: 9990m
         memory: 9990Mi
-    activator:
+    activator:activator:
       requests:
         cpu: 300m
         memory: 60Mi
       limits:
         cpu: 1
         memory: 600Mi
-    webhook:
+    webhook:webhook:
       requests:
         cpu: 20m
         memory: 20Mi
       limits:
         cpu: 200m
         memory: 200Mi
-    autoscaler-hpa:
+    autoscaler-hpa:autoscaler-hpa:
       requests:
         cpu: 30m
         memory: 40Mi
       limits:
         cpu: 300m
         memory: 400Mi
-    networking-istio:
+    networking-istio:networking-istio:
       requests:
         cpu: 30m
         memory: 40Mi
       limits:
         cpu: 300m
         memory: 400Mi
+    net-istio-controller:controller:
+      requests:
+        cpu: 999m
+        memory: 999Mi
+      limits:
+        cpu: 9990m
+        memory: 9990Mi
 `)
 
 func TestResourceRequirementsTransform(t *testing.T) {
@@ -294,7 +323,7 @@ func TestResourceRequirementsTransform(t *testing.T) {
 				}
 				containers := deployment.Spec.Template.Spec.Containers
 				for i := range containers {
-					expected := test.Expected[containers[i].Name]
+					expected := test.Expected[fmt.Sprintf("%s:%s", u.GetName(), containers[i].Name)]
 					if !reflect.DeepEqual(containers[i].Resources, expected) {
 						t.Errorf("\n    Name: %s\n  Expect: %v\n  Actual: %v", containers[i].Name, expected, containers[i].Resources)
 					}

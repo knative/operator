@@ -245,6 +245,10 @@ type DeploymentOverride struct {
 	// Affinities overrides affinity for the deployment.
 	// +optional
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+
+	// Resources overrides resources for the containers.
+	// +optional
+	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
 }
 
 // ResourceRequirementsOverride enables the user to override any container's

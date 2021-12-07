@@ -46,6 +46,7 @@ func DeploymentsTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Tr
 				replaceNodeSelector(&override, deployment)
 				replaceTolerations(&override, deployment)
 				replaceAffinities(&override, deployment)
+				replaceResources(&override, deployment)
 				if err := scheme.Scheme.Convert(deployment, u, nil); err != nil {
 					return err
 				}
@@ -105,5 +106,17 @@ func replaceTolerations(override *v1alpha1.DeploymentOverride, deployment *appsv
 func replaceAffinities(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
 	if override.Affinity != nil {
 		deployment.Spec.Template.Spec.Affinity = override.Affinity
+	}
+}
+
+func replaceResources(override *v1alpha1.DeploymentOverride, deployment *appsv1.Deployment) {
+	if len(override.Resources) > 0 {
+		containers := deployment.Spec.Template.Spec.Containers
+		for i := range containers {
+			if override := find(override.Resources, containers[i].Name); override != nil {
+				merge(&override.Limits, &containers[i].Resources.Limits)
+				merge(&override.Requests, &containers[i].Resources.Requests)
+			}
+		}
 	}
 }

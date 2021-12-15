@@ -35,7 +35,6 @@ const (
 func TestJobTransform(t *testing.T) {
 	tests := []struct {
 		name      string
-		version   string
 		component v1alpha1.KComponent
 		job       batchv1.Job
 		expected  string

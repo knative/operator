@@ -753,13 +753,7 @@ spec:
                               cpu:
                                 pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
                                 type: string
-                              ephemeral-storage:
-                                pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                                type: string
                               memory:
-                                pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                                type: string
-                              storage:
                                 pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
                                 type: string
                             type: object
@@ -768,13 +762,7 @@ spec:
                               cpu:
                                 pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
                                 type: string
-                              ephemeral-storage:
-                                pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                                type: string
                               memory:
-                                pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                                type: string
-                              storage:
                                 pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
                                 type: string
                             type: object

@@ -295,6 +295,74 @@ var testdata = []byte(`
       limits:
         cpu: 9990m
         memory: 9990Mi
+- input:
+    apiVersion: operator.knative.dev/v1alpha1
+    kind: KnativeServing
+    metadata:
+      name: single-container-deployment-override
+    spec:
+      resources:
+      - container: activator
+        limits:
+          cpu: 9999m
+          memory: 999Mi
+      deployments:
+      - name: activator
+        resources:
+        - container: activator
+          limits:
+            cpu: 1000m
+            memory: 600Mi
+  expected:
+    activator:activator:
+      requests:
+        cpu: 300m
+        memory: 60Mi
+      limits:
+        cpu: 1000m
+        memory: 600Mi
+    autoscaler:autoscaler:
+      requests:
+        cpu: 30m
+        memory: 40Mi
+      limits:
+        cpu: 300m
+        memory: 400Mi
+    controller:controller:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 1
+        memory: 1000Mi
+    webhook:webhook:
+      requests:
+        cpu: 20m
+        memory: 20Mi
+      limits:
+        cpu: 200m
+        memory: 200Mi
+    autoscaler-hpa:autoscaler-hpa:
+      requests:
+        cpu: 30m
+        memory: 40Mi
+      limits:
+        cpu: 300m
+        memory: 400Mi
+    networking-istio:networking-istio:
+      requests:
+        cpu: 30m
+        memory: 40Mi
+      limits:
+        cpu: 300m
+        memory: 400Mi
+    net-istio-controller:controller:
+      requests:
+        cpu: 30m
+        memory: 40Mi
+      limits:
+        cpu: 300m
+        memory: 400Mi
 `)
 
 func TestResourceRequirementsTransform(t *testing.T) {
@@ -312,7 +380,7 @@ func TestResourceRequirementsTransform(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create manifest: %v", err)
 			}
-			actual, err := manifest.Transform(ResourceRequirementsTransform(test.Input.Spec.Resources, log))
+			actual, err := manifest.Transform(ResourceRequirementsTransform(&test.Input, log))
 			if err != nil {
 				t.Fatalf("Failed to transform manifest: %v", err)
 			}

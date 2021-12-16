@@ -29,14 +29,21 @@ import (
 
 // ResourceRequirementsTransform configures the resource requests for
 // all containers within all deployments in the manifest
-func ResourceRequirementsTransform(resources []v1alpha1.ResourceRequirementsOverride, log *zap.SugaredLogger) mf.Transformer {
+func ResourceRequirementsTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" {
+			// Use spec.deployments.resources for the deployment instead of spec.resources.
+			for _, override := range obj.GetSpec().GetDeploymentOverride() {
+				if override.Name == u.GetName() && len(override.Resources) > 0 {
+					return nil
+				}
+			}
 			deployment := &appsv1.Deployment{}
 			if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
 				return err
 			}
 			containers := deployment.Spec.Template.Spec.Containers
+			resources := obj.GetSpec().GetResources()
 			for i := range containers {
 				if override := find(resources, containers[i].Name); override != nil {
 					merge(&override.Limits, &containers[i].Resources.Limits)

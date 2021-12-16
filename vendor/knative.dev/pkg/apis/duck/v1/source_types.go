@@ -180,16 +180,13 @@ func (s *Source) Validate(ctx context.Context) *apis.FieldError {
 }
 
 func (s *SourceSpec) Validate(ctx context.Context) *apis.FieldError {
-	if s == nil {
+	if s.CloudEventOverrides == nil {
 		return nil
 	}
 	return s.CloudEventOverrides.Validate(ctx).ViaField("ceOverrides")
 }
 
 func (ceOverrides *CloudEventOverrides) Validate(ctx context.Context) *apis.FieldError {
-	if ceOverrides == nil {
-		return nil
-	}
 	for key := range ceOverrides.Extensions {
 		if err := validateExtensionName(key); err != nil {
 			return err.ViaField("extensions")

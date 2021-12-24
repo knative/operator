@@ -262,7 +262,7 @@ func hasMultipleDialects(filter *SubscriptionsAPIFilter) bool {
 			dialectFound = true
 		}
 	}
-	if len(filter.Extensions) > 0 && dialectFound {
+	if filter.SQL != "" && dialectFound {
 		return true
 	}
 	return false

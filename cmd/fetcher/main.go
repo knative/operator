@@ -32,8 +32,17 @@ import (
 	"knative.dev/operator/pkg/packages"
 )
 
+const (
+	configPathEnv = "CONFIG_YAML"
+	destDirEnv    = "DEST_DIR"
+)
+
 func main() {
-	cfg, err := packages.ReadConfig("cmd/fetcher/kodata/config.yaml")
+	configPath := filepath.Join("cmd", "fetcher", "kodata", "config.yaml")
+	if os.Getenv(configPathEnv) != "" {
+		configPath = os.Getenv(configPathEnv)
+	}
+	cfg, err := packages.ReadConfig(configPath)
 	if err != nil {
 		log.Print("Unable to read config: ", err)
 		os.Exit(2)
@@ -48,6 +57,11 @@ func main() {
 	ghClient := ghclient.NewClient(client)
 	repos := make(map[string][]packages.Release, len(cfg))
 
+	outDir := filepath.Join("cmd", "operator", "kodata")
+	if os.Getenv(destDirEnv) != "" {
+		outDir = os.Getenv(destDirEnv)
+	}
+
 	for _, v := range cfg {
 		if err := ensureRepo(ctx, repos, ghClient, v.Primary); err != nil {
 			log.Printf("Unable to fetch %s: %v", v.Primary, err)
@@ -60,7 +74,7 @@ func main() {
 			}
 		}
 
-		base := filepath.Join("cmd", "operator", "kodata", v.Name)
+		base := filepath.Join(outDir, v.Name)
 		if err := os.RemoveAll(base); err != nil && !os.IsNotExist(err) {
 			log.Printf("Unable to remove directory %s: %v", base, err)
 			os.Exit(3)

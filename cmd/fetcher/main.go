@@ -38,18 +38,24 @@ import (
 )
 
 var (
-	version *string
+	version     *string
+	configPath  *string
+	outDir      *string
+	maxVersions *int
 )
 
 func init() {
 	version = flag.String("release", common.LATEST_VERSION, "the target version")
+	configPath = flag.String("config", filepath.Join("cmd", "fetcher", "kodata", "config.yaml"), "Configuration for what to fetch")
+	outDir = flag.String("out", filepath.Join("cmd", "operator", "kodata"), "Output directory for synced files")
+	maxVersions = flag.Int("versions", 4, "Number of versions to fetch")
 }
 
 func main() {
 	flag.Parse()
 	latestVersion := *version
 
-	cfg, err := packages.ReadConfig("cmd/fetcher/kodata/config.yaml")
+	cfg, err := packages.ReadConfig(*configPath)
 	if err != nil {
 		log.Print("Unable to read config: ", err)
 		os.Exit(2)
@@ -58,6 +64,17 @@ func main() {
 	ctx := context.Background()
 	client := getClient(ctx)
 	ghClient := ghclient.NewClient(client)
+
+	// Clear the destination so that no existing files remain
+	if err := os.RemoveAll(*outDir); err != nil && !os.IsNotExist(err) {
+		log.Printf("Unable to remove directory %s: %v", *outDir, err)
+		os.Exit(3)
+	}
+	if err := os.MkdirAll(*outDir, 0755); err != nil {
+		log.Printf("Failed to create %q: %s", *outDir, err)
+		os.Exit(3)
+	}
+
 	repos := make(map[string][]packages.Release, len(cfg))
 	for _, v := range cfg {
 		if err := ensureRepo(ctx, repos, ghClient, v.Primary); err != nil {
@@ -72,14 +89,10 @@ func main() {
 			}
 		}
 
-		base := filepath.Join("cmd", "operator", "kodata", v.Name)
-		if err := os.RemoveAll(base); err != nil && !os.IsNotExist(err) {
-			log.Printf("Unable to remove directory %s: %v", base, err)
-			os.Exit(3)
-		}
+		base := filepath.Join(*outDir, v.Name)
 
-		for _, release := range packages.LastN(latestVersion, 4, repos[v.Primary.String()]) {
-			if err := packages.HandleRelease(ctx, http.DefaultClient, *v, release, repos); err != nil {
+		for _, release := range packages.LastN(latestVersion, *maxVersions, repos[v.Primary.String()]) {
+			if err := packages.HandleRelease(ctx, base, http.DefaultClient, *v, release, repos); err != nil {
 				log.Printf("Unable to fetch %s: %v", release, err)
 			}
 			log.Printf("Wrote %s ==> %s", v.String(), release.String())

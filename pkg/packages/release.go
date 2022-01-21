@@ -191,19 +191,19 @@ func CollectReleaseAssets(p Package, r Release, allReleases map[string][]Release
 
 // HandleRelease processes the files for a given release of the specified
 // Package.
-func HandleRelease(ctx context.Context, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
+func HandleRelease(ctx context.Context, base string, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
 	if p.Alternatives {
-		return handleAlternatives(ctx, client, p, r, allReleases)
+		return handleAlternatives(ctx, base, client, p, r, allReleases)
 	}
-	return handlePrimary(ctx, client, p, r, allReleases)
+	return handlePrimary(ctx, base, client, p, r, allReleases)
 }
 
 // handlePrimary handles the files for a primary-style package.
-func handlePrimary(ctx context.Context, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
+func handlePrimary(ctx context.Context, base string, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
 	assets := CollectReleaseAssets(p, r, allReleases)
 
 	shortName := strings.TrimPrefix(r.TagName, "v")
-	path := filepath.Join("cmd", "operator", "kodata", p.Name, shortName)
+	path := filepath.Join(base, p.Name, shortName)
 	err := os.MkdirAll(path, 0755)
 	if err != nil {
 		return err
@@ -231,7 +231,7 @@ func handlePrimary(ctx context.Context, client *http.Client, p Package, r Releas
 	return nil
 }
 
-func handleAlternatives(ctx context.Context, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
+func handleAlternatives(ctx context.Context, base string, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
 	minor := semver.MajorMinor(r.TagName)
 	if lm := latestMinor(minor, allReleases[p.Primary.String()]); lm.TagName != r.TagName {
 		log.Printf("Skipping %q, %q is newer", r.TagName, lm.TagName)
@@ -239,7 +239,7 @@ func handleAlternatives(ctx context.Context, client *http.Client, p Package, r R
 	}
 
 	shortName := strings.TrimPrefix(minor, "v")
-	path := filepath.Join("cmd", "operator", "kodata", p.Name, shortName)
+	path := filepath.Join(base, p.Name, shortName)
 	err := os.MkdirAll(path, 0755)
 	if err != nil {
 		return err

@@ -718,6 +718,35 @@ spec:
                               type: array
                           type: object
                       type: object
+                    resources:
+                      description: If specified, the container's resources.
+                      items:
+                        description: The pod this Resource is used to specify the requests and limits for
+                          a certain container based on the name.
+                        properties:
+                          container:
+                            description: The name of the container
+                            type: string
+                          limits:
+                            properties:
+                              cpu:
+                                pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                                type: string
+                              memory:
+                                pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                                type: string
+                            type: object
+                          requests:
+                            properties:
+                              cpu:
+                                pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                                type: string
+                              memory:
+                                pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
+                                type: string
+                            type: object
+                        type: object
+                      type: array
               source:
                 description: The source configuration for Knative Eventing
                 properties:

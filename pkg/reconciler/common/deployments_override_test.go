@@ -17,15 +17,22 @@ limitations under the License.
 package common
 
 import (
+	"reflect"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	util "knative.dev/operator/pkg/reconciler/common/testing"
+	"knative.dev/operator/test"
 )
 
 type expDeployments struct {
@@ -302,6 +309,72 @@ func TestDeploymentsTransform(t *testing.T) {
 							t.Fatalf("Unexpected annotations in pod template: %v", diff)
 						}
 					}
+				}
+			}
+		})
+	}
+}
+
+func TestDeploymentResourceRequirementsTransform(t *testing.T) {
+	tests := []struct {
+		DeployName string
+		Input      servingv1alpha1.KnativeServing
+		Expected   map[string]v1.ResourceRequirements
+	}{{
+		DeployName: "net-istio-controller",
+		Input: servingv1alpha1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "specific-container-for-deployment",
+			},
+			Spec: servingv1alpha1.KnativeServingSpec{
+				CommonSpec: servingv1alpha1.CommonSpec{
+					Version: test.OperatorFlags.PreviousEventingVersion,
+					DeploymentOverride: []v1alpha1.DeploymentOverride{
+						{
+							Name: "net-istio-controller",
+							Resources: []v1alpha1.ResourceRequirementsOverride{{
+								Container: "controller",
+								ResourceRequirements: corev1.ResourceRequirements{
+									Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+										corev1.ResourceMemory: resource.MustParse("999Mi")},
+									Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+										corev1.ResourceMemory: resource.MustParse("999Mi")},
+								},
+							}},
+						},
+					},
+				},
+			},
+		},
+		Expected: map[string]v1.ResourceRequirements{"controller": corev1.ResourceRequirements{
+			Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+				corev1.ResourceMemory: resource.MustParse("999Mi")},
+			Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+				corev1.ResourceMemory: resource.MustParse("999Mi")},
+		}},
+	}}
+
+	for _, test := range tests {
+		t.Run(test.Input.Name, func(t *testing.T) {
+			manifest, err := mf.NewManifest("testdata/manifest.yaml")
+			if err != nil {
+				t.Fatalf("Failed to create manifest: %v", err)
+			}
+			actual, err := manifest.Transform(DeploymentsTransform(&test.Input, log))
+			if err != nil {
+				t.Fatalf("Failed to transform manifest: %v", err)
+			}
+			resources := actual.Filter(mf.ByKind("Deployment")).Filter(mf.ByName(test.DeployName)).Resources()
+			util.AssertEqual(t, len(resources), 1)
+			deployment := &appsv1.Deployment{}
+			if err = scheme.Scheme.Convert(&resources[0], deployment, nil); err != nil {
+				t.Fatalf("Failed to convert unstructured to deployment: %v", err)
+			}
+			containers := deployment.Spec.Template.Spec.Containers
+			for i := range containers {
+				expected := test.Expected[containers[i].Name]
+				if !reflect.DeepEqual(containers[i].Resources, expected) {
+					t.Errorf("\n    Name: %s\n  Expect: %v\n  Actual: %v", containers[i].Name, expected, containers[i].Resources)
 				}
 			}
 		})

@@ -89,10 +89,8 @@ func main() {
 			}
 		}
 
-		base := filepath.Join(*outDir, v.Name)
-
 		for _, release := range packages.LastN(latestVersion, *maxVersions, repos[v.Primary.String()]) {
-			if err := packages.HandleRelease(ctx, base, http.DefaultClient, *v, release, repos); err != nil {
+			if err := packages.HandleRelease(ctx, *outDir, http.DefaultClient, *v, release, repos); err != nil {
 				log.Printf("Unable to fetch %s: %v", release, err)
 			}
 			log.Printf("Wrote %s ==> %s", v.String(), release.String())

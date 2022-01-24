@@ -23,6 +23,6 @@ require (
 	knative.dev/eventing v0.28.1-0.20220121080404-f07487898e80
 	knative.dev/hack v0.0.0-20220118141833-9b2ed8471e30
 	knative.dev/pkg v0.0.0-20220118160532-77555ea48cd4
-	knative.dev/serving v0.28.1-0.20220121043403-e648a2fe0b41
+	knative.dev/serving v0.28.1-0.20220121202304-ff545005beab
 	sigs.k8s.io/yaml v1.3.0
 )

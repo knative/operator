@@ -37,12 +37,11 @@ var (
 // NewProjectLocation creates a ProjectLocation that is used to calculate
 // relative paths within the project.
 func NewProjectLocation(pathToRoot string) (ProjectLocation, error) {
-	pc, filename, _, ok := runtime.Caller(1)
+	_, filename, _, ok := runtime.Caller(1)
 	if !ok {
 		return nil, ErrCantGetCaller
 	}
-	funcName := runtime.FuncForPC(pc).Name()
-	err := isCallsiteAllowed(funcName)
+	err := ensureIsValid(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -65,17 +64,17 @@ type callerLocation struct {
 	pathToRoot string
 }
 
-func isCallsiteAllowed(funcName string) error {
+func ensureIsValid(filename string) error {
 	validPaths := []string{
-		"knative.+/test/upgrade",
-		"knative(:?\\.dev/|-)hack/shell",
+		"knative.+/test/upgrade/",
+		"knative(:?\\.dev/|-)hack/shell/",
 	}
 	for _, validPath := range validPaths {
 		r := regexp.MustCompile(validPath)
-		if loc := r.FindStringIndex(funcName); loc != nil {
+		if loc := r.FindStringIndex(filename); loc != nil {
 			return nil
 		}
 	}
 	return fmt.Errorf("%w, tried using from: %s",
-		ErrCallerNotAllowed, funcName)
+		ErrCallerNotAllowed, filename)
 }

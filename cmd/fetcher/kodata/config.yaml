@@ -67,12 +67,6 @@ eventing-source:
   additional:
     - s3:
         bucket: "gs-noauth://knative-releases"
-        prefix: "eventing-couchdb/previous"
-      eventingService: couchdb
-      include:
-        - "couchdb.yaml"
-    - s3:
-        bucket: "gs-noauth://knative-releases"
         prefix: "eventing-kafka/previous"
       eventingService: kafka
       include:
@@ -93,12 +87,6 @@ eventing-source:
       eventingService: redis
       include:
         - "redis-source.yaml"
-    - s3:
-        bucket: "gs-noauth://knative-releases"
-        prefix: "eventing-prometheus/previous"
-      eventingService: prometheus
-      include:
-        - "prometheus-source.yaml"
     - s3:
         bucket: "gs-noauth://knative-releases"
         prefix: "eventing-natss/previous"

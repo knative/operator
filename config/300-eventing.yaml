@@ -756,12 +756,6 @@ spec:
                       enabled:
                         type: boolean
                     type: object
-                  couchdb:
-                    description: Apache CouchDB settings
-                    properties:
-                      enabled:
-                        type: boolean
-                    type: object
                   github:
                     description: GitHub settings
                     properties:
@@ -782,12 +776,6 @@ spec:
                     type: object
                   natss:
                     description: NATS Streaming settings
-                    properties:
-                      enabled:
-                        type: boolean
-                    type: object
-                  prometheus:
-                    description: Prometheus settings
                     properties:
                       enabled:
                         type: boolean

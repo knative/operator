@@ -19,12 +19,11 @@ package common
 import (
 	"testing"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -115,7 +114,7 @@ func TestConfigMapTransform(t *testing.T) {
 
 func runConfigMapTransformTest(t *testing.T, tt *updateConfigMapTest) {
 	unstructuredConfigMap := util.MakeUnstructured(t, &tt.configMap)
-	config := v1alpha1.ConfigMapData{
+	config := base.ConfigMapData{
 		tt.config.name: tt.config.data,
 	}
 	configMapTransform := ConfigMapTransform(config, log)
@@ -135,7 +134,7 @@ func TestInvalidConfigMap(t *testing.T) {
 	ucm := util.MakeUnstructured(t, &cm)
 	// Break the ConfigMap
 	unstructured.SetNestedField(ucm.Object, "not-a-map", "data")
-	config := v1alpha1.ConfigMapData{
+	config := base.ConfigMapData{
 		"name": {"k": "v"},
 	}
 	configMapTransform := ConfigMapTransform(config, log)

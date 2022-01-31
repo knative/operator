@@ -18,12 +18,13 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/operator/pkg/apis/operator/base"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 var (
-	_ KComponent     = (*KnativeEventing)(nil)
-	_ KComponentSpec = (*KnativeEventingSpec)(nil)
+	_ base.KComponent     = (*KnativeEventing)(nil)
+	_ base.KComponentSpec = (*KnativeEventingSpec)(nil)
 )
 
 // KnativeEventing is the Schema for the eventings API
@@ -39,18 +40,18 @@ type KnativeEventing struct {
 }
 
 // GetSpec implements KComponent
-func (ke *KnativeEventing) GetSpec() KComponentSpec {
+func (ke *KnativeEventing) GetSpec() base.KComponentSpec {
 	return &ke.Spec
 }
 
 // GetStatus implements KComponent
-func (ke *KnativeEventing) GetStatus() KComponentStatus {
+func (ke *KnativeEventing) GetStatus() base.KComponentStatus {
 	return &ke.Status
 }
 
 // KnativeEventingSpec defines the desired state of KnativeEventing
 type KnativeEventingSpec struct {
-	CommonSpec `json:",inline"`
+	base.CommonSpec `json:",inline"`
 
 	// The default broker type to use for the brokers Knative creates.
 	// If no value is provided, MTChannelBasedBroker will be used.

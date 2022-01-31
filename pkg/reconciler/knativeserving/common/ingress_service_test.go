@@ -23,6 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/operator/pkg/apis/operator/base"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
@@ -64,7 +65,7 @@ func TestIngressServiceTransform(t *testing.T) {
 				Namespace: "test-namespace",
 			},
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{"istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-1.svc.cluster.local"}},
 				},
 			},
@@ -81,7 +82,7 @@ func TestIngressServiceTransform(t *testing.T) {
 				Namespace: "test-namespace",
 			},
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{"config-istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-1.svc.cluster.local"}},
 				},
 			},
@@ -98,7 +99,7 @@ func TestIngressServiceTransform(t *testing.T) {
 				Namespace: "test-namespace",
 			},
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{"istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-2.svc.cluster.local"},
 						"config-istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-3.svc.cluster.local"}},
 				},
@@ -116,7 +117,7 @@ func TestIngressServiceTransform(t *testing.T) {
 				Namespace: "test-namespace",
 			},
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{"config-istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway"}},
 				},
 			},

@@ -19,12 +19,11 @@ package common
 import (
 	"testing"
 
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
-
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-
+	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -35,14 +34,14 @@ const (
 func TestJobTransform(t *testing.T) {
 	tests := []struct {
 		name      string
-		component v1alpha1.KComponent
+		component base.KComponent
 		job       batchv1.Job
 		expected  string
 	}{{
 		name: "ChangeNameForServingJob",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.15.2",
 				},
 			}},
@@ -52,7 +51,7 @@ func TestJobTransform(t *testing.T) {
 		name: "ChangeNameForEventingJob",
 		component: &v1alpha1.KnativeEventing{
 			Spec: v1alpha1.KnativeEventingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.16.0",
 				},
 			}},
@@ -62,7 +61,7 @@ func TestJobTransform(t *testing.T) {
 		name: "ChangeNameWithGeneratedNameForServingJob",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.15.2",
 				},
 			}},
@@ -72,7 +71,7 @@ func TestJobTransform(t *testing.T) {
 		name: "ChangeNameWithGeneratedNameForEventingJob",
 		component: &v1alpha1.KnativeEventing{
 			Spec: v1alpha1.KnativeEventingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.16.0",
 				},
 			}},

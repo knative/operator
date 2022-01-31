@@ -24,6 +24,7 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"golang.org/x/mod/semver"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler/common"
 )
@@ -95,7 +96,7 @@ func getSourcePath(version string, ke *v1alpha1.KnativeEventing) string {
 }
 
 // AppendTargetSources appends the manifests of the eventing sources to be installed
-func AppendTargetSources(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func AppendTargetSources(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	version := common.TargetVersion(instance)
 	sourcePath := getSourcePath(version, convertToKE(instance))
 	m, err := getSource(manifest, sourcePath)
@@ -111,7 +112,7 @@ func AppendTargetSources(ctx context.Context, manifest *mf.Manifest, instance v1
 }
 
 // AppendInstalledSources appends the installed manifests of the eventing sources
-func AppendInstalledSources(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func AppendInstalledSources(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	version := instance.GetStatus().GetVersion()
 	if version == "" {
 		version = common.TargetVersion(instance)
@@ -129,7 +130,7 @@ func AppendInstalledSources(ctx context.Context, manifest *mf.Manifest, instance
 	return nil
 }
 
-func convertToKE(instance v1alpha1.KComponent) *v1alpha1.KnativeEventing {
+func convertToKE(instance base.KComponent) *v1alpha1.KnativeEventing {
 	ke := &v1alpha1.KnativeEventing{}
 	switch instance := instance.(type) {
 	case *v1alpha1.KnativeEventing:

@@ -21,10 +21,10 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
-	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 )
 
-func haUnSupported(obj v1alpha1.KComponent) sets.String {
+func haUnSupported(obj base.KComponent) sets.String {
 	return sets.NewString(
 		"pingsource-mt-adapter",
 	)
@@ -32,7 +32,7 @@ func haUnSupported(obj v1alpha1.KComponent) sets.String {
 
 // HighAvailabilityTransform mutates configmaps and replicacounts of certain
 // controllers when HA control plane is specified.
-func HighAvailabilityTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Transformer {
+func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Use spec.deployments.replicas for the deployment instead of spec.high-availability.
 		for _, override := range obj.GetSpec().GetDeploymentOverride() {

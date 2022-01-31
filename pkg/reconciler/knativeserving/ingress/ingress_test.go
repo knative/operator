@@ -22,6 +22,8 @@ import (
 	"os"
 	"testing"
 
+	"knative.dev/operator/pkg/apis/operator/base"
+
 	mf "github.com/manifestival/manifestival"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -96,7 +98,7 @@ func TestAppendInstalledIngresses(t *testing.T) {
 		name: "Available installed ingresses for missing status.version",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.21.0",
 				},
 			},
@@ -144,7 +146,7 @@ func TestAppendTargetIngresses(t *testing.T) {
 		name: "Available target ingresses",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.21.0",
 				},
 			},
@@ -155,7 +157,7 @@ func TestAppendTargetIngresses(t *testing.T) {
 		name: "Unavailable target ingresses",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.12.1",
 				},
 			},
@@ -165,7 +167,7 @@ func TestAppendTargetIngresses(t *testing.T) {
 		name: "Get the latest target ingresses when the directory latest is unavailable",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "latest",
 				},
 			},
@@ -202,7 +204,7 @@ func TestGetIngressWithFilters(t *testing.T) {
 		name: "Enabled Istio ingress for target manifests",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{
@@ -218,7 +220,7 @@ func TestGetIngressWithFilters(t *testing.T) {
 		name: "Enabled Contour ingress for target manifests",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{
@@ -234,7 +236,7 @@ func TestGetIngressWithFilters(t *testing.T) {
 		name: "Enabled Kourier ingress for target manifests",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{
@@ -250,7 +252,7 @@ func TestGetIngressWithFilters(t *testing.T) {
 		name: "Enabled Contour and Kourier ingress for target manifests",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{
@@ -270,7 +272,7 @@ func TestGetIngressWithFilters(t *testing.T) {
 		name: "Enabled Istio and Kourier ingress for target manifests",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{
@@ -290,7 +292,7 @@ func TestGetIngressWithFilters(t *testing.T) {
 		name: "Enabled Istio and Contour ingress for target manifests",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{
@@ -310,7 +312,7 @@ func TestGetIngressWithFilters(t *testing.T) {
 		name: "Enabled All ingresses for target manifests",
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{

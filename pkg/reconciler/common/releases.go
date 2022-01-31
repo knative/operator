@@ -28,6 +28,7 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"golang.org/x/mod/semver"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
@@ -47,7 +48,7 @@ var cache = map[string]mf.Manifest{}
 // TargetVersion returns the version of the manifest to be installed
 // per the spec in the component. If spec.version is empty, the latest
 // version known to the operator is returned.
-func TargetVersion(instance v1alpha1.KComponent) string {
+func TargetVersion(instance base.KComponent) string {
 	version := instance.GetSpec().GetVersion()
 	if strings.EqualFold(version, LATEST_VERSION) {
 		return getLatestRelease(instance, version)
@@ -68,7 +69,7 @@ func TargetVersion(instance v1alpha1.KComponent) string {
 
 // TargetManifest returns the default manifest for the TargetVersion or the manifest for the TargetVersion specified
 // with spec.manifests
-func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
+func TargetManifest(instance base.KComponent) (mf.Manifest, error) {
 	manifestsPath := targetManifestPath(instance)
 	if len(instance.GetSpec().GetManifests()) == 0 {
 		return getManifestWithVersionValidation(manifestsPath, instance, FetchManifest)
@@ -77,7 +78,7 @@ func TargetManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 }
 
 // TargetAdditionalManifest returns the manifest for the TargetVersion specified with spec.additionalManifests.
-func TargetAdditionalManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
+func TargetAdditionalManifest(instance base.KComponent) (mf.Manifest, error) {
 	additionalManifestsPath := additionalManifestPath(instance)
 	if additionalManifestsPath == "" {
 		return mf.Manifest{}, nil
@@ -89,7 +90,7 @@ func TargetAdditionalManifest(instance v1alpha1.KComponent) (mf.Manifest, error)
 // harder than it sounds, since status.version isn't set until the
 // target version is successfully installed, which can take some time.
 // So we return the target manifest if status.version is empty.
-func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
+func InstalledManifest(instance base.KComponent) (mf.Manifest, error) {
 	current := instance.GetStatus().GetVersion()
 	if len(instance.GetStatus().GetManifests()) == 0 && current == "" {
 		return TargetManifest(instance)
@@ -118,7 +119,7 @@ func InstalledManifest(instance v1alpha1.KComponent) (mf.Manifest, error) {
 
 // IsVersionValidMigrationEligible returns the bool indicate whether the target version is valid and the installed
 // manifest is able to upgrade or downgrade to the target manifest.
-func IsVersionValidMigrationEligible(instance v1alpha1.KComponent) error {
+func IsVersionValidMigrationEligible(instance base.KComponent) error {
 	var err error
 	targetVersion := TargetVersion(instance)
 	if targetVersion == LATEST_VERSION {
@@ -180,7 +181,7 @@ func IsVersionValidMigrationEligible(instance v1alpha1.KComponent) error {
 		"installed KnativeServing version is %v.", current)
 }
 
-func getVersionKey(instance v1alpha1.KComponent) string {
+func getVersionKey(instance base.KComponent) string {
 	switch instance.(type) {
 	case *v1alpha1.KnativeServing:
 		return "serving.knative.dev/release"
@@ -192,7 +193,7 @@ func getVersionKey(instance v1alpha1.KComponent) string {
 
 type manifestFetcher func(string) (mf.Manifest, error)
 
-func getManifestWithVersionValidation(manifestsPath string, instance v1alpha1.KComponent, fn manifestFetcher) (mf.Manifest, error) {
+func getManifestWithVersionValidation(manifestsPath string, instance base.KComponent, fn manifestFetcher) (mf.Manifest, error) {
 	version := TargetVersion(instance)
 	manifests, err := fn(manifestsPath)
 	if err != nil {
@@ -265,7 +266,7 @@ func ClearCache() {
 	cache = map[string]mf.Manifest{}
 }
 
-func componentDir(instance v1alpha1.KComponent) string {
+func componentDir(instance base.KComponent) string {
 	koDataDir := os.Getenv(KoEnvKey)
 	switch instance.(type) {
 	case *v1alpha1.KnativeServing:
@@ -281,7 +282,7 @@ func componentIngressDir() string {
 	return filepath.Join(koDataDir, "ingress")
 }
 
-func additionalManifestPath(instance v1alpha1.KComponent) string {
+func additionalManifestPath(instance base.KComponent) string {
 	// Create the comma-separated string for URLs in spec.additionalManifests
 	addManifests := instance.GetSpec().GetAdditionalManifests()
 	urls := make([]string, 0, len(addManifests))
@@ -292,7 +293,7 @@ func additionalManifestPath(instance v1alpha1.KComponent) string {
 	return strings.Join(urls, COMMA)
 }
 
-func targetManifestPath(instance v1alpha1.KComponent) string {
+func targetManifestPath(instance base.KComponent) string {
 	version := TargetVersion(instance)
 	manifests := instance.GetSpec().GetManifests()
 	// Create the comma-separated string as the URL to retrieve the manifest
@@ -313,7 +314,7 @@ func targetManifestPath(instance v1alpha1.KComponent) string {
 	return manifestPath
 }
 
-func targetManifestPathArray(instance v1alpha1.KComponent) []string {
+func targetManifestPathArray(instance base.KComponent) []string {
 	targetMPath := targetManifestPath(instance)
 	manifestPaths := []string{targetMPath}
 	if len(instance.GetSpec().GetAdditionalManifests()) > 0 {
@@ -324,7 +325,7 @@ func targetManifestPathArray(instance v1alpha1.KComponent) []string {
 	return manifestPaths
 }
 
-func installedManifestPath(version string, instance v1alpha1.KComponent) []string {
+func installedManifestPath(version string, instance base.KComponent) []string {
 	if manifests := instance.GetStatus().GetManifests(); len(manifests) != 0 {
 		return manifests
 	}
@@ -353,7 +354,7 @@ func allIngressReleases() ([]string, error) {
 
 // allReleases returns the all the available release versions
 // available under kodata directory for Knative component.
-func allReleases(instance v1alpha1.KComponent) ([]string, error) {
+func allReleases(instance base.KComponent) ([]string, error) {
 	// List all the directories available under kodata
 	pathname := componentDir(instance)
 	return allReleasesUnderPath(pathname)
@@ -392,7 +393,7 @@ func allReleasesUnderPath(pathname string) ([]string, error) {
 }
 
 // latestRelease returns the latest release tag available under kodata directory for Knative component.
-func latestRelease(instance v1alpha1.KComponent) string {
+func latestRelease(instance base.KComponent) string {
 	return getLatestRelease(instance, "")
 }
 
@@ -409,7 +410,7 @@ func GetLatestIngressRelease(version string) string {
 
 // getLatestRelease returns the latest release tag available under kodata directory for Knative component
 // based on spec.version.
-func getLatestRelease(instance v1alpha1.KComponent, version string) string {
+func getLatestRelease(instance base.KComponent, version string) string {
 	// The versions are in a descending order, so the first one will be the latest version.
 	vers, err := allReleases(instance)
 	if err != nil {

@@ -24,12 +24,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes/scheme"
-	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 )
 
 // CheckDeployments checks all deployments in the given manifest and updates the given
 // status with the status of the deployments.
-func CheckDeployments(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func CheckDeployments(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	status := instance.GetStatus()
 	var nonReadyDeployments []string
 	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {

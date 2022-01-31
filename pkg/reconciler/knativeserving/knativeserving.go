@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
 
 	mf "github.com/manifestival/manifestival"
@@ -123,7 +124,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1alpha1.KnativeServ
 }
 
 // filterDisabledIngresses removes the disabled ingresses from the manifests
-func (r *Reconciler) filterDisabledIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func (r *Reconciler) filterDisabledIngresses(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	ks := instance.(*v1alpha1.KnativeServing)
 	*manifest = manifest.Filter(ingress.Filters(ks))
 	return nil
@@ -131,7 +132,7 @@ func (r *Reconciler) filterDisabledIngresses(ctx context.Context, manifest *mf.M
 
 // transform mutates the passed manifest to one with common, component
 // and platform transformations applied
-func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp v1alpha1.KComponent) error {
+func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp base.KComponent) error {
 	logger := logging.FromContext(ctx)
 	instance := comp.(*v1alpha1.KnativeServing)
 	extra := []mf.Transformer{
@@ -144,7 +145,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 
-func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent) (*mf.Manifest, error) {
+func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
 	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.filterDisabledIngresses,
@@ -153,7 +154,7 @@ func (r *Reconciler) installed(ctx context.Context, instance v1alpha1.KComponent
 	return &installed, err
 }
 
-func (r *Reconciler) appendExtensionManifests(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func (r *Reconciler) appendExtensionManifests(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	platformManifests, err := r.extension.Manifests(instance)
 	if err != nil {
 		return err

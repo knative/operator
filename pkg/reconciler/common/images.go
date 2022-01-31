@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"knative.dev/operator/pkg/apis/operator/base"
+
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
@@ -29,7 +31,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 	caching "knative.dev/caching/pkg/apis/caching/v1alpha1"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 func init() {
@@ -43,7 +44,7 @@ var (
 )
 
 // ImageTransform updates image with a new registry and tag
-func ImageTransform(registry *v1alpha1.Registry, log *zap.SugaredLogger) mf.Transformer {
+func ImageTransform(registry *base.Registry, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Image resources are handled quite differently, so branch them out early
 		if u.GetKind() == "Image" && u.GetAPIVersion() == "caching.internal.knative.dev/v1alpha1" {
@@ -127,7 +128,7 @@ func ImageTransform(registry *v1alpha1.Registry, log *zap.SugaredLogger) mf.Tran
 	}
 }
 
-func updateCachingImage(registry *v1alpha1.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+func updateCachingImage(registry *base.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
 	var img = &caching.Image{}
 	if err := scheme.Scheme.Convert(u, img, nil); err != nil {
 		return fmt.Errorf("failed to convert Unstructured to Image: %w", err)

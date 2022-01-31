@@ -25,6 +25,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
@@ -68,7 +69,7 @@ func TestInstall(t *testing.T) {
 
 	instance := &v1alpha1.KnativeEventing{
 		Spec: v1alpha1.KnativeEventingSpec{
-			CommonSpec: v1alpha1.CommonSpec{
+			CommonSpec: base.CommonSpec{
 				Version: version,
 			},
 		},
@@ -84,7 +85,7 @@ func TestInstall(t *testing.T) {
 		t.Fatalf("Unexpected creates: %s", cmp.Diff(client.creates, want))
 	}
 
-	condition := instance.Status.GetCondition(v1alpha1.InstallSucceeded)
+	condition := instance.Status.GetCondition(base.InstallSucceeded)
 	if condition == nil || condition.Status != corev1.ConditionTrue {
 		t.Fatalf("InstallSucceeded = %v, want %v", condition, corev1.ConditionTrue)
 	}
@@ -108,7 +109,7 @@ func TestInstallError(t *testing.T) {
 
 	instance := &v1alpha1.KnativeServing{
 		Spec: v1alpha1.KnativeServingSpec{
-			CommonSpec: v1alpha1.CommonSpec{
+			CommonSpec: base.CommonSpec{
 				Version: version,
 			},
 		},
@@ -120,7 +121,7 @@ func TestInstallError(t *testing.T) {
 		t.Fatalf("Install() = nil, wanted an error")
 	}
 
-	condition := instance.Status.GetCondition(v1alpha1.InstallSucceeded)
+	condition := instance.Status.GetCondition(base.InstallSucceeded)
 	if condition == nil || condition.Status != corev1.ConditionFalse {
 		t.Fatalf("InstallSucceeded = %v, want %v", condition, corev1.ConditionFalse)
 	}

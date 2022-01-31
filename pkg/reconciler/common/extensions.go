@@ -19,16 +19,16 @@ import (
 	"context"
 
 	mf "github.com/manifestival/manifestival"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/pkg/controller"
 )
 
 // Extension enables platform-specific features
 type Extension interface {
-	Manifests(v1alpha1.KComponent) ([]mf.Manifest, error)
-	Transformers(v1alpha1.KComponent) []mf.Transformer
-	Reconcile(context.Context, v1alpha1.KComponent) error
-	Finalize(context.Context, v1alpha1.KComponent) error
+	Manifests(base.KComponent) ([]mf.Manifest, error)
+	Transformers(base.KComponent) []mf.Transformer
+	Reconcile(context.Context, base.KComponent) error
+	Finalize(context.Context, base.KComponent) error
 }
 
 // ExtensionGenerator creates an Extension from a Context
@@ -41,15 +41,15 @@ func NoExtension(context.Context, *controller.Impl) Extension {
 
 type nilExtension struct{}
 
-func (nilExtension) Manifests(v1alpha1.KComponent) ([]mf.Manifest, error) {
+func (nilExtension) Manifests(base.KComponent) ([]mf.Manifest, error) {
 	return nil, nil
 }
-func (nilExtension) Transformers(v1alpha1.KComponent) []mf.Transformer {
+func (nilExtension) Transformers(base.KComponent) []mf.Transformer {
 	return nil
 }
-func (nilExtension) Reconcile(context.Context, v1alpha1.KComponent) error {
+func (nilExtension) Reconcile(context.Context, base.KComponent) error {
 	return nil
 }
-func (nilExtension) Finalize(context.Context, v1alpha1.KComponent) error {
+func (nilExtension) Finalize(context.Context, base.KComponent) error {
 	return nil
 }

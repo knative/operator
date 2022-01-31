@@ -19,18 +19,20 @@ package v1alpha1
 import (
 	"strings"
 
+	"knative.dev/operator/pkg/apis/operator/base"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/apis"
 )
 
 var (
-	_ KComponentStatus = (*KnativeServingStatus)(nil)
+	_ base.KComponentStatus = (*KnativeServingStatus)(nil)
 
 	servingCondSet = apis.NewLivingConditionSet(
-		DependenciesInstalled,
-		DeploymentsAvailable,
-		InstallSucceeded,
-		VersionMigrationEligible,
+		base.DependenciesInstalled,
+		base.DeploymentsAvailable,
+		base.InstallSucceeded,
+		base.VersionMigrationEligible,
 	)
 )
 
@@ -56,8 +58,8 @@ func (is *KnativeServingStatus) IsReady() bool {
 
 // MarkInstallSucceeded marks the InstallationSucceeded status as true.
 func (is *KnativeServingStatus) MarkInstallSucceeded() {
-	servingCondSet.Manage(is).MarkTrue(InstallSucceeded)
-	if is.GetCondition(DependenciesInstalled).IsUnknown() {
+	servingCondSet.Manage(is).MarkTrue(base.InstallSucceeded)
+	if is.GetCondition(base.DependenciesInstalled).IsUnknown() {
 		// Assume deps are installed if we're not sure
 		is.MarkDependenciesInstalled()
 	}
@@ -67,48 +69,48 @@ func (is *KnativeServingStatus) MarkInstallSucceeded() {
 // message.
 func (is *KnativeServingStatus) MarkInstallFailed(msg string) {
 	servingCondSet.Manage(is).MarkFalse(
-		InstallSucceeded,
+		base.InstallSucceeded,
 		"Error",
 		"Install failed with message: %s", msg)
 }
 
 // MarkVersionMigrationEligible marks the VersionMigrationEligible status as false with given message.
 func (is *KnativeServingStatus) MarkVersionMigrationEligible() {
-	servingCondSet.Manage(is).MarkTrue(VersionMigrationEligible)
+	servingCondSet.Manage(is).MarkTrue(base.VersionMigrationEligible)
 }
 
 // MarkVersionMigrationNotEligible marks the DeploymentsAvailable status as true.
 func (is *KnativeServingStatus) MarkVersionMigrationNotEligible(msg string) {
 	servingCondSet.Manage(is).MarkFalse(
-		VersionMigrationEligible,
+		base.VersionMigrationEligible,
 		"Error",
 		"Version migration is not eligible with message: %s", msg)
 }
 
 // MarkDeploymentsAvailable marks the DeploymentsAvailable status as true.
 func (is *KnativeServingStatus) MarkDeploymentsAvailable() {
-	servingCondSet.Manage(is).MarkTrue(DeploymentsAvailable)
+	servingCondSet.Manage(is).MarkTrue(base.DeploymentsAvailable)
 }
 
 // MarkDeploymentsNotReady marks the DeploymentsAvailable status as false and calls out
 // it's waiting for deployments.
 func (is *KnativeServingStatus) MarkDeploymentsNotReady(deployments []string) {
 	servingCondSet.Manage(is).MarkFalse(
-		DeploymentsAvailable,
+		base.DeploymentsAvailable,
 		"NotReady",
 		"Waiting on deployments: %s", strings.Join(deployments, ", "))
 }
 
 // MarkDependenciesInstalled marks the DependenciesInstalled status as true.
 func (is *KnativeServingStatus) MarkDependenciesInstalled() {
-	servingCondSet.Manage(is).MarkTrue(DependenciesInstalled)
+	servingCondSet.Manage(is).MarkTrue(base.DependenciesInstalled)
 }
 
 // MarkDependencyInstalling marks the DependenciesInstalled status as false with the
 // given message.
 func (is *KnativeServingStatus) MarkDependencyInstalling(msg string) {
 	servingCondSet.Manage(is).MarkFalse(
-		DependenciesInstalled,
+		base.DependenciesInstalled,
 		"Installing",
 		"Dependency installing: %s", msg)
 }
@@ -117,7 +119,7 @@ func (is *KnativeServingStatus) MarkDependencyInstalling(msg string) {
 // given message.
 func (is *KnativeServingStatus) MarkDependencyMissing(msg string) {
 	servingCondSet.Manage(is).MarkFalse(
-		DependenciesInstalled,
+		base.DependenciesInstalled,
 		"Error",
 		"Dependency missing: %s", msg)
 }

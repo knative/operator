@@ -27,6 +27,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"knative.dev/operator/pkg/apis/operator/base"
 	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
@@ -113,7 +114,7 @@ func TestCheckDeployments(t *testing.T) {
 				t.Fatalf("CheckDeployments() = %v, wantError: %v", err, test.wantError)
 			}
 
-			condition := ks.Status.GetCondition(v1alpha1.DeploymentsAvailable)
+			condition := ks.Status.GetCondition(base.DeploymentsAvailable)
 			if condition == nil || condition.Status != test.wantStatus {
 				t.Fatalf("DeploymentAvailable = %v, want %v", condition, test.wantStatus)
 			}

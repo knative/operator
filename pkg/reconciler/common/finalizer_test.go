@@ -20,13 +20,14 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 func TestFinalizerRemovalPatch(t *testing.T) {
 	tests := []struct {
 		name string
-		in   v1alpha1.KComponent
+		in   base.KComponent
 		want []byte
 	}{{
 		name: "other finalizer, do nothing",

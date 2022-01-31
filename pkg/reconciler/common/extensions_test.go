@@ -21,12 +21,13 @@ import (
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 type TestExtension string
 
-func (t TestExtension) Manifests(v1alpha1.KComponent) ([]mf.Manifest, error) {
+func (t TestExtension) Manifests(base.KComponent) ([]mf.Manifest, error) {
 	manifest, err := mf.NewManifest("testdata/kodata/additional-manifests/additional-sa.yaml")
 	if err != nil {
 		return nil, err
@@ -34,17 +35,17 @@ func (t TestExtension) Manifests(v1alpha1.KComponent) ([]mf.Manifest, error) {
 	return []mf.Manifest{manifest}, nil
 }
 
-func (t TestExtension) Transformers(v1alpha1.KComponent) []mf.Transformer {
+func (t TestExtension) Transformers(base.KComponent) []mf.Transformer {
 	if t == "fail" {
 		return nil
 	}
 	return []mf.Transformer{mf.InjectNamespace(string(t))}
 }
 
-func (t TestExtension) Reconcile(context.Context, v1alpha1.KComponent) error {
+func (t TestExtension) Reconcile(context.Context, base.KComponent) error {
 	return nil
 }
-func (t TestExtension) Finalize(context.Context, v1alpha1.KComponent) error {
+func (t TestExtension) Finalize(context.Context, base.KComponent) error {
 	return nil
 }
 

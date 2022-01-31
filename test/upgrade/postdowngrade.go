@@ -20,6 +20,8 @@ import (
 	"os"
 	"testing"
 
+	"knative.dev/operator/pkg/apis/operator/base"
+
 	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
 
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
@@ -79,7 +81,7 @@ func eventingCRPostDowngrade(t *testing.T) {
 
 		instance := &v1alpha1.KnativeEventing{
 			Spec: v1alpha1.KnativeEventingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: test.OperatorFlags.PreviousEventingVersion,
 				},
 			},
@@ -123,7 +125,7 @@ func servingCRPostDowngrade(t *testing.T) {
 
 		instance := &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: test.OperatorFlags.PreviousServingVersion,
 				},
 			},

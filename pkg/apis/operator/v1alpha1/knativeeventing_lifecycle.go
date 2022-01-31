@@ -20,17 +20,18 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/pkg/apis"
 )
 
 var (
-	_ KComponentStatus = (*KnativeEventingStatus)(nil)
+	_ base.KComponentStatus = (*KnativeEventingStatus)(nil)
 
 	eventingCondSet = apis.NewLivingConditionSet(
-		DependenciesInstalled,
-		DeploymentsAvailable,
-		InstallSucceeded,
-		VersionMigrationEligible,
+		base.DependenciesInstalled,
+		base.DeploymentsAvailable,
+		base.InstallSucceeded,
+		base.VersionMigrationEligible,
 	)
 )
 
@@ -57,8 +58,8 @@ func (es *KnativeEventingStatus) IsReady() bool {
 
 // MarkInstallSucceeded marks the InstallationSucceeded status as true.
 func (es *KnativeEventingStatus) MarkInstallSucceeded() {
-	eventingCondSet.Manage(es).MarkTrue(InstallSucceeded)
-	if es.GetCondition(DependenciesInstalled).IsUnknown() {
+	eventingCondSet.Manage(es).MarkTrue(base.InstallSucceeded)
+	if es.GetCondition(base.DependenciesInstalled).IsUnknown() {
 		// Assume deps are installed if we're not sure
 		es.MarkDependenciesInstalled()
 	}
@@ -68,25 +69,25 @@ func (es *KnativeEventingStatus) MarkInstallSucceeded() {
 // message.
 func (es *KnativeEventingStatus) MarkInstallFailed(msg string) {
 	eventingCondSet.Manage(es).MarkFalse(
-		InstallSucceeded,
+		base.InstallSucceeded,
 		"Error",
 		"Install failed with message: %s", msg)
 }
 
 // MarkDeploymentsAvailable marks the VersionMigrationEligible status as true.
 func (es *KnativeEventingStatus) MarkDeploymentsAvailable() {
-	eventingCondSet.Manage(es).MarkTrue(DeploymentsAvailable)
+	eventingCondSet.Manage(es).MarkTrue(base.DeploymentsAvailable)
 }
 
 // MarkVersionMigrationEligible marks the VersionMigrationEligible status as false with given message.
 func (es *KnativeEventingStatus) MarkVersionMigrationEligible() {
-	eventingCondSet.Manage(es).MarkTrue(VersionMigrationEligible)
+	eventingCondSet.Manage(es).MarkTrue(base.VersionMigrationEligible)
 }
 
 // MarkVersionMigrationNotEligible marks the DeploymentsAvailable status as true.
 func (es *KnativeEventingStatus) MarkVersionMigrationNotEligible(msg string) {
 	eventingCondSet.Manage(es).MarkFalse(
-		VersionMigrationEligible,
+		base.VersionMigrationEligible,
 		"Error",
 		"Version migration is not eligible with message: %s", msg)
 }
@@ -95,21 +96,21 @@ func (es *KnativeEventingStatus) MarkVersionMigrationNotEligible(msg string) {
 // it's waiting for deployments.
 func (es *KnativeEventingStatus) MarkDeploymentsNotReady(deployments []string) {
 	eventingCondSet.Manage(es).MarkFalse(
-		DeploymentsAvailable,
+		base.DeploymentsAvailable,
 		"NotReady",
 		"Waiting on deployments: %s", strings.Join(deployments, ", "))
 }
 
 // MarkDependenciesInstalled marks the DependenciesInstalled status as true.
 func (es *KnativeEventingStatus) MarkDependenciesInstalled() {
-	eventingCondSet.Manage(es).MarkTrue(DependenciesInstalled)
+	eventingCondSet.Manage(es).MarkTrue(base.DependenciesInstalled)
 }
 
 // MarkDependencyInstalling marks the DependenciesInstalled status as false with the
 // given message.
 func (es *KnativeEventingStatus) MarkDependencyInstalling(msg string) {
 	eventingCondSet.Manage(es).MarkFalse(
-		DependenciesInstalled,
+		base.DependenciesInstalled,
 		"Installing",
 		"Dependency installing: %s", msg)
 }
@@ -118,7 +119,7 @@ func (es *KnativeEventingStatus) MarkDependencyInstalling(msg string) {
 // given message.
 func (es *KnativeEventingStatus) MarkDependencyMissing(msg string) {
 	eventingCondSet.Manage(es).MarkFalse(
-		DependenciesInstalled,
+		base.DependenciesInstalled,
 		"Error",
 		"Dependency missing: %s", msg)
 }

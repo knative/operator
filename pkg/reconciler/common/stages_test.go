@@ -25,6 +25,7 @@ import (
 	fake "github.com/manifestival/manifestival/fake"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
@@ -36,15 +37,15 @@ func TestStagesExecute(t *testing.T) {
 
 	tests := []struct {
 		name                  string
-		component             v1alpha1.KComponent
+		component             base.KComponent
 		expectedManifestsPath string
 	}{{
 		name: "knative-serving with additional manifests",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "1.0.0",
-					AdditionalManifests: []v1alpha1.Manifest{{
+					AdditionalManifests: []base.Manifest{{
 						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
 					}},
 				},
@@ -56,7 +57,7 @@ func TestStagesExecute(t *testing.T) {
 		name: "knative-serving with no additional manifests",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.26.1",
 				},
 			},
@@ -83,7 +84,7 @@ func TestStagesExecuteWithRepetition(t *testing.T) {
 
 	testRepetition := []struct {
 		name                      string
-		component                 v1alpha1.KComponent
+		component                 base.KComponent
 		expectedContainingPath    string
 		expectedManifestsPath     string
 		expectedNotContainingPath string
@@ -91,9 +92,9 @@ func TestStagesExecuteWithRepetition(t *testing.T) {
 		name: "knative-serving with the same resource in additional manifests",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "1.0.0",
-					AdditionalManifests: []v1alpha1.Manifest{{
+					AdditionalManifests: []base.Manifest{{
 						Url: "testdata/kodata/additional-manifests-repetition/additional-resource.yaml",
 					}},
 				},
@@ -132,13 +133,13 @@ func TestStagesExecuteInstalledManifests(t *testing.T) {
 
 	testRepetition := []struct {
 		name                  string
-		component             v1alpha1.KComponent
+		component             base.KComponent
 		expectedManifestsPath string
 	}{{
 		name: "knative-serving with no status.manifests",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.26.1",
 				},
 			},
@@ -148,7 +149,7 @@ func TestStagesExecuteInstalledManifests(t *testing.T) {
 		name: "knative-serving with status.manifests",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.26.1",
 				},
 			},
@@ -166,9 +167,9 @@ func TestStagesExecuteInstalledManifests(t *testing.T) {
 		name: "knative-serving with the additional manifests in spec",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.26.1",
-					AdditionalManifests: []v1alpha1.Manifest{{
+					AdditionalManifests: []base.Manifest{{
 						Url: os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
 					}},
 				},
@@ -179,12 +180,12 @@ func TestStagesExecuteInstalledManifests(t *testing.T) {
 		name: "knative-serving with the additional manifests in spec",
 		component: &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.26.1",
-					Manifests: []v1alpha1.Manifest{{
+					Manifests: []base.Manifest{{
 						Url: os.Getenv(KoEnvKey) + "/knative-serving/0.26.1",
 					}},
-					AdditionalManifests: []v1alpha1.Manifest{{
+					AdditionalManifests: []base.Manifest{{
 						Url: os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
 					}},
 				},
@@ -229,7 +230,7 @@ func TestDeleteObsoleteResources(t *testing.T) {
 		}
 	}
 	deleteObsoleteResources := DeleteObsoleteResources(context.TODO(), &v1alpha1.KnativeServing{},
-		func(context.Context, v1alpha1.KComponent) (*mf.Manifest, error) {
+		func(context.Context, base.KComponent) (*mf.Manifest, error) {
 			return &manifest, nil
 		})
 	nocms := manifest.Filter(mf.Not(mf.ByKind("ConfigMap")))

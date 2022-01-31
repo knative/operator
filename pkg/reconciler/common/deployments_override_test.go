@@ -29,7 +29,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 	"knative.dev/operator/test"
@@ -49,7 +49,7 @@ type expDeployments struct {
 func TestDeploymentsTransform(t *testing.T) {
 	tests := []struct {
 		name           string
-		override       []servingv1alpha1.DeploymentOverride
+		override       []base.DeploymentOverride
 		globalReplicas int32
 		expDeployment  map[string]expDeployments
 	}{{
@@ -67,7 +67,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "simple override",
-		override: []servingv1alpha1.DeploymentOverride{
+		override: []base.DeploymentOverride{
 			{
 				Name:         "controller",
 				Labels:       map[string]string{"a": "b"},
@@ -107,7 +107,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "no replicas in deploymentoverride, use global replicas",
-		override: []servingv1alpha1.DeploymentOverride{
+		override: []base.DeploymentOverride{
 			{Name: "controller"},
 		},
 		globalReplicas: 10,
@@ -119,7 +119,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "neither replicas in deploymentoverride nor global replicas",
-		override: []servingv1alpha1.DeploymentOverride{
+		override: []base.DeploymentOverride{
 			{Name: "controller"},
 		},
 		expDeployment: map[string]expDeployments{"controller": {
@@ -130,7 +130,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "multiple override",
-		override: []servingv1alpha1.DeploymentOverride{
+		override: []base.DeploymentOverride{
 			{
 				Name:         "controller",
 				Labels:       map[string]string{"a": "b"},
@@ -252,9 +252,9 @@ func TestDeploymentsTransform(t *testing.T) {
 
 			ks := &servingv1alpha1.KnativeServing{
 				Spec: servingv1alpha1.KnativeServingSpec{
-					CommonSpec: servingv1alpha1.CommonSpec{
+					CommonSpec: base.CommonSpec{
 						DeploymentOverride: test.override,
-						HighAvailability: &servingv1alpha1.HighAvailability{
+						HighAvailability: &base.HighAvailability{
 							Replicas: test.globalReplicas,
 						},
 					},
@@ -327,12 +327,12 @@ func TestDeploymentResourceRequirementsTransform(t *testing.T) {
 				Name: "specific-container-for-deployment",
 			},
 			Spec: servingv1alpha1.KnativeServingSpec{
-				CommonSpec: servingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: test.OperatorFlags.PreviousEventingVersion,
-					DeploymentOverride: []v1alpha1.DeploymentOverride{
+					DeploymentOverride: []base.DeploymentOverride{
 						{
 							Name: "net-istio-controller",
-							Resources: []v1alpha1.ResourceRequirementsOverride{{
+							Resources: []base.ResourceRequirementsOverride{{
 								Container: "controller",
 								ResourceRequirements: corev1.ResourceRequirements{
 									Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),

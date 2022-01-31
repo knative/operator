@@ -21,6 +21,8 @@ import (
 	"os"
 	"testing"
 
+	"knative.dev/operator/pkg/apis/operator/base"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler/common"
@@ -79,7 +81,7 @@ func servingCRPreUpgrade(t *testing.T) {
 		// installed manifests in terms of the spec.
 		kservingInstalled := &v1alpha1.KnativeServing{
 			Spec: v1alpha1.KnativeServingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: kserving.GetStatus().GetVersion(),
 				},
 			},
@@ -121,7 +123,7 @@ func eventingCRPreUpgrade(t *testing.T) {
 		// installed manifests in terms of the spec.
 		keventingInstalled := &v1alpha1.KnativeEventing{
 			Spec: v1alpha1.KnativeEventingSpec{
-				CommonSpec: v1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: keventing.GetStatus().GetVersion(),
 				},
 			},

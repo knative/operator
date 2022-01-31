@@ -25,6 +25,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"golang.org/x/mod/semver"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler/common"
 )
@@ -105,7 +106,7 @@ func getIngress(version string) (mf.Manifest, error) {
 }
 
 // AppendTargetIngresses appends the manifests of ingresses to be installed
-func AppendTargetIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func AppendTargetIngresses(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	m, err := getIngress(common.TargetVersion(instance))
 	if err == nil {
 		*manifest = manifest.Append(m)
@@ -120,7 +121,7 @@ func AppendTargetIngresses(ctx context.Context, manifest *mf.Manifest, instance 
 }
 
 // AppendInstalledIngresses appends the installed manifests of ingresses
-func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	version := instance.GetStatus().GetVersion()
 	if version == "" {
 		version = common.TargetVersion(instance)

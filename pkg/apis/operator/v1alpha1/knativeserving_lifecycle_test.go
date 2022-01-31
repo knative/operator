@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"knative.dev/operator/pkg/apis/operator/base"
 	apistest "knative.dev/pkg/apis/testing"
 )
 
@@ -39,33 +40,33 @@ func TestKnativeServingHappyPath(t *testing.T) {
 	ks := &KnativeServingStatus{}
 	ks.InitializeConditions()
 
-	apistest.CheckConditionOngoing(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionOngoing(ks, InstallSucceeded, t)
+	apistest.CheckConditionOngoing(ks, base.DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, base.DeploymentsAvailable, t)
+	apistest.CheckConditionOngoing(ks, base.InstallSucceeded, t)
 
 	ks.MarkVersionMigrationEligible()
 
 	// Install succeeds.
 	ks.MarkInstallSucceeded()
 	// Dependencies are assumed successful too.
-	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	apistest.CheckConditionSucceeded(ks, base.DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, base.DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, base.InstallSucceeded, t)
 
 	// Deployments are not available at first.
 	ks.MarkDeploymentsNotReady([]string{"test"})
-	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
-	apistest.CheckConditionFailed(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	apistest.CheckConditionSucceeded(ks, base.DependenciesInstalled, t)
+	apistest.CheckConditionFailed(ks, base.DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, base.InstallSucceeded, t)
 	if ready := ks.IsReady(); ready {
 		t.Errorf("ks.IsReady() = %v, want false", ready)
 	}
 
 	// Deployments become ready and we're good.
 	ks.MarkDeploymentsAvailable()
-	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
-	apistest.CheckConditionSucceeded(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	apistest.CheckConditionSucceeded(ks, base.DependenciesInstalled, t)
+	apistest.CheckConditionSucceeded(ks, base.DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, base.InstallSucceeded, t)
 	if ready := ks.IsReady(); !ready {
 		t.Errorf("ks.IsReady() = %v, want true", ready)
 	}
@@ -75,47 +76,47 @@ func TestKnativeServingErrorPath(t *testing.T) {
 	ks := &KnativeServingStatus{}
 	ks.InitializeConditions()
 
-	apistest.CheckConditionOngoing(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionOngoing(ks, InstallSucceeded, t)
+	apistest.CheckConditionOngoing(ks, base.DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, base.DeploymentsAvailable, t)
+	apistest.CheckConditionOngoing(ks, base.InstallSucceeded, t)
 
 	ks.MarkVersionMigrationEligible()
 
 	// Install fails.
 	ks.MarkInstallFailed("test")
-	apistest.CheckConditionOngoing(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionFailed(ks, InstallSucceeded, t)
+	apistest.CheckConditionOngoing(ks, base.DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, base.DeploymentsAvailable, t)
+	apistest.CheckConditionFailed(ks, base.InstallSucceeded, t)
 
 	// Dependencies are installing.
 	ks.MarkDependencyInstalling("testing")
-	apistest.CheckConditionFailed(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionFailed(ks, InstallSucceeded, t)
+	apistest.CheckConditionFailed(ks, base.DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, base.DeploymentsAvailable, t)
+	apistest.CheckConditionFailed(ks, base.InstallSucceeded, t)
 
 	// Install now succeeds.
 	ks.MarkInstallSucceeded()
-	apistest.CheckConditionFailed(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	apistest.CheckConditionFailed(ks, base.DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, base.DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, base.InstallSucceeded, t)
 	if ready := ks.IsReady(); ready {
 		t.Errorf("ks.IsReady() = %v, want false", ready)
 	}
 
 	// Deployments become ready
 	ks.MarkDeploymentsAvailable()
-	apistest.CheckConditionFailed(ks, DependenciesInstalled, t)
-	apistest.CheckConditionSucceeded(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	apistest.CheckConditionFailed(ks, base.DependenciesInstalled, t)
+	apistest.CheckConditionSucceeded(ks, base.DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, base.InstallSucceeded, t)
 	if ready := ks.IsReady(); ready {
 		t.Errorf("ks.IsReady() = %v, want false", ready)
 	}
 
 	// Finally, dependencies become available.
 	ks.MarkDependenciesInstalled()
-	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
-	apistest.CheckConditionSucceeded(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	apistest.CheckConditionSucceeded(ks, base.DependenciesInstalled, t)
+	apistest.CheckConditionSucceeded(ks, base.DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, base.InstallSucceeded, t)
 	if ready := ks.IsReady(); !ready {
 		t.Errorf("ks.IsReady() = %v, want true", ready)
 	}
@@ -130,15 +131,15 @@ func TestKnativeServingExternalDependency(t *testing.T) {
 
 	// Install succeeds.
 	ks.MarkInstallSucceeded()
-	apistest.CheckConditionFailed(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	apistest.CheckConditionFailed(ks, base.DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, base.DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, base.InstallSucceeded, t)
 
 	// Dependencies are now ready.
 	ks.MarkDependenciesInstalled()
-	apistest.CheckConditionSucceeded(ks, DependenciesInstalled, t)
-	apistest.CheckConditionOngoing(ks, DeploymentsAvailable, t)
-	apistest.CheckConditionSucceeded(ks, InstallSucceeded, t)
+	apistest.CheckConditionSucceeded(ks, base.DependenciesInstalled, t)
+	apistest.CheckConditionOngoing(ks, base.DeploymentsAvailable, t)
+	apistest.CheckConditionSucceeded(ks, base.InstallSucceeded, t)
 }
 
 func TestKnativeServingVersionMigrationNotEligible(t *testing.T) {
@@ -146,5 +147,5 @@ func TestKnativeServingVersionMigrationNotEligible(t *testing.T) {
 	ks.InitializeConditions()
 
 	ks.MarkVersionMigrationNotEligible("Version migration not eligible.")
-	apistest.CheckConditionFailed(ks, VersionMigrationEligible, t)
+	apistest.CheckConditionFailed(ks, base.VersionMigrationEligible, t)
 }

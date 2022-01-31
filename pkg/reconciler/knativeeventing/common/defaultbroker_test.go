@@ -22,6 +22,7 @@ import (
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/operator/pkg/apis/operator/base"
 
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/yaml"
@@ -40,7 +41,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 		expected           corev1.ConfigMap
 	}{{
 		name: "UsesDefaultWhenNotSpecified",
-		configMap: makeConfigMap(t, "config-br-defaults", v1alpha1.ConfigMapData{
+		configMap: makeConfigMap(t, "config-br-defaults", base.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "Foo",
 				"apiVersion":  "v1",
@@ -50,7 +51,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 			},
 		}),
 		defaultBrokerClass: "",
-		expected: makeConfigMap(t, "config-br-defaults", v1alpha1.ConfigMapData{
+		expected: makeConfigMap(t, "config-br-defaults", base.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "MTChannelBasedBroker",
 				"apiVersion":  "v1",
@@ -61,7 +62,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 		}),
 	}, {
 		name: "UsesTheSpecifiedValueWhenSpecified",
-		configMap: makeConfigMap(t, "config-br-defaults", v1alpha1.ConfigMapData{
+		configMap: makeConfigMap(t, "config-br-defaults", base.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "Foo",
 				"apiVersion":  "v1",
@@ -71,7 +72,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 			},
 		}),
 		defaultBrokerClass: "MyCustomerBroker",
-		expected: makeConfigMap(t, "config-br-defaults", v1alpha1.ConfigMapData{
+		expected: makeConfigMap(t, "config-br-defaults", base.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "MyCustomerBroker",
 				"apiVersion":  "v1",
@@ -82,7 +83,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 		}),
 	}, {
 		name: "DoesNotTouchOtherConfigMaps",
-		configMap: makeConfigMap(t, "some-other-config-map-foo-bar-baz", v1alpha1.ConfigMapData{
+		configMap: makeConfigMap(t, "some-other-config-map-foo-bar-baz", base.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "Foo",
 				"apiVersion":  "v1",
@@ -92,7 +93,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 			},
 		}),
 		defaultBrokerClass: "MyCustomerBroker",
-		expected: makeConfigMap(t, "config-br-defaults", v1alpha1.ConfigMapData{
+		expected: makeConfigMap(t, "config-br-defaults", base.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "Foo",
 				"apiVersion":  "v1",
@@ -122,7 +123,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 	}
 }
 
-func makeConfigMap(t *testing.T, name string, data v1alpha1.ConfigMapData) corev1.ConfigMap {
+func makeConfigMap(t *testing.T, name string, data base.ConfigMapData) corev1.ConfigMap {
 	out, err := yaml.Marshal(&data)
 	if err != nil {
 		t.Fatal("Unable to marshal test data. Possible implementation problem.", "data", data)

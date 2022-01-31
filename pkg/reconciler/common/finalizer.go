@@ -21,11 +21,11 @@ import (
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 )
 
 // FinalizerRemovalPatch generates a patch for removing the given finalizer.
-func FinalizerRemovalPatch(obj v1alpha1.KComponent, toRemove string) ([]byte, error) {
+func FinalizerRemovalPatch(obj base.KComponent, toRemove string) ([]byte, error) {
 	finalizers := sets.NewString(obj.GetFinalizers()...)
 
 	if !finalizers.Has(toRemove) {

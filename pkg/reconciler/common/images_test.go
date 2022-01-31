@@ -23,6 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	caching "knative.dev/caching/pkg/apis/caching/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 
@@ -36,7 +37,7 @@ func TestResourceTransform(t *testing.T) {
 	for _, tt := range []struct {
 		name       string
 		containers []corev1.Container
-		registry   v1alpha1.Registry
+		registry   base.Registry
 		expected   []corev1.Container
 	}{{
 		name: "UsesNameFromDefault",
@@ -44,7 +45,7 @@ func TestResourceTransform(t *testing.T) {
 			Name:  "queue",
 			Image: "gcr.io/knative-releases/github.com/knative/serving/cmd/queue@sha256:1e40c99ff5977daa2d69873fff604c6d09651af1f9ff15aadf8849b3ee77ab45",
 		}},
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			Default: "new-registry.io/test/path/${NAME}:new-tag",
 		},
 		expected: []corev1.Container{{
@@ -60,7 +61,7 @@ func TestResourceTransform(t *testing.T) {
 			Name:  "container2",
 			Image: "gcr.io/cmd/queue:test",
 		}},
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			Override: map[string]string{
 				"container1": "new-registry.io/test/path/new-container-1:new-tag",
 				"container2": "new-registry.io/test/path/new-container-2:new-tag",
@@ -79,7 +80,7 @@ func TestResourceTransform(t *testing.T) {
 			Name:  "queue",
 			Image: "gcr.io/knative-releases/github.com/knative/serving/cmd/queue@sha256:1e40c99ff5977daa2d69873fff604c6d09651af1f9ff15aadf8849b3ee77ab45",
 		}},
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			Default: "new-registry.io/test/path/${NAME}:new-tag",
 			Override: map[string]string{
 				"queue": "new-registry.io/test/path/new-value:new-override-tag",
@@ -95,7 +96,7 @@ func TestResourceTransform(t *testing.T) {
 			Name:  "image",
 			Image: "docker.io/name/image:tag2",
 		}},
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			Override: map[string]string{
 				"Unused": "new-registry.io/test/path",
 			},
@@ -110,7 +111,7 @@ func TestResourceTransform(t *testing.T) {
 			Name:  "queue",
 			Image: "gcr.io/knative-releases/github.com/knative/eventing/cmd/queue@sha256:1e40c99ff5977daa2d69873fff604c6d09651af1f9ff15aadf8849b3ee77ab45",
 		}},
-		registry: v1alpha1.Registry{},
+		registry: base.Registry{},
 		expected: []corev1.Container{{
 			Name:  "queue",
 			Image: "gcr.io/knative-releases/github.com/knative/eventing/cmd/queue@sha256:1e40c99ff5977daa2d69873fff604c6d09651af1f9ff15aadf8849b3ee77ab45",
@@ -120,7 +121,7 @@ func TestResourceTransform(t *testing.T) {
 		containers: []corev1.Container{{
 			Env: []corev1.EnvVar{{Name: "SOME_IMAGE", Value: "gcr.io/foo/bar"}},
 		}},
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			Override: map[string]string{
 				"SOME_IMAGE": "docker.io/my/overridden-image",
 			},
@@ -133,7 +134,7 @@ func TestResourceTransform(t *testing.T) {
 		containers: []corev1.Container{{
 			Env: []corev1.EnvVar{{Name: "SOME_IMAGE", Value: "gcr.io/foo/bar"}},
 		}},
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			Override: map[string]string{
 				"OTHER_IMAGE": "docker.io/my/overridden-image",
 			},
@@ -148,7 +149,7 @@ func TestResourceTransform(t *testing.T) {
 			Image: "gcr.io/knative-releases/github.com/knative/eventing/cmd/queue@sha256:1e40c99ff5977daa2d69873fff604c6d09651af1f9ff15aadf8849b3ee77ab45",
 			Env:   []corev1.EnvVar{{Name: "SOME_IMAGE", Value: "gcr.io/foo/bar"}},
 		}},
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			Override: map[string]string{
 				"queue":      "new-registry.io/test/path/new-value:new-override-tag",
 				"SOME_IMAGE": "docker.io/my/overridden-image",
@@ -168,7 +169,7 @@ func TestResourceTransform(t *testing.T) {
 			Name:  "container2",
 			Image: "gcr.io/cmd/queue:test",
 		}},
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			Override: map[string]string{
 				"container1": "new-registry.io/test/path/new-container-1:new-tag",
 				"container2": "new-registry.io/test/path/new-container-2:new-tag",
@@ -192,7 +193,7 @@ func TestResourceTransform(t *testing.T) {
 			Name:  "container2",
 			Image: "gcr.io/cmd/queue:test",
 		}},
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			Override: map[string]string{
 				"container1": "new-registry.io/test/path/new-container-1:new-tag",
 				"container2": "new-registry.io/test/path/new-container-2:new-tag",
@@ -215,7 +216,7 @@ func TestResourceTransform(t *testing.T) {
 			Name:  "container2",
 			Image: "gcr.io/cmd/queue:test",
 		}},
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			Override: map[string]string{
 				"OverrideWithDeploymentName/container1": "new-registry.io/test/path/OverrideWithDeploymentName/container-1:new-tag",
 				"OverrideWithDeploymentName/container2": "new-registry.io/test/path/OverrideWithDeploymentName/container-2:new-tag",
@@ -264,12 +265,12 @@ func TestImageTransform(t *testing.T) {
 	for _, tt := range []struct {
 		name     string
 		in       string
-		registry v1alpha1.Registry
+		registry base.Registry
 		expected caching.ImageSpec
 	}{{
 		name: "OverrideImage",
 		in:   "gcr.io/knative-releases/github.com/knative/serving/cmd/queue@sha256:1e40c99ff5977daa2d69873fff604c6d09651af1f9ff15aadf8849b3ee77ab45",
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			Override: map[string]string{
 				"OverrideImage": "new-registry.io/test/path/OverrideImage:new-tag",
 			},
@@ -280,7 +281,7 @@ func TestImageTransform(t *testing.T) {
 	}, {
 		name: "UsesNameFromDefault",
 		in:   "gcr.io/knative-releases/github.com/knative/serving/cmd/queue@sha256:1e40c99ff5977daa2d69873fff604c6d09651af1f9ff15aadf8849b3ee77ab45",
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			Default: "new-registry.io/test/path/${NAME}:new-tag",
 		},
 		expected: caching.ImageSpec{
@@ -289,7 +290,7 @@ func TestImageTransform(t *testing.T) {
 	}, {
 		name: "AddsImagePullSecrets",
 		in:   "gcr.io/knative-releases/github.com/knative/serving/cmd/queue@sha256:1e40c99ff5977daa2d69873fff604c6d09651af1f9ff15aadf8849b3ee77ab45",
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			ImagePullSecrets: []corev1.LocalObjectReference{
 				{Name: "new-secret"},
 			},
@@ -305,7 +306,7 @@ func TestImageTransform(t *testing.T) {
 			unstructuredImage := util.MakeUnstructured(t, makeImage(tt.name, tt.in))
 			instance := &v1alpha1.KnativeServing{
 				Spec: v1alpha1.KnativeServingSpec{
-					CommonSpec: v1alpha1.CommonSpec{
+					CommonSpec: base.CommonSpec{
 						Registry: tt.registry,
 					},
 				},
@@ -323,24 +324,24 @@ func TestImagePullSecrets(t *testing.T) {
 	for _, tt := range []struct {
 		name            string
 		existingSecrets []corev1.LocalObjectReference
-		registry        v1alpha1.Registry
+		registry        base.Registry
 		expectedSecrets []corev1.LocalObjectReference
 	}{{
 		name:            "LeavesSecretsEmptyByDefault",
 		existingSecrets: nil,
-		registry:        v1alpha1.Registry{},
+		registry:        base.Registry{},
 		expectedSecrets: nil,
 	}, {
 		name:            "AddsImagePullSecrets",
 		existingSecrets: nil,
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			ImagePullSecrets: []corev1.LocalObjectReference{{Name: "new-secret"}},
 		},
 		expectedSecrets: []corev1.LocalObjectReference{{Name: "new-secret"}},
 	}, {
 		name:            "SupportsMultipleImagePullSecrets",
 		existingSecrets: nil,
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			ImagePullSecrets: []corev1.LocalObjectReference{
 				{Name: "new-secret-1"},
 				{Name: "new-secret-2"},
@@ -353,7 +354,7 @@ func TestImagePullSecrets(t *testing.T) {
 	}, {
 		name:            "MergesAdditionalSecretsWithAnyPreexisting",
 		existingSecrets: []corev1.LocalObjectReference{{Name: "existing-secret"}},
-		registry: v1alpha1.Registry{
+		registry: base.Registry{
 			ImagePullSecrets: []corev1.LocalObjectReference{
 				{Name: "new-secret"},
 			},

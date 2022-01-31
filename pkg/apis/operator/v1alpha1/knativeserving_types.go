@@ -19,12 +19,13 @@ package v1alpha1
 import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/operator/pkg/apis/operator/base"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 var (
-	_ KComponent     = (*KnativeServing)(nil)
-	_ KComponentSpec = (*KnativeServingSpec)(nil)
+	_ base.KComponent     = (*KnativeServing)(nil)
+	_ base.KComponentSpec = (*KnativeServingSpec)(nil)
 )
 
 // KnativeServing is the Schema for the knativeservings API
@@ -40,18 +41,18 @@ type KnativeServing struct {
 }
 
 // GetSpec implements KComponent
-func (ks *KnativeServing) GetSpec() KComponentSpec {
+func (ks *KnativeServing) GetSpec() base.KComponentSpec {
 	return &ks.Spec
 }
 
 // GetStatus implements KComponent
-func (ks *KnativeServing) GetStatus() KComponentStatus {
+func (ks *KnativeServing) GetStatus() base.KComponentStatus {
 	return &ks.Status
 }
 
 // KnativeServingSpec defines the desired state of KnativeServing
 type KnativeServingSpec struct {
-	CommonSpec `json:",inline"`
+	base.CommonSpec `json:",inline"`
 
 	// DEPRECATED.
 	// DeprecatedKnativeIngressGateway is to override the knative-ingress-gateway.

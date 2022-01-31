@@ -19,6 +19,8 @@ package common
 import (
 	"testing"
 
+	"knative.dev/operator/pkg/apis/operator/base"
+
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,7 +34,7 @@ import (
 func TestHighAvailabilityTransform(t *testing.T) {
 	cases := []struct {
 		name     string
-		config   *v1alpha1.HighAvailability
+		config   *base.HighAvailability
 		in       *unstructured.Unstructured
 		expected *unstructured.Unstructured
 		err      error
@@ -83,7 +85,7 @@ func TestHighAvailabilityTransform(t *testing.T) {
 
 			instance := &v1alpha1.KnativeServing{
 				Spec: v1alpha1.KnativeServingSpec{
-					CommonSpec: v1alpha1.CommonSpec{
+					CommonSpec: base.CommonSpec{
 						HighAvailability: tc.config,
 					},
 				},
@@ -97,8 +99,8 @@ func TestHighAvailabilityTransform(t *testing.T) {
 	}
 }
 
-func makeHa(replicas int32) *v1alpha1.HighAvailability {
-	return &v1alpha1.HighAvailability{
+func makeHa(replicas int32) *base.HighAvailability {
+	return &base.HighAvailability{
 		Replicas: replicas,
 	}
 }

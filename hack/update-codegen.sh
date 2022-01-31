@@ -53,6 +53,7 @@ group "Deepcopy Gen"
 ${GOPATH}/bin/deepcopy-gen \
   -O zz_generated.deepcopy \
   --go-header-file "${boilerplate}" \
+  -i knative.dev/operator/pkg/apis/operator/base \
   -i knative.dev/operator/pkg/apis/operator/v1alpha1
 
 group "Update deps post-codegen"

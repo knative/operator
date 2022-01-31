@@ -24,12 +24,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
 )
 
 // ResourceRequirementsTransform configures the resource requests for
 // all containers within all deployments in the manifest
-func ResourceRequirementsTransform(obj v1alpha1.KComponent, log *zap.SugaredLogger) mf.Transformer {
+func ResourceRequirementsTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" {
 			// Use spec.deployments.resources for the deployment instead of spec.resources.
@@ -70,7 +70,7 @@ func merge(src, tgt *v1.ResourceList) {
 	}
 }
 
-func find(resources []v1alpha1.ResourceRequirementsOverride, name string) *v1alpha1.ResourceRequirementsOverride {
+func find(resources []base.ResourceRequirementsOverride, name string) *base.ResourceRequirementsOverride {
 	for _, override := range resources {
 		if override.Container == name {
 			return &override

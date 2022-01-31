@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	mf "github.com/manifestival/manifestival"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/pkg/logging"
 )
@@ -35,7 +36,7 @@ var (
 
 // Install applies the manifest resources for the given version and updates the given
 // status accordingly.
-func Install(ctx context.Context, manifest *mf.Manifest, instance v1alpha1.KComponent) error {
+func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
 	status := instance.GetStatus()

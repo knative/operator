@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
+	"knative.dev/operator/pkg/apis/operator/base"
 	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/operator/pkg/reconciler/common"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
@@ -151,7 +152,7 @@ func TestAppendTargetSources(t *testing.T) {
 		name: "Available Amazon SQS, Redis, Ceph, Couchdb and GitHub as the target sources",
 		instance: eventingv1alpha1.KnativeEventing{
 			Spec: eventingv1alpha1.KnativeEventingSpec{
-				CommonSpec: eventingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.22",
 				},
 				Source: &eventingv1alpha1.SourceConfigs{
@@ -183,7 +184,7 @@ func TestAppendTargetSources(t *testing.T) {
 		name: "Available GitLab, Kafka, NATSS, Rabbitmq and Prometheus as the target sources",
 		instance: eventingv1alpha1.KnativeEventing{
 			Spec: eventingv1alpha1.KnativeEventingSpec{
-				CommonSpec: eventingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.22",
 				},
 				Source: &eventingv1alpha1.SourceConfigs{
@@ -215,7 +216,7 @@ func TestAppendTargetSources(t *testing.T) {
 		name: "Unavailable target source",
 		instance: eventingv1alpha1.KnativeEventing{
 			Spec: eventingv1alpha1.KnativeEventingSpec{
-				CommonSpec: eventingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.12.1",
 				},
 				Source: &eventingv1alpha1.SourceConfigs{
@@ -230,9 +231,9 @@ func TestAppendTargetSources(t *testing.T) {
 		name: "Unavailable target source with spec.manifests",
 		instance: eventingv1alpha1.KnativeEventing{
 			Spec: eventingv1alpha1.KnativeEventingSpec{
-				CommonSpec: eventingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.12.1",
-					Manifests: []eventingv1alpha1.Manifest{{
+					Manifests: []base.Manifest{{
 						Url: "testdata/kodata/eventing-source/empty.yaml",
 					}},
 				},
@@ -248,7 +249,7 @@ func TestAppendTargetSources(t *testing.T) {
 		name: "Get the latest target source when the directory latest is unavailable",
 		instance: eventingv1alpha1.KnativeEventing{
 			Spec: eventingv1alpha1.KnativeEventingSpec{
-				CommonSpec: eventingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "latest",
 				},
 				Source: &eventingv1alpha1.SourceConfigs{
@@ -264,7 +265,7 @@ func TestAppendTargetSources(t *testing.T) {
 		name: "No source is enabled",
 		instance: eventingv1alpha1.KnativeEventing{
 			Spec: eventingv1alpha1.KnativeEventingSpec{
-				CommonSpec: eventingv1alpha1.CommonSpec{
+				CommonSpec: base.CommonSpec{
 					Version: "0.23",
 				},
 			},

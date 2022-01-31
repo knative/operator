@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/wait"
 
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"knative.dev/operator/test"
 )
@@ -281,7 +282,7 @@ func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.Resourc
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to get: %v", names.KnativeServing, err)
 	}
-	ks.Spec.HighAvailability = &v1alpha1.HighAvailability{Replicas: 2}
+	ks.Spec.HighAvailability = &base.HighAvailability{Replicas: 2}
 	_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)

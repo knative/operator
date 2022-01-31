@@ -32,6 +32,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	servingv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
 	"knative.dev/operator/test"
@@ -108,8 +109,8 @@ func getDeploymentStatus(d *v1.Deployment) corev1.ConditionStatus {
 
 func getTestKSOperatorCRSpec() v1alpha1.KnativeServingSpec {
 	spec := v1alpha1.KnativeServingSpec{
-		CommonSpec: v1alpha1.CommonSpec{
-			Config: v1alpha1.ConfigMapData{
+		CommonSpec: base.CommonSpec{
+			Config: base.ConfigMapData{
 				DefaultsConfigKey: {
 					"revision-timeout-seconds": "200",
 				},
@@ -147,7 +148,7 @@ func configureIngressClass(spec *v1alpha1.KnativeServingSpec) {
 		}
 
 		if spec.CommonSpec.Config == nil {
-			spec.CommonSpec.Config = v1alpha1.ConfigMapData{"network": {"ingress.class": ingressClass}}
+			spec.CommonSpec.Config = base.ConfigMapData{"network": {"ingress.class": ingressClass}}
 		} else {
 			spec.CommonSpec.Config["network"] = map[string]string{"ingress.class": ingressClass}
 		}

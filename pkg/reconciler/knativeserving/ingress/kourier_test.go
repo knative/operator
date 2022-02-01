@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"testing"
 
+	"knative.dev/operator/pkg/apis/operator/base"
+
 	mf "github.com/manifestival/manifestival"
 	fake "github.com/manifestival/manifestival/fake"
 	appsv1 "k8s.io/api/apps/v1"
@@ -41,7 +43,7 @@ func servingInstance(ns string, serviceType v1.ServiceType) *servingv1alpha1.Kna
 		},
 		Spec: servingv1alpha1.KnativeServingSpec{
 			Ingress: &servingv1alpha1.IngressConfigs{
-				Kourier: servingv1alpha1.KourierIngressConfiguration{
+				Kourier: base.KourierIngressConfiguration{
 					Enabled:     true,
 					ServiceType: serviceType,
 				},

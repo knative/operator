@@ -43,19 +43,19 @@ func TestAppendInstalledSources(t *testing.T) {
 		instance: eventingv1alpha1.KnativeEventing{
 			Spec: eventingv1alpha1.KnativeEventingSpec{
 				Source: &eventingv1alpha1.SourceConfigs{
-					Awssqs: eventingv1alpha1.AwssqsSourceConfiguration{
+					Awssqs: base.AwssqsSourceConfiguration{
 						Enabled: true,
 					},
-					Ceph: eventingv1alpha1.CephSourceConfiguration{
+					Ceph: base.CephSourceConfiguration{
 						Enabled: true,
 					},
-					Github: eventingv1alpha1.GithubSourceConfiguration{
+					Github: base.GithubSourceConfiguration{
 						Enabled: true,
 					},
-					Redis: eventingv1alpha1.RedisSourceConfiguration{
+					Redis: base.RedisSourceConfiguration{
 						Enabled: true,
 					},
-					Couchdb: eventingv1alpha1.CouchdbSourceConfiguration{
+					Couchdb: base.CouchdbSourceConfiguration{
 						Enabled: true,
 					},
 				},
@@ -75,19 +75,19 @@ func TestAppendInstalledSources(t *testing.T) {
 		instance: eventingv1alpha1.KnativeEventing{
 			Spec: eventingv1alpha1.KnativeEventingSpec{
 				Source: &eventingv1alpha1.SourceConfigs{
-					Natss: eventingv1alpha1.NatssSourceConfiguration{
+					Natss: base.NatssSourceConfiguration{
 						Enabled: true,
 					},
-					Kafka: eventingv1alpha1.KafkaSourceConfiguration{
+					Kafka: base.KafkaSourceConfiguration{
 						Enabled: true,
 					},
-					Gitlab: eventingv1alpha1.GitlabSourceConfiguration{
+					Gitlab: base.GitlabSourceConfiguration{
 						Enabled: true,
 					},
-					Prometheus: eventingv1alpha1.PrometheusSourceConfiguration{
+					Prometheus: base.PrometheusSourceConfiguration{
 						Enabled: true,
 					},
-					Rabbitmq: eventingv1alpha1.RabbitmqSourceConfiguration{
+					Rabbitmq: base.RabbitmqSourceConfiguration{
 						Enabled: true,
 					},
 				},
@@ -156,19 +156,19 @@ func TestAppendTargetSources(t *testing.T) {
 					Version: "0.22",
 				},
 				Source: &eventingv1alpha1.SourceConfigs{
-					Awssqs: eventingv1alpha1.AwssqsSourceConfiguration{
+					Awssqs: base.AwssqsSourceConfiguration{
 						Enabled: true,
 					},
-					Ceph: eventingv1alpha1.CephSourceConfiguration{
+					Ceph: base.CephSourceConfiguration{
 						Enabled: true,
 					},
-					Github: eventingv1alpha1.GithubSourceConfiguration{
+					Github: base.GithubSourceConfiguration{
 						Enabled: true,
 					},
-					Redis: eventingv1alpha1.RedisSourceConfiguration{
+					Redis: base.RedisSourceConfiguration{
 						Enabled: true,
 					},
-					Couchdb: eventingv1alpha1.CouchdbSourceConfiguration{
+					Couchdb: base.CouchdbSourceConfiguration{
 						Enabled: true,
 					},
 				},
@@ -188,19 +188,19 @@ func TestAppendTargetSources(t *testing.T) {
 					Version: "0.22",
 				},
 				Source: &eventingv1alpha1.SourceConfigs{
-					Natss: eventingv1alpha1.NatssSourceConfiguration{
+					Natss: base.NatssSourceConfiguration{
 						Enabled: true,
 					},
-					Kafka: eventingv1alpha1.KafkaSourceConfiguration{
+					Kafka: base.KafkaSourceConfiguration{
 						Enabled: true,
 					},
-					Gitlab: eventingv1alpha1.GitlabSourceConfiguration{
+					Gitlab: base.GitlabSourceConfiguration{
 						Enabled: true,
 					},
-					Prometheus: eventingv1alpha1.PrometheusSourceConfiguration{
+					Prometheus: base.PrometheusSourceConfiguration{
 						Enabled: true,
 					},
-					Rabbitmq: eventingv1alpha1.RabbitmqSourceConfiguration{
+					Rabbitmq: base.RabbitmqSourceConfiguration{
 						Enabled: true,
 					},
 				},
@@ -220,7 +220,7 @@ func TestAppendTargetSources(t *testing.T) {
 					Version: "0.12.1",
 				},
 				Source: &eventingv1alpha1.SourceConfigs{
-					Awssqs: eventingv1alpha1.AwssqsSourceConfiguration{
+					Awssqs: base.AwssqsSourceConfiguration{
 						Enabled: true,
 					},
 				},
@@ -238,7 +238,7 @@ func TestAppendTargetSources(t *testing.T) {
 					}},
 				},
 				Source: &eventingv1alpha1.SourceConfigs{
-					Awssqs: eventingv1alpha1.AwssqsSourceConfiguration{
+					Awssqs: base.AwssqsSourceConfiguration{
 						Enabled: true,
 					},
 				},
@@ -253,7 +253,7 @@ func TestAppendTargetSources(t *testing.T) {
 					Version: "latest",
 				},
 				Source: &eventingv1alpha1.SourceConfigs{
-					Awssqs: eventingv1alpha1.AwssqsSourceConfiguration{
+					Awssqs: base.AwssqsSourceConfiguration{
 						Enabled: true,
 					},
 				},

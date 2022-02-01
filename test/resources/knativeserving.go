@@ -142,9 +142,9 @@ func configureIngressClass(spec *v1alpha1.KnativeServingSpec) {
 
 	if !istioEnabled {
 		spec.Ingress = &v1alpha1.IngressConfigs{
-			Istio:   v1alpha1.IstioIngressConfiguration{Enabled: istioEnabled},
-			Contour: v1alpha1.ContourIngressConfiguration{Enabled: contourEnabled},
-			Kourier: v1alpha1.KourierIngressConfiguration{Enabled: kourierEnabled},
+			Istio:   base.IstioIngressConfiguration{Enabled: istioEnabled},
+			Contour: base.ContourIngressConfiguration{Enabled: contourEnabled},
+			Kourier: base.KourierIngressConfiguration{Enabled: kourierEnabled},
 		}
 
 		if spec.CommonSpec.Config == nil {

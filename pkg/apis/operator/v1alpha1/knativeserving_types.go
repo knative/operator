@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/operator/pkg/apis/operator/base"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
@@ -57,15 +56,15 @@ type KnativeServingSpec struct {
 	// DEPRECATED.
 	// DeprecatedKnativeIngressGateway is to override the knative-ingress-gateway.
 	// +optional
-	DeprecatedKnativeIngressGateway IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
+	DeprecatedKnativeIngressGateway base.IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
 
 	// DEPRECATED.
 	// DeprecatedClusterLocalGateway is to override the cluster-local-gateway.
 	// +optional
-	DeprecatedClusterLocalGateway IstioGatewayOverride `json:"cluster-local-gateway,omitempty"`
+	DeprecatedClusterLocalGateway base.IstioGatewayOverride `json:"cluster-local-gateway,omitempty"`
 
 	// Enables controller to trust registries with self-signed certificates
-	ControllerCustomCerts CustomCerts `json:"controller-custom-certs,omitempty"`
+	ControllerCustomCerts base.CustomCerts `json:"controller-custom-certs,omitempty"`
 
 	// Ingress allows configuration of different ingress adapters to be shipped.
 	Ingress *IngressConfigs `json:"ingress,omitempty"`
@@ -92,51 +91,9 @@ type KnativeServingList struct {
 	Items           []KnativeServing `json:"items"`
 }
 
-// IstioGatewayOverride override the knative-ingress-gateway and knative-local-gateway(cluster-local-gateway)
-type IstioGatewayOverride struct {
-	// A map of values to replace the "selector" values in the knative-ingress-gateway and knative-local-gateway(cluster-local-gateway)
-	Selector map[string]string `json:"selector,omitempty"`
-}
-
-// CustomCerts refers to either a ConfigMap or Secret containing valid
-// CA certificates
-type CustomCerts struct {
-	// One of ConfigMap or Secret
-	Type string `json:"type"`
-
-	// The name of the ConfigMap or Secret
-	Name string `json:"name"`
-}
-
 // IngressConfigs specifies options for the ingresses.
 type IngressConfigs struct {
-	Istio   IstioIngressConfiguration   `json:"istio"`
-	Kourier KourierIngressConfiguration `json:"kourier"`
-	Contour ContourIngressConfiguration `json:"contour"`
-}
-
-// IstioIngressConfiguration specifies options for the istio ingresses.
-type IstioIngressConfiguration struct {
-	Enabled bool `json:"enabled"`
-
-	// KnativeIngressGateway overrides the knative-ingress-gateway.
-	// +optional
-	KnativeIngressGateway *IstioGatewayOverride `json:"knative-ingress-gateway,omitempty"`
-
-	// KnativeLocalGateway overrides the knative-local-gateway.
-	// +optional
-	KnativeLocalGateway *IstioGatewayOverride `json:"knative-local-gateway,omitempty"`
-}
-
-// KourierIngressConfiguration specifies whether to enable the kourier ingresses.
-type KourierIngressConfiguration struct {
-	Enabled bool `json:"enabled"`
-
-	// ServiceType specifies the service type for kourier gateway.
-	ServiceType v1.ServiceType `json:"service-type,omitempty"`
-}
-
-// ContourIngressConfiguration specifies whether to enable the contour ingresses.
-type ContourIngressConfiguration struct {
-	Enabled bool `json:"enabled"`
+	Istio   base.IstioIngressConfiguration   `json:"istio"`
+	Kourier base.KourierIngressConfiguration `json:"kourier"`
+	Contour base.ContourIngressConfiguration `json:"contour"`
 }

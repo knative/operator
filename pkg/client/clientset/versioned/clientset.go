@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Knative Authors
+Copyright 2022 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,11 +25,13 @@ import (
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
 	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1"
 )
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	OperatorV1alpha1() operatorv1alpha1.OperatorV1alpha1Interface
+	OperatorV1beta1() operatorv1beta1.OperatorV1beta1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -37,11 +39,17 @@ type Interface interface {
 type Clientset struct {
 	*discovery.DiscoveryClient
 	operatorV1alpha1 *operatorv1alpha1.OperatorV1alpha1Client
+	operatorV1beta1  *operatorv1beta1.OperatorV1beta1Client
 }
 
 // OperatorV1alpha1 retrieves the OperatorV1alpha1Client
 func (c *Clientset) OperatorV1alpha1() operatorv1alpha1.OperatorV1alpha1Interface {
 	return c.operatorV1alpha1
+}
+
+// OperatorV1beta1 retrieves the OperatorV1beta1Client
+func (c *Clientset) OperatorV1beta1() operatorv1beta1.OperatorV1beta1Interface {
+	return c.operatorV1beta1
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -69,6 +77,10 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
+	cs.operatorV1beta1, err = operatorv1beta1.NewForConfig(&configShallowCopy)
+	if err != nil {
+		return nil, err
+	}
 
 	cs.DiscoveryClient, err = discovery.NewDiscoveryClientForConfig(&configShallowCopy)
 	if err != nil {
@@ -82,6 +94,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
 	cs.operatorV1alpha1 = operatorv1alpha1.NewForConfigOrDie(c)
+	cs.operatorV1beta1 = operatorv1beta1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -91,6 +104,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
 	cs.operatorV1alpha1 = operatorv1alpha1.New(c)
+	cs.operatorV1beta1 = operatorv1beta1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

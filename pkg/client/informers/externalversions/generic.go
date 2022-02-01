@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Knative Authors
+Copyright 2022 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	v1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 // GenericInformer is type of SharedIndexInformer which will locate and delegate to other
@@ -57,6 +58,12 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Operator().V1alpha1().KnativeEventings().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("knativeservings"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Operator().V1alpha1().KnativeServings().Informer()}, nil
+
+		// Group=operator.knative.dev, Version=v1beta1
+	case v1beta1.SchemeGroupVersion.WithResource("knativeeventings"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Operator().V1beta1().KnativeEventings().Informer()}, nil
+	case v1beta1.SchemeGroupVersion.WithResource("knativeservings"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Operator().V1beta1().KnativeServings().Informer()}, nil
 
 	}
 

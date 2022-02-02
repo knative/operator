@@ -19,6 +19,8 @@ package ingress
 import (
 	"testing"
 
+	"knative.dev/operator/pkg/apis/operator/base"
+
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -28,8 +30,8 @@ import (
 
 var log = zap.NewNop().Sugar()
 
-func gatewayOverride(selector map[string]string) *servingv1alpha1.IstioGatewayOverride {
-	return &servingv1alpha1.IstioGatewayOverride{
+func gatewayOverride(selector map[string]string) *base.IstioGatewayOverride {
+	return &base.IstioGatewayOverride{
 		Selector: selector,
 	}
 }
@@ -39,10 +41,10 @@ func TestGatewayTransform(t *testing.T) {
 		name                            string
 		gatewayName                     string
 		in                              map[string]string
-		knativeIngressGateway           *servingv1alpha1.IstioGatewayOverride
-		clusterLocalGateway             *servingv1alpha1.IstioGatewayOverride
-		deprecatedKnativeIngressGateway servingv1alpha1.IstioGatewayOverride
-		deprecatedClusterLocalGateway   servingv1alpha1.IstioGatewayOverride
+		knativeIngressGateway           *base.IstioGatewayOverride
+		clusterLocalGateway             *base.IstioGatewayOverride
+		deprecatedKnativeIngressGateway base.IstioGatewayOverride
+		deprecatedClusterLocalGateway   base.IstioGatewayOverride
 		expected                        map[string]string
 	}{{
 		name:        "update ingress gateway",
@@ -131,7 +133,7 @@ func TestGatewayTransform(t *testing.T) {
 			instance := &servingv1alpha1.KnativeServing{
 				Spec: servingv1alpha1.KnativeServingSpec{
 					Ingress: &servingv1alpha1.IngressConfigs{
-						Istio: servingv1alpha1.IstioIngressConfiguration{
+						Istio: base.IstioIngressConfiguration{
 							Enabled:               true,
 							KnativeIngressGateway: tt.knativeIngressGateway,
 							KnativeLocalGateway:   tt.clusterLocalGateway,

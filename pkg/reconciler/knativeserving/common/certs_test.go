@@ -18,6 +18,8 @@ package common
 import (
 	"testing"
 
+	"knative.dev/operator/pkg/apis/operator/base"
+
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -36,7 +38,7 @@ func TestOnlyTransformCustomCertsForController(t *testing.T) {
 	})
 	instance := &servingv1alpha1.KnativeServing{
 		Spec: servingv1alpha1.KnativeServingSpec{
-			ControllerCustomCerts: servingv1alpha1.CustomCerts{
+			ControllerCustomCerts: base.CustomCerts{
 				Type: "Secret",
 				Name: "my-secret",
 			},
@@ -55,12 +57,12 @@ func TestOnlyTransformCustomCertsForController(t *testing.T) {
 func TestCustomCertsTransform(t *testing.T) {
 	tests := []struct {
 		name         string
-		input        servingv1alpha1.CustomCerts
+		input        base.CustomCerts
 		expectError  bool
 		expectSource *v1.VolumeSource
 	}{{
 		name: "FromSecret",
-		input: servingv1alpha1.CustomCerts{
+		input: base.CustomCerts{
 			Type: "Secret",
 			Name: "my-secret",
 		},
@@ -72,7 +74,7 @@ func TestCustomCertsTransform(t *testing.T) {
 		},
 	}, {
 		name: "FromConfigMap",
-		input: servingv1alpha1.CustomCerts{
+		input: base.CustomCerts{
 			Type: "ConfigMap",
 			Name: "my-map",
 		},
@@ -86,17 +88,17 @@ func TestCustomCertsTransform(t *testing.T) {
 		},
 	}, {
 		name:        "NoCerts",
-		input:       servingv1alpha1.CustomCerts{},
+		input:       base.CustomCerts{},
 		expectError: false,
 	}, {
 		name: "InvalidType",
-		input: servingv1alpha1.CustomCerts{
+		input: base.CustomCerts{
 			Type: "invalid",
 		},
 		expectError: true,
 	}, {
 		name: "MissingName",
-		input: servingv1alpha1.CustomCerts{
+		input: base.CustomCerts{
 			Type: "Secret",
 		},
 		expectError: true,

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Knative Authors
+Copyright 2022 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import (
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
 	fakeoperatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1/fake"
+	operatorv1beta1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1"
+	fakeoperatorv1beta1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.
@@ -82,4 +84,9 @@ var (
 // OperatorV1alpha1 retrieves the OperatorV1alpha1Client
 func (c *Clientset) OperatorV1alpha1() operatorv1alpha1.OperatorV1alpha1Interface {
 	return &fakeoperatorv1alpha1.FakeOperatorV1alpha1{Fake: &c.Fake}
+}
+
+// OperatorV1beta1 retrieves the OperatorV1beta1Client
+func (c *Clientset) OperatorV1beta1() operatorv1beta1.OperatorV1beta1Interface {
+	return &fakeoperatorv1beta1.FakeOperatorV1beta1{Fake: &c.Fake}
 }

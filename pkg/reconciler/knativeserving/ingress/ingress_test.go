@@ -208,7 +208,7 @@ func TestGetIngressWithFilters(t *testing.T) {
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Istio: servingv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -224,7 +224,7 @@ func TestGetIngressWithFilters(t *testing.T) {
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Contour: servingv1alpha1.ContourIngressConfiguration{
+					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -240,7 +240,7 @@ func TestGetIngressWithFilters(t *testing.T) {
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Kourier: servingv1alpha1.KourierIngressConfiguration{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -256,10 +256,10 @@ func TestGetIngressWithFilters(t *testing.T) {
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Kourier: servingv1alpha1.KourierIngressConfiguration{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
-					Contour: servingv1alpha1.ContourIngressConfiguration{
+					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -276,10 +276,10 @@ func TestGetIngressWithFilters(t *testing.T) {
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Kourier: servingv1alpha1.KourierIngressConfiguration{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
-					Istio: servingv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -296,10 +296,10 @@ func TestGetIngressWithFilters(t *testing.T) {
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Contour: servingv1alpha1.ContourIngressConfiguration{
+					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
-					Istio: servingv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -316,13 +316,13 @@ func TestGetIngressWithFilters(t *testing.T) {
 					Version: version,
 				},
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Contour: servingv1alpha1.ContourIngressConfiguration{
+					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
-					Istio: servingv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
-					Kourier: servingv1alpha1.KourierIngressConfiguration{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -404,7 +404,7 @@ func TestFilters(t *testing.T) {
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Istio: servingv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -424,7 +424,7 @@ func TestFilters(t *testing.T) {
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Kourier: servingv1alpha1.KourierIngressConfiguration{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -437,7 +437,7 @@ func TestFilters(t *testing.T) {
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Contour: servingv1alpha1.ContourIngressConfiguration{
+					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -450,10 +450,10 @@ func TestFilters(t *testing.T) {
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Contour: servingv1alpha1.ContourIngressConfiguration{
+					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
-					Istio: servingv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -466,10 +466,10 @@ func TestFilters(t *testing.T) {
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Kourier: servingv1alpha1.KourierIngressConfiguration{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
-					Istio: servingv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -482,10 +482,10 @@ func TestFilters(t *testing.T) {
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Kourier: servingv1alpha1.KourierIngressConfiguration{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
-					Contour: servingv1alpha1.ContourIngressConfiguration{
+					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -498,13 +498,13 @@ func TestFilters(t *testing.T) {
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Istio: servingv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
-					Kourier: servingv1alpha1.KourierIngressConfiguration{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
-					Contour: servingv1alpha1.ContourIngressConfiguration{
+					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -517,13 +517,13 @@ func TestFilters(t *testing.T) {
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Istio: servingv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: false,
 					},
-					Kourier: servingv1alpha1.KourierIngressConfiguration{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: false,
 					},
-					Contour: servingv1alpha1.ContourIngressConfiguration{
+					Contour: base.ContourIngressConfiguration{
 						Enabled: false,
 					},
 				},
@@ -555,7 +555,7 @@ func TestTransformers(t *testing.T) {
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Istio: servingv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -567,7 +567,7 @@ func TestTransformers(t *testing.T) {
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Kourier: servingv1alpha1.KourierIngressConfiguration{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -579,7 +579,7 @@ func TestTransformers(t *testing.T) {
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Contour: servingv1alpha1.ContourIngressConfiguration{
+					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -597,13 +597,13 @@ func TestTransformers(t *testing.T) {
 		instance: servingv1alpha1.KnativeServing{
 			Spec: servingv1alpha1.KnativeServingSpec{
 				Ingress: &servingv1alpha1.IngressConfigs{
-					Contour: servingv1alpha1.ContourIngressConfiguration{
+					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
-					Kourier: servingv1alpha1.KourierIngressConfiguration{
+					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
-					Istio: servingv1alpha1.IstioIngressConfiguration{
+					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
 				},

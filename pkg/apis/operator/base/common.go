@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Knative Authors
+Copyright 2022 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -273,4 +273,14 @@ type HighAvailability struct {
 	// Replicas is the number of replicas that HA parts of the control plane
 	// will be scaled to.
 	Replicas int32 `json:"replicas"`
+}
+
+// CustomCerts refers to either a ConfigMap or Secret containing valid
+// CA certificates
+type CustomCerts struct {
+	// One of ConfigMap or Secret
+	Type string `json:"type"`
+
+	// The name of the ConfigMap or Secret
+	Name string `json:"name"`
 }

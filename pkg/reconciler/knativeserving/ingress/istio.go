@@ -19,6 +19,8 @@ package ingress
 import (
 	"context"
 
+	"knative.dev/operator/pkg/apis/operator/base"
+
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -51,21 +53,21 @@ func gatewayTransform(instance *servingv1alpha1.KnativeServing, log *zap.Sugared
 	}
 }
 
-func ingressGateway(instance *servingv1alpha1.KnativeServing) *servingv1alpha1.IstioGatewayOverride {
+func ingressGateway(instance *servingv1alpha1.KnativeServing) *base.IstioGatewayOverride {
 	if instance.Spec.Ingress != nil && instance.Spec.Ingress.Istio.KnativeIngressGateway != nil {
 		return instance.Spec.Ingress.Istio.KnativeIngressGateway
 	}
 	return &instance.Spec.DeprecatedKnativeIngressGateway
 }
 
-func localGateway(instance *servingv1alpha1.KnativeServing) *servingv1alpha1.IstioGatewayOverride {
+func localGateway(instance *servingv1alpha1.KnativeServing) *base.IstioGatewayOverride {
 	if instance.Spec.Ingress != nil && instance.Spec.Ingress.Istio.KnativeLocalGateway != nil {
 		return instance.Spec.Ingress.Istio.KnativeLocalGateway
 	}
 	return &instance.Spec.DeprecatedClusterLocalGateway
 }
 
-func updateIstioGateway(override *servingv1alpha1.IstioGatewayOverride, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+func updateIstioGateway(override *base.IstioGatewayOverride, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
 	if override != nil && len(override.Selector) > 0 {
 		log.Debugw("Updating Gateway", "name", u.GetName(), "gatewayOverrides", override)
 		unstructured.SetNestedStringMap(u.Object, override.Selector, "spec", "selector")

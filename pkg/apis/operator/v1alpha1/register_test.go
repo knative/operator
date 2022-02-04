@@ -19,19 +19,21 @@ package v1alpha1
 import (
 	"testing"
 
+	"knative.dev/operator/pkg/apis/operator"
+
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func TestRegisterHelpers(t *testing.T) {
-	if got, want := Resource("KnativeServing"), "KnativeServing."+GroupName; got.String() != want {
+	if got, want := Resource("KnativeServing"), "KnativeServing."+operator.GroupName; got.String() != want {
 		t.Errorf("Resource(PodAutoscaler) = %v, want %v", got.String(), want)
 	}
 
-	if got, want := Resource("KnativeEventing"), "KnativeEventing."+GroupName; got.String() != want {
+	if got, want := Resource("KnativeEventing"), "KnativeEventing."+operator.GroupName; got.String() != want {
 		t.Errorf("Resource(PodAutoscaler) = %v, want %v", got.String(), want)
 	}
 
-	if got, want := SchemeGroupVersion.String(), GroupName+"/v1alpha1"; got != want {
+	if got, want := SchemeGroupVersion.String(), operator.GroupName+"/v1alpha1"; got != want {
 		t.Errorf("SchemeGroupVersion() = %v, want %v", got, want)
 	}
 

@@ -734,7 +734,13 @@ k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextension
 k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1/fake
 k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1
 k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1/fake
+k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions
+k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions/apiextensions
+k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions/apiextensions/v1
+k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions/apiextensions/v1beta1
+k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions/internalinterfaces
 k8s.io/apiextensions-apiserver/pkg/client/listers/apiextensions/v1
+k8s.io/apiextensions-apiserver/pkg/client/listers/apiextensions/v1beta1
 # k8s.io/apimachinery v0.22.5
 ## explicit
 k8s.io/apimachinery/pkg/api/equality
@@ -1226,6 +1232,8 @@ knative.dev/pkg/apis/testing
 knative.dev/pkg/changeset
 knative.dev/pkg/client/injection/apiextensions/client
 knative.dev/pkg/client/injection/apiextensions/client/fake
+knative.dev/pkg/client/injection/apiextensions/informers/apiextensions/v1/customresourcedefinition
+knative.dev/pkg/client/injection/apiextensions/informers/factory
 knative.dev/pkg/client/injection/ducks/duck/v1/addressable
 knative.dev/pkg/client/injection/kube/client
 knative.dev/pkg/client/injection/kube/client/fake
@@ -1243,6 +1251,7 @@ knative.dev/pkg/hash
 knative.dev/pkg/injection
 knative.dev/pkg/injection/clients/dynamicclient
 knative.dev/pkg/injection/clients/dynamicclient/fake
+knative.dev/pkg/injection/clients/namespacedkube/informers/core/v1/secret
 knative.dev/pkg/injection/clients/namespacedkube/informers/factory
 knative.dev/pkg/injection/sharedmain
 knative.dev/pkg/kmap
@@ -1287,7 +1296,9 @@ knative.dev/pkg/tracing/propagation/tracecontextb3
 knative.dev/pkg/tracker
 knative.dev/pkg/version
 knative.dev/pkg/webhook
+knative.dev/pkg/webhook/certificates
 knative.dev/pkg/webhook/certificates/resources
+knative.dev/pkg/webhook/resourcesemantics/conversion
 # knative.dev/serving v0.29.1-0.20220204002619-fe023e3ac57d
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling

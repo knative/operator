@@ -19,6 +19,7 @@ package v1alpha1
 import (
 	"strings"
 
+	"knative.dev/operator/pkg/apis/operator"
 	"knative.dev/operator/pkg/apis/operator/base"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -38,7 +39,7 @@ var (
 
 // GroupVersionKind returns SchemeGroupVersion of a KnativeServing
 func (ks *KnativeServing) GroupVersionKind() schema.GroupVersionKind {
-	return SchemeGroupVersion.WithKind(KindKnativeServing)
+	return SchemeGroupVersion.WithKind(operator.KindKnativeServing)
 }
 
 // GetCondition returns the current condition of a given condition type

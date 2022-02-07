@@ -39,7 +39,7 @@ func TestServingUpgrades(t *testing.T) {
 			PostDowngrade: append([]pkgupgrade.Operation{
 				ServingCRPostDowngradeTests(),
 			}, servingupgrade.ServingPostDowngradeTests()...),
-			Continual: nil,
+			Continual: servingupgrade.ContinualTests(),
 		},
 		Installations: pkgupgrade.Installations{
 			Base: []pkgupgrade.Operation{

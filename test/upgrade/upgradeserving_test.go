@@ -22,7 +22,6 @@ package upgrade
 import (
 	"testing"
 
-	"go.uber.org/zap"
 	"knative.dev/operator/test/upgrade/installation"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	servingupgrade "knative.dev/serving/test/upgrade"
@@ -54,14 +53,5 @@ func TestServingUpgrades(t *testing.T) {
 			},
 		},
 	}
-	c := newServingUpgradeConfig(t)
-	suite.Execute(c)
-}
-
-func newServingUpgradeConfig(t *testing.T) pkgupgrade.Configuration {
-	log, err := zap.NewDevelopment()
-	if err != nil {
-		t.Fatal(err)
-	}
-	return pkgupgrade.Configuration{T: t, Log: log}
+	suite.Execute(pkgupgrade.Configuration{T: t})
 }

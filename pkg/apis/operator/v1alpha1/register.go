@@ -20,20 +20,18 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"knative.dev/operator/pkg/apis/operator"
 )
 
 const (
-	// GroupName is the group of the API.
-	GroupName = "operator.knative.dev"
-
 	// SchemaVersion is the current version of the API.
 	SchemaVersion = "v1alpha1"
-
-	// KindKnativeEventing is the Kind of Knative Eventing in a GVK context.
-	KindKnativeEventing = "KnativeEventing"
-	// KindKnativeServing is the Kind of Knative Serving in a GVK context.
-	KindKnativeServing = "KnativeServing"
 )
+
+// Kind takes an unqualified kind and returns back a Group qualified GroupKind
+func Kind(kind string) schema.GroupKind {
+	return SchemeGroupVersion.WithKind(kind).GroupKind()
+}
 
 // Resource takes an unqualified resource and returns a Group qualified GroupResource
 func Resource(resource string) schema.GroupResource {
@@ -54,7 +52,7 @@ func addKnownTypes(s *runtime.Scheme) error {
 
 var (
 	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: SchemaVersion}
+	SchemeGroupVersion = schema.GroupVersion{Group: operator.GroupName, Version: SchemaVersion}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)

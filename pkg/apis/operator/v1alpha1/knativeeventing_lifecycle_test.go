@@ -19,6 +19,8 @@ package v1alpha1
 import (
 	"testing"
 
+	"knative.dev/operator/pkg/apis/operator"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/operator/pkg/apis/operator/base"
 	apistest "knative.dev/pkg/apis/testing"
@@ -27,9 +29,9 @@ import (
 func TestKnativeEventingGroupVersionKind(t *testing.T) {
 	r := &KnativeEventing{}
 	want := schema.GroupVersionKind{
-		Group:   GroupName,
+		Group:   operator.GroupName,
 		Version: SchemaVersion,
-		Kind:    KindKnativeEventing,
+		Kind:    operator.KindKnativeEventing,
 	}
 	if got := r.GroupVersionKind(); got != want {
 		t.Errorf("got: %v, want: %v", got, want)

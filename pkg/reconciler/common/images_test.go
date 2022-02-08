@@ -279,13 +279,31 @@ func TestImageTransform(t *testing.T) {
 			Image: "new-registry.io/test/path/OverrideImage:new-tag",
 		},
 	}, {
-		name: "UsesNameFromDefault",
+		name: "UsesDefaultImageNameWithSha",
 		in:   "gcr.io/knative-releases/github.com/knative/serving/cmd/queue@sha256:1e40c99ff5977daa2d69873fff604c6d09651af1f9ff15aadf8849b3ee77ab45",
 		registry: base.Registry{
 			Default: "new-registry.io/test/path/${NAME}:new-tag",
 		},
 		expected: caching.ImageSpec{
-			Image: "new-registry.io/test/path/UsesNameFromDefault:new-tag",
+			Image: "new-registry.io/test/path/queue:new-tag",
+		},
+	}, {
+		name: "UsesDefaultContainerName",
+		in:   "badLink",
+		registry: base.Registry{
+			Default: "new-registry.io/test/path/${NAME}:new-tag",
+		},
+		expected: caching.ImageSpec{
+			Image: "new-registry.io/test/path/UsesDefaultContainerName:new-tag",
+		},
+	}, {
+		name: "UsesDefaultImageNameWithTag",
+		in:   "gcr.io/knative-releases/github.com/knative/serving/cmd/queue:v1.2.0",
+		registry: base.Registry{
+			Default: "new-registry.io/test/path/${NAME}:new-tag",
+		},
+		expected: caching.ImageSpec{
+			Image: "new-registry.io/test/path/queue:new-tag",
 		},
 	}, {
 		name: "AddsImagePullSecrets",

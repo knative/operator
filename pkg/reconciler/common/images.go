@@ -98,7 +98,11 @@ func ImageTransform(registry *base.Registry, log *zap.SugaredLogger) mf.Transfor
 				container.Image = image
 			} else if registry.Default != "" {
 				// No matches found. Use default setting and replace potential container name placeholder.
-				container.Image = strings.ReplaceAll(registry.Default, containerNameVariable, container.Name)
+				imageName := getImageName(container.Image)
+				if imageName == "" {
+					imageName = container.Name
+				}
+				container.Image = strings.ReplaceAll(registry.Default, containerNameVariable, imageName)
 			}
 
 			for j := range container.Env {
@@ -141,7 +145,11 @@ func updateCachingImage(registry *base.Registry, u *unstructured.Unstructured, l
 		img.Spec.Image = image
 	} else if registry.Default != "" {
 		// No matches found. Use default setting and replace potential container name placeholder.
-		img.Spec.Image = strings.ReplaceAll(registry.Default, containerNameVariable, img.Name)
+		imageName := getImageName(img.Spec.Image)
+		if imageName == "" {
+			imageName = img.Name
+		}
+		img.Spec.Image = strings.ReplaceAll(registry.Default, containerNameVariable, imageName)
 	}
 
 	// Add potential ImagePullSecrets
@@ -159,4 +167,21 @@ func updateCachingImage(registry *base.Registry, u *unstructured.Unstructured, l
 
 	log.Debugw("Finished conversion", "name", u.GetName(), "unstructured", u.Object)
 	return nil
+}
+
+func getImageName(fullImageURL string) string {
+	if !strings.Contains(fullImageURL, "/") {
+		return ""
+	}
+	subsImageLink := strings.Split(fullImageURL, "/")
+	nameWithTag := subsImageLink[len(subsImageLink)-1]
+	if !strings.Contains(nameWithTag, ":") {
+		return nameWithTag
+	}
+	imageName := strings.Split(nameWithTag, ":")[0]
+	if !strings.Contains(imageName, "@") {
+		return imageName
+	}
+	imageName = strings.Split(nameWithTag, "@")[0]
+	return imageName
 }

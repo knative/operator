@@ -20,5 +20,6 @@ package tools
 import (
 	_ "k8s.io/code-generator"
 	_ "knative.dev/hack"
+	_ "knative.dev/pkg/apiextensions/storageversion/cmd/migrate"
 	_ "knative.dev/pkg/hack"
 )

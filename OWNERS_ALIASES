@@ -69,7 +69,6 @@ aliases:
   - carlisia
   - csantanapr
   - dprotaso
-  - duglin
   - evankanderson
   - itsmurugappan
   - julz
@@ -80,6 +79,7 @@ aliases:
   - lance
   - pmorie
   - rhuss
+  - smoser-ibm
   - spencerdillard
   - thisisnotapril
   - vaikas
@@ -152,6 +152,7 @@ aliases:
   - evankanderson
   - gerardo-lc
   - kvmware
+  - mgencur
   - shinigambit
   productivity-wg-leads:
   - chizhg
@@ -200,8 +201,8 @@ aliases:
   - julz
   - rhuss
   trademark-committee:
-  - duglin
   - evankanderson
+  - smoser-ibm
   - spencerdillard
   ux-wg-leads:
   - csantanapr

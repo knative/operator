@@ -961,7 +961,7 @@ spec:
       name: Reason
       type: string
   - name: v1beta1
-    served: false
+    served: true
     storage: false
     subresources:
       status: {}

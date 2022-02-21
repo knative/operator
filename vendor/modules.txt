@@ -1210,7 +1210,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/config
 knative.dev/eventing/test/upgrade/prober/wathola/event
 knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
-# knative.dev/hack v0.0.0-20220216040439-0456e8bf6547
+# knative.dev/hack v0.0.0-20220218190734-a8ef7b67feec
 ## explicit
 knative.dev/hack
 knative.dev/hack/shell

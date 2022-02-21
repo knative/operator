@@ -23,7 +23,7 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/pkg/logging"
 )
 
@@ -53,7 +53,7 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponen
 	}
 	if err := manifest.Filter(mf.Not(mf.Any(role, rolebinding, webhook))).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())
-		if ks, ok := instance.(*v1alpha1.KnativeServing); ok && strings.Contains(err.Error(), gatewayNotMatch) &&
+		if ks, ok := instance.(*v1beta1.KnativeServing); ok && strings.Contains(err.Error(), gatewayNotMatch) &&
 			(ks.Spec.Ingress == nil || ks.Spec.Ingress.Istio.Enabled) {
 			errMessage := fmt.Errorf("please install istio or disable the istio ingress plugin: %w", err)
 			status.MarkInstallFailed(errMessage.Error())

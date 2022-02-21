@@ -24,7 +24,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -36,8 +36,8 @@ func TestOnlyTransformCustomCertsForController(t *testing.T) {
 			Name: "definitely-not-controller",
 		}},
 	})
-	instance := &servingv1alpha1.KnativeServing{
-		Spec: servingv1alpha1.KnativeServingSpec{
+	instance := &servingv1beta1.KnativeServing{
+		Spec: servingv1beta1.KnativeServingSpec{
 			ControllerCustomCerts: base.CustomCerts{
 				Type: "Secret",
 				Name: "my-secret",
@@ -111,8 +111,8 @@ func TestCustomCertsTransform(t *testing.T) {
 					Name: "controller",
 				}},
 			}))
-			instance := &servingv1alpha1.KnativeServing{
-				Spec: servingv1alpha1.KnativeServingSpec{
+			instance := &servingv1beta1.KnativeServing{
+				Spec: servingv1beta1.KnativeServingSpec{
 					ControllerCustomCerts: tt.input,
 				},
 			}

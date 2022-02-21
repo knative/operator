@@ -23,7 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -39,8 +39,8 @@ func TestJobTransform(t *testing.T) {
 		expected  string
 	}{{
 		name: "ChangeNameForServingJob",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.15.2",
 				},
@@ -49,8 +49,8 @@ func TestJobTransform(t *testing.T) {
 		expected: StorageVersionMigration + "-serving-0.15.2",
 	}, {
 		name: "ChangeNameForEventingJob",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.16.0",
 				},
@@ -59,8 +59,8 @@ func TestJobTransform(t *testing.T) {
 		expected: StorageVersionMigration + "-eventing-0.16.0",
 	}, {
 		name: "ChangeNameWithGeneratedNameForServingJob",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.15.2",
 				},
@@ -69,8 +69,8 @@ func TestJobTransform(t *testing.T) {
 		expected: StorageVersionMigration + "-serving-0.15.2",
 	}, {
 		name: "ChangeNameWithGeneratedNameForEventingJob",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.16.0",
 				},

@@ -21,10 +21,9 @@ import (
 	"os"
 	"testing"
 
-	"knative.dev/operator/pkg/apis/operator/base"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/common"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 	"knative.dev/operator/test"
@@ -79,8 +78,8 @@ func servingCRPreUpgrade(t *testing.T) {
 		defer os.Unsetenv(common.KoEnvKey)
 		// The operator and the test cases do not share the same path of the kodata, we need to retrieve the
 		// installed manifests in terms of the spec.
-		kservingInstalled := &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		kservingInstalled := &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: kserving.GetStatus().GetVersion(),
 				},
@@ -121,8 +120,8 @@ func eventingCRPreUpgrade(t *testing.T) {
 		defer os.Unsetenv(common.KoEnvKey)
 		// The operator and the test cases do not share the same path of the kodata, we need to retrieve the
 		// installed manifests in terms of the spec.
-		keventingInstalled := &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		keventingInstalled := &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: keventing.GetStatus().GetVersion(),
 				},

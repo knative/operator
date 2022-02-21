@@ -26,7 +26,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 func TestInstall(t *testing.T) {
@@ -67,13 +67,13 @@ func TestInstall(t *testing.T) {
 		t.Fatalf("Failed to generate manifest: %v", err)
 	}
 
-	instance := &v1alpha1.KnativeEventing{
-		Spec: v1alpha1.KnativeEventingSpec{
+	instance := &v1beta1.KnativeEventing{
+		Spec: v1beta1.KnativeEventingSpec{
 			CommonSpec: base.CommonSpec{
 				Version: version,
 			},
 		},
-		Status: v1alpha1.KnativeEventingStatus{
+		Status: v1beta1.KnativeEventingStatus{
 			Version: "0.13-test",
 		},
 	}
@@ -107,13 +107,13 @@ func TestInstallError(t *testing.T) {
 		t.Fatalf("Failed to generate manifest: %v", err)
 	}
 
-	instance := &v1alpha1.KnativeServing{
-		Spec: v1alpha1.KnativeServingSpec{
+	instance := &v1beta1.KnativeServing{
+		Spec: v1beta1.KnativeServingSpec{
 			CommonSpec: base.CommonSpec{
 				Version: version,
 			},
 		},
-		Status: v1alpha1.KnativeServingStatus{
+		Status: v1beta1.KnativeServingStatus{
 			Version: oldVersion,
 		},
 	}

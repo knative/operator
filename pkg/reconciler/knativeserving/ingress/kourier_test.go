@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"testing"
 
-	"knative.dev/operator/pkg/apis/operator/base"
-
 	mf "github.com/manifestival/manifestival"
 	fake "github.com/manifestival/manifestival/fake"
 	appsv1 "k8s.io/api/apps/v1"
@@ -29,20 +27,21 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
 const servingNamespace = "knative-serving"
 
-func servingInstance(ns string, serviceType v1.ServiceType) *servingv1alpha1.KnativeServing {
-	return &servingv1alpha1.KnativeServing{
+func servingInstance(ns string, serviceType v1.ServiceType) *servingv1beta1.KnativeServing {
+	return &servingv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-instance",
 			Namespace: ns,
 		},
-		Spec: servingv1alpha1.KnativeServingSpec{
-			Ingress: &servingv1alpha1.IngressConfigs{
+		Spec: servingv1beta1.KnativeServingSpec{
+			Ingress: &servingv1beta1.IngressConfigs{
 				Kourier: base.KourierIngressConfiguration{
 					Enabled:     true,
 					ServiceType: serviceType,
@@ -55,7 +54,7 @@ func servingInstance(ns string, serviceType v1.ServiceType) *servingv1alpha1.Kna
 func TestTransformKourierManifest(t *testing.T) {
 	tests := []struct {
 		name           string
-		instance       *servingv1alpha1.KnativeServing
+		instance       *servingv1beta1.KnativeServing
 		dropLabel      bool
 		expNamespace   string
 		expServiceType string

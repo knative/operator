@@ -26,14 +26,14 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/operator/pkg/client/clientset/versioned"
-	operatorv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
+	operatorv1beta1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1"
 )
 
 // Clients holds instances of interfaces for making requests to Knative Serving.
 type Clients struct {
 	KubeClient kubernetes.Interface
 	Dynamic    dynamic.Interface
-	Operator   operatorv1alpha1.OperatorV1alpha1Interface
+	Operator   operatorv1beta1.OperatorV1beta1Interface
 	Config     *rest.Config
 }
 
@@ -80,26 +80,26 @@ func buildClientConfig(kubeConfigPath string, clusterName string) (*rest.Config,
 		&overrides).ClientConfig()
 }
 
-func newKnativeOperatorAlphaClients(cfg *rest.Config) (operatorv1alpha1.OperatorV1alpha1Interface, error) {
+func newKnativeOperatorAlphaClients(cfg *rest.Config) (operatorv1beta1.OperatorV1beta1Interface, error) {
 	cs, err := versioned.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
-	return cs.OperatorV1alpha1(), nil
+	return cs.OperatorV1beta1(), nil
 }
 
-func (c *Clients) KnativeServing() operatorv1alpha1.KnativeServingInterface {
+func (c *Clients) KnativeServing() operatorv1beta1.KnativeServingInterface {
 	return c.Operator.KnativeServings(ServingOperatorNamespace)
 }
 
-func (c *Clients) KnativeServingAll() operatorv1alpha1.KnativeServingInterface {
+func (c *Clients) KnativeServingAll() operatorv1beta1.KnativeServingInterface {
 	return c.Operator.KnativeServings(metav1.NamespaceAll)
 }
 
-func (c *Clients) KnativeEventing() operatorv1alpha1.KnativeEventingInterface {
+func (c *Clients) KnativeEventing() operatorv1beta1.KnativeEventingInterface {
 	return c.Operator.KnativeEventings(EventingOperatorNamespace)
 }
 
-func (c *Clients) KnativeEventingAll() operatorv1alpha1.KnativeEventingInterface {
+func (c *Clients) KnativeEventingAll() operatorv1beta1.KnativeEventingInterface {
 	return c.Operator.KnativeEventings(metav1.NamespaceAll)
 }

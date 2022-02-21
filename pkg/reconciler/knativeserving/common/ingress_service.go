@@ -22,13 +22,13 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 // IngressServiceTransform pins the namespace to istio-system for the service named knative-local-gateway.
 // It also removes the OwnerReference to the operator, as they are in different namespaces, which is
 // invalid in Kubernetes 1.20+.
-func IngressServiceTransform(ks *v1alpha1.KnativeServing) mf.Transformer {
+func IngressServiceTransform(ks *v1beta1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetAPIVersion() == "v1" && u.GetKind() == "Service" && u.GetName() == "knative-local-gateway" {
 			u.SetNamespace("istio-system")

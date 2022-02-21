@@ -24,7 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -34,15 +34,15 @@ func TestIngressServiceTransform(t *testing.T) {
 		namespace         string
 		serviceName       string
 		expectedNamespace string
-		instance          *servingv1alpha1.KnativeServing
+		instance          *servingv1beta1.KnativeServing
 		expected          bool
 	}{{
 		name:              "KeepKnativeIngressServiceNamespace",
 		namespace:         "test-namespace",
 		serviceName:       "knative-local-gateway",
 		expectedNamespace: "istio-system",
-		instance: &servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{},
+		instance: &servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{},
 		},
 		expected: true,
 	}, {
@@ -50,8 +50,8 @@ func TestIngressServiceTransform(t *testing.T) {
 		namespace:         "test-namespace",
 		serviceName:       "knative-local-gateway-other",
 		expectedNamespace: "istio-system",
-		instance: &servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{},
+		instance: &servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{},
 		},
 		expected: false,
 	}, {
@@ -59,12 +59,12 @@ func TestIngressServiceTransform(t *testing.T) {
 		namespace:         "test-namespace",
 		serviceName:       "knative-local-gateway",
 		expectedNamespace: "istio-system-1",
-		instance: &servingv1alpha1.KnativeServing{
+		instance: &servingv1beta1.KnativeServing{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "test-instance",
 				Namespace: "test-namespace",
 			},
-			Spec: servingv1alpha1.KnativeServingSpec{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{"istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-1.svc.cluster.local"}},
 				},
@@ -76,12 +76,12 @@ func TestIngressServiceTransform(t *testing.T) {
 		namespace:         "test-namespace",
 		serviceName:       "knative-local-gateway",
 		expectedNamespace: "istio-system-1",
-		instance: &servingv1alpha1.KnativeServing{
+		instance: &servingv1beta1.KnativeServing{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "test-instance",
 				Namespace: "test-namespace",
 			},
-			Spec: servingv1alpha1.KnativeServingSpec{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{"config-istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-1.svc.cluster.local"}},
 				},
@@ -93,12 +93,12 @@ func TestIngressServiceTransform(t *testing.T) {
 		namespace:         "test-namespace",
 		serviceName:       "knative-local-gateway",
 		expectedNamespace: "istio-system-3",
-		instance: &servingv1alpha1.KnativeServing{
+		instance: &servingv1beta1.KnativeServing{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "test-instance",
 				Namespace: "test-namespace",
 			},
-			Spec: servingv1alpha1.KnativeServingSpec{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{"istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-2.svc.cluster.local"},
 						"config-istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.istio-system-3.svc.cluster.local"}},
@@ -111,12 +111,12 @@ func TestIngressServiceTransform(t *testing.T) {
 		namespace:         "test-namespace",
 		serviceName:       "knative-local-gateway",
 		expectedNamespace: "istio-system",
-		instance: &servingv1alpha1.KnativeServing{
+		instance: &servingv1beta1.KnativeServing{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "test-instance",
 				Namespace: "test-namespace",
 			},
-			Spec: servingv1alpha1.KnativeServingSpec{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Config: map[string]map[string]string{"config-istio": {"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway"}},
 				},

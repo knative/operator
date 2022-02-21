@@ -19,12 +19,11 @@ package ingress
 import (
 	"testing"
 
-	"knative.dev/operator/pkg/apis/operator/base"
-
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -69,28 +68,6 @@ func TestGatewayTransform(t *testing.T) {
 			"istio": "cluster-local",
 		},
 	}, {
-		name:        "update ingress gateway with deprecatd setting",
-		gatewayName: "knative-ingress-gateway",
-		in: map[string]string{
-			"istio": "old-istio",
-		},
-		deprecatedKnativeIngressGateway: *gatewayOverride(map[string]string{"istio": "knative-ingress"}),
-		deprecatedClusterLocalGateway:   *gatewayOverride(map[string]string{"istio": "cluster-local"}),
-		expected: map[string]string{
-			"istio": "knative-ingress",
-		},
-	}, {
-		name:        "update local gateway with deprecatd setting",
-		gatewayName: "cluster-local-gateway",
-		in: map[string]string{
-			"istio": "old-istio",
-		},
-		deprecatedKnativeIngressGateway: *gatewayOverride(map[string]string{"istio": "knative-ingress"}),
-		deprecatedClusterLocalGateway:   *gatewayOverride(map[string]string{"istio": "cluster-local"}),
-		expected: map[string]string{
-			"istio": "cluster-local",
-		},
-	}, {
 		name:        "update ingress gateway with both new and deprecate config",
 		gatewayName: "knative-ingress-gateway",
 		in: map[string]string{
@@ -130,17 +107,15 @@ func TestGatewayTransform(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gateway := makeUnstructuredGateway(t, tt.gatewayName, tt.in)
-			instance := &servingv1alpha1.KnativeServing{
-				Spec: servingv1alpha1.KnativeServingSpec{
-					Ingress: &servingv1alpha1.IngressConfigs{
+			instance := &servingv1beta1.KnativeServing{
+				Spec: servingv1beta1.KnativeServingSpec{
+					Ingress: &servingv1beta1.IngressConfigs{
 						Istio: base.IstioIngressConfiguration{
 							Enabled:               true,
 							KnativeIngressGateway: tt.knativeIngressGateway,
 							KnativeLocalGateway:   tt.clusterLocalGateway,
 						},
 					},
-					DeprecatedKnativeIngressGateway: tt.deprecatedKnativeIngressGateway,
-					DeprecatedClusterLocalGateway:   tt.deprecatedClusterLocalGateway,
 				},
 			}
 

@@ -24,7 +24,7 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -48,8 +48,8 @@ func TestRetrieveManifestPath(t *testing.T) {
 		expected  string
 	}{{
 		name: "Valid Knative Serving Version",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.24.0",
 				},
@@ -58,8 +58,8 @@ func TestRetrieveManifestPath(t *testing.T) {
 		expected: koPath + "/knative-serving/0.24.0",
 	}, {
 		name: "Valid Knative Eventing Version",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.24.2",
 				},
@@ -68,8 +68,8 @@ func TestRetrieveManifestPath(t *testing.T) {
 		expected: koPath + "/knative-eventing/0.24.2",
 	}, {
 		name: "Valid Knative Serving URLs",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Manifests: []base.Manifest{{
 						Url: ServingCore,
@@ -83,8 +83,8 @@ func TestRetrieveManifestPath(t *testing.T) {
 		expected: ServingCore + "," + ServingHpa,
 	}, {
 		name: "Valid Knative Eventing URLs",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Manifests: []base.Manifest{{
 						Url: EventingCore,
@@ -98,8 +98,8 @@ func TestRetrieveManifestPath(t *testing.T) {
 		expected: EventingCore + "," + InMemoryChannel,
 	}, {
 		name: "Valid Knative Serving URLs with the version parameter",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Manifests: []base.Manifest{{
 						Url: ServingVersionCore,
@@ -129,8 +129,8 @@ func TestRetrieveManifestPath(t *testing.T) {
 		expected  string
 	}{{
 		name: "Invalid Knative Serving Version",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "invalid-version",
 				},
@@ -159,8 +159,8 @@ func TestTargetVersion(t *testing.T) {
 		expected  string
 	}{{
 		name: "serving",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26",
 				},
@@ -169,8 +169,8 @@ func TestTargetVersion(t *testing.T) {
 		expected: "0.26.1",
 	}, {
 		name: "eventing with version",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.25",
 				},
@@ -179,12 +179,12 @@ func TestTargetVersion(t *testing.T) {
 		expected: "0.25.0",
 	}, {
 		name:      "eventing without version",
-		component: &v1alpha1.KnativeEventing{},
+		component: &v1beta1.KnativeEventing{},
 		expected:  "1.0.0",
 	}, {
 		name: "serving",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26",
 					Manifests: []base.Manifest{{
@@ -198,8 +198,8 @@ func TestTargetVersion(t *testing.T) {
 		expected: "0.26",
 	}, {
 		name: "serving",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "",
 					Manifests: []base.Manifest{{
@@ -213,8 +213,8 @@ func TestTargetVersion(t *testing.T) {
 		expected: "",
 	}, {
 		name: "serving CR with major.minor version not available",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.22",
 				},
@@ -223,8 +223,8 @@ func TestTargetVersion(t *testing.T) {
 		expected: "0.22",
 	}, {
 		name: "serving CR with the version latest",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "latest",
 				},
@@ -233,8 +233,8 @@ func TestTargetVersion(t *testing.T) {
 		expected: "latest",
 	}, {
 		name: "eventing CR with major.minor version not available",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.22",
 				},
@@ -243,8 +243,8 @@ func TestTargetVersion(t *testing.T) {
 		expected: "0.22",
 	}, {
 		name: "serving CR with major.minor.patch version not available",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.22.0",
 				},
@@ -253,8 +253,8 @@ func TestTargetVersion(t *testing.T) {
 		expected: "0.22.0",
 	}, {
 		name: "eventing CR with major.minor.patch version not available",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.22.1",
 				},
@@ -263,8 +263,8 @@ func TestTargetVersion(t *testing.T) {
 		expected: "0.22.1",
 	}, {
 		name: "eventing CR with the version latest",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "latest",
 				},
@@ -292,8 +292,8 @@ func TestTargetVersionNoLatestDir(t *testing.T) {
 		expected  string
 	}{{
 		name: "serving CR with the version latest",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "latest",
 				},
@@ -321,8 +321,8 @@ func TestGetLatestRelease(t *testing.T) {
 		expected  string
 	}{{
 		name: "serving",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26",
 				},
@@ -331,8 +331,8 @@ func TestGetLatestRelease(t *testing.T) {
 		expected: "0.26.1",
 	}, {
 		name: "eventing",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.25",
 				},
@@ -341,8 +341,8 @@ func TestGetLatestRelease(t *testing.T) {
 		expected: "0.25.0",
 	}, {
 		name: "eventing CR with the major.minor version not available",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.23",
 				},
@@ -351,8 +351,8 @@ func TestGetLatestRelease(t *testing.T) {
 		expected: "0.23",
 	}, {
 		name: "serving CR with the major.minor version not available",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.23",
 				},
@@ -361,8 +361,8 @@ func TestGetLatestRelease(t *testing.T) {
 		expected: "0.23",
 	}, {
 		name: "eventing CR with the major.minor.patch version not available",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.23.1",
 				},
@@ -371,8 +371,8 @@ func TestGetLatestRelease(t *testing.T) {
 		expected: "0.23.1",
 	}, {
 		name: "serving CR with the major.minor.patch version not available",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.23.1",
 				},
@@ -400,11 +400,11 @@ func TestLatestRelease(t *testing.T) {
 		expected  string
 	}{{
 		name:      "serving",
-		component: &v1alpha1.KnativeServing{},
+		component: &v1beta1.KnativeServing{},
 		expected:  "1.0.0",
 	}, {
 		name:      "eventing",
-		component: &v1alpha1.KnativeEventing{},
+		component: &v1beta1.KnativeEventing{},
 		expected:  "1.0.0",
 	}}
 
@@ -427,11 +427,11 @@ func TestListReleases(t *testing.T) {
 		expected  []string
 	}{{
 		name:      "knative-serving",
-		component: &v1alpha1.KnativeServing{},
+		component: &v1beta1.KnativeServing{},
 		expected:  []string{"1.0.0", "0.26.1", "0.26.0", "0.25.0", "0.24.0", "latest"},
 	}, {
 		name:      "knative-eventing",
-		component: &v1alpha1.KnativeEventing{},
+		component: &v1beta1.KnativeEventing{},
 		expected:  []string{"1.0.0", "0.26.0", "0.25.0", "0.24.2", "latest"},
 	}}
 
@@ -454,8 +454,8 @@ func TestIsVersionValidMigrationEligible(t *testing.T) {
 		expected  bool
 	}{{
 		name: "knative-serving with target version in major.minor.patch and without status.version",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.24.2",
 				},
@@ -464,112 +464,112 @@ func TestIsVersionValidMigrationEligible(t *testing.T) {
 		expected: true,
 	}, {
 		name: "knative-serving upgrading one minor version",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.24.2",
 				},
 			},
-			Status: v1alpha1.KnativeServingStatus{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "0.23.0",
 			},
 		},
 		expected: true,
 	}, {
 		name: "knative-serving upgrading one minor version up to the 1.0.0",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "1.0.0",
 				},
 			},
-			Status: v1alpha1.KnativeServingStatus{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "0.26.0",
 			},
 		},
 		expected: true,
 	}, {
 		name: "knative-serving upgrading one minor version up to the 1.0.0 from non 0.26",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "1.0.0",
 				},
 			},
-			Status: v1alpha1.KnativeServingStatus{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "0.25.0",
 			},
 		},
 		expected: false,
 	}, {
 		name: "knative-serving downgrading one minor version down from 1.0.0 to 0.26",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26.0",
 				},
 			},
-			Status: v1alpha1.KnativeServingStatus{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "1.0.0",
 			},
 		},
 		expected: true,
 	}, {
 		name: "knative-serving downgrading one minor version down from 1.0.0",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.25.0",
 				},
 			},
-			Status: v1alpha1.KnativeServingStatus{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "1.0.0",
 			},
 		},
 		expected: false,
 	}, {
 		name: "knative-serving upgrading across multiple minor versions",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.25.0",
 				},
 			},
-			Status: v1alpha1.KnativeServingStatus{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "0.23.0",
 			},
 		},
 		expected: false,
 	}, {
 		name: "knative-serving with the version latest upgrading to",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "latest",
 				},
 			},
-			Status: v1alpha1.KnativeServingStatus{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "0.26.0",
 			},
 		},
 		expected: true,
 	}, {
 		name: "knative-serving with the version latest upgrading from",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26.0",
 				},
 			},
-			Status: v1alpha1.KnativeServingStatus{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "latest",
 			},
 		},
 		expected: true,
 	}, {
 		name: "knative-serving with the version latest",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "latest",
 				},
@@ -578,8 +578,8 @@ func TestIsVersionValidMigrationEligible(t *testing.T) {
 		expected: true,
 	}, {
 		name: "knative-serving upgrading to the latest version across multiple minor versions",
-		component: &v1alpha1.KnativeServing{
-			Status: v1alpha1.KnativeServingStatus{
+		component: &v1beta1.KnativeServing{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "0.13.0",
 			},
 		},
@@ -587,8 +587,8 @@ func TestIsVersionValidMigrationEligible(t *testing.T) {
 		expected: false,
 	}, {
 		name: "knative-serving upgrading to the latest version",
-		component: &v1alpha1.KnativeServing{
-			Status: v1alpha1.KnativeServingStatus{
+		component: &v1beta1.KnativeServing{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "1.0.0",
 			},
 		},
@@ -596,25 +596,25 @@ func TestIsVersionValidMigrationEligible(t *testing.T) {
 		expected: true,
 	}, {
 		name:      "knative-serving with latest version and empty status.version",
-		component: &v1alpha1.KnativeServing{},
+		component: &v1beta1.KnativeServing{},
 		expected:  true,
 	}, {
 		name: "knative-serving with the same status.version and spec.version",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.25.0",
 				},
 			},
-			Status: v1alpha1.KnativeServingStatus{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "0.25.0",
 			},
 		},
 		expected: true,
 	}, {
 		name: "knative-serving with target version in major.minor",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.25",
 				},
@@ -623,8 +623,8 @@ func TestIsVersionValidMigrationEligible(t *testing.T) {
 		expected: true,
 	}, {
 		name: "knative-serving with invalid target version",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "badVersion",
 				},
@@ -633,8 +633,8 @@ func TestIsVersionValidMigrationEligible(t *testing.T) {
 		expected: false,
 	}, {
 		name: "knative-serving with invalid target version only major",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "1",
 				},
@@ -666,8 +666,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError         error
 	}{{
 		name: "knative-serving with spec.manifests matched",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26.0",
 					Manifests: []base.Manifest{{
@@ -683,8 +683,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError: nil,
 	}, {
 		name: "knative-serving with spec.manifests unmatched",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26.0",
 					Manifests: []base.Manifest{{
@@ -699,8 +699,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError:         fmt.Errorf("the version of the manifests %s of the component %s does not match the target version of the operator CR %s", "v0.17.2", "knative-serving", "v0.26.0"),
 	}, {
 		name: "knative-serving with spec.manifests matched but no spec.version",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Manifests: []base.Manifest{{
 						Url: "testdata/kodata/knative-serving/0.26.0/serving-core.yaml",
@@ -715,8 +715,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError: nil,
 	}, {
 		name: "knative-serving with additional resources",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Manifests: []base.Manifest{{
 						Url: "testdata/kodata/knative-serving/0.26.1/serving-core.yaml",
@@ -734,8 +734,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError: nil,
 	}, {
 		name: "knative-serving with spec.version available",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26.0",
 				},
@@ -745,8 +745,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError:         nil,
 	}, {
 		name: "knative-serving with major.minor spec.version not available",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.22",
 				},
@@ -756,8 +756,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError:         fmt.Errorf("the manifests of the target version %v are not available to this release", "0.22"),
 	}, {
 		name: "knative-serving with major.minor.patch spec.version not available",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.22.1",
 				},
@@ -767,8 +767,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError:         fmt.Errorf("the manifests of the target version %v are not available to this release", "0.22.1"),
 	}, {
 		name: "knative-serving with the latest version available",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "latest",
 				},
@@ -778,8 +778,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError:         nil,
 	}, {
 		name: "knative-eventing with major.minor spec.version not available",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.22",
 				},
@@ -789,8 +789,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError:         fmt.Errorf("the manifests of the target version %v are not available to this release", "0.22"),
 	}, {
 		name: "knative-eventing with major.minor.patch spec.version not available",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.22.1",
 				},
@@ -800,8 +800,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError:         fmt.Errorf("the manifests of the target version %v are not available to this release", "0.22.1"),
 	}, {
 		name: "knative-eventing with the latest available",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "latest",
 				},
@@ -811,8 +811,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError:         nil,
 	}, {
 		name: "knative-serving with additional manifests only",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					AdditionalManifests: []base.Manifest{{
 						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
@@ -824,8 +824,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError:         nil,
 	}, {
 		name: "knative-serving with manifests and additional manifests",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Manifests: []base.Manifest{{
 						Url: "testdata/kodata/knative-serving/0.26.1/serving-core.yaml",
@@ -840,8 +840,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError:         nil,
 	}, {
 		name: "knative-eventing with additional manifests only",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					AdditionalManifests: []base.Manifest{{
 						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
@@ -853,8 +853,8 @@ func TestTargetManifest(t *testing.T) {
 		expectedError:         nil,
 	}, {
 		name: "knative-eventing with manifests and additional manifests",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Manifests: []base.Manifest{{
 						Url: "testdata/kodata/knative-eventing/0.26.0/eventing-core.yaml",
@@ -893,8 +893,8 @@ func TestTargetAdditionalManifest(t *testing.T) {
 		expectedManifestsPath string
 	}{{
 		name: "knative-serving with additional manifests only",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					AdditionalManifests: []base.Manifest{{
 						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
@@ -905,8 +905,8 @@ func TestTargetAdditionalManifest(t *testing.T) {
 		expectedManifestsPath: os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
 	}, {
 		name: "knative-serving with manifests and additional manifests",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "1.0.0",
 					Manifests: []base.Manifest{{
@@ -921,8 +921,8 @@ func TestTargetAdditionalManifest(t *testing.T) {
 		expectedManifestsPath: os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
 	}, {
 		name: "knative-eventing with additional manifests only",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					AdditionalManifests: []base.Manifest{{
 						Url: "testdata/kodata/additional-manifests/additional-resource.yaml",
@@ -933,8 +933,8 @@ func TestTargetAdditionalManifest(t *testing.T) {
 		expectedManifestsPath: os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
 	}, {
 		name: "knative-eventing with manifests and additional manifests",
-		component: &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Manifests: []base.Manifest{{
 						Url: "testdata/kodata/knative-eventing/0.26.0/eventing-core.yaml",
@@ -948,8 +948,8 @@ func TestTargetAdditionalManifest(t *testing.T) {
 		expectedManifestsPath: os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml",
 	}, {
 		name: "knative-serving with the latest version available",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "latest",
 				},
@@ -958,8 +958,8 @@ func TestTargetAdditionalManifest(t *testing.T) {
 		expectedManifestsPath: "",
 	}, {
 		name: "knative-serving with multiple paths in the additional manifests",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "1.0.0",
 					AdditionalManifests: []base.Manifest{{
@@ -998,8 +998,8 @@ func TestTargetManifestPathArray(t *testing.T) {
 		expectedManifestsPath []string
 	}{{
 		name: "knative-serving with additional manifests only",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26.1",
 					AdditionalManifests: []base.Manifest{{
@@ -1012,8 +1012,8 @@ func TestTargetManifestPathArray(t *testing.T) {
 			os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml"},
 	}, {
 		name: "knative-serving with no manifests",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26.1",
 				},
@@ -1022,8 +1022,8 @@ func TestTargetManifestPathArray(t *testing.T) {
 		expectedManifestsPath: []string{os.Getenv(KoEnvKey) + "/knative-serving/0.26.1"},
 	}, {
 		name: "knative-serving with multiple paths in spec.manifests and spec.additionalManifests",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26.1",
 					Manifests: []base.Manifest{{
@@ -1047,8 +1047,8 @@ func TestTargetManifestPathArray(t *testing.T) {
 			os.Getenv(KoEnvKey) + "/additional-manifests/additional-resource.yaml" + "," + os.Getenv(KoEnvKey) + "/additional-manifests/additional-sa.yaml"},
 	}, {
 		name: "knative-serving with spec.manifests",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26.1",
 					Manifests: []base.Manifest{{
@@ -1083,13 +1083,13 @@ func TestInstalledManifest(t *testing.T) {
 		expectedManifestsPath string
 	}{{
 		name: "knative-serving with the version and manifests in the status",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26.1",
 				},
 			},
-			Status: v1alpha1.KnativeServingStatus{
+			Status: v1beta1.KnativeServingStatus{
 				Version:   "0.26.1",
 				Manifests: []string{"testdata/kodata/knative-serving/0.26.1"},
 			},
@@ -1097,26 +1097,26 @@ func TestInstalledManifest(t *testing.T) {
 		expectedManifestsPath: "testdata/kodata/knative-serving/0.26.1",
 	}, {
 		name: "knative-serving with the version in the status",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26.1",
 				},
 			},
-			Status: v1alpha1.KnativeServingStatus{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "0.26.0",
 			},
 		},
 		expectedManifestsPath: "testdata/kodata/knative-serving/0.26.0",
 	}, {
 		name: "knative-serving with multiple paths in status.manifests",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26.1",
 				},
 			},
-			Status: v1alpha1.KnativeServingStatus{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "0.26.1",
 				Manifests: []string{"testdata/kodata/knative-serving/0.26.1/serving-crd.yaml" + "," +
 					"testdata/kodata/knative-serving/0.26.1/serving-core.yaml",
@@ -1128,13 +1128,13 @@ func TestInstalledManifest(t *testing.T) {
 			"testdata/kodata/additional-manifests/additional-resource.yaml",
 	}, {
 		name: "knative-serving with status.version unavailable in kodata",
-		component: &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		component: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.26.1",
 				},
 			},
-			Status: v1alpha1.KnativeServingStatus{
+			Status: v1beta1.KnativeServingStatus{
 				Version: "0.22.0",
 			},
 		},

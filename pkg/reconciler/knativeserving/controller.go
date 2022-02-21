@@ -22,10 +22,10 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/client-go/tools/cache"
 
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	operatorclient "knative.dev/operator/pkg/client/injection/client"
-	knativeServinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1alpha1/knativeserving"
-	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1alpha1/knativeserving"
+	knativeServinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1beta1/knativeserving"
+	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1beta1/knativeserving"
 	"knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
@@ -69,7 +69,7 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 		knativeServingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
 		deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-			FilterFunc: controller.FilterControllerGVK(v1alpha1.SchemeGroupVersion.WithKind("KnativeServing")),
+			FilterFunc: controller.FilterControllerGVK(v1beta1.SchemeGroupVersion.WithKind("KnativeServing")),
 			Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 		})
 

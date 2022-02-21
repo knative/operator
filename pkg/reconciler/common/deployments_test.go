@@ -28,7 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"knative.dev/operator/pkg/apis/operator/base"
-	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 func TestCheckDeployments(t *testing.T) {
@@ -106,7 +106,7 @@ func TestCheckDeployments(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to generate manifest: %v", err)
 			}
-			ks := &v1alpha1.KnativeServing{}
+			ks := &v1beta1.KnativeServing{}
 			ks.Status.InitializeConditions()
 
 			err = CheckDeployments(context.TODO(), &manifest, ks)

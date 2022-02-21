@@ -26,7 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 const (
@@ -38,7 +38,7 @@ var kourierControllerDeploymentNames = sets.NewString("3scale-kourier-control", 
 
 var kourierFilter = ingressFilter("kourier")
 
-func kourierTransformers(ctx context.Context, instance *v1alpha1.KnativeServing) []mf.Transformer {
+func kourierTransformers(ctx context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
 	return []mf.Transformer{
 		replaceGWNamespace(),
 		configureGWServiceType(instance),
@@ -74,7 +74,7 @@ func replaceGWNamespace() mf.Transformer {
 }
 
 // configureGWServiceType configures Kourier GW's service type such as ClusterIP, LoadBalancer and NodePort.
-func configureGWServiceType(instance *v1alpha1.KnativeServing) mf.Transformer {
+func configureGWServiceType(instance *v1beta1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName && hasProviderLabel(u) {
 			if instance.Spec.Ingress.Kourier.ServiceType == "" {

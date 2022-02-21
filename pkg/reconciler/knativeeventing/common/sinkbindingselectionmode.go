@@ -24,13 +24,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
-	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	eventingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 const SinkBindingSelectionModeEnvVarKey = "SINK_BINDING_SELECTION_MODE"
 
 // SinkBindingSelectionModeTransform sets the eventing-webhook's SINK_BINDING_SELECTION_MODE env var to the value in the spec
-func SinkBindingSelectionModeTransform(instance *eventingv1alpha1.KnativeEventing, log *zap.SugaredLogger) mf.Transformer {
+func SinkBindingSelectionModeTransform(instance *eventingv1beta1.KnativeEventing, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" && u.GetName() == "eventing-webhook" {
 			deployment := &appsv1.Deployment{}

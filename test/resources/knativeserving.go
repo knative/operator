@@ -33,8 +33,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
-	servingv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
+	servingv1beta1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1"
 	"knative.dev/operator/test"
 	"knative.dev/pkg/test/logging"
 )
@@ -42,12 +42,12 @@ import (
 // WaitForKnativeServingState polls the status of the KnativeServing called name
 // from client every `interval` until `inState` returns `true` indicating it
 // is done, returns an error or timeout.
-func WaitForKnativeServingState(clients servingv1alpha1.KnativeServingInterface, name string,
-	inState func(s *v1alpha1.KnativeServing, err error) (bool, error)) (*v1alpha1.KnativeServing, error) {
+func WaitForKnativeServingState(clients servingv1beta1.KnativeServingInterface, name string,
+	inState func(s *v1beta1.KnativeServing, err error) (bool, error)) (*v1beta1.KnativeServing, error) {
 	span := logging.GetEmitableSpan(context.Background(), fmt.Sprintf("WaitForKnativeServingState/%s/%s", name, "KnativeServingIsReady"))
 	defer span.End()
 
-	var lastState *v1alpha1.KnativeServing
+	var lastState *v1beta1.KnativeServing
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 		lastState, err := clients.Get(context.TODO(), name, metav1.GetOptions{})
 		return inState(lastState, err)
@@ -60,11 +60,11 @@ func WaitForKnativeServingState(clients servingv1alpha1.KnativeServingInterface,
 }
 
 // EnsureKnativeServingExists creates a KnativeServing with the name names.KnativeServing under the namespace names.Namespace, if it does not exist.
-func EnsureKnativeServingExists(clients servingv1alpha1.KnativeServingInterface, names test.ResourceNames) (*v1alpha1.KnativeServing, error) {
+func EnsureKnativeServingExists(clients servingv1beta1.KnativeServingInterface, names test.ResourceNames) (*v1beta1.KnativeServing, error) {
 	// If this function is called by the upgrade tests, we only create the custom resource, if it does not exist.
 	ks, err := clients.Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 	if apierrs.IsNotFound(err) {
-		ks := &v1alpha1.KnativeServing{
+		ks := &v1beta1.KnativeServing{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      names.KnativeServing,
 				Namespace: names.Namespace,
@@ -89,7 +89,7 @@ func WaitForConfigMap(name string, client kubernetes.Interface, fn func(map[stri
 }
 
 // IsKnativeServingReady will check the status conditions of the KnativeServing and return true if the KnativeServing is ready.
-func IsKnativeServingReady(s *v1alpha1.KnativeServing, err error) (bool, error) {
+func IsKnativeServingReady(s *v1beta1.KnativeServing, err error) (bool, error) {
 	return s.Status.IsReady(), err
 }
 
@@ -107,8 +107,8 @@ func getDeploymentStatus(d *v1.Deployment) corev1.ConditionStatus {
 	return "unknown"
 }
 
-func getTestKSOperatorCRSpec() v1alpha1.KnativeServingSpec {
-	spec := v1alpha1.KnativeServingSpec{
+func getTestKSOperatorCRSpec() v1beta1.KnativeServingSpec {
+	spec := v1beta1.KnativeServingSpec{
 		CommonSpec: base.CommonSpec{
 			Config: base.ConfigMapData{
 				DefaultsConfigKey: {
@@ -125,7 +125,7 @@ func getTestKSOperatorCRSpec() v1alpha1.KnativeServingSpec {
 	return spec
 }
 
-func configureIngressClass(spec *v1alpha1.KnativeServingSpec) {
+func configureIngressClass(spec *v1beta1.KnativeServingSpec) {
 	ingressClass := "istio.ingress.networking.knative.dev"
 	if ingressClassOverride := os.Getenv("INGRESS_CLASS"); ingressClassOverride != "" {
 		ingressClass = ingressClassOverride
@@ -141,7 +141,7 @@ func configureIngressClass(spec *v1alpha1.KnativeServingSpec) {
 	}
 
 	if !istioEnabled {
-		spec.Ingress = &v1alpha1.IngressConfigs{
+		spec.Ingress = &v1beta1.IngressConfigs{
 			Istio:   base.IstioIngressConfiguration{Enabled: istioEnabled},
 			Contour: base.ContourIngressConfiguration{Enabled: contourEnabled},
 			Kourier: base.KourierIngressConfiguration{Enabled: kourierEnabled},

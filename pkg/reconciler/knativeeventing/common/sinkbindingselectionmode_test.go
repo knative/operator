@@ -26,7 +26,7 @@ import (
 
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -133,8 +133,8 @@ func TestSinkBindingSelectionModeTransform(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			unstructuredDeployment := util.MakeUnstructured(t, &tt.deployment)
-			instance := &v1alpha1.KnativeEventing{
-				Spec: v1alpha1.KnativeEventingSpec{
+			instance := &v1beta1.KnativeEventing{
+				Spec: v1beta1.KnativeEventingSpec{
 					SinkBindingSelectionMode: tt.sinkBindingSelectionMode,
 				},
 			}

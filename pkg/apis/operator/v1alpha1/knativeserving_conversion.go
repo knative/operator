@@ -25,7 +25,7 @@ import (
 )
 
 // ConvertTo implements apis.Convertible
-// Converts source from v1alpha1.KnativeServing into a higher version.
+// Converts source from v1beta1.KnativeServing into a higher version.
 func (ks *KnativeServing) ConvertTo(ctx context.Context, obj apis.Convertible) error {
 	switch sink := obj.(type) {
 	case *v1beta1.KnativeServing:
@@ -62,7 +62,7 @@ func (ks *KnativeServing) ConvertTo(ctx context.Context, obj apis.Convertible) e
 }
 
 // ConvertFrom implements apis.Convertible
-// Converts source from a higher version into v1alpha1.KnativeServing
+// Converts source from a higher version into v1beta1.KnativeServing
 func (ks *KnativeServing) ConvertFrom(ctx context.Context, obj apis.Convertible) error {
 	switch source := obj.(type) {
 	case *v1beta1.KnativeServing:

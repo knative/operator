@@ -27,7 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 const (
@@ -38,7 +38,7 @@ const (
 
 // CustomCertsTransform configures the controller deployment to trust
 // registries with self-signed certs
-func CustomCertsTransform(instance *servingv1alpha1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
+func CustomCertsTransform(instance *servingv1beta1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
 	empty := base.CustomCerts{}
 	return func(u *unstructured.Unstructured) error {
 		if instance.Spec.ControllerCustomCerts == empty {

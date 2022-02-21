@@ -24,12 +24,12 @@ import (
 	mf "github.com/manifestival/manifestival"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/pkg/ptr"
 )
 
 func TestCommonTransformers(t *testing.T) {
-	component := &v1alpha1.KnativeEventing{
+	component := &v1beta1.KnativeEventing{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "test-ns",
 			Name:      "test-name",

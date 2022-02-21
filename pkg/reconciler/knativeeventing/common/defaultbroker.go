@@ -27,13 +27,12 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	eventingconfig "knative.dev/eventing/pkg/apis/config"
 	"knative.dev/eventing/pkg/apis/eventing"
+	eventingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"sigs.k8s.io/yaml"
-
-	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 )
 
 // DefaultBrokerConfigMapTransform updates the default broker configMap with the value defined in the spec
-func DefaultBrokerConfigMapTransform(instance *eventingv1alpha1.KnativeEventing, log *zap.SugaredLogger) mf.Transformer {
+func DefaultBrokerConfigMapTransform(instance *eventingv1beta1.KnativeEventing, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "ConfigMap" && u.GetName() == eventingconfig.DefaultsConfigName {
 			var configMap = &corev1.ConfigMap{}

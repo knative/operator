@@ -22,14 +22,13 @@ import (
 	"os"
 	"testing"
 
-	"knative.dev/operator/pkg/apis/operator/base"
-
 	mf "github.com/manifestival/manifestival"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/common"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
@@ -81,14 +80,14 @@ func TestAppendInstalledIngresses(t *testing.T) {
 
 	tests := []struct {
 		name                string
-		instance            servingv1alpha1.KnativeServing
+		instance            servingv1beta1.KnativeServing
 		expectedIngressPath string
 		expectedErr         error
 	}{{
 		name: "Available installed ingresses",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{},
-			Status: servingv1alpha1.KnativeServingStatus{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{},
+			Status: servingv1beta1.KnativeServingStatus{
 				Version: "0.21.0",
 			},
 		},
@@ -96,21 +95,21 @@ func TestAppendInstalledIngresses(t *testing.T) {
 		expectedErr:         nil,
 	}, {
 		name: "Available installed ingresses for missing status.version",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.21.0",
 				},
 			},
-			Status: servingv1alpha1.KnativeServingStatus{},
+			Status: servingv1beta1.KnativeServingStatus{},
 		},
 		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/0.21",
 		expectedErr:         nil,
 	}, {
 		name: "Unavailable installed ingresses for the unavailable status.version",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{},
-			Status: servingv1alpha1.KnativeServingStatus{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{},
+			Status: servingv1beta1.KnativeServingStatus{
 				Version: "0.12.1",
 			},
 		},
@@ -139,13 +138,13 @@ func TestAppendTargetIngresses(t *testing.T) {
 
 	tests := []struct {
 		name                string
-		instance            servingv1alpha1.KnativeServing
+		instance            servingv1beta1.KnativeServing
 		expectedIngressPath string
 		expectedErr         error
 	}{{
 		name: "Available target ingresses",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.21.0",
 				},
@@ -155,8 +154,8 @@ func TestAppendTargetIngresses(t *testing.T) {
 		expectedErr:         nil,
 	}, {
 		name: "Unavailable target ingresses",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.12.1",
 				},
@@ -165,8 +164,8 @@ func TestAppendTargetIngresses(t *testing.T) {
 		expectedErr: fmt.Errorf("stat testdata/kodata/ingress/0.12: no such file or directory"),
 	}, {
 		name: "Get the latest target ingresses when the directory latest is unavailable",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "latest",
 				},
@@ -197,17 +196,17 @@ func TestGetIngressWithFilters(t *testing.T) {
 	version := "0.21"
 	tests := []struct {
 		name                 string
-		instance             servingv1alpha1.KnativeServing
+		instance             servingv1beta1.KnativeServing
 		expectedManifestPath string
 		expected             bool
 	}{{
 		name: "Enabled Istio ingress for target manifests",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
-				Ingress: &servingv1alpha1.IngressConfigs{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
@@ -218,12 +217,12 @@ func TestGetIngressWithFilters(t *testing.T) {
 		expectedManifestPath: os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/net-istio.yaml",
 	}, {
 		name: "Enabled Contour ingress for target manifests",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
-				Ingress: &servingv1alpha1.IngressConfigs{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
@@ -234,12 +233,12 @@ func TestGetIngressWithFilters(t *testing.T) {
 		expectedManifestPath: os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/net-contour.yaml",
 	}, {
 		name: "Enabled Kourier ingress for target manifests",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
-				Ingress: &servingv1alpha1.IngressConfigs{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
@@ -250,12 +249,12 @@ func TestGetIngressWithFilters(t *testing.T) {
 		expectedManifestPath: os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/kourier.yaml",
 	}, {
 		name: "Enabled Contour and Kourier ingress for target manifests",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
-				Ingress: &servingv1alpha1.IngressConfigs{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
@@ -270,12 +269,12 @@ func TestGetIngressWithFilters(t *testing.T) {
 			os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/kourier.yaml",
 	}, {
 		name: "Enabled Istio and Kourier ingress for target manifests",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
-				Ingress: &servingv1alpha1.IngressConfigs{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
@@ -290,12 +289,12 @@ func TestGetIngressWithFilters(t *testing.T) {
 			os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/net-istio.yaml",
 	}, {
 		name: "Enabled Istio and Contour ingress for target manifests",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
-				Ingress: &servingv1alpha1.IngressConfigs{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
@@ -310,12 +309,12 @@ func TestGetIngressWithFilters(t *testing.T) {
 			os.Getenv(common.KoEnvKey) + "/ingress/" + version + "/net-istio.yaml",
 	}, {
 		name: "Enabled All ingresses for target manifests",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: version,
 				},
-				Ingress: &servingv1alpha1.IngressConfigs{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
@@ -391,7 +390,7 @@ func TestFilters(t *testing.T) {
 	namespace := "knative-serving"
 	tests := []struct {
 		name     string
-		instance servingv1alpha1.KnativeServing
+		instance servingv1beta1.KnativeServing
 		// This label is used to mark the tested resource to indicate which ingress it belongs to.
 		// Empty label means no label for the resource.
 		labels []string
@@ -401,9 +400,9 @@ func TestFilters(t *testing.T) {
 		expected []bool
 	}{{
 		name: "Enabled Istio ingress for all resources",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigs{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
@@ -414,16 +413,16 @@ func TestFilters(t *testing.T) {
 		expected: []bool{true, false, false, true},
 	}, {
 		name: "Default ingress for all resources",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{},
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{},
 		},
 		labels:   []string{"istio", "contour", "kourier", ""},
 		expected: []bool{true, false, false, true},
 	}, {
 		name: "Enabled kourier ingress for all resources",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigs{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
@@ -434,9 +433,9 @@ func TestFilters(t *testing.T) {
 		expected: []bool{false, false, true, true},
 	}, {
 		name: "Enabled Contour ingress for all resources",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigs{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
@@ -447,9 +446,9 @@ func TestFilters(t *testing.T) {
 		expected: []bool{false, true, false, true},
 	}, {
 		name: "Enabled Contour and Istio ingress for all resources",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigs{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
@@ -463,9 +462,9 @@ func TestFilters(t *testing.T) {
 		expected: []bool{true, true, false, true},
 	}, {
 		name: "Enabled Kourier and Istio ingress for all resources",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigs{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
@@ -479,9 +478,9 @@ func TestFilters(t *testing.T) {
 		expected: []bool{true, false, true, true},
 	}, {
 		name: "Enabled Kourier and Contour ingress for all resources",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigs{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
@@ -495,9 +494,9 @@ func TestFilters(t *testing.T) {
 		expected: []bool{false, true, true, true},
 	}, {
 		name: "Enabled All ingress for all resources",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigs{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
@@ -514,9 +513,9 @@ func TestFilters(t *testing.T) {
 		expected: []bool{true, true, true, true},
 	}, {
 		name: "Disabled All ingress",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigs{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Istio: base.IstioIngressConfiguration{
 						Enabled: false,
 					},
@@ -548,13 +547,13 @@ func TestFilters(t *testing.T) {
 func TestTransformers(t *testing.T) {
 	tests := []struct {
 		name     string
-		instance servingv1alpha1.KnativeServing
+		instance servingv1beta1.KnativeServing
 		expected int
 	}{{
 		name: "Available istio ingress",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigs{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Istio: base.IstioIngressConfiguration{
 						Enabled: true,
 					},
@@ -564,9 +563,9 @@ func TestTransformers(t *testing.T) {
 		expected: 1,
 	}, {
 		name: "Available kourier ingress",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigs{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Kourier: base.KourierIngressConfiguration{
 						Enabled: true,
 					},
@@ -576,9 +575,9 @@ func TestTransformers(t *testing.T) {
 		expected: 2,
 	}, {
 		name: "Available contour ingress",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigs{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},
@@ -588,15 +587,15 @@ func TestTransformers(t *testing.T) {
 		expected: 0,
 	}, {
 		name: "Empty ingress for default istio",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{},
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{},
 		},
 		expected: 1,
 	}, {
 		name: "All ingresses enabled",
-		instance: servingv1alpha1.KnativeServing{
-			Spec: servingv1alpha1.KnativeServingSpec{
-				Ingress: &servingv1alpha1.IngressConfigs{
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
 					Contour: base.ContourIngressConfiguration{
 						Enabled: true,
 					},

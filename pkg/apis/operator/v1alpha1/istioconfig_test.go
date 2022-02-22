@@ -105,6 +105,34 @@ func TestConvertToIstioConfig(t *testing.T) {
 				Selector: map[string]string{"istio": "cluster-local"},
 			},
 		},
+	}, {
+		name: "No ingress Gateway will be passed into the istio configuration if no ingress Gateway is available",
+		ks: &KnativeServing{
+			Spec: KnativeServingSpec{
+				Ingress: &IngressConfigs{
+					Istio: base.IstioIngressConfiguration{
+						KnativeIngressGateway: &base.IstioGatewayOverride{
+							Selector: map[string]string{"istio": "knative-ingress-istio"},
+						},
+					},
+				},
+			},
+		},
+		expectedIstioConfig: base.IstioIngressConfiguration{
+			KnativeIngressGateway: &base.IstioGatewayOverride{
+				Selector: map[string]string{"istio": "knative-ingress-istio"},
+			},
+			KnativeLocalGateway: nil,
+		},
+	}, {
+		name: "No ingress Gateway will be passed into the istio configuration if deprecated ingress Gateway is not available",
+		ks: &KnativeServing{
+			Spec: KnativeServingSpec{},
+		},
+		expectedIstioConfig: base.IstioIngressConfiguration{
+			KnativeIngressGateway: nil,
+			KnativeLocalGateway:   nil,
+		},
 	}} {
 		t.Run(tt.name, func(t *testing.T) {
 			istioConfig := ConvertToIstioConfig(tt.ks)

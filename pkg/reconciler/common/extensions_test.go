@@ -22,7 +22,7 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 type TestExtension string
@@ -88,7 +88,7 @@ func TestExtensions(t *testing.T) {
 					if err != nil {
 						t.Error("Unexpected result")
 					}
-					if err := Transform(context.TODO(), &manifests[0], &v1alpha1.KnativeServing{}, transformers...); err != nil {
+					if err := Transform(context.TODO(), &manifests[0], &v1beta1.KnativeServing{}, transformers...); err != nil {
 						t.Error("Unexpected result")
 					}
 					for _, r := range manifests[0].Resources() {

@@ -24,7 +24,7 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/apis/operator/base"
-	eventingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	eventingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/common"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
@@ -35,17 +35,14 @@ func TestAppendInstalledSources(t *testing.T) {
 
 	tests := []struct {
 		name                string
-		instance            eventingv1alpha1.KnativeEventing
+		instance            eventingv1beta1.KnativeEventing
 		expectedIngressPath string
 		expectedErr         error
 	}{{
 		name: "Available Amazon SQS, Redis, Ceph, Couchdb and GitHub as the target sources",
-		instance: eventingv1alpha1.KnativeEventing{
-			Spec: eventingv1alpha1.KnativeEventingSpec{
-				Source: &eventingv1alpha1.SourceConfigs{
-					Awssqs: base.AwssqsSourceConfiguration{
-						Enabled: true,
-					},
+		instance: eventingv1beta1.KnativeEventing{
+			Spec: eventingv1beta1.KnativeEventingSpec{
+				Source: &eventingv1beta1.SourceConfigs{
 					Ceph: base.CephSourceConfiguration{
 						Enabled: true,
 					},
@@ -55,26 +52,21 @@ func TestAppendInstalledSources(t *testing.T) {
 					Redis: base.RedisSourceConfiguration{
 						Enabled: true,
 					},
-					Couchdb: base.CouchdbSourceConfiguration{
-						Enabled: true,
-					},
 				},
 			},
-			Status: eventingv1alpha1.KnativeEventingStatus{
+			Status: eventingv1beta1.KnativeEventingStatus{
 				Version: "0.22",
 			},
 		},
-		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/awssqs" + common.COMMA +
-			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/ceph" + common.COMMA +
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/ceph" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/github" + common.COMMA +
-			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/couchdb" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/redis",
 		expectedErr: nil,
 	}, {
 		name: "Available GitLab, Kafka, NATSS, Rabbitmq and Prometheus as the target sources",
-		instance: eventingv1alpha1.KnativeEventing{
-			Spec: eventingv1alpha1.KnativeEventingSpec{
-				Source: &eventingv1alpha1.SourceConfigs{
+		instance: eventingv1beta1.KnativeEventing{
+			Spec: eventingv1beta1.KnativeEventingSpec{
+				Source: &eventingv1beta1.SourceConfigs{
 					Natss: base.NatssSourceConfiguration{
 						Enabled: true,
 					},
@@ -84,29 +76,25 @@ func TestAppendInstalledSources(t *testing.T) {
 					Gitlab: base.GitlabSourceConfiguration{
 						Enabled: true,
 					},
-					Prometheus: base.PrometheusSourceConfiguration{
-						Enabled: true,
-					},
 					Rabbitmq: base.RabbitmqSourceConfiguration{
 						Enabled: true,
 					},
 				},
 			},
-			Status: eventingv1alpha1.KnativeEventingStatus{
+			Status: eventingv1beta1.KnativeEventingStatus{
 				Version: "0.22",
 			},
 		},
 		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/natss" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/kafka" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/gitlab" + common.COMMA +
-			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/prometheus" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/rabbitmq",
 		expectedErr: nil,
 	}, {
 		name: "No source is enabled",
-		instance: eventingv1alpha1.KnativeEventing{
-			Spec: eventingv1alpha1.KnativeEventingSpec{},
-			Status: eventingv1alpha1.KnativeEventingStatus{
+		instance: eventingv1beta1.KnativeEventing{
+			Spec: eventingv1beta1.KnativeEventingSpec{},
+			Status: eventingv1beta1.KnativeEventingStatus{
 				Version: "0.23",
 			},
 		},
@@ -114,9 +102,9 @@ func TestAppendInstalledSources(t *testing.T) {
 		expectedErr:         nil,
 	}, {
 		name: "Unavailable eventing source",
-		instance: eventingv1alpha1.KnativeEventing{
-			Spec: eventingv1alpha1.KnativeEventingSpec{},
-			Status: eventingv1alpha1.KnativeEventingStatus{
+		instance: eventingv1beta1.KnativeEventing{
+			Spec: eventingv1beta1.KnativeEventingSpec{},
+			Status: eventingv1beta1.KnativeEventingStatus{
 				Version: "0.21",
 			},
 		},
@@ -145,20 +133,17 @@ func TestAppendTargetSources(t *testing.T) {
 
 	tests := []struct {
 		name                string
-		instance            eventingv1alpha1.KnativeEventing
+		instance            eventingv1beta1.KnativeEventing
 		expectedIngressPath string
 		expectedErr         error
 	}{{
 		name: "Available Amazon SQS, Redis, Ceph, Couchdb and GitHub as the target sources",
-		instance: eventingv1alpha1.KnativeEventing{
-			Spec: eventingv1alpha1.KnativeEventingSpec{
+		instance: eventingv1beta1.KnativeEventing{
+			Spec: eventingv1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.22",
 				},
-				Source: &eventingv1alpha1.SourceConfigs{
-					Awssqs: base.AwssqsSourceConfiguration{
-						Enabled: true,
-					},
+				Source: &eventingv1beta1.SourceConfigs{
 					Ceph: base.CephSourceConfiguration{
 						Enabled: true,
 					},
@@ -168,26 +153,21 @@ func TestAppendTargetSources(t *testing.T) {
 					Redis: base.RedisSourceConfiguration{
 						Enabled: true,
 					},
-					Couchdb: base.CouchdbSourceConfiguration{
-						Enabled: true,
-					},
 				},
 			},
 		},
-		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/awssqs" + common.COMMA +
-			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/ceph" + common.COMMA +
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/ceph" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/github" + common.COMMA +
-			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/couchdb" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/redis",
 		expectedErr: nil,
 	}, {
 		name: "Available GitLab, Kafka, NATSS, Rabbitmq and Prometheus as the target sources",
-		instance: eventingv1alpha1.KnativeEventing{
-			Spec: eventingv1alpha1.KnativeEventingSpec{
+		instance: eventingv1beta1.KnativeEventing{
+			Spec: eventingv1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.22",
 				},
-				Source: &eventingv1alpha1.SourceConfigs{
+				Source: &eventingv1beta1.SourceConfigs{
 					Natss: base.NatssSourceConfiguration{
 						Enabled: true,
 					},
@@ -195,9 +175,6 @@ func TestAppendTargetSources(t *testing.T) {
 						Enabled: true,
 					},
 					Gitlab: base.GitlabSourceConfiguration{
-						Enabled: true,
-					},
-					Prometheus: base.PrometheusSourceConfiguration{
 						Enabled: true,
 					},
 					Rabbitmq: base.RabbitmqSourceConfiguration{
@@ -209,36 +186,35 @@ func TestAppendTargetSources(t *testing.T) {
 		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/natss" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/kafka" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/gitlab" + common.COMMA +
-			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/prometheus" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/rabbitmq",
 		expectedErr: nil,
 	}, {
 		name: "Unavailable target source",
-		instance: eventingv1alpha1.KnativeEventing{
-			Spec: eventingv1alpha1.KnativeEventingSpec{
+		instance: eventingv1beta1.KnativeEventing{
+			Spec: eventingv1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.12.1",
 				},
-				Source: &eventingv1alpha1.SourceConfigs{
-					Awssqs: base.AwssqsSourceConfiguration{
+				Source: &eventingv1beta1.SourceConfigs{
+					Ceph: base.CephSourceConfiguration{
 						Enabled: true,
 					},
 				},
 			},
 		},
-		expectedErr: fmt.Errorf("stat testdata/kodata/eventing-source/0.12/awssqs: no such file or directory"),
+		expectedErr: fmt.Errorf("stat testdata/kodata/eventing-source/0.12/ceph: no such file or directory"),
 	}, {
 		name: "Unavailable target source with spec.manifests",
-		instance: eventingv1alpha1.KnativeEventing{
-			Spec: eventingv1alpha1.KnativeEventingSpec{
+		instance: eventingv1beta1.KnativeEventing{
+			Spec: eventingv1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.12.1",
 					Manifests: []base.Manifest{{
 						Url: "testdata/kodata/eventing-source/empty.yaml",
 					}},
 				},
-				Source: &eventingv1alpha1.SourceConfigs{
-					Awssqs: base.AwssqsSourceConfiguration{
+				Source: &eventingv1beta1.SourceConfigs{
+					Ceph: base.CephSourceConfiguration{
 						Enabled: true,
 					},
 				},
@@ -247,24 +223,24 @@ func TestAppendTargetSources(t *testing.T) {
 		expectedErr: nil,
 	}, {
 		name: "Get the latest target source when the directory latest is unavailable",
-		instance: eventingv1alpha1.KnativeEventing{
-			Spec: eventingv1alpha1.KnativeEventingSpec{
+		instance: eventingv1beta1.KnativeEventing{
+			Spec: eventingv1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "latest",
 				},
-				Source: &eventingv1alpha1.SourceConfigs{
-					Awssqs: base.AwssqsSourceConfiguration{
+				Source: &eventingv1beta1.SourceConfigs{
+					Ceph: base.CephSourceConfiguration{
 						Enabled: true,
 					},
 				},
 			},
 		},
-		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.23/awssqs",
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.23/ceph",
 		expectedErr:         nil,
 	}, {
 		name: "No source is enabled",
-		instance: eventingv1alpha1.KnativeEventing{
-			Spec: eventingv1alpha1.KnativeEventingSpec{
+		instance: eventingv1beta1.KnativeEventing{
+			Spec: eventingv1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.23",
 				},

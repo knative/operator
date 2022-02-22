@@ -24,7 +24,7 @@ import (
 	"testing"
 
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/common"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 	"knative.dev/operator/test"
@@ -52,13 +52,13 @@ func TestKnativeEventingPostDowngrade(t *testing.T) {
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
 
-		_, err := common.TargetManifest(&v1alpha1.KnativeEventing{})
+		_, err := common.TargetManifest(&v1beta1.KnativeEventing{})
 		if err != nil {
 			t.Fatalf("Failed to get the manifest for Knative: %v", err)
 		}
 
-		instance := &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		instance := &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: test.OperatorFlags.PreviousEventingVersion,
 				},
@@ -97,13 +97,13 @@ func TestKnativeServingPostDowngrade(t *testing.T) {
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
 
-		_, err := common.TargetManifest(&v1alpha1.KnativeServing{})
+		_, err := common.TargetManifest(&v1beta1.KnativeServing{})
 		if err != nil {
 			t.Fatalf("Failed to get the manifest for Knative: %v", err)
 		}
 
-		instance := &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		instance := &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: test.OperatorFlags.PreviousServingVersion,
 				},

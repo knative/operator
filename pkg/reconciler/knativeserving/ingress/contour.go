@@ -20,11 +20,11 @@ import (
 	"context"
 
 	mf "github.com/manifestival/manifestival"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 var contourFilter = ingressFilter("contour")
 
-func contourTransformers(ctx context.Context, instance *v1alpha1.KnativeServing) []mf.Transformer {
+func contourTransformers(ctx context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
 	return nil
 }

@@ -85,7 +85,7 @@ func convertToSourceConfigs(ke *KnativeEventing) *v1beta1.SourceConfigs {
 }
 
 // ConvertTo implements apis.Convertible
-// Converts source from v1alpha1.KnativeEventing into a higher version.
+// Converts source from v1beta1.KnativeEventing into a higher version.
 func (ke *KnativeEventing) ConvertTo(ctx context.Context, obj apis.Convertible) error {
 	switch sink := obj.(type) {
 	case *v1beta1.KnativeEventing:
@@ -119,7 +119,7 @@ func (ke *KnativeEventing) ConvertTo(ctx context.Context, obj apis.Convertible) 
 }
 
 // ConvertFrom implements apis.Convertible
-// Converts source from a higher version into v1alpha1.KnativeEventing
+// Converts source from a higher version into v1beta1.KnativeEventing
 func (ke *KnativeEventing) ConvertFrom(ctx context.Context, obj apis.Convertible) error {
 	switch source := obj.(type) {
 	case *v1beta1.KnativeEventing:

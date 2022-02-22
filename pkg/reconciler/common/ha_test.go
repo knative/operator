@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
@@ -27,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	v1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -83,8 +83,8 @@ func TestHighAvailabilityTransform(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			instance := &v1alpha1.KnativeServing{
-				Spec: v1alpha1.KnativeServingSpec{
+			instance := &v1beta1.KnativeServing{
+				Spec: v1beta1.KnativeServingSpec{
 					CommonSpec: base.CommonSpec{
 						HighAvailability: tc.config,
 					},

@@ -196,7 +196,7 @@ func (c *CommonSpec) GetDeploymentOverride() []DeploymentOverride {
 type ConfigMapData map[string]map[string]string
 
 // Registry defines image overrides of knative images.
-// This affects both apps/v1.Deployment and caching.internal.knative.dev/v1alpha1.Image.
+// This affects both apps/v1.Deployment and caching.internal.knative.dev/v1beta1.Image.
 // The default value is used as a default format to override for all knative deployments.
 // The override values are specific to each knative deployment.
 type Registry struct {

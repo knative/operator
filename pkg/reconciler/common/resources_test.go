@@ -21,11 +21,12 @@ import (
 	"reflect"
 	"testing"
 
+	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -367,7 +368,7 @@ var testdata = []byte(`
 
 func TestResourceRequirementsTransform(t *testing.T) {
 	tests := []struct {
-		Input    servingv1alpha1.KnativeServing
+		Input    servingv1beta1.KnativeServing
 		Expected map[string]v1.ResourceRequirements
 	}{}
 

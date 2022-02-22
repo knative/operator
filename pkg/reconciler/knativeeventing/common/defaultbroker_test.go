@@ -23,11 +23,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/yaml"
 
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -107,8 +107,8 @@ func TestDefaultBrokerTransform(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			unstructuredConfigMap := util.MakeUnstructured(t, &tt.configMap)
-			instance := &v1alpha1.KnativeEventing{
-				Spec: v1alpha1.KnativeEventingSpec{
+			instance := &v1beta1.KnativeEventing{
+				Spec: v1beta1.KnativeEventingSpec{
 					DefaultBrokerClass: tt.defaultBrokerClass,
 				},
 			}

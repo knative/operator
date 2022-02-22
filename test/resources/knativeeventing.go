@@ -26,8 +26,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
-	eventingv1alpha1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
+	eventingv1beta1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1"
 	"knative.dev/operator/test"
 	"knative.dev/pkg/test/logging"
 )
@@ -35,12 +35,12 @@ import (
 // WaitForKnativeEventingState polls the status of the KnativeEventing called name
 // from client every `interval` until `inState` returns `true` indicating it
 // is done, returns an error or timeout.
-func WaitForKnativeEventingState(clients eventingv1alpha1.KnativeEventingInterface, name string,
-	inState func(s *v1alpha1.KnativeEventing, err error) (bool, error)) (*v1alpha1.KnativeEventing, error) {
+func WaitForKnativeEventingState(clients eventingv1beta1.KnativeEventingInterface, name string,
+	inState func(s *v1beta1.KnativeEventing, err error) (bool, error)) (*v1beta1.KnativeEventing, error) {
 	span := logging.GetEmitableSpan(context.Background(), fmt.Sprintf("WaitForKnativeEventingState/%s/%s", name, "KnativeEventingIsReady"))
 	defer span.End()
 
-	var lastState *v1alpha1.KnativeEventing
+	var lastState *v1beta1.KnativeEventing
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
 		state, err := clients.Get(context.TODO(), name, metav1.GetOptions{})
 		lastState = state
@@ -54,11 +54,11 @@ func WaitForKnativeEventingState(clients eventingv1alpha1.KnativeEventingInterfa
 }
 
 // EnsureKnativeEventingExists creates a KnativeEventingServing with the name names.KnativeEventing under the namespace names.Namespace.
-func EnsureKnativeEventingExists(clients eventingv1alpha1.KnativeEventingInterface, names test.ResourceNames) (*v1alpha1.KnativeEventing, error) {
+func EnsureKnativeEventingExists(clients eventingv1beta1.KnativeEventingInterface, names test.ResourceNames) (*v1beta1.KnativeEventing, error) {
 	// If this function is called by the upgrade tests, we only create the custom resource, if it does not exist.
 	ke, err := clients.Get(context.TODO(), names.KnativeEventing, metav1.GetOptions{})
 	if apierrs.IsNotFound(err) {
-		ke := &v1alpha1.KnativeEventing{
+		ke := &v1beta1.KnativeEventing{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      names.KnativeEventing,
 				Namespace: names.Namespace,
@@ -70,6 +70,6 @@ func EnsureKnativeEventingExists(clients eventingv1alpha1.KnativeEventingInterfa
 }
 
 // IsKnativeEventingReady will check the status conditions of the KnativeEventing and return true if the KnativeEventing is ready.
-func IsKnativeEventingReady(s *v1alpha1.KnativeEventing, err error) (bool, error) {
+func IsKnativeEventingReady(s *v1beta1.KnativeEventing, err error) (bool, error) {
 	return s.Status.IsReady(), err
 }

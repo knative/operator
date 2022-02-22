@@ -24,7 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 const istioAnnotationName = "sidecar.istio.io/inject"
@@ -39,7 +39,7 @@ func JobTransform(obj base.KComponent) mf.Transformer {
 			}
 
 			component := "serving"
-			if _, ok := obj.(*v1alpha1.KnativeEventing); ok {
+			if _, ok := obj.(*v1beta1.KnativeEventing); ok {
 				component = "eventing"
 			}
 			if job.GetName() == "" {

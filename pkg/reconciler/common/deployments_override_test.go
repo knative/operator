@@ -20,17 +20,16 @@ import (
 	"reflect"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/api/resource"
-
 	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 	"knative.dev/operator/test"
 )
@@ -250,8 +249,8 @@ func TestDeploymentsTransform(t *testing.T) {
 				t.Fatalf("Failed to create manifest: %v", err)
 			}
 
-			ks := &servingv1alpha1.KnativeServing{
-				Spec: servingv1alpha1.KnativeServingSpec{
+			ks := &servingv1beta1.KnativeServing{
+				Spec: servingv1beta1.KnativeServingSpec{
 					CommonSpec: base.CommonSpec{
 						DeploymentOverride: test.override,
 						HighAvailability: &base.HighAvailability{
@@ -318,15 +317,15 @@ func TestDeploymentsTransform(t *testing.T) {
 func TestDeploymentResourceRequirementsTransform(t *testing.T) {
 	tests := []struct {
 		DeployName string
-		Input      servingv1alpha1.KnativeServing
+		Input      servingv1beta1.KnativeServing
 		Expected   map[string]v1.ResourceRequirements
 	}{{
 		DeployName: "net-istio-controller",
-		Input: servingv1alpha1.KnativeServing{
+		Input: servingv1beta1.KnativeServing{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "specific-container-for-deployment",
 			},
-			Spec: servingv1alpha1.KnativeServingSpec{
+			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: test.OperatorFlags.PreviousEventingVersion,
 					DeploymentOverride: []base.DeploymentOverride{

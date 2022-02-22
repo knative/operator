@@ -20,12 +20,12 @@ import (
 	"context"
 	"testing"
 
-	servingv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
+	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
 func TestContourTransformers(t *testing.T) {
-	instance := &servingv1alpha1.KnativeServing{}
+	instance := &servingv1beta1.KnativeServing{}
 	transformer := contourTransformers(context.TODO(), instance)
 	util.AssertEqual(t, len(transformer), 0)
 }

@@ -25,7 +25,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"golang.org/x/mod/semver"
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/common"
 )
 
@@ -36,7 +36,7 @@ func getSource(manifest *mf.Manifest, path string) (mf.Manifest, error) {
 	return common.FetchManifest(path)
 }
 
-func getSourcePath(version string, ke *v1alpha1.KnativeEventing) string {
+func getSourcePath(version string, ke *v1beta1.KnativeEventing) string {
 	if ke.Spec.Source == nil {
 		// If no eventing source is defined, return an empty string.
 		return ""
@@ -52,16 +52,8 @@ func getSourcePath(version string, ke *v1alpha1.KnativeEventing) string {
 	sourcePath := filepath.Join(koDataDir, "eventing-source", sourceVersion)
 	var urls []string
 
-	if ke.Spec.Source.Awssqs.Enabled {
-		url := filepath.Join(sourcePath, "awssqs")
-		urls = append(urls, url)
-	}
 	if ke.Spec.Source.Ceph.Enabled {
 		url := filepath.Join(sourcePath, "ceph")
-		urls = append(urls, url)
-	}
-	if ke.Spec.Source.Couchdb.Enabled {
-		url := filepath.Join(sourcePath, "couchdb")
 		urls = append(urls, url)
 	}
 	if ke.Spec.Source.Github.Enabled {
@@ -78,10 +70,6 @@ func getSourcePath(version string, ke *v1alpha1.KnativeEventing) string {
 	}
 	if ke.Spec.Source.Natss.Enabled {
 		url := filepath.Join(sourcePath, "natss")
-		urls = append(urls, url)
-	}
-	if ke.Spec.Source.Prometheus.Enabled {
-		url := filepath.Join(sourcePath, "prometheus")
 		urls = append(urls, url)
 	}
 	if ke.Spec.Source.Rabbitmq.Enabled {
@@ -130,10 +118,10 @@ func AppendInstalledSources(ctx context.Context, manifest *mf.Manifest, instance
 	return nil
 }
 
-func convertToKE(instance base.KComponent) *v1alpha1.KnativeEventing {
-	ke := &v1alpha1.KnativeEventing{}
+func convertToKE(instance base.KComponent) *v1beta1.KnativeEventing {
+	ke := &v1beta1.KnativeEventing{}
 	switch instance := instance.(type) {
-	case *v1alpha1.KnativeEventing:
+	case *v1beta1.KnativeEventing:
 		ke = instance
 	}
 	return ke

@@ -21,7 +21,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 func TestFinalizerRemovalPatch(t *testing.T) {
@@ -31,7 +31,7 @@ func TestFinalizerRemovalPatch(t *testing.T) {
 		want []byte
 	}{{
 		name: "other finalizer, do nothing",
-		in: &v1alpha1.KnativeServing{
+		in: &v1beta1.KnativeServing{
 			ObjectMeta: metav1.ObjectMeta{
 				ResourceVersion: "testVersion",
 				Finalizers:      []string{"another-finalizer"},
@@ -39,14 +39,14 @@ func TestFinalizerRemovalPatch(t *testing.T) {
 		},
 	}, {
 		name: "no finalizer, do nothing",
-		in: &v1alpha1.KnativeServing{
+		in: &v1beta1.KnativeServing{
 			ObjectMeta: metav1.ObjectMeta{
 				ResourceVersion: "testVersion",
 			},
 		},
 	}, {
 		name: "remove finalizer",
-		in: &v1alpha1.KnativeServing{
+		in: &v1beta1.KnativeServing{
 			ObjectMeta: metav1.ObjectMeta{
 				ResourceVersion: "testVersion",
 				Finalizers:      []string{"test-finalizer"},

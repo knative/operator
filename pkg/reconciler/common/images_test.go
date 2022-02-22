@@ -24,7 +24,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	caching "knative.dev/caching/pkg/apis/caching/v1alpha1"
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -322,8 +322,8 @@ func TestImageTransform(t *testing.T) {
 	}} {
 		t.Run(tt.name, func(t *testing.T) {
 			unstructuredImage := util.MakeUnstructured(t, makeImage(tt.name, tt.in))
-			instance := &v1alpha1.KnativeServing{
-				Spec: v1alpha1.KnativeServingSpec{
+			instance := &v1beta1.KnativeServing{
+				Spec: v1beta1.KnativeServingSpec{
 					CommonSpec: base.CommonSpec{
 						Registry: tt.registry,
 					},

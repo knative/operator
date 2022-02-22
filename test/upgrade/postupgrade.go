@@ -21,14 +21,12 @@ import (
 	"testing"
 	"time"
 
-	"knative.dev/operator/pkg/apis/operator/base"
-
-	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
-
 	mf "github.com/manifestival/manifestival"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/common"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
+	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
@@ -92,8 +90,8 @@ func servingCRPostUpgrade(t *testing.T) {
 		// TODO: We only verify the deployment, but we need to add other resources as well, like ServiceAccount, ClusterRoleBinding, etc.
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
-		ks := &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		ks := &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: common.LATEST_VERSION,
 				},
@@ -109,8 +107,8 @@ func servingCRPostUpgrade(t *testing.T) {
 			expectedDeployments)
 		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
 
-		instance := &v1alpha1.KnativeServing{
-			Spec: v1alpha1.KnativeServingSpec{
+		instance := &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: test.OperatorFlags.PreviousServingVersion,
 				},
@@ -148,8 +146,8 @@ func eventingCRPostUpgrade(t *testing.T) {
 		resources.SetKodataDir()
 		defer os.Unsetenv(common.KoEnvKey)
 		// Based on the latest release version, get the deployment resources.
-		ke := &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		ke := &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: common.LATEST_VERSION,
 				},
@@ -164,8 +162,8 @@ func eventingCRPostUpgrade(t *testing.T) {
 		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(ke), test.OperatorFlags.PreviousEventingVersion,
 			expectedDeployments)
 
-		instance := &v1alpha1.KnativeEventing{
-			Spec: v1alpha1.KnativeEventingSpec{
+		instance := &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: test.OperatorFlags.PreviousEventingVersion,
 				},

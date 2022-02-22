@@ -32,7 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/test"
 )
 
@@ -76,7 +76,7 @@ func KSOperatorCRVerifyConfiguration(t *testing.T, clients *test.Clients, names 
 	verifyEmptySpec(t, loggingConfigMapName, clients, names)
 }
 
-func verifyDefaultConfig(t *testing.T, ks *v1alpha1.KnativeServing, defaultsConfigMapName string, clients *test.Clients, names test.ResourceNames) {
+func verifyDefaultConfig(t *testing.T, ks *v1beta1.KnativeServing, defaultsConfigMapName string, clients *test.Clients, names test.ResourceNames) {
 	_, err := clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
@@ -150,7 +150,7 @@ func verifyEmptySpec(t *testing.T, loggingConfigMapName string, clients *test.Cl
 	if err != nil {
 		t.Fatalf("Existing KS operator CR gone: %s", names.KnativeServing)
 	}
-	ks.Spec = v1alpha1.KnativeServingSpec{}
+	ks.Spec = v1beta1.KnativeServingSpec{}
 	if _, err := clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{}); err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}

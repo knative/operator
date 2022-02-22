@@ -29,7 +29,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"golang.org/x/mod/semver"
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1alpha1"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 const (
@@ -183,9 +183,9 @@ func IsVersionValidMigrationEligible(instance base.KComponent) error {
 
 func getVersionKey(instance base.KComponent) string {
 	switch instance.(type) {
-	case *v1alpha1.KnativeServing:
+	case *v1beta1.KnativeServing:
 		return "serving.knative.dev/release"
-	case *v1alpha1.KnativeEventing:
+	case *v1beta1.KnativeEventing:
 		return "eventing.knative.dev/release"
 	}
 	return ""
@@ -269,9 +269,9 @@ func ClearCache() {
 func componentDir(instance base.KComponent) string {
 	koDataDir := os.Getenv(KoEnvKey)
 	switch instance.(type) {
-	case *v1alpha1.KnativeServing:
+	case *v1beta1.KnativeServing:
 		return filepath.Join(koDataDir, "knative-serving")
-	case *v1alpha1.KnativeEventing:
+	case *v1beta1.KnativeEventing:
 		return filepath.Join(koDataDir, "knative-eventing")
 	}
 	return ""

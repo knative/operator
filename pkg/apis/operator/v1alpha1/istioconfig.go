@@ -27,10 +27,10 @@ func ConvertToIstioConfig(source *KnativeServing) base.IstioIngressConfiguration
 		istioConfig = source.Spec.Ingress.Istio
 	}
 
-	if istioConfig.KnativeIngressGateway == nil {
+	if istioConfig.KnativeIngressGateway == nil && source.Spec.DeprecatedKnativeIngressGateway.Selector != nil {
 		istioConfig.KnativeIngressGateway = &source.Spec.DeprecatedKnativeIngressGateway
 	}
-	if istioConfig.KnativeLocalGateway == nil {
+	if istioConfig.KnativeLocalGateway == nil && source.Spec.DeprecatedClusterLocalGateway.Selector != nil {
 		istioConfig.KnativeLocalGateway = &source.Spec.DeprecatedClusterLocalGateway
 	}
 

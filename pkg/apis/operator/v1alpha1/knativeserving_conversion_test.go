@@ -29,51 +29,133 @@ import (
 )
 
 func TestKnativeServingConvertTo(t *testing.T) {
-	source := &KnativeServing{
-		Spec: KnativeServingSpec{
-			CommonSpec: base.CommonSpec{
-				Version: "1.2",
-				Resources: []base.ResourceRequirementsOverride{{
-					Container: "webhook",
-					ResourceRequirements: corev1.ResourceRequirements{
-						Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
-							corev1.ResourceMemory: resource.MustParse("999Mi")},
-						Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
-							corev1.ResourceMemory: resource.MustParse("999Mi")},
+	tests := []struct {
+		Name           string
+		Input          *KnativeServing
+		ExpectedOutput *v1beta1.KnativeServing
+	}{{
+		Name: "Knative Serving conversion",
+		Input: &KnativeServing{
+			Spec: KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Version: "1.2",
+					Resources: []base.ResourceRequirementsOverride{{
+						Container: "webhook",
+						ResourceRequirements: corev1.ResourceRequirements{
+							Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+								corev1.ResourceMemory: resource.MustParse("999Mi")},
+							Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+								corev1.ResourceMemory: resource.MustParse("999Mi")},
+						},
+					}},
+				},
+				Ingress: &IngressConfigs{
+					Istio: base.IstioIngressConfiguration{
+						Enabled: true,
 					},
-				}},
-			},
-			Ingress: &IngressConfigs{
-				Istio: base.IstioIngressConfiguration{
-					Enabled: true,
+					Contour: base.ContourIngressConfiguration{
+						Enabled: false,
+					},
 				},
-				Contour: base.ContourIngressConfiguration{
-					Enabled: false,
+				ControllerCustomCerts: base.CustomCerts{
+					Type: "test-type",
+					Name: "test-name",
 				},
-			},
-			ControllerCustomCerts: base.CustomCerts{
-				Type: "test-type",
-				Name: "test-name",
 			},
 		},
+		ExpectedOutput: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Version: "1.2",
+					DeploymentOverride: []base.DeploymentOverride{
+						{
+							Name: "webhook",
+							Resources: []base.ResourceRequirementsOverride{{
+								Container: "webhook",
+								ResourceRequirements: corev1.ResourceRequirements{
+									Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+										corev1.ResourceMemory: resource.MustParse("999Mi")},
+									Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+										corev1.ResourceMemory: resource.MustParse("999Mi")},
+								},
+							}},
+						},
+					},
+				},
+				Ingress: &v1beta1.IngressConfigs{
+					Istio: base.IstioIngressConfiguration{
+						Enabled: true,
+					},
+					Contour: base.ContourIngressConfiguration{
+						Enabled: false,
+					},
+					Kourier: base.KourierIngressConfiguration{
+						Enabled: false,
+					},
+				},
+				ControllerCustomCerts: base.CustomCerts{
+					Type: "test-type",
+					Name: "test-name",
+				},
+			},
+		},
+	}, {
+		Name: "Knative Serving conversion with no ingresses",
+		Input: &KnativeServing{
+			Spec: KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Version: "1.2",
+					Resources: []base.ResourceRequirementsOverride{{
+						Container: "webhook",
+						ResourceRequirements: corev1.ResourceRequirements{
+							Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+								corev1.ResourceMemory: resource.MustParse("999Mi")},
+							Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+								corev1.ResourceMemory: resource.MustParse("999Mi")},
+						},
+					}},
+				},
+				ControllerCustomCerts: base.CustomCerts{
+					Type: "test-type",
+					Name: "test-name",
+				},
+			},
+		},
+		ExpectedOutput: &v1beta1.KnativeServing{
+			Spec: v1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Version: "1.2",
+					DeploymentOverride: []base.DeploymentOverride{
+						{
+							Name: "webhook",
+							Resources: []base.ResourceRequirementsOverride{{
+								Container: "webhook",
+								ResourceRequirements: corev1.ResourceRequirements{
+									Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+										corev1.ResourceMemory: resource.MustParse("999Mi")},
+									Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+										corev1.ResourceMemory: resource.MustParse("999Mi")},
+								},
+							}},
+						},
+					},
+				},
+				ControllerCustomCerts: base.CustomCerts{
+					Type: "test-type",
+					Name: "test-name",
+				},
+			},
+		},
+	}}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			sink := &v1beta1.KnativeServing{}
+			err := test.Input.ConvertTo(context.Background(), sink)
+			util.AssertEqual(t, err, nil)
+			util.AssertDeepEqual(t, sink, test.ExpectedOutput)
+		})
 	}
-	sink := &v1beta1.KnativeServing{}
-	expectedResourceRequirements := corev1.ResourceRequirements{
-		Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
-			corev1.ResourceMemory: resource.MustParse("999Mi")},
-		Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
-			corev1.ResourceMemory: resource.MustParse("999Mi")},
-	}
-	err := source.ConvertTo(context.Background(), sink)
-	util.AssertEqual(t, err, nil)
-	util.AssertEqual(t, sink.GetSpec().GetVersion(), "1.2")
-	util.AssertEqual(t, sink.Spec.ControllerCustomCerts.Name, "test-name")
-	util.AssertEqual(t, sink.Spec.ControllerCustomCerts.Type, "test-type")
-	util.AssertEqual(t, sink.Spec.Ingress.Istio.Enabled, true)
-	util.AssertEqual(t, sink.Spec.Ingress.Contour.Enabled, false)
-	util.AssertEqual(t, sink.Spec.DeploymentOverride[0].Resources[0].Container, "webhook")
-	util.AssertDeepEqual(t, sink.Spec.DeploymentOverride[0].Resources[0].ResourceRequirements,
-		expectedResourceRequirements)
 }
 
 func TestTestKnativeServingConvertFrom(t *testing.T) {

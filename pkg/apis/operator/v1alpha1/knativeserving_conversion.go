@@ -24,13 +24,41 @@ import (
 	"knative.dev/pkg/apis"
 )
 
+func convertFromIngressConfigsBeta(ks *v1beta1.KnativeServing) *IngressConfigs {
+	if ks.Spec.Ingress != nil {
+		contour := ks.Spec.Ingress.Contour
+		istio := ks.Spec.Ingress.Istio
+		kourier := ks.Spec.Ingress.Kourier
+		return &IngressConfigs{
+			Contour: contour,
+			Istio:   istio,
+			Kourier: kourier,
+		}
+	}
+	return nil
+}
+
+func convertToIngressConfigs(ks *KnativeServing) *v1beta1.IngressConfigs {
+	if ks.Spec.Ingress != nil {
+		contour := ks.Spec.Ingress.Contour
+		istio := ConvertToIstioConfig(ks)
+		kourier := ks.Spec.Ingress.Kourier
+		return &v1beta1.IngressConfigs{
+			Contour: contour,
+			Istio:   istio,
+			Kourier: kourier,
+		}
+	}
+	return nil
+}
+
 // ConvertTo implements apis.Convertible
 // Converts source from v1beta1.KnativeServing into a higher version.
 func (ks *KnativeServing) ConvertTo(ctx context.Context, obj apis.Convertible) error {
 	switch sink := obj.(type) {
 	case *v1beta1.KnativeServing:
 		mergedDeploymentOverride := ConvertToDeploymentOverride(ks)
-		mergedIstioConfig := ConvertToIstioConfig(ks)
+		ingressConfigs := convertToIngressConfigs(ks)
 		sink.ObjectMeta = ks.ObjectMeta
 		sink.Status = v1beta1.KnativeServingStatus{
 			Status:    ks.Status.Status,
@@ -39,11 +67,7 @@ func (ks *KnativeServing) ConvertTo(ctx context.Context, obj apis.Convertible) e
 		}
 		sink.Spec = v1beta1.KnativeServingSpec{
 			ControllerCustomCerts: ks.Spec.ControllerCustomCerts,
-			Ingress: &v1beta1.IngressConfigs{
-				Istio:   mergedIstioConfig,
-				Kourier: ks.Spec.Ingress.Kourier,
-				Contour: ks.Spec.Ingress.Contour,
-			},
+			Ingress:               ingressConfigs,
 			CommonSpec: base.CommonSpec{
 				Config:              ks.Spec.CommonSpec.Config,
 				Registry:            ks.Spec.CommonSpec.Registry,
@@ -67,6 +91,7 @@ func (ks *KnativeServing) ConvertFrom(ctx context.Context, obj apis.Convertible)
 	switch source := obj.(type) {
 	case *v1beta1.KnativeServing:
 		ks.ObjectMeta = source.ObjectMeta
+		ingressConfigs := convertFromIngressConfigsBeta(source)
 		ks.Status = KnativeServingStatus{
 			Status:    source.Status.Status,
 			Version:   source.Status.Version,
@@ -75,11 +100,7 @@ func (ks *KnativeServing) ConvertFrom(ctx context.Context, obj apis.Convertible)
 
 		ks.Spec = KnativeServingSpec{
 			ControllerCustomCerts: source.Spec.ControllerCustomCerts,
-			Ingress: &IngressConfigs{
-				Istio:   source.Spec.Ingress.Istio,
-				Kourier: source.Spec.Ingress.Kourier,
-				Contour: source.Spec.Ingress.Contour,
-			},
+			Ingress:               ingressConfigs,
 			CommonSpec: base.CommonSpec{
 				Config:              source.Spec.CommonSpec.Config,
 				Registry:            source.Spec.CommonSpec.Registry,

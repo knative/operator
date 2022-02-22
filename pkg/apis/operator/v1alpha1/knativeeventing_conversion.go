@@ -25,63 +25,49 @@ import (
 )
 
 func convertFromSourceConfigsBeta(ke *v1beta1.KnativeEventing) *SourceConfigs {
-	ceph := base.CephSourceConfiguration{}
-	github := base.GithubSourceConfiguration{}
-	gitlab := base.GitlabSourceConfiguration{}
-	kafka := base.KafkaSourceConfiguration{}
-	natss := base.NatssSourceConfiguration{}
-	rabbitmq := base.RabbitmqSourceConfiguration{}
-	redis := base.RedisSourceConfiguration{}
-
 	if ke.Spec.Source != nil {
-		ceph = ke.Spec.Source.Ceph
-		github = ke.Spec.Source.Github
-		gitlab = ke.Spec.Source.Gitlab
-		kafka = ke.Spec.Source.Kafka
-		natss = ke.Spec.Source.Natss
-		rabbitmq = ke.Spec.Source.Rabbitmq
-		redis = ke.Spec.Source.Redis
+		ceph := ke.Spec.Source.Ceph
+		github := ke.Spec.Source.Github
+		gitlab := ke.Spec.Source.Gitlab
+		kafka := ke.Spec.Source.Kafka
+		natss := ke.Spec.Source.Natss
+		rabbitmq := ke.Spec.Source.Rabbitmq
+		redis := ke.Spec.Source.Redis
+		return &SourceConfigs{
+			Ceph:     ceph,
+			Github:   github,
+			Gitlab:   gitlab,
+			Kafka:    kafka,
+			Natss:    natss,
+			Rabbitmq: rabbitmq,
+			Redis:    redis,
+		}
 	}
 
-	return &SourceConfigs{
-		Ceph:     ceph,
-		Github:   github,
-		Gitlab:   gitlab,
-		Kafka:    kafka,
-		Natss:    natss,
-		Rabbitmq: rabbitmq,
-		Redis:    redis,
-	}
+	return nil
 }
 
 func convertToSourceConfigs(ke *KnativeEventing) *v1beta1.SourceConfigs {
-	ceph := base.CephSourceConfiguration{}
-	github := base.GithubSourceConfiguration{}
-	gitlab := base.GitlabSourceConfiguration{}
-	kafka := base.KafkaSourceConfiguration{}
-	natss := base.NatssSourceConfiguration{}
-	rabbitmq := base.RabbitmqSourceConfiguration{}
-	redis := base.RedisSourceConfiguration{}
-
 	if ke.Spec.Source != nil {
-		ceph = ke.Spec.Source.Ceph
-		github = ke.Spec.Source.Github
-		gitlab = ke.Spec.Source.Gitlab
-		kafka = ke.Spec.Source.Kafka
-		natss = ke.Spec.Source.Natss
-		rabbitmq = ke.Spec.Source.Rabbitmq
-		redis = ke.Spec.Source.Redis
+		ceph := ke.Spec.Source.Ceph
+		github := ke.Spec.Source.Github
+		gitlab := ke.Spec.Source.Gitlab
+		kafka := ke.Spec.Source.Kafka
+		natss := ke.Spec.Source.Natss
+		rabbitmq := ke.Spec.Source.Rabbitmq
+		redis := ke.Spec.Source.Redis
+		return &v1beta1.SourceConfigs{
+			Ceph:     ceph,
+			Github:   github,
+			Gitlab:   gitlab,
+			Kafka:    kafka,
+			Natss:    natss,
+			Rabbitmq: rabbitmq,
+			Redis:    redis,
+		}
 	}
 
-	return &v1beta1.SourceConfigs{
-		Ceph:     ceph,
-		Github:   github,
-		Gitlab:   gitlab,
-		Kafka:    kafka,
-		Natss:    natss,
-		Rabbitmq: rabbitmq,
-		Redis:    redis,
-	}
+	return nil
 }
 
 // ConvertTo implements apis.Convertible

@@ -225,7 +225,7 @@ function create_knative_serving() {
   version=${1}
   echo ">> Creating the custom resource of Knative Serving:"
   cat <<EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1beta1
+apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeServing
 metadata:
   name: ${TEST_RESOURCE}
@@ -239,7 +239,7 @@ function create_knative_eventing() {
   version=${1}
   echo ">> Creating the custom resource of Knative Eventing:"
   cat <<-EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1beta1
+apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
 metadata:
   name: ${TEST_RESOURCE}
@@ -252,7 +252,7 @@ EOF
 function create_latest_custom_resource() {
   echo ">> Creating the custom resource of Knative Serving:"
   cat <<-EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1beta1
+apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeServing
 metadata:
   name: ${TEST_RESOURCE}
@@ -263,7 +263,7 @@ EOF
 
   echo ">> Creating the custom resource of Knative Eventing:"
   cat <<-EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1beta1
+apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
 metadata:
   name: ${TEST_RESOURCE}

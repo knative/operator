@@ -18,32 +18,50 @@ package main
 
 import (
 	"context"
+	"log"
 
+	"go.uber.org/zap"
+	v1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/rest"
+
 	"knative.dev/operator/pkg/apis/operator"
 	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/injection"
 	"knative.dev/pkg/injection/sharedmain"
 	"knative.dev/pkg/signals"
+	"knative.dev/pkg/system"
 	"knative.dev/pkg/webhook"
 	"knative.dev/pkg/webhook/certificates"
 	"knative.dev/pkg/webhook/resourcesemantics/conversion"
 )
 
 func main() {
+	secretName := "operator-webhook-certs"
+	context := signals.NewContext()
+
 	// Set up a signal context with our webhook options
-	ctx := webhook.WithOptions(signals.NewContext(), webhook.Options{
+	ctx := webhook.WithOptions(context, webhook.Options{
 		ServiceName: webhook.NameFromEnv(),
 		Port:        webhook.PortFromEnv(8443),
-		SecretName:  "operator-webhook-certs",
+		SecretName:  secretName,
 	})
 
-	sharedmain.WebhookMainWithContext(ctx, webhook.NameFromEnv(),
+	cfg := injection.ParseAndGetRESTConfigOrDie()
+	err := ensureWebhookSecretExists(context, cfg, secretName)
+	if err != nil {
+		log.Fatal("Error there is an issue with the Secret called "+secretName+" for the operator webhook: ", zap.Error(err))
+	}
+
+	sharedmain.MainWithConfig(ctx, webhook.NameFromEnv(), cfg,
 		certificates.NewController,
-		newConversionController,
-	)
+		newConversionController)
 }
 
 func newConversionController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
@@ -81,4 +99,28 @@ func newConversionController(ctx context.Context, cmw configmap.Watcher) *contro
 			return ctx
 		},
 	)
+}
+
+func ensureWebhookSecretExists(context context.Context, cfg *rest.Config, name string) error {
+	ctx, _ := injection.Default.SetupInformers(context, cfg)
+	_, err := kubeclient.Get(ctx).CoreV1().Secrets(system.Namespace()).Get(ctx, name, metav1.GetOptions{})
+	if apierrors.IsNotFound(err) {
+		// Create the secret
+		secret := &v1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: system.Namespace(),
+				Name:      name,
+				Labels: map[string]string{"app.kubernetes.io/component": "webhook",
+					"app.kubernetes.io/part-of": "knative-operator"},
+			},
+			Type: v1.SecretTypeOpaque,
+		}
+		_, err = kubeclient.Get(ctx).CoreV1().Secrets(system.Namespace()).Create(ctx, secret, metav1.CreateOptions{})
+		if err != nil {
+			return err
+		}
+	} else if err != nil {
+		return err
+	}
+	return nil
 }

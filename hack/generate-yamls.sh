@@ -70,9 +70,18 @@ cd "${YAML_REPO_ROOT}"
 
 echo "Building Knative Operator"
 ko resolve ${KO_YAML_FLAGS} -f config/ | "${LABEL_YAML_CMD[@]}" > "${OPERATOR_YAML}"
+all_yamls=(${OPERATOR_YAML})
 
-# List generated YAML files. We have only one operator.yaml so far.
+if [ -d "${YAML_REPO_ROOT}/config/post-install" ]; then
+  readonly OPERATOR_POST_INSTALL_YAML=${YAML_OUTPUT_DIR}/"operator-post-install.yaml"
 
-ls -1 ${OPERATOR_YAML} > ${YAML_LIST_FILE}
-# TODO(adrcunha): Uncomment once there's more than one YAML generated.
-# ls -1 ${YAML_OUTPUT_DIR}/*.yaml | grep -v ${OPERATOR_YAML} >> ${YAML_LIST_FILE}
+  echo "Resolving post install manifests"
+  ko resolve ${KO_YAML_FLAGS} -f config/post-install/ | "${LABEL_YAML_CMD[@]}" > "${OPERATOR_POST_INSTALL_YAML}"
+  all_yamls+=(${OPERATOR_POST_INSTALL_YAML})
+fi
+
+echo "All manifests generated"
+
+for yaml in "${!all_yamls[@]}"; do
+  echo "${all_yamls[${yaml}]}" >> ${YAML_LIST_FILE}
+done

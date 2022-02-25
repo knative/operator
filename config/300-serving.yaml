@@ -1852,3 +1852,4 @@ spec:
         service:
           name: operator-webhook
           namespace: default
+          path: /resource-conversion

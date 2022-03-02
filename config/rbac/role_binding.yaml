@@ -12,26 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: knative-operator
-  namespace: default
-  labels:
-    operator.knative.dev/release: devel
-    app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: operator-webhook
-  namespace: default
-  labels:
-    operator.knative.dev/release: devel
-    app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
----
 # TODO: Consider restriction of non-aggregated role to knativeservings namespaces.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -100,39 +80,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: knative-operator
-  namespace: default
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  namespace: default
-  name: operator-webhook
-  labels:
-    eventing.knative.dev/release: devel
-    app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-eventing
-subjects:
-  - kind: ServiceAccount
-    name: operator-webhook
-    namespace: default
-roleRef:
-  kind: Role
-  name: knative-operator-webhook
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: operator-webhook
-  labels:
-    operator.knative.dev/release: devel
-    app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: knative-operator-webhook
-subjects:
-- kind: ServiceAccount
-  name: operator-webhook
   namespace: default

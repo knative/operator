@@ -180,7 +180,7 @@ func TestConvertToDeploymentOverride(t *testing.T) {
 		source: &KnativeServing{
 			Spec: KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
-					Resources: []base.ResourceRequirementsOverride{{
+					DeprecatedResources: []base.ResourceRequirementsOverride{{
 						Container: "webhook-not-exist",
 						ResourceRequirements: corev1.ResourceRequirements{
 							Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
@@ -226,7 +226,7 @@ func TestConvertToDeploymentOverride(t *testing.T) {
 		source: &KnativeServing{
 			Spec: KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
-					Resources: []base.ResourceRequirementsOverride{{
+					DeprecatedResources: []base.ResourceRequirementsOverride{{
 						Container: "webhook",
 						ResourceRequirements: corev1.ResourceRequirements{
 							Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
@@ -272,7 +272,7 @@ func TestConvertToDeploymentOverride(t *testing.T) {
 		source: &KnativeServing{
 			Spec: KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
-					Resources: []base.ResourceRequirementsOverride{{
+					DeprecatedResources: []base.ResourceRequirementsOverride{{
 						Container: "webhook",
 						ResourceRequirements: corev1.ResourceRequirements{
 							Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
@@ -327,7 +327,7 @@ func TestConvertToDeploymentOverride(t *testing.T) {
 		source: &KnativeServing{
 			Spec: KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
-					Resources: []base.ResourceRequirementsOverride{{
+					DeprecatedResources: []base.ResourceRequirementsOverride{{
 						Container: "webhook",
 						ResourceRequirements: corev1.ResourceRequirements{
 							Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
@@ -376,7 +376,7 @@ func TestConvertToDeploymentOverride(t *testing.T) {
 		source: &KnativeServing{
 			Spec: KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
-					Resources: []base.ResourceRequirementsOverride{{
+					DeprecatedResources: []base.ResourceRequirementsOverride{{
 						Container: "webhook-not-exist",
 						ResourceRequirements: corev1.ResourceRequirements{
 							Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
@@ -422,7 +422,7 @@ func TestConvertToDeploymentOverride(t *testing.T) {
 		source: &KnativeServing{
 			Spec: KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
-					Resources: []base.ResourceRequirementsOverride{{
+					DeprecatedResources: []base.ResourceRequirementsOverride{{
 						Container: "webhook-not-exist",
 						ResourceRequirements: corev1.ResourceRequirements{
 							Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
@@ -440,7 +440,7 @@ func TestConvertToDeploymentOverride(t *testing.T) {
 		source: &KnativeServing{
 			Spec: KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
-					Resources: []base.ResourceRequirementsOverride{{
+					DeprecatedResources: []base.ResourceRequirementsOverride{{
 						Container: "webhook",
 						ResourceRequirements: corev1.ResourceRequirements{
 							Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),

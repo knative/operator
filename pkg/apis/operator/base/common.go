@@ -125,9 +125,10 @@ type CommonSpec struct {
 	// +optional
 	Registry Registry `json:"registry,omitempty"`
 
-	// Resources overrides containers' resource requirements.
+	// DEPRECATED.
+	// DeprecatedResources overrides containers' resource requirements.
 	// +optional
-	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+	DeprecatedResources []ResourceRequirementsOverride `json:"resources,omitempty"`
 
 	// DeploymentOverride overrides Deployment configurations such as resources and replicas.
 	// +optional
@@ -162,7 +163,7 @@ func (c *CommonSpec) GetRegistry() *Registry {
 
 // GetResources implements KComponentSpec.
 func (c *CommonSpec) GetResources() []ResourceRequirementsOverride {
-	return c.Resources
+	return c.DeprecatedResources
 }
 
 // GetVersion implements KComponentSpec.

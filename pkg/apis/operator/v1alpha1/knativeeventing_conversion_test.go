@@ -33,7 +33,7 @@ func TestKnativeEventingConvertTo(t *testing.T) {
 		Spec: KnativeEventingSpec{
 			CommonSpec: base.CommonSpec{
 				Version: "1.2",
-				Resources: []base.ResourceRequirementsOverride{{
+				DeprecatedResources: []base.ResourceRequirementsOverride{{
 					Container: "webhook",
 					ResourceRequirements: corev1.ResourceRequirements{
 						Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),

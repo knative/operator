@@ -78,8 +78,8 @@ func (in *CommonSpec) DeepCopyInto(out *CommonSpec) {
 		}
 	}
 	in.Registry.DeepCopyInto(&out.Registry)
-	if in.Resources != nil {
-		in, out := &in.Resources, &out.Resources
+	if in.DeprecatedResources != nil {
+		in, out := &in.DeprecatedResources, &out.DeprecatedResources
 		*out = make([]ResourceRequirementsOverride, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])

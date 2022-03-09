@@ -858,7 +858,8 @@ spec:
                     type: object
                 type: object
               resources:
-                description: A mapping of deployment name to resource requirements
+                description: A mapping of deployment name to resource requirements. This field
+                  is deprecated. Use `spec.deployments.resources`
                 items:
                   properties:
                     container:

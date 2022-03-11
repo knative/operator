@@ -24,3 +24,6 @@ resources:
 - role_binding.yaml
 - webhook_role.yaml
 - webhook_role_binding.yaml
+- migration_role.yaml
+- migration_role_binding.yaml
+- migration_service_account.yaml

@@ -20,7 +20,7 @@ metadata:
   labels:
     eventing.knative.dev/release: devel
     app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-eventing
+    app.kubernetes.io/part-of: knative-operator
 subjects:
   - kind: ServiceAccount
     name: operator-webhook

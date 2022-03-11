@@ -42,6 +42,7 @@ find bundle/manifests -type f -name "*.yaml" -print0 | xargs -0 sed -i.bak "s/: 
 # Openratorhub.io leverages operators as the namespace for the operator.
 sed -i.bak "s/namespace: default/namespace: operators/" bundle/manifests/knativeeventings.operator.knative.dev.crd.yaml
 sed -i.bak "s/namespace: default/namespace: operators/" bundle/manifests/knativeservings.operator.knative.dev.crd.yaml
+sed -i.bak "s/namespace: default/namespace: operators/" bundle/manifests/knative-operator-post-install-job-role-binding_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml
 
 # Replace the images
 OPERATOR_IMAGE="ko://knative.dev/operator/cmd/operator"

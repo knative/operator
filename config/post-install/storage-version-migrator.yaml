@@ -20,6 +20,8 @@ metadata:
   labels:
     app: "storage-version-migration-operator"
     operator.knative.dev/release: devel
+    app.kubernetes.io/version: devel
+    app.kubernetes.io/part-of: knative-operator
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -28,6 +30,8 @@ spec:
       labels:
         app: "storage-version-migration-operator"
         operator.knative.dev/release: devel
+        app.kubernetes.io/version: devel
+        app.kubernetes.io/part-of: knative-operator
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -35,7 +39,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: ko://knative.dev/operator/vendor/knative.dev/pkg/apiextensions/storageversion/cmd/migrate
+          image: ko://knative.dev/pkg/apiextensions/storageversion/cmd/migrate
           args:
             - "knativeservings.operator.knative.dev"
             - "knativeeventings.operator.knative.dev"

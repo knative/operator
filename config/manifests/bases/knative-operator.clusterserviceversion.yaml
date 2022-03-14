@@ -91,7 +91,7 @@ spec:
   minKubeVersion: 1.22.0
   provider:
     name: The Knative Authors
-  replaces: knative-operator.v1.1.0
+  replaces: knative-operator.v1.2.0
   selector: {}
   version: 1.3.0
   webhookdefinitions:

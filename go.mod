@@ -16,14 +16,14 @@ require (
 	golang.org/x/mod v0.5.1
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485 // indirect
-	k8s.io/api v0.22.5
-	k8s.io/apimachinery v0.22.5
-	k8s.io/client-go v0.22.5
-	k8s.io/code-generator v0.22.5
-	knative.dev/caching v0.0.0-20220311005831-b2a3f59d7175
-	knative.dev/eventing v0.30.1-0.20220315160203-5fcc285da3a8
-	knative.dev/hack v0.0.0-20220314052818-c9c3ea17a2e9
-	knative.dev/pkg v0.0.0-20220316002959-3a4cc56708b9
-	knative.dev/serving v0.30.1-0.20220315154224-8fe13873eb54
+	k8s.io/api v0.23.4
+	k8s.io/apimachinery v0.23.4
+	k8s.io/client-go v0.23.4
+	k8s.io/code-generator v0.23.4
+	knative.dev/caching v0.0.0-20220317163933-77295a8fb2ff
+	knative.dev/eventing v0.30.1-0.20220318182120-5df47e13e70b
+	knative.dev/hack v0.0.0-20220318020218-14f832e506f8
+	knative.dev/pkg v0.0.0-20220318185521-e6e3cf03d765
+	knative.dev/serving v0.30.1-0.20220319161645-dd10cc52040f
 	sigs.k8s.io/yaml v1.3.0
 )

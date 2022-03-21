@@ -117,7 +117,7 @@ func (c *FakeKnativeEventings) UpdateStatus(ctx context.Context, knativeEventing
 // Delete takes name of the knativeEventing and deletes it. Returns an error if one occurs.
 func (c *FakeKnativeEventings) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(knativeeventingsResource, c.ns, name), &v1alpha1.KnativeEventing{})
+		Invokes(testing.NewDeleteActionWithOptions(knativeeventingsResource, c.ns, name, opts), &v1alpha1.KnativeEventing{})
 
 	return err
 }

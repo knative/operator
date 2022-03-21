@@ -117,7 +117,7 @@ func (c *FakeKnativeServings) UpdateStatus(ctx context.Context, knativeServing *
 // Delete takes name of the knativeServing and deletes it. Returns an error if one occurs.
 func (c *FakeKnativeServings) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(knativeservingsResource, c.ns, name), &v1alpha1.KnativeServing{})
+		Invokes(testing.NewDeleteActionWithOptions(knativeservingsResource, c.ns, name, opts), &v1alpha1.KnativeServing{})
 
 	return err
 }

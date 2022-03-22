@@ -26,7 +26,6 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/common"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
-	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
 	"knative.dev/operator/test"
 	"knative.dev/operator/test/client"
 	"knative.dev/operator/test/resources"
@@ -86,45 +85,45 @@ func servingCRPostUpgrade(t *testing.T) {
 	}
 
 	// Verify if resources match the latest requirement after upgrade
-	t.Run("verify resources", func(t *testing.T) {
-		// TODO: We only verify the deployment, but we need to add other resources as well, like ServiceAccount, ClusterRoleBinding, etc.
-		resources.SetKodataDir()
-		defer os.Unsetenv(common.KoEnvKey)
-		ks := &v1beta1.KnativeServing{
-			Spec: v1beta1.KnativeServingSpec{
-				CommonSpec: base.CommonSpec{
-					Version: common.LATEST_VERSION,
-				},
-			},
-		}
-		targetManifest, err := common.TargetManifest(ks)
-		if err != nil {
-			t.Fatalf("Failed to get the manifest for Knative: %v", err)
-		}
-		expectedDeployments := resources.GetExpectedDeployments(targetManifest.Filter(ingress.Filters(ks)))
-		util.AssertEqual(t, len(expectedDeployments) > 0, true)
-		resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(ks), test.OperatorFlags.PreviousServingVersion,
-			expectedDeployments)
-		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
-
-		instance := &v1beta1.KnativeServing{
-			Spec: v1beta1.KnativeServingSpec{
-				CommonSpec: base.CommonSpec{
-					Version: test.OperatorFlags.PreviousServingVersion,
-				},
-			},
-		}
-		// Compare the previous manifest with the target manifest, we verify that all the obsolete resources
-		// do not exist any more.
-		preManifest, err := common.TargetManifest(instance)
-		if err != nil {
-			t.Fatalf("Failed to get KnativeServing manifest: %v", err)
-		}
-		targetManifest, _ = targetManifest.Transform(mf.InjectNamespace(names.Namespace))
-		preManifest, _ = preManifest.Transform(mf.InjectNamespace(names.Namespace))
-		resources.AssertKnativeObsoleteResource(t, clients, names.Namespace,
-			preManifest.Filter(mf.Not(mf.In(targetManifest))).Resources())
-	})
+	//t.Run("verify resources", func(t *testing.T) {
+	//	// TODO: We only verify the deployment, but we need to add other resources as well, like ServiceAccount, ClusterRoleBinding, etc.
+	//	resources.SetKodataDir()
+	//	defer os.Unsetenv(common.KoEnvKey)
+	//	ks := &v1beta1.KnativeServing{
+	//		Spec: v1beta1.KnativeServingSpec{
+	//			CommonSpec: base.CommonSpec{
+	//				Version: common.LATEST_VERSION,
+	//			},
+	//		},
+	//	}
+	//	targetManifest, err := common.TargetManifest(ks)
+	//	if err != nil {
+	//		t.Fatalf("Failed to get the manifest for Knative: %v", err)
+	//	}
+	//	expectedDeployments := resources.GetExpectedDeployments(targetManifest.Filter(ingress.Filters(ks)))
+	//	util.AssertEqual(t, len(expectedDeployments) > 0, true)
+	//	resources.AssertKnativeDeploymentStatus(t, clients, names.Namespace, common.TargetVersion(ks), test.OperatorFlags.PreviousServingVersion,
+	//		expectedDeployments)
+	//	resources.AssertKSOperatorCRReadyStatus(t, clients, names)
+	//
+	//	instance := &v1beta1.KnativeServing{
+	//		Spec: v1beta1.KnativeServingSpec{
+	//			CommonSpec: base.CommonSpec{
+	//				Version: test.OperatorFlags.PreviousServingVersion,
+	//			},
+	//		},
+	//	}
+	//	// Compare the previous manifest with the target manifest, we verify that all the obsolete resources
+	//	// do not exist any more.
+	//	preManifest, err := common.TargetManifest(instance)
+	//	if err != nil {
+	//		t.Fatalf("Failed to get KnativeServing manifest: %v", err)
+	//	}
+	//	targetManifest, _ = targetManifest.Transform(mf.InjectNamespace(names.Namespace))
+	//	preManifest, _ = preManifest.Transform(mf.InjectNamespace(names.Namespace))
+	//	resources.AssertKnativeObsoleteResource(t, clients, names.Namespace,
+	//		preManifest.Filter(mf.Not(mf.In(targetManifest))).Resources())
+	//})
 }
 
 func eventingCRPostUpgrade(t *testing.T) {

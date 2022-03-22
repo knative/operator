@@ -1,3 +1,4 @@
+
 # Knative Operator
 
 The Knative Operator defines custom resources for the

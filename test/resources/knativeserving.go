@@ -42,19 +42,19 @@ import (
 // WaitForKnativeServingState polls the status of the KnativeServing called name
 // from client every `interval` until `inState` returns `true` indicating it
 // is done, returns an error or timeout.
-func WaitForKnativeServingState(clients servingv1beta1.KnativeServingInterface, name string,
+func WaitForKnativeServingState(clients servingv1beta1.KnativeServingInterface, name1 string,
 	inState func(s *v1beta1.KnativeServing, err error) (bool, error)) (*v1beta1.KnativeServing, error) {
-	span := logging.GetEmitableSpan(context.Background(), fmt.Sprintf("WaitForKnativeServingState/%s/%s", name, "KnativeServingIsReady"))
+	span := logging.GetEmitableSpan(context.Background(), fmt.Sprintf("WaitForKnativeServingState/%s/%s", name1, "KnativeServingIsReady"))
 	defer span.End()
 
 	var lastState *v1beta1.KnativeServing
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		lastState, err := clients.Get(context.TODO(), name, metav1.GetOptions{})
+		lastState, err := clients.Get(context.TODO(), name1, metav1.GetOptions{})
 		return inState(lastState, err)
 	})
 
 	if waitErr != nil {
-		return lastState, fmt.Errorf("knativeserving %s is not in desired state, got: %+v: %w", name, lastState, waitErr)
+		return lastState, fmt.Errorf("knativeserving %s is not in desired state, got: %+v: %w", name1, lastState, waitErr)
 	}
 	return lastState, nil
 }

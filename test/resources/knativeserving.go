@@ -49,7 +49,8 @@ func WaitForKnativeServingState(clients servingv1beta1.KnativeServingInterface, 
 
 	var lastState *v1beta1.KnativeServing
 	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
-		lastState, err := clients.Get(context.TODO(), name, metav1.GetOptions{})
+		state, err := clients.Get(context.TODO(), name, metav1.GetOptions{})
+		lastState = state
 		return inState(lastState, err)
 	})
 

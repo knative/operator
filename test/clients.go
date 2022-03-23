@@ -60,7 +60,7 @@ func NewClients(configPath string, clusterName string) (*Clients, error) {
 		return nil, err
 	}
 
-	clients.Operator, err = newKnativeOperatorAlphaClients(cfg)
+	clients.Operator, err = newKnativeOperatorBetaClients(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func buildClientConfig(kubeConfigPath string, clusterName string) (*rest.Config,
 		&overrides).ClientConfig()
 }
 
-func newKnativeOperatorAlphaClients(cfg *rest.Config) (operatorv1beta1.OperatorV1beta1Interface, error) {
+func newKnativeOperatorBetaClients(cfg *rest.Config) (operatorv1beta1.OperatorV1beta1Interface, error) {
 	cs, err := versioned.NewForConfig(cfg)
 	if err != nil {
 		return nil, err

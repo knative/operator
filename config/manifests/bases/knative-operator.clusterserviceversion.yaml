@@ -18,7 +18,7 @@ metadata:
   annotations:
     operators.operatorframework.io/builder: operator-sdk-v1.17.0+git
     operators.operatorframework.io/project_layout: ""
-    capabilities: Basic Install
+    capabilities: Seamless Upgrades
     categories: Networking,Integration & Delivery,Cloud Provider,Developer Tools
     certified: "false"
     containerImage: gcr.io/knative-releases/knative.dev/operator/cmd/operator:v$(VERSION)

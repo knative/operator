@@ -112,7 +112,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		common.AppendTarget,
 		ingress.AppendTargetIngresses,
 		common.AppendAdditionalManifests,
-		r.filterDisabledIngresses,
+		r.filterDisabledIngresses1,
 		r.appendExtensionManifests,
 		r.transform,
 		common.Install,
@@ -123,8 +123,8 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 	return stages.Execute(ctx, &manifest, ks)
 }
 
-// filterDisabledIngresses removes the disabled ingresses from the manifests
-func (r *Reconciler) filterDisabledIngresses(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+// filterDisabledIngresses1 removes the disabled ingresses from the manifests
+func (r *Reconciler) filterDisabledIngresses1(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	ks := instance.(*v1beta1.KnativeServing)
 	*manifest = manifest.Filter(ingress.Filters(ks))
 	return nil
@@ -148,7 +148,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
 	// Create new, empty manifest with valid client and logger
 	installed := r.manifest.Append()
-	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.filterDisabledIngresses,
+	stages := common.Stages{common.AppendInstalled, ingress.AppendInstalledIngresses, r.filterDisabledIngresses1,
 		r.transform}
 	err := stages.Execute(ctx, &installed, instance)
 	return &installed, err

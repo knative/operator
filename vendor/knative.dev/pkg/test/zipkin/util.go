@@ -73,7 +73,9 @@ var (
 // SetupZipkinTracingFromConfigTracing setups zipkin tracing like SetupZipkinTracing but retrieving the zipkin configuration
 // from config-tracing config map
 func SetupZipkinTracingFromConfigTracing(ctx context.Context, kubeClientset kubernetes.Interface, logf logging.FormatLogger, configMapNamespace string) error {
+	logf("check the ns %v", configMapNamespace)
 	cm, err := kubeClientset.CoreV1().ConfigMaps(configMapNamespace).Get(ctx, "config-tracing", metav1.GetOptions{})
+	logf("check the cm data %v", cm.Data)
 	if err != nil {
 		return fmt.Errorf("error while retrieving config-tracing config map: %w", err)
 	}
@@ -81,20 +83,26 @@ func SetupZipkinTracingFromConfigTracing(ctx context.Context, kubeClientset kube
 	if err != nil {
 		return fmt.Errorf("error while parsing config-tracing config map: %w", err)
 	}
+	logf("check the endpoint")
 	zipkinEndpointURL, err := url.Parse(c.ZipkinEndpoint)
+	logf("check the zipkinEndpointURL is %v", zipkinEndpointURL)
 	if err != nil {
 		return fmt.Errorf("error while parsing the zipkin endpoint in config-tracing config map: %w", err)
 	}
 	unparsedPort := zipkinEndpointURL.Port()
 	port := uint64(80)
 	if unparsedPort != "" {
+		logf("check the ParseUint")
 		port, err = strconv.ParseUint(unparsedPort, 10, 16)
+		logf("check the port %d", port)
 		if err != nil {
 			return fmt.Errorf("error while parsing the zipkin endpoint port in config-tracing config map: %w", err)
 		}
 	}
 
+	logf("check the parseNamespaceFromHostname")
 	namespace, err := parseNamespaceFromHostname(zipkinEndpointURL.Host)
+	logf("check the ns: %d", namespace)
 	if err != nil {
 		return fmt.Errorf("error while parsing the Zipkin endpoint in config-tracing config map: %w", err)
 	}

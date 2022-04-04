@@ -29,11 +29,11 @@ readonly KNATIVE_REPO_BRANCH="${PULL_BASE_REF}"
 # Namespaces used for tests
 # This environment variable TEST_NAMESPACE defines the namespace to install Knative Serving.
 export TEST_NAMESPACE="${TEST_NAMESPACE:-knative-operator-testing}"
-export SYSTEM_NAMESPACE=${TEST_NAMESPACE}
 # This environment variable TEST_EVENTING_NAMESPACE defines the namespace to install Knative Eventing.
 # It is different from the namespace to install Knative Serving.
 # We will use only one namespace, when Knative supports both components can coexist under one namespace.
 export TEST_EVENTING_NAMESPACE="knative-eventing"
+export SYSTEM_NAMESPACE=${TEST_EVENTING_NAMESPACE}
 export TEST_RESOURCE="knative"
 export TEST_EVENTING_MONITORING_NAMESPACE="knative-monitoring"
 export KO_FLAGS="${KO_FLAGS:-}"

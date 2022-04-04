@@ -35,6 +35,7 @@ export SYSTEM_NAMESPACE=${TEST_NAMESPACE}
 # We will use only one namespace, when Knative supports both components can coexist under one namespace.
 export TEST_EVENTING_NAMESPACE="knative-eventing"
 export TEST_RESOURCE="knative"
+export TEST_EVENTING_MONITORING_NAMESPACE="knative-monitoring"
 export KO_FLAGS="${KO_FLAGS:-}"
 export INGRESS_CLASS=${INGRESS_CLASS:-istio.ingress.networking.knative.dev}
 
@@ -232,6 +233,12 @@ metadata:
   namespace: ${TEST_NAMESPACE}
 spec:
   version: "${version}"
+  config:
+    tracing:
+      backend: "zipkin"
+      zipkin-endpoint: "http://zipkin.${TEST_EVENTING_MONITORING_NAMESPACE}.svc:9411/api/v2/spans"
+      debug: "true"
+      sample-rate: "1.0"
 EOF
 }
 
@@ -246,6 +253,12 @@ metadata:
   namespace: ${TEST_EVENTING_NAMESPACE}
 spec:
   version: "${version}"
+  config:
+    tracing:
+      backend: "zipkin"
+      zipkin-endpoint: "http://zipkin.${TEST_EVENTING_MONITORING_NAMESPACE}.svc:9411/api/v2/spans"
+      debug: "true"
+      sample-rate: "1.0"
 EOF
 }
 
@@ -259,6 +272,12 @@ metadata:
   namespace: ${TEST_NAMESPACE}
 spec:
   version: "${TARGET_RELEASE_VERSION}"
+  config:
+    tracing:
+      backend: "zipkin"
+      zipkin-endpoint: "http://zipkin.${TEST_EVENTING_MONITORING_NAMESPACE}.svc:9411/api/v2/spans"
+      debug: "true"
+      sample-rate: "1.0"
 EOF
 
   echo ">> Creating the custom resource of Knative Eventing:"
@@ -270,6 +289,12 @@ metadata:
   namespace: ${TEST_EVENTING_NAMESPACE}
 spec:
   version: "${TARGET_RELEASE_VERSION}"
+  config:
+    tracing:
+      backend: "zipkin"
+      zipkin-endpoint: "http://zipkin.${TEST_EVENTING_MONITORING_NAMESPACE}.svc:9411/api/v2/spans"
+      debug: "true"
+      sample-rate: "1.0"
 EOF
 }
 

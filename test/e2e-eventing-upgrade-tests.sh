@@ -40,6 +40,11 @@ export EVENTING_UPGRADE_TESTS_SERVING_USE=false
 # The environment variable EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO controls whether the ksvc can scale to zero.
 # FIXME(ksuszyns): remove when knative/operator#297 is fixed
 export EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO=false
+# Installs Zipkin for tracing tests.
+readonly KNATIVE_EVENTING_MONITORING_YAML="test/config/monitoring.yaml"
+
+TMP_DIR=$(mktemp -d -t "ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX")
+readonly TMP_DIR
 
 # Create test resources and images
 function test_setup() {
@@ -57,6 +62,22 @@ function test_setup() {
 
   echo ">> Publish test images for eventing"
   ${OPERATOR_DIR}/test/upload-test-images.sh ${KNATIVE_DIR}/eventing "test/test_images"
+
+  # Ensure knative monitoring is installed only once
+  cd ${KNATIVE_DIR}/eventing
+  kubectl get ns ${TEST_EVENTING_MONITORING_NAMESPACE}|| kubectl create namespace ${TEST_EVENTING_MONITORING_NAMESPACE}
+  knative_monitoring_pods=$(kubectl get pods -n ${TEST_EVENTING_MONITORING_NAMESPACE} \
+    --field-selector status.phase=Running 2> /dev/null | tail -n +2 | wc -l)
+  if ! [[ ${knative_monitoring_pods} -gt 0 ]]; then
+    echo ">> Installing Knative Monitoring"
+    echo "Installing Monitoring from ${KNATIVE_EVENTING_MONITORING_YAML}"
+    local KNATIVE_EVENTING_MONITORING_NAME=${TMP_DIR}/${KNATIVE_EVENTING_MONITORING_YAML##*/}
+    sed "s/namespace: ${TEST_EVENTING_NAMESPACE}/namespace: ${TEST_EVENTING_MONITORING_NAMESPACE}/g" ${KNATIVE_EVENTING_MONITORING_YAML} > ${KNATIVE_EVENTING_MONITORING_NAME}
+    kubectl apply -f "${KNATIVE_EVENTING_MONITORING_NAME}"
+    wait_until_pods_running ${TEST_EVENTING_MONITORING_NAMESPACE}
+  else
+    echo ">> Knative Monitoring seems to be running, pods running: ${knative_monitoring_pods}."
+  fi
 
   cd ${OPERATOR_DIR}
 }

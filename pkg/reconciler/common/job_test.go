@@ -88,6 +88,7 @@ func TestJobTransform(t *testing.T) {
 			var job = &batchv1.Job{}
 			err := scheme.Scheme.Convert(&unstructuredJob, job, nil)
 			util.AssertEqual(t, err, nil)
+			util.AssertDeepEqual(t, job.GenerateName, "")
 			util.AssertDeepEqual(t, job.Name, tt.expected)
 		})
 	}

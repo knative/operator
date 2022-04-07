@@ -27,13 +27,15 @@ import (
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
+var four int32 = 4
+
 func makeExpectedDeploymentOverrideNonEmpty() []base.DeploymentOverride {
 	return []base.DeploymentOverride{
 		{
 			Name:         "webhook",
 			Labels:       map[string]string{"e": "f"},
 			Annotations:  map[string]string{"g": "h"},
-			Replicas:     4,
+			Replicas:     &four,
 			NodeSelector: map[string]string{"env": "prod"},
 			Tolerations: []corev1.Toleration{{
 				Key:      corev1.TaintNodeUnschedulable,
@@ -75,7 +77,7 @@ func makeExpectedExistentTestDeploymentOverride() []base.DeploymentOverride {
 			Name:         "webhook",
 			Labels:       map[string]string{"e": "f"},
 			Annotations:  map[string]string{"g": "h"},
-			Replicas:     4,
+			Replicas:     &four,
 			NodeSelector: map[string]string{"env": "prod"},
 			Tolerations: []corev1.Toleration{{
 				Key:      corev1.TaintNodeUnschedulable,
@@ -115,7 +117,7 @@ func makeExpectedDeploymentOverrideArrayOrigin() []base.DeploymentOverride {
 			Name:         "webhook",
 			Labels:       map[string]string{"e": "f"},
 			Annotations:  map[string]string{"g": "h"},
-			Replicas:     4,
+			Replicas:     &four,
 			NodeSelector: map[string]string{"env": "prod"},
 			Tolerations: []corev1.Toleration{{
 				Key:      corev1.TaintNodeUnschedulable,
@@ -194,7 +196,7 @@ func TestConvertToDeploymentOverride(t *testing.T) {
 							Name:         "webhook",
 							Labels:       map[string]string{"e": "f"},
 							Annotations:  map[string]string{"g": "h"},
-							Replicas:     4,
+							Replicas:     &four,
 							NodeSelector: map[string]string{"env": "prod"},
 							Tolerations: []corev1.Toleration{{
 								Key:      corev1.TaintNodeUnschedulable,
@@ -240,7 +242,7 @@ func TestConvertToDeploymentOverride(t *testing.T) {
 							Name:         "webhook",
 							Labels:       map[string]string{"e": "f"},
 							Annotations:  map[string]string{"g": "h"},
-							Replicas:     4,
+							Replicas:     &four,
 							NodeSelector: map[string]string{"env": "prod"},
 							Tolerations: []corev1.Toleration{{
 								Key:      corev1.TaintNodeUnschedulable,
@@ -286,7 +288,7 @@ func TestConvertToDeploymentOverride(t *testing.T) {
 							Name:         "webhook",
 							Labels:       map[string]string{"e": "f"},
 							Annotations:  map[string]string{"g": "h"},
-							Replicas:     4,
+							Replicas:     &four,
 							NodeSelector: map[string]string{"env": "prod"},
 							Tolerations: []corev1.Toleration{{
 								Key:      corev1.TaintNodeUnschedulable,
@@ -341,7 +343,7 @@ func TestConvertToDeploymentOverride(t *testing.T) {
 							Name:         "webhook",
 							Labels:       map[string]string{"e": "f"},
 							Annotations:  map[string]string{"g": "h"},
-							Replicas:     4,
+							Replicas:     &four,
 							NodeSelector: map[string]string{"env": "prod"},
 							Tolerations: []corev1.Toleration{{
 								Key:      corev1.TaintNodeUnschedulable,
@@ -390,7 +392,7 @@ func TestConvertToDeploymentOverride(t *testing.T) {
 							Name:         "webhook",
 							Labels:       map[string]string{"e": "f"},
 							Annotations:  map[string]string{"g": "h"},
-							Replicas:     4,
+							Replicas:     &four,
 							NodeSelector: map[string]string{"env": "prod"},
 							Tolerations: []corev1.Toleration{{
 								Key:      corev1.TaintNodeUnschedulable,
@@ -454,7 +456,7 @@ func TestConvertToDeploymentOverride(t *testing.T) {
 							Name:         "webhook",
 							Labels:       map[string]string{"e": "f"},
 							Annotations:  map[string]string{"g": "h"},
-							Replicas:     4,
+							Replicas:     &four,
 							NodeSelector: map[string]string{"env": "prod"},
 							Tolerations: []corev1.Toleration{{
 								Key:      corev1.TaintNodeUnschedulable,

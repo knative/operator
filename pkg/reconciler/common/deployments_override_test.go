@@ -46,6 +46,8 @@ type expDeployments struct {
 }
 
 func TestDeploymentsTransform(t *testing.T) {
+	var four int32 = 4
+	var five int32 = 5
 	tests := []struct {
 		name           string
 		override       []base.DeploymentOverride
@@ -71,7 +73,7 @@ func TestDeploymentsTransform(t *testing.T) {
 				Name:         "controller",
 				Labels:       map[string]string{"a": "b"},
 				Annotations:  map[string]string{"c": "d"},
-				Replicas:     5,
+				Replicas:     &five,
 				NodeSelector: map[string]string{"env": "prod"},
 				Tolerations: []corev1.Toleration{{
 					Key:      corev1.TaintNodeNotReady,
@@ -134,7 +136,7 @@ func TestDeploymentsTransform(t *testing.T) {
 				Name:         "controller",
 				Labels:       map[string]string{"a": "b"},
 				Annotations:  map[string]string{"c": "d"},
-				Replicas:     5,
+				Replicas:     &five,
 				NodeSelector: map[string]string{"env": "dev"},
 				Tolerations: []corev1.Toleration{{
 					Key:      corev1.TaintNodeNotReady,
@@ -160,7 +162,7 @@ func TestDeploymentsTransform(t *testing.T) {
 				Name:         "webhook",
 				Labels:       map[string]string{"e": "f"},
 				Annotations:  map[string]string{"g": "h"},
-				Replicas:     4,
+				Replicas:     &four,
 				NodeSelector: map[string]string{"env": "prod"},
 				Tolerations: []corev1.Toleration{{
 					Key:      corev1.TaintNodeUnschedulable,
@@ -254,7 +256,7 @@ func TestDeploymentsTransform(t *testing.T) {
 					CommonSpec: base.CommonSpec{
 						DeploymentOverride: test.override,
 						HighAvailability: &base.HighAvailability{
-							Replicas: test.globalReplicas,
+							Replicas: &test.globalReplicas,
 						},
 					},
 				},

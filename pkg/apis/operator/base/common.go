@@ -233,7 +233,7 @@ type DeploymentOverride struct {
 	// Replicas is the number of replicas that HA parts of the control plane
 	// will be scaled to.
 	// +optional
-	Replicas int32 `json:"replicas,omitempty"`
+	Replicas *int32 `json:"replicas,omitempty"`
 
 	// NodeSelector overrides nodeSelector for the deployment.
 	// +optional
@@ -273,7 +273,7 @@ type Manifest struct {
 type HighAvailability struct {
 	// Replicas is the number of replicas that HA parts of the control plane
 	// will be scaled to.
-	Replicas int32 `json:"replicas"`
+	Replicas *int32 `json:"replicas"`
 }
 
 // CustomCerts refers to either a ConfigMap or Secret containing valid

@@ -86,8 +86,8 @@ func replaceLabels(override *base.DeploymentOverride, deployment *appsv1.Deploym
 }
 
 func replaceReplicas(override *base.DeploymentOverride, deployment *appsv1.Deployment) {
-	if override.Replicas > 0 {
-		deployment.Spec.Replicas = &override.Replicas
+	if override.Replicas != nil {
+		deployment.Spec.Replicas = override.Replicas
 	}
 }
 

@@ -36,7 +36,7 @@ func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.T
 	return func(u *unstructured.Unstructured) error {
 		// Use spec.deployments.replicas for the deployment instead of spec.high-availability.
 		for _, override := range obj.GetSpec().GetDeploymentOverride() {
-			if override.Replicas > 0 && override.Name == u.GetName() {
+			if override.Replicas != nil && override.Name == u.GetName() {
 				return nil
 			}
 		}
@@ -47,7 +47,7 @@ func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.T
 			return nil
 		}
 
-		replicas := int64(ha.Replicas)
+		replicas := int64(*ha.Replicas)
 
 		// Transform deployments that support HA.
 		if u.GetKind() == "Deployment" && !haUnSupported(obj).Has(u.GetName()) {

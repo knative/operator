@@ -49,7 +49,7 @@ release_eventing_yaml="$(mktemp)"
 
 readonly SERVING_ARTIFACTS=("serving" "serving-crds.yaml" "serving-core.yaml" "serving-hpa.yaml" "serving-post-install-jobs.yaml")
 readonly EVENTING_ARTIFACTS=("eventing" "eventing-crds.yaml" "eventing-core.yaml" "in-memory-channel.yaml" "mt-channel-broker.yaml"
-  "eventing-sugar-controller.yaml" "eventing-post-install.yaml")
+  "eventing-post-install.yaml")
 
 function is_ingress_class() {
   [[ "${INGRESS_CLASS}" == *"${1}"* ]]

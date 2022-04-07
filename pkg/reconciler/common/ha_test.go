@@ -101,7 +101,7 @@ func TestHighAvailabilityTransform(t *testing.T) {
 
 func makeHa(replicas int32) *base.HighAvailability {
 	return &base.HighAvailability{
-		Replicas: replicas,
+		Replicas: &replicas,
 	}
 }
 

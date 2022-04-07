@@ -282,7 +282,8 @@ func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.Resourc
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to get: %v", names.KnativeServing, err)
 	}
-	ks.Spec.HighAvailability = &base.HighAvailability{Replicas: 2}
+	var two int32 = 2
+	ks.Spec.HighAvailability = &base.HighAvailability{Replicas: &two}
 	_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)

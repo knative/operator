@@ -69,6 +69,9 @@ type KComponentSpec interface {
 
 	// GetDeploymentOverride gets the deployment configurations to override.
 	GetDeploymentOverride() []DeploymentOverride
+
+	// GetServiceOverride gets the service configurations to override.
+	GetServiceOverride() []ServiceOverride
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -134,6 +137,10 @@ type CommonSpec struct {
 	// +optional
 	DeploymentOverride []DeploymentOverride `json:"deployments,omitempty"`
 
+	// ServiceOverride overrides Service configurations such as labels and annotations.
+	// +optional
+	ServiceOverride []ServiceOverride `json:"deployments,omitempty"`
+
 	// Override containers' resource requirements
 	// +optional
 	Version string `json:"version,omitempty"`
@@ -189,6 +196,11 @@ func (c *CommonSpec) GetHighAvailability() *HighAvailability {
 // GetDeploymentOverride implements KComponentSpec.
 func (c *CommonSpec) GetDeploymentOverride() []DeploymentOverride {
 	return c.DeploymentOverride
+}
+
+// GetServiceOverride implements KComponentSpec.
+func (c *CommonSpec) GetServiceOverride() []ServiceOverride {
+	return c.ServiceOverride
 }
 
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first
@@ -250,6 +262,20 @@ type DeploymentOverride struct {
 	// Resources overrides resources for the containers.
 	// +optional
 	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+}
+
+// ServiceOverride defines the configurations of the service to override.
+type ServiceOverride struct {
+	// Name is the name of the service to override.
+	Name string `json:"name"`
+
+	// Labels overrides labels for the service and its template.
+	// +optional
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// Annotations overrides labels for the service and its template.
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 // ResourceRequirementsOverride enables the user to override any container's

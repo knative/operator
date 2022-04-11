@@ -139,7 +139,7 @@ type CommonSpec struct {
 
 	// ServiceOverride overrides Service configurations such as labels and annotations.
 	// +optional
-	ServiceOverride []ServiceOverride `json:"deployments,omitempty"`
+	ServiceOverride []ServiceOverride `json:"services,omitempty"`
 
 	// Override containers' resource requirements
 	// +optional

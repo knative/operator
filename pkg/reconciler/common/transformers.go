@@ -33,6 +33,7 @@ func transformers(ctx context.Context, obj base.KComponent) []mf.Transformer {
 		ConfigMapTransform(obj.GetSpec().GetConfig(), logger),
 		ResourceRequirementsTransform(obj, logger),
 		DeploymentsTransform(obj, logger),
+		ServicesTransform(obj, logger),
 	}
 }
 

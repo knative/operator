@@ -8,7 +8,6 @@ require (
 	github.com/emicklei/go-restful v2.15.0+incompatible // indirect
 	github.com/go-logr/zapr v1.2.2
 	github.com/google/go-cmp v0.5.7
-	github.com/google/go-containerregistry v0.8.1-0.20220219142810-1571d7fdc46e // indirect
 	github.com/google/go-github/v33 v33.0.0
 	github.com/manifestival/client-go-client v0.5.0
 	github.com/manifestival/manifestival v0.7.1
@@ -25,6 +24,6 @@ require (
 	knative.dev/eventing v0.30.1-0.20220414105410-5bb50cb1333d
 	knative.dev/hack v0.0.0-20220411131823-6ffd8417de7c
 	knative.dev/pkg v0.0.0-20220412134708-e325df66cb51
-	knative.dev/serving v0.30.1-0.20220413003907-2de1474b55ba
+	knative.dev/serving v0.30.1-0.20220414210010-f931c3a82617
 	sigs.k8s.io/yaml v1.3.0
 )

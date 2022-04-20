@@ -110,8 +110,8 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 				return isStatusReady(d.Status)
 			}
 
-			if key == "serving.knative.dev/release" || key == "eventing.knative.dev/release" {
-				if val == fmt.Sprintf("v%s", version) {
+			if key == "app.kubernetes.io/version" || key == "serving.knative.dev/release" || key == "eventing.knative.dev/release" {
+				if val == fmt.Sprintf("v%s", version) || val == version {
 					// When on of the following conditions is met:
 					// * spec.version is set to latest, but operator returns an actual semantic version
 					// * spec.version is set to a valid semantic version

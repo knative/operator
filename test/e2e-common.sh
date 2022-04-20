@@ -23,9 +23,9 @@ readonly PREVIOUS_SERVING_RELEASE_VERSION="1.3"
 readonly PREVIOUS_EVENTING_RELEASE_VERSION="1.3"
 # The target serving/eventing release to upgrade, installed by the operator. It can be a release available under
 # kodata or an incoming new release. This value should be in the semantic format of major.minor.
-readonly TARGET_RELEASE_VERSION="latest"
+readonly TARGET_RELEASE_VERSION="1.4"
 # This is the branch name of knative repos, where we run the upgrade tests.
-readonly KNATIVE_REPO_BRANCH="${PULL_BASE_REF}"
+readonly KNATIVE_REPO_BRANCH="release-1.4"
 # Namespaces used for tests
 # This environment variable TEST_NAMESPACE defines the namespace to install Knative Serving.
 export TEST_NAMESPACE="${TEST_NAMESPACE:-knative-operator-testing}"
@@ -226,7 +226,7 @@ function create_knative_serving() {
   version=${1}
   echo ">> Creating the custom resource of Knative Serving:"
   cat <<EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1alpha1
+apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
   name: ${TEST_RESOURCE}
@@ -246,7 +246,7 @@ function create_knative_eventing() {
   version=${1}
   echo ">> Creating the custom resource of Knative Eventing:"
   cat <<-EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1alpha1
+apiVersion: operator.knative.dev/v1beta1
 kind: KnativeEventing
 metadata:
   name: ${TEST_RESOURCE}
@@ -265,7 +265,7 @@ EOF
 function create_latest_custom_resource() {
   echo ">> Creating the custom resource of Knative Serving:"
   cat <<-EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1alpha1
+apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
   name: ${TEST_RESOURCE}
@@ -282,7 +282,7 @@ EOF
 
   echo ">> Creating the custom resource of Knative Eventing:"
   cat <<-EOF | kubectl apply -f -
-apiVersion: operator.knative.dev/v1alpha1
+apiVersion: operator.knative.dev/v1beta1
 kind: KnativeEventing
 metadata:
   name: ${TEST_RESOURCE}

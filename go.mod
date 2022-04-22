@@ -16,6 +16,8 @@ require (
 	golang.org/x/mod v0.5.1
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b
 	gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485 // indirect
+	istio.io/api v0.0.0-20220420164308-b6a03a9e477e
+	istio.io/client-go v1.13.3
 	k8s.io/api v0.23.5
 	k8s.io/apimachinery v0.23.5
 	k8s.io/client-go v0.23.5

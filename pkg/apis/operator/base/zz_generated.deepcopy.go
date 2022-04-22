@@ -22,6 +22,7 @@ limitations under the License.
 package base
 
 import (
+	v1alpha3 "istio.io/api/networking/v1alpha3"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -329,6 +330,16 @@ func (in *IstioGatewayOverride) DeepCopyInto(out *IstioGatewayOverride) {
 		*out = make(map[string]string, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val
+		}
+	}
+	if in.Servers != nil {
+		in, out := &in.Servers, &out.Servers
+		*out = make([]*v1alpha3.Server, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = (*in).DeepCopy()
+			}
 		}
 	}
 	return

@@ -19,8 +19,10 @@ package ingress
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
+	istiov1alpha3 "istio.io/api/networking/v1alpha3"
+	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"istio.io/client-go/pkg/clientset/versioned/scheme"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/base"
 	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -29,52 +31,76 @@ import (
 
 var log = zap.NewNop().Sugar()
 
-func gatewayOverride(selector map[string]string) *base.IstioGatewayOverride {
+func gatewayOverride(selector map[string]string, servers []*istiov1alpha3.Server) *base.IstioGatewayOverride {
 	return &base.IstioGatewayOverride{
 		Selector: selector,
+		Servers:  servers,
 	}
 }
 
 func TestGatewayTransform(t *testing.T) {
+	serverIn := []*istiov1alpha3.Server{
+		{
+			Hosts: []string{"localhost"},
+			Port:  &istiov1alpha3.Port{Name: "test"},
+		}, {
+			Hosts: []string{"localhost"},
+			Port:  &istiov1alpha3.Port{Name: "test"},
+		}}
+
+	serverUpdate := []*istiov1alpha3.Server{
+		{
+			Hosts: []string{"localhost-1"},
+			Port:  &istiov1alpha3.Port{Name: "test-1", Protocol: "proto-1", Number: 25, TargetPort: 53},
+		}, {
+			Hosts: []string{"localhost-1"},
+			Port:  &istiov1alpha3.Port{Name: "test-1", Protocol: "proto-2", Number: 45, TargetPort: 23},
+		}}
+
 	tests := []struct {
 		name                            string
 		gatewayName                     string
 		in                              map[string]string
+		serversIn                       []*istiov1alpha3.Server
 		knativeIngressGateway           *base.IstioGatewayOverride
 		clusterLocalGateway             *base.IstioGatewayOverride
 		deprecatedKnativeIngressGateway base.IstioGatewayOverride
 		deprecatedClusterLocalGateway   base.IstioGatewayOverride
 		expected                        map[string]string
+		expectedServersIn               []*istiov1alpha3.Server
 	}{{
 		name:        "update ingress gateway",
 		gatewayName: "knative-ingress-gateway",
 		in: map[string]string{
 			"istio": "old-istio",
 		},
-		knativeIngressGateway: gatewayOverride(map[string]string{"istio": "knative-ingress"}),
-		clusterLocalGateway:   gatewayOverride(map[string]string{"istio": "cluster-local"}),
+		serversIn:             serverIn,
+		knativeIngressGateway: gatewayOverride(map[string]string{"istio": "knative-ingress"}, serverUpdate),
+		clusterLocalGateway:   gatewayOverride(map[string]string{"istio": "cluster-local"}, nil),
 		expected: map[string]string{
 			"istio": "knative-ingress",
 		},
+		expectedServersIn: serverUpdate,
 	}, {
 		name:        "update local gateway",
 		gatewayName: "cluster-local-gateway",
 		in: map[string]string{
 			"istio": "old-istio",
 		},
-		knativeIngressGateway: gatewayOverride(map[string]string{"istio": "knative-ingress"}),
-		clusterLocalGateway:   gatewayOverride(map[string]string{"istio": "cluster-local"}),
+		knativeIngressGateway: gatewayOverride(map[string]string{"istio": "knative-ingress"}, nil),
+		clusterLocalGateway:   gatewayOverride(map[string]string{"istio": "cluster-local"}, serverUpdate),
 		expected: map[string]string{
 			"istio": "cluster-local",
 		},
+		expectedServersIn: serverUpdate,
 	}, {
 		name:        "update ingress gateway with both new and deprecate config",
 		gatewayName: "knative-ingress-gateway",
 		in: map[string]string{
 			"istio": "old-istio",
 		},
-		knativeIngressGateway:           gatewayOverride(map[string]string{"istio": "win"}),
-		deprecatedKnativeIngressGateway: *gatewayOverride(map[string]string{"istio": "lose"}),
+		knativeIngressGateway:           gatewayOverride(map[string]string{"istio": "win"}, nil),
+		deprecatedKnativeIngressGateway: *gatewayOverride(map[string]string{"istio": "lose"}, nil),
 		expected: map[string]string{
 			"istio": "win",
 		},
@@ -84,8 +110,8 @@ func TestGatewayTransform(t *testing.T) {
 		in: map[string]string{
 			"istio": "old-istio",
 		},
-		clusterLocalGateway:           gatewayOverride(map[string]string{"istio": "win"}),
-		deprecatedClusterLocalGateway: *gatewayOverride(map[string]string{"istio": "lose"}),
+		clusterLocalGateway:           gatewayOverride(map[string]string{"istio": "win"}, nil),
+		deprecatedClusterLocalGateway: *gatewayOverride(map[string]string{"istio": "lose"}, nil),
 		expected: map[string]string{
 			"istio": "win",
 		},
@@ -95,10 +121,10 @@ func TestGatewayTransform(t *testing.T) {
 		in: map[string]string{
 			"istio": "old-istio",
 		},
-		knativeIngressGateway:           gatewayOverride(map[string]string{"istio": "knative-ingress"}),
-		clusterLocalGateway:             gatewayOverride(map[string]string{"istio": "cluster-local"}),
-		deprecatedKnativeIngressGateway: *gatewayOverride(map[string]string{"istio": "lose"}),
-		deprecatedClusterLocalGateway:   *gatewayOverride(map[string]string{"istio": "cluster-local"}),
+		knativeIngressGateway:           gatewayOverride(map[string]string{"istio": "knative-ingress"}, nil),
+		clusterLocalGateway:             gatewayOverride(map[string]string{"istio": "cluster-local"}, nil),
+		deprecatedKnativeIngressGateway: *gatewayOverride(map[string]string{"istio": "lose"}, nil),
+		deprecatedClusterLocalGateway:   *gatewayOverride(map[string]string{"istio": "cluster-local"}, nil),
 		expected: map[string]string{
 			"istio": "old-istio",
 		},
@@ -106,7 +132,7 @@ func TestGatewayTransform(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gateway := makeUnstructuredGateway(t, tt.gatewayName, tt.in)
+			gateway := makeUnstructuredGateway(t, tt.gatewayName, tt.in, tt.serversIn)
 			instance := &servingv1beta1.KnativeServing{
 				Spec: servingv1beta1.KnativeServingSpec{
 					Ingress: &servingv1beta1.IngressConfigs{
@@ -121,23 +147,31 @@ func TestGatewayTransform(t *testing.T) {
 
 			gatewayTransform(instance, log)(gateway)
 
-			got, ok, err := unstructured.NestedStringMap(gateway.Object, "spec", "selector")
+			gatewayResult := &istionetworkingv1alpha3.Gateway{}
+			err := scheme.Scheme.Convert(gateway, gatewayResult, nil)
 			util.AssertEqual(t, err, nil)
-			util.AssertEqual(t, ok, true)
-
-			if !cmp.Equal(got, tt.expected) {
-				t.Errorf("Got = %v, want: %v, diff:\n%s", got, tt.expected, cmp.Diff(got, tt.expected))
+			util.AssertDeepEqual(t, gatewayResult.Spec.Selector, tt.expected)
+			for i, server := range gatewayResult.Spec.Servers {
+				util.AssertDeepEqual(t, server.Hosts, tt.expectedServersIn[i].Hosts)
+				util.AssertDeepEqual(t, server.Port.Name, tt.expectedServersIn[i].Port.Name)
+				util.AssertDeepEqual(t, server.Port.Number, tt.expectedServersIn[i].Port.Number)
+				util.AssertDeepEqual(t, server.Port.TargetPort, tt.expectedServersIn[i].Port.TargetPort)
+				util.AssertDeepEqual(t, server.Port.Protocol, tt.expectedServersIn[i].Port.Protocol)
 			}
 		})
 	}
 }
 
-func makeUnstructuredGateway(t *testing.T, name string, selector map[string]string) *unstructured.Unstructured {
+func makeUnstructuredGateway(t *testing.T, name string, selector map[string]string, servers []*istiov1alpha3.Server) *unstructured.Unstructured {
+	gateway := &istionetworkingv1alpha3.Gateway{}
 	result := &unstructured.Unstructured{}
-	result.SetAPIVersion("networking.istio.io/v1alpha3")
-	result.SetKind("Gateway")
-	result.SetName(name)
-	unstructured.SetNestedStringMap(result.Object, selector, "spec", "selector")
+	gateway.SetName(name)
+	gateway.Spec.Selector = selector
+	gateway.Spec.Servers = servers
+
+	if err := scheme.Scheme.Convert(gateway, result, nil); err != nil {
+		panic(err)
+	}
 
 	return result
 }

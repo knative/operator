@@ -16,7 +16,10 @@ limitations under the License.
 
 package base
 
-import v1 "k8s.io/api/core/v1"
+import (
+	istiov1alpha3 "istio.io/api/networking/v1alpha3"
+	v1 "k8s.io/api/core/v1"
+)
 
 // IstioIngressConfiguration specifies options for the istio ingresses.
 type IstioIngressConfiguration struct {
@@ -48,4 +51,7 @@ type ContourIngressConfiguration struct {
 type IstioGatewayOverride struct {
 	// A map of values to replace the "selector" values in the knative-ingress-gateway and knative-local-gateway(cluster-local-gateway)
 	Selector map[string]string `json:"selector,omitempty"`
+
+	// A list of server specifications.
+	Servers []*istiov1alpha3.Server `json:"servers,omitempty"`
 }

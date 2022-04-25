@@ -544,6 +544,13 @@ func (in *ServiceOverride) DeepCopyInto(out *ServiceOverride) {
 			(*out)[key] = val
 		}
 	}
+	if in.Selector != nil {
+		in, out := &in.Selector, &out.Selector
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 

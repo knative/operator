@@ -276,6 +276,10 @@ type ServiceOverride struct {
 	// Annotations overrides labels for the service and its template.
 	// +optional
 	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Selector overrides the selector for the service
+	// +optional
+	Selector map[string]string `json:"selector,omitempty"`
 }
 
 // ResourceRequirementsOverride enables the user to override any container's

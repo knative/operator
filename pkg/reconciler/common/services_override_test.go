@@ -31,6 +31,7 @@ import (
 type expServices struct {
 	expLabels      map[string]string
 	expAnnotations map[string]string
+	expSelector    map[string]string
 }
 
 func TestServicesTransform(t *testing.T) {
@@ -45,11 +46,13 @@ func TestServicesTransform(t *testing.T) {
 				Name:        "controller",
 				Labels:      map[string]string{"a": "b"},
 				Annotations: map[string]string{"c": "d"},
+				Selector:    map[string]string{"app": "f"},
 			},
 		},
 		expServices: map[string]expServices{"controller": {
 			expLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "a": "b", "app": "controller"},
 			expAnnotations: map[string]string{"c": "d"},
+			expSelector:    map[string]string{"app": "f"},
 		}},
 	}, {
 		name:     "no override",
@@ -57,6 +60,7 @@ func TestServicesTransform(t *testing.T) {
 		expServices: map[string]expServices{"controller": {
 			expLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
 			expAnnotations: nil,
+			expSelector:    map[string]string{"app": "controller"},
 		}},
 	}}
 
@@ -93,6 +97,10 @@ func TestServicesTransform(t *testing.T) {
 						}
 
 						if diff := cmp.Diff(got.GetAnnotations(), d.expAnnotations); diff != "" {
+							t.Fatalf("Unexpected annotations: %v", diff)
+						}
+
+						if diff := cmp.Diff(got.Spec.Selector, d.expSelector); diff != "" {
 							t.Fatalf("Unexpected annotations: %v", diff)
 						}
 					}

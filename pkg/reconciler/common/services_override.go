@@ -41,6 +41,7 @@ func ServicesTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transform
 				}
 				overrideLabels(&override, service)
 				overrideAnnotations(&override, service)
+				overrideSelectors(&override, service)
 				if err := scheme.Scheme.Convert(service, u, nil); err != nil {
 					return err
 				}
@@ -69,5 +70,15 @@ func overrideLabels(override *base.ServiceOverride, service *corev1.Service) {
 
 	for key, val := range override.Labels {
 		service.Labels[key] = val
+	}
+}
+
+func overrideSelectors(override *base.ServiceOverride, service *corev1.Service) {
+	if service.Spec.Selector == nil {
+		service.Spec.Selector = map[string]string{}
+	}
+
+	for key, val := range override.Selector {
+		service.Spec.Selector[key] = val
 	}
 }

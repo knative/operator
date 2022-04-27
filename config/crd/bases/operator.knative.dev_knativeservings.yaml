@@ -1737,6 +1737,35 @@ spec:
                               type: string
                             description: The selector for the ingress-gateway.
                             type: object
+                          servers:
+                            description: A list of server specifications.
+                            items:
+                              properties:
+                                hosts:
+                                  description: One or more hosts exposed by this gateway.
+                                  items:
+                                    format: string
+                                    type: string
+                                  type: array
+                                port:
+                                  properties:
+                                    name:
+                                      description: Label assigned to the port.
+                                      format: string
+                                      type: string
+                                    number:
+                                      description: A valid non-negative integer port number.
+                                      type: integer
+                                    target_port:
+                                      description: A valid non-negative integer target port number.
+                                      type: integer
+                                    protocol:
+                                      description: The protocol exposed on the port.
+                                      format: string
+                                      type: string
+                                  type: object
+                              type: object
+                            type: array
                         type: object
                       knative-local-gateway:
                         description: A means to override the knative-local-gateway
@@ -1746,6 +1775,35 @@ spec:
                               type: string
                             description: The selector for the ingress-gateway.
                             type: object
+                          servers:
+                            description: A list of server specifications.
+                            items:
+                              properties:
+                                hosts:
+                                  description: One or more hosts exposed by this gateway.
+                                  items:
+                                    format: string
+                                    type: string
+                                  type: array
+                                port:
+                                  properties:
+                                    name:
+                                      description: Label assigned to the port.
+                                      format: string
+                                      type: string
+                                    number:
+                                      description: A valid non-negative integer port number.
+                                      type: integer
+                                    target_port:
+                                      description: A valid non-negative integer target port number.
+                                      type: integer
+                                    protocol:
+                                      description: The protocol exposed on the port.
+                                      format: string
+                                      type: string
+                                  type: object
+                              type: object
+                            type: array
                         type: object
                     type: object
                   kourier:

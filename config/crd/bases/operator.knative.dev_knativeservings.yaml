@@ -1715,6 +1715,11 @@ spec:
                         type: string
                       description: Annotations overrides labels for the service
                       type: object
+                    selector:
+                      additionalProperties:
+                        type: string
+                      description: Selector overrides selector for the service
+                      type: object
               ingress:
                 description: The ingress configuration for Knative Serving
                 properties:

@@ -15,7 +15,5 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
 - namespaces.yaml
-- operator_v1alpha1_knativeserving.yaml
-- operator_v1alpha1_knativeeventing.yaml
 - operator_v1beta1_knativeserving.yaml
 - operator_v1beta1_knativeeventing.yaml

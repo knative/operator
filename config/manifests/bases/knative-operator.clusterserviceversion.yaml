@@ -93,4 +93,4 @@ spec:
     name: The Knative Authors
   replaces: knative-operator.v1.1.0
   selector: {}
-  version: 1.3.0
+  version: 1.5.0

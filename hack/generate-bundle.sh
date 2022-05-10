@@ -18,7 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-VERSION=1.3.0
+VERSION=1.5.0
 
 rm -rf bundle
 kustomize build config/manifests | operator-sdk generate bundle -q --overwrite --version $VERSION

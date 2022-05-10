@@ -146,15 +146,23 @@ func verifyEmptyKey(t *testing.T, defaultsConfigKey string, defaultsConfigMapNam
 }
 
 func verifyEmptySpec(t *testing.T, loggingConfigMapName string, clients *test.Clients, names test.ResourceNames) {
-	ks, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
-	if err != nil {
-		t.Fatalf("Existing KS operator CR gone: %s", names.KnativeServing)
+	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+		ks, errGet := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
+		if errGet != nil {
+			t.Fatalf("Existing KS operator CR gone: %s", names.KnativeServing)
+		}
+		ks.Spec = v1beta1.KnativeServingSpec{}
+		if _, errUpdate := clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{}); errUpdate != nil {
+			return false, nil
+		}
+		return true, nil
+	})
+
+	if waitErr != nil {
+		t.Fatalf("The operator failed to update the Knative Serving CR")
 	}
-	ks.Spec = v1beta1.KnativeServingSpec{}
-	if _, err := clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{}); err != nil {
-		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
-	}
-	err = WaitForConfigMap(loggingConfigMapName, clients.KubeClient, func(m map[string]string) bool {
+
+	err := WaitForConfigMap(loggingConfigMapName, clients.KubeClient, func(m map[string]string) bool {
 		_, exists := m["loglevel.controller"]
 		return !exists
 	})

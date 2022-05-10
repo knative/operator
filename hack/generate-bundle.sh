@@ -42,15 +42,35 @@ find bundle/manifests -type f -name "*.yaml" -print0 | xargs -0 sed -i.bak "s/: 
 # Openratorhub.io leverages operators as the namespace for the operator.
 sed -i.bak "s/namespace: default/namespace: operators/" bundle/manifests/knativeeventings.operator.knative.dev.crd.yaml
 sed -i.bak "s/namespace: default/namespace: operators/" bundle/manifests/knativeservings.operator.knative.dev.crd.yaml
-sed -i.bak "s/namespace: default/namespace: operators/" bundle/manifests/knative-operator-post-install-job-role-binding_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml
 
 # Replace the images
 OPERATOR_IMAGE="ko://knative.dev/operator/cmd/operator"
 RE_OPERATOR_IMAGE="gcr.io/knative-releases/knative.dev/operator/cmd/operator:v${VERSION}"
 WEBHOOK_IMAGE="ko://knative.dev/operator/cmd/webhook"
 RE_WEBHOOK_IMAGE="gcr.io/knative-releases/knative.dev/operator/cmd/webhook:v${VERSION}"
+FAKE_OPERATOR_NAME="knative-operator-fake"
+OPERATOR_NAME="knative-operator"
+readonly AGGREGATION_RULES_FILES=(knative-serving-operator-aggregated-stable_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml
+ knative-serving-operator-aggregated_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml knative-eventing-operator-aggregated-stable_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml
+ knative-eventing-operator-aggregated_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml)
 
 sed -i.bak 's|'${OPERATOR_IMAGE}'|'${RE_OPERATOR_IMAGE}'|' bundle/manifests/knative-operator.v${VERSION}.clusterserviceversion.yaml
 sed -i.bak 's|'${WEBHOOK_IMAGE}'|'${RE_WEBHOOK_IMAGE}'|' bundle/manifests/knative-operator.v${VERSION}.clusterserviceversion.yaml
 
+for FILE in ${AGGREGATION_RULES_FILES[@]}; do
+  sed -i.bak 's|'${FAKE_OPERATOR_NAME}'|'${OPERATOR_NAME}'|' bundle/manifests/${FILE}
+done
+
+# As Knative Operator does no leverage the operator-sdk to generate the operator's code boilerplate,
+# we need to remove the webhookdefinitions stanza in the CSV file. The deployment operator-webhook is
+# treated as separate deployment.
+WEBHOOK_DEFINITIONS="webhookdefinitions"
+CSV_FILE="bundle/manifests/knative-operator.v${VERSION}.clusterserviceversion.yaml"
+LINE_NUM=`cat -n ${CSV_FILE} | grep ${WEBHOOK_DEFINITIONS} | awk '{print $1}'`
+sed -i.bak -n "1,$(( LINE_NUM - 1 )) p; $LINE_NUM q" ${CSV_FILE}
+
+# Remove the file for the fake service account
+rm bundle/manifests/knative-operator-fake_v1_serviceaccount.yaml
+
+# Remove all redundant files
 rm -rf bundle/manifests/*.bak

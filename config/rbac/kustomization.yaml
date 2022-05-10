@@ -24,9 +24,6 @@ resources:
 - role_binding.yaml
 - webhook_role.yaml
 - webhook_role_binding.yaml
-- migration_role.yaml
-- migration_role_binding.yaml
-- migration_service_account.yaml
 - clusterrole_aggregated.yaml
 - fake_clusterrole_aggregated_binding.yaml
 - fake_service_account.yaml

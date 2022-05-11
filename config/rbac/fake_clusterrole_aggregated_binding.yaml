@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: Consider restriction of non-aggregated role to knativeservings namespaces.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: knative-serving-operator
+  name: knative-serving-operator-aggregated
   labels:
     operator.knative.dev/release: devel
     app.kubernetes.io/version: devel
@@ -24,17 +23,16 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: knative-serving-operator
+  name: knative-serving-operator-aggregated
 subjects:
 - kind: ServiceAccount
-  name: knative-operator
+  name: knative-operator-fake
   namespace: default
 ---
-# TODO: Consider restriction of non-aggregated role to knativeeventing namespaces.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: knative-eventing-operator
+  name: knative-serving-operator-aggregated-stable
   labels:
     operator.knative.dev/release: devel
     app.kubernetes.io/version: devel
@@ -42,8 +40,42 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: knative-eventing-operator
+  name: knative-serving-operator-aggregated-stable
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator-fake
+    namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-eventing-operator-aggregated
+  labels:
+    operator.knative.dev/release: devel
+    app.kubernetes.io/version: devel
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-eventing-operator-aggregated
 subjects:
 - kind: ServiceAccount
-  name: knative-operator
+  name: knative-operator-fake
   namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-eventing-operator-aggregated-stable
+  labels:
+    operator.knative.dev/release: devel
+    app.kubernetes.io/version: devel
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-eventing-operator-aggregated-stable
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator-fake
+    namespace: default

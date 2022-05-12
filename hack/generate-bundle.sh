@@ -40,8 +40,12 @@ find bundle/manifests -type f -name "*.yaml" -print0 | xargs -0 sed -i.bak "s/: 
 
 # Replace the namespace for the webhooks in the CRDs.
 # Openratorhub.io leverages operators as the namespace for the operator.
-sed -i.bak "s/namespace: default/namespace: operators/" bundle/manifests/knativeeventings.operator.knative.dev.crd.yaml
-sed -i.bak "s/namespace: default/namespace: operators/" bundle/manifests/knativeservings.operator.knative.dev.crd.yaml
+readonly NS_REPLACE_FILES=(knativeeventings.operator.knative.dev.crd.yaml knativeservings.operator.knative.dev.crd.yaml
+ knative-serving-operator-aggregated-stable_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml knative-serving-operator-aggregated_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml
+ knative-eventing-operator-aggregated-stable_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml knative-eventing-operator-aggregated_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml)
+for FILE in ${NS_REPLACE_FILES[@]}; do
+  sed -i.bak "s/namespace: default/namespace: operators/" bundle/manifests/${FILE}
+done
 
 # Replace the images
 OPERATOR_IMAGE="ko://knative.dev/operator/cmd/operator"

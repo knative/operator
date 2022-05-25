@@ -18,11 +18,15 @@ package ingress
 
 import (
 	"context"
+	"strconv"
 
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/clientset/versioned/scheme"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -30,11 +34,20 @@ import (
 	"knative.dev/pkg/logging"
 )
 
+const enableSecretInformerFilteringByCertUIDAnno = "knative.dev/enable-secret-informer-filtering-by-cert-uid"
+
 var istioFilter = ingressFilter("istio")
+
+func init() {
+	_ = appsv1.AddToScheme(scheme.Scheme)
+}
 
 func istioTransformers(ctx context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
 	logger := logging.FromContext(ctx)
-	return []mf.Transformer{gatewayTransform(instance, logger)}
+	return []mf.Transformer{
+		gatewayTransform(instance, logger),
+		enableSecretInformerFilteringByCertUID(instance, logger),
+	}
 }
 
 func gatewayTransform(instance *servingv1beta1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
@@ -94,4 +107,35 @@ func updateIstioGateway(override *base.IstioGatewayOverride, gateway *istionetwo
 		log.Debugw("Finished Servers Overrides", "name", gateway.GetName())
 	}
 	return nil
+}
+
+func enableSecretInformerFilteringByCertUID(instance *servingv1beta1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "Deployment" && u.GetName() == "net-istio-controller" {
+			if val, ok := instance.Annotations[enableSecretInformerFilteringByCertUIDAnno]; ok {
+				if _, err := strconv.ParseBool(val); err != nil {
+					log.Error(err, "Could not parse net-istio annotation value", "annotation", enableSecretInformerFilteringByCertUIDAnno, "value", val)
+					return err
+				}
+				deployment := &appsv1.Deployment{}
+				if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
+					return err
+				}
+				for i, c := range deployment.Spec.Template.Spec.Containers {
+					ptr := &c
+					if ptr.Name == "controller" {
+						ptr.Env = append(ptr.Env, corev1.EnvVar{
+							Name:  "ENABLE_SECRET_INFORMER_FILTERING_BY_CERT_UID",
+							Value: val,
+						})
+						deployment.Spec.Template.Spec.Containers[i] = c
+					}
+				}
+				// Avoid superfluous updates from converted zero defaults
+				u.SetCreationTimestamp(metav1.Time{})
+				return scheme.Scheme.Convert(deployment, u, nil)
+			}
+		}
+		return nil
+	}
 }

@@ -17,12 +17,18 @@ limitations under the License.
 package ingress
 
 import (
+	"strconv"
 	"testing"
 
+	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 	istiov1alpha3 "istio.io/api/networking/v1alpha3"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/clientset/versioned/scheme"
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/base"
 	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -160,6 +166,93 @@ func TestGatewayTransform(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestInformerFiltering(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+	tests := []struct {
+		name     string
+		instance servingv1beta1.KnativeServing
+		enable   bool
+	}{{
+		name: "enable secret informer filtering",
+		instance: servingv1beta1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Annotations: map[string]string{enableSecretInformerFilteringByCertUIDAnno: "true"},
+			},
+		},
+		enable: true,
+	}, {
+		name: "disable secret informer filtering",
+		instance: servingv1beta1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Annotations: map[string]string{enableSecretInformerFilteringByCertUIDAnno: "false"},
+			},
+		},
+		enable: false,
+	}, {
+		name:     "do not configure secret informer filtering",
+		instance: servingv1beta1.KnativeServing{},
+		enable:   false,
+	}}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m, _ := mf.ManifestFrom(mf.Slice{})
+			depM, err := createNetIstioDeploymentManifest()
+			if err != nil {
+				t.Fatalf("Could not create unstructured net-istio deployment, err: %v", err)
+			}
+			m = m.Append(*depM)
+			util.AssertEqual(t, len(m.Resources()), 1)
+			if tt.enable {
+				transformer := enableSecretInformerFilteringByCertUID(&tt.instance, logger.Sugar())
+				m, err = m.Transform(transformer)
+				if err != nil {
+					t.Fatalf("Could not transform the net-istio deployment, err: %v", err)
+				}
+			}
+			got := &appsv1.Deployment{}
+			if err := scheme.Scheme.Convert(&m.Resources()[0], got, nil); err != nil {
+				t.Fatalf("Unable to convert Unstructured to Deployment: %s", err)
+			}
+			if tt.enable {
+				util.AssertEqual(t, got.Spec.Template.Spec.Containers[0].Env[0].Name, "ENABLE_SECRET_INFORMER_FILTERING_BY_CERT_UID")
+				util.AssertEqual(t, got.Spec.Template.Spec.Containers[0].Env[0].Value, strconv.FormatBool(tt.enable))
+			} else {
+				util.AssertEqual(t, len(got.Spec.Template.Spec.Containers[0].Env), 0)
+
+			}
+		})
+	}
+}
+
+func createNetIstioDeploymentManifest() (*mf.Manifest, error) {
+	deployment := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "net-istio-controller",
+			Namespace: "knative-serving",
+		},
+		Spec: appsv1.DeploymentSpec{
+			Template: v1.PodTemplateSpec{
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name: "controller",
+						},
+					},
+				},
+			}},
+	}
+	var depU = &unstructured.Unstructured{}
+	if err := scheme.Scheme.Convert(deployment, depU, nil); err != nil {
+		return nil, err
+	}
+	manifest, err := mf.ManifestFrom(mf.Slice([]unstructured.Unstructured{*depU}))
+	if err != nil {
+		return nil, err
+	}
+	return &manifest, nil
 }
 
 func makeUnstructuredGateway(t *testing.T, name string, selector map[string]string, servers []*istiov1alpha3.Server) *unstructured.Unstructured {

@@ -560,7 +560,7 @@ func TestTransformers(t *testing.T) {
 				},
 			},
 		},
-		expected: 1,
+		expected: 2,
 	}, {
 		name: "Available kourier ingress",
 		instance: servingv1beta1.KnativeServing{
@@ -590,7 +590,7 @@ func TestTransformers(t *testing.T) {
 		instance: servingv1beta1.KnativeServing{
 			Spec: servingv1beta1.KnativeServingSpec{},
 		},
-		expected: 1,
+		expected: 2,
 	}, {
 		name: "All ingresses enabled",
 		instance: servingv1beta1.KnativeServing{
@@ -608,7 +608,7 @@ func TestTransformers(t *testing.T) {
 				},
 			},
 		},
-		expected: 3,
+		expected: 4,
 	}}
 
 	for _, tt := range tests {

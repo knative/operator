@@ -43,6 +43,7 @@ type expDeployments struct {
 	expNodeSelector        map[string]string
 	expTolerations         []corev1.Toleration
 	expAffinity            *corev1.Affinity
+	expEnv                 map[string][]corev1.EnvVar
 }
 
 func TestDeploymentsTransform(t *testing.T) {
@@ -117,6 +118,48 @@ func TestDeploymentsTransform(t *testing.T) {
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            10,
+		}},
+	}, {
+		name: "override env vars",
+		override: []base.DeploymentOverride{
+			{
+				Name: "controller",
+				Env: []base.EnvRequirementsOverride{{
+					Container: "controller",
+					EnvVars: []corev1.EnvVar{{
+						Name:  "METRICS_DOMAIN",
+						Value: "test",
+					}},
+				}},
+			},
+		},
+		globalReplicas: 10,
+		expDeployment: map[string]expDeployments{"controller": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:            10,
+			expEnv: map[string][]v1.EnvVar{"controller": {
+				{
+					Name: "SYSTEM_NAMESPACE",
+					ValueFrom: &v1.EnvVarSource{
+						FieldRef: &v1.ObjectFieldSelector{
+							FieldPath: "metadata.namespace",
+						}},
+				},
+				{
+					Name:  "CONFIG_LOGGING_NAME",
+					Value: "config-logging",
+				},
+				{
+					Name:  "CONFIG_OBSERVABILITY_NAME",
+					Value: "config-observability",
+				},
+				{
+					Name:  "METRICS_DOMAIN",
+					Value: "test",
+				},
+			}},
 		}},
 	}, {
 		name: "neither replicas in deploymentoverride nor global replicas",
@@ -308,6 +351,11 @@ func TestDeploymentsTransform(t *testing.T) {
 						}
 						if diff := cmp.Diff(got.Spec.Template.GetAnnotations(), d.expTemplateAnnotations); diff != "" {
 							t.Fatalf("Unexpected annotations in pod template: %v", diff)
+						}
+						for c, envPerContainer := range d.expEnv {
+							if diff := cmp.Diff(getEnv(got.Spec.Template.Spec.Containers, c), envPerContainer); diff != "" {
+								t.Fatalf("Unexpected env in pod template: %v", diff)
+							}
 						}
 					}
 				}

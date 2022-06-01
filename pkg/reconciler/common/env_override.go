@@ -24,10 +24,15 @@ import (
 func mergeEnv(src, tgt *[]v1.EnvVar) {
 	if len(*tgt) > 0 {
 		for _, srcV := range *src {
+			exists := false
 			for i, tgtV := range *tgt {
 				if srcV.Name == tgtV.Name {
 					(*tgt)[i] = srcV
+					exists = true
 				}
+			}
+			if !exists {
+				*tgt = append(*tgt, srcV)
 			}
 		}
 	} else {
@@ -39,15 +44,6 @@ func findEnvOverride(resources []base.EnvRequirementsOverride, name string) *bas
 	for _, override := range resources {
 		if override.Container == name {
 			return &override
-		}
-	}
-	return nil
-}
-
-func getEnv(containers []v1.Container, container string) []v1.EnvVar {
-	for _, c := range containers {
-		if c.Name == container {
-			return c.Env
 		}
 	}
 	return nil

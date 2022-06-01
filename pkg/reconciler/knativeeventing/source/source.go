@@ -68,10 +68,6 @@ func getSourcePath(version string, ke *v1beta1.KnativeEventing) string {
 		url := filepath.Join(sourcePath, "kafka")
 		urls = append(urls, url)
 	}
-	if ke.Spec.Source.Natss.Enabled {
-		url := filepath.Join(sourcePath, "natss")
-		urls = append(urls, url)
-	}
 	if ke.Spec.Source.Rabbitmq.Enabled {
 		url := filepath.Join(sourcePath, "rabbitmq")
 		urls = append(urls, url)

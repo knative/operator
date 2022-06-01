@@ -250,6 +250,10 @@ type DeploymentOverride struct {
 	// Resources overrides resources for the containers.
 	// +optional
 	Resources []ResourceRequirementsOverride `json:"resources,omitempty"`
+
+	// Env overrides env vars for the containers.
+	// +optional
+	Env []EnvRequirementsOverride `json:"env,omitempty"`
 }
 
 // ResourceRequirementsOverride enables the user to override any container's
@@ -259,6 +263,14 @@ type ResourceRequirementsOverride struct {
 	Container string `json:"container"`
 	// The desired ResourceRequirements
 	corev1.ResourceRequirements
+}
+
+// EnvRequirementsOverride enables the user to override any container's env vars.
+type EnvRequirementsOverride struct {
+	// The container name
+	Container string `json:"container"`
+	// The desired EnvVarRequirements
+	EnvVars []corev1.EnvVar `json:"envVars,omitempty"`
 }
 
 // Manifest enables the user to specify the links to the manifests' URLs

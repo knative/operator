@@ -43,6 +43,7 @@ type expDeployments struct {
 	expNodeSelector        map[string]string
 	expTolerations         []corev1.Toleration
 	expAffinity            *corev1.Affinity
+	expEnv                 map[string][]corev1.EnvVar
 }
 
 func TestDeploymentsTransform(t *testing.T) {
@@ -115,6 +116,255 @@ func TestDeploymentsTransform(t *testing.T) {
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            10,
+		}},
+	}, {
+		name: "override env vars",
+		override: []base.DeploymentOverride{
+			{
+				Name: "controller",
+				Env: []base.EnvRequirementsOverride{{
+					Container: "controller",
+					EnvVars: []corev1.EnvVar{{
+						Name:  "METRICS_DOMAIN",
+						Value: "test",
+					}},
+				}},
+			},
+		},
+		globalReplicas: 10,
+		expDeployment: map[string]expDeployments{"controller": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:            10,
+			expEnv: map[string][]v1.EnvVar{"controller": {
+				{
+					Name: "SYSTEM_NAMESPACE",
+					ValueFrom: &v1.EnvVarSource{
+						FieldRef: &v1.ObjectFieldSelector{
+							FieldPath: "metadata.namespace",
+						}},
+				}, {
+					Name:  "CONFIG_LOGGING_NAME",
+					Value: "config-logging",
+				}, {
+					Name:  "CONFIG_OBSERVABILITY_NAME",
+					Value: "config-observability",
+				}, {
+					Name:  "METRICS_DOMAIN",
+					Value: "test",
+				}}},
+		}},
+	}, {
+		name: "duplicate env vars overrides are applied multiple times on existing env var",
+		override: []base.DeploymentOverride{
+			{
+				Name: "controller",
+				Env: []base.EnvRequirementsOverride{{
+					Container: "controller",
+					EnvVars: []corev1.EnvVar{{
+						Name:  "METRICS_DOMAIN",
+						Value: "test1",
+					}, {
+						Name:  "METRICS_DOMAIN",
+						Value: "test2",
+					}},
+				}},
+			},
+		},
+		globalReplicas: 10,
+		expDeployment: map[string]expDeployments{"controller": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:            10,
+			expEnv: map[string][]v1.EnvVar{"controller": {
+				{
+					Name: "SYSTEM_NAMESPACE",
+					ValueFrom: &v1.EnvVarSource{
+						FieldRef: &v1.ObjectFieldSelector{
+							FieldPath: "metadata.namespace",
+						}},
+				}, {
+					Name:  "CONFIG_LOGGING_NAME",
+					Value: "config-logging",
+				}, {
+					Name:  "CONFIG_OBSERVABILITY_NAME",
+					Value: "config-observability",
+				}, {
+					Name:  "METRICS_DOMAIN",
+					Value: "test2",
+				}}},
+		}},
+	}, {
+		name: "env var overriding has no effect if container name does not exist",
+		override: []base.DeploymentOverride{
+			{
+				Name: "controller",
+				Env: []base.EnvRequirementsOverride{{
+					Container: "wrong_name",
+					EnvVars: []corev1.EnvVar{{
+						Name:  "METRICS_DOMAIN",
+						Value: "test1",
+					}, {
+						Name:  "METRICS_DOMAIN",
+						Value: "test2",
+					}},
+				}},
+			},
+		},
+		globalReplicas: 10,
+		expDeployment: map[string]expDeployments{"controller": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:            10,
+			expEnv: map[string][]v1.EnvVar{"controller": {
+				{
+					Name: "SYSTEM_NAMESPACE",
+					ValueFrom: &v1.EnvVarSource{
+						FieldRef: &v1.ObjectFieldSelector{
+							FieldPath: "metadata.namespace",
+						}},
+				}, {
+					Name:  "CONFIG_LOGGING_NAME",
+					Value: "config-logging",
+				}, {
+					Name:  "CONFIG_OBSERVABILITY_NAME",
+					Value: "config-observability",
+				}, {
+					Name:  "METRICS_DOMAIN",
+					Value: "knative.dev/internal/serving",
+				}}},
+		}},
+	}, {
+		name: "add env var via overriding",
+		override: []base.DeploymentOverride{
+			{
+				Name: "controller",
+				Env: []base.EnvRequirementsOverride{{
+					Container: "controller",
+					EnvVars: []corev1.EnvVar{{
+						Name:  "TEST_ENV",
+						Value: "test1",
+					}},
+				}},
+			},
+		},
+		globalReplicas: 10,
+		expDeployment: map[string]expDeployments{"controller": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:            10,
+			expEnv: map[string][]v1.EnvVar{"controller": {
+				{
+					Name: "SYSTEM_NAMESPACE",
+					ValueFrom: &v1.EnvVarSource{
+						FieldRef: &v1.ObjectFieldSelector{
+							FieldPath: "metadata.namespace",
+						}},
+				}, {
+					Name:  "CONFIG_LOGGING_NAME",
+					Value: "config-logging",
+				}, {
+					Name:  "CONFIG_OBSERVABILITY_NAME",
+					Value: "config-observability",
+				}, {
+					Name:  "METRICS_DOMAIN",
+					Value: "knative.dev/internal/serving",
+				}, {
+					Name:  "TEST_ENV",
+					Value: "test1",
+				}}},
+		}},
+	}, {
+		name: "add env var via overriding and modify an existing one",
+		override: []base.DeploymentOverride{
+			{
+				Name: "controller",
+				Env: []base.EnvRequirementsOverride{{
+					Container: "controller",
+					EnvVars: []corev1.EnvVar{{
+						Name:  "TEST_ENV",
+						Value: "test1",
+					}, {
+						Name:  "METRICS_DOMAIN",
+						Value: "test1",
+					}},
+				}},
+			},
+		},
+		globalReplicas: 10,
+		expDeployment: map[string]expDeployments{"controller": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:            10,
+			expEnv: map[string][]v1.EnvVar{"controller": {
+				{
+					Name: "SYSTEM_NAMESPACE",
+					ValueFrom: &v1.EnvVarSource{
+						FieldRef: &v1.ObjectFieldSelector{
+							FieldPath: "metadata.namespace",
+						}},
+				}, {
+					Name:  "CONFIG_LOGGING_NAME",
+					Value: "config-logging",
+				}, {
+					Name:  "CONFIG_OBSERVABILITY_NAME",
+					Value: "config-observability",
+				}, {
+					Name:  "METRICS_DOMAIN",
+					Value: "test1",
+				}, {
+					Name:  "TEST_ENV",
+					Value: "test1",
+				}}},
+		}},
+	}, {
+		name: "duplicate added env vars are overwritten",
+		override: []base.DeploymentOverride{
+			{
+				Name: "controller",
+				Env: []base.EnvRequirementsOverride{{
+					Container: "controller",
+					EnvVars: []corev1.EnvVar{{
+						Name:  "TEST_ENV",
+						Value: "test1",
+					}, {
+						Name:  "TEST_ENV",
+						Value: "test2",
+					}},
+				}},
+			},
+		},
+		globalReplicas: 10,
+		expDeployment: map[string]expDeployments{"controller": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:            10,
+			expEnv: map[string][]v1.EnvVar{"controller": {
+				{
+					Name: "SYSTEM_NAMESPACE",
+					ValueFrom: &v1.EnvVarSource{
+						FieldRef: &v1.ObjectFieldSelector{
+							FieldPath: "metadata.namespace",
+						}},
+				}, {
+					Name:  "CONFIG_LOGGING_NAME",
+					Value: "config-logging",
+				}, {
+					Name:  "CONFIG_OBSERVABILITY_NAME",
+					Value: "config-observability",
+				}, {
+					Name:  "METRICS_DOMAIN",
+					Value: "knative.dev/internal/serving",
+				}, {
+					Name:  "TEST_ENV",
+					Value: "test2",
+				}}},
 		}},
 	}, {
 		name: "neither replicas in deploymentoverride nor global replicas",
@@ -307,6 +557,11 @@ func TestDeploymentsTransform(t *testing.T) {
 						if diff := cmp.Diff(got.Spec.Template.GetAnnotations(), d.expTemplateAnnotations); diff != "" {
 							t.Fatalf("Unexpected annotations in pod template: %v", diff)
 						}
+						for c, envPerContainer := range d.expEnv {
+							if diff := cmp.Diff(getEnv(got.Spec.Template.Spec.Containers, c), envPerContainer); diff != "" {
+								t.Fatalf("Unexpected env in pod template: %v", diff)
+							}
+						}
 					}
 				}
 			}
@@ -378,4 +633,13 @@ func TestDeploymentResourceRequirementsTransform(t *testing.T) {
 			}
 		})
 	}
+}
+
+func getEnv(containers []v1.Container, container string) []v1.EnvVar {
+	for _, c := range containers {
+		if c.Name == container {
+			return c.Env
+		}
+	}
+	return nil
 }

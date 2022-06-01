@@ -774,12 +774,6 @@ spec:
                       enabled:
                         type: boolean
                     type: object
-                  natss:
-                    description: NATS Streaming settings
-                    properties:
-                      enabled:
-                        type: boolean
-                    type: object
                   rabbitmq:
                     description: RabbitMQ settings
                     properties:
@@ -1711,12 +1705,6 @@ spec:
                     type: object
                   kafka:
                     description: Apache Kafka settings
-                    properties:
-                      enabled:
-                        type: boolean
-                    type: object
-                  natss:
-                    description: NATS Streaming settings
                     properties:
                       enabled:
                         type: boolean

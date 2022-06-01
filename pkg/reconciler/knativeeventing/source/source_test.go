@@ -63,13 +63,10 @@ func TestAppendInstalledSources(t *testing.T) {
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/redis",
 		expectedErr: nil,
 	}, {
-		name: "Available GitLab, Kafka, NATSS, Rabbitmq and Prometheus as the target sources",
+		name: "Available GitLab, Kafka, Rabbitmq and Prometheus as the target sources",
 		instance: eventingv1beta1.KnativeEventing{
 			Spec: eventingv1beta1.KnativeEventingSpec{
 				Source: &eventingv1beta1.SourceConfigs{
-					Natss: base.NatssSourceConfiguration{
-						Enabled: true,
-					},
 					Kafka: base.KafkaSourceConfiguration{
 						Enabled: true,
 					},
@@ -85,8 +82,7 @@ func TestAppendInstalledSources(t *testing.T) {
 				Version: "0.22",
 			},
 		},
-		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/natss" + common.COMMA +
-			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/kafka" + common.COMMA +
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/kafka" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/gitlab" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/rabbitmq",
 		expectedErr: nil,
@@ -161,16 +157,13 @@ func TestAppendTargetSources(t *testing.T) {
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/redis",
 		expectedErr: nil,
 	}, {
-		name: "Available GitLab, Kafka, NATSS, Rabbitmq and Prometheus as the target sources",
+		name: "Available GitLab, Kafka, Rabbitmq and Prometheus as the target sources",
 		instance: eventingv1beta1.KnativeEventing{
 			Spec: eventingv1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "0.22",
 				},
 				Source: &eventingv1beta1.SourceConfigs{
-					Natss: base.NatssSourceConfiguration{
-						Enabled: true,
-					},
 					Kafka: base.KafkaSourceConfiguration{
 						Enabled: true,
 					},
@@ -183,8 +176,7 @@ func TestAppendTargetSources(t *testing.T) {
 				},
 			},
 		},
-		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/natss" + common.COMMA +
-			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/kafka" + common.COMMA +
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/kafka" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/gitlab" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/rabbitmq",
 		expectedErr: nil,

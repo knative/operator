@@ -89,12 +89,6 @@ eventing-source:
         - "redis-source.yaml"
     - s3:
         bucket: "gs-noauth://knative-releases"
-        prefix: "eventing-natss/previous"
-      eventingService: natss
-      include:
-        - "eventing-natss.yaml"
-    - s3:
-        bucket: "gs-noauth://knative-releases"
         prefix: "eventing-rabbitmq/previous"
       eventingService: rabbitmq
       include:

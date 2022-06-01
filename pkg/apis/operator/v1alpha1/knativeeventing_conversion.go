@@ -30,7 +30,6 @@ func convertFromSourceConfigsBeta(ke *v1beta1.KnativeEventing) *SourceConfigs {
 		github := ke.Spec.Source.Github
 		gitlab := ke.Spec.Source.Gitlab
 		kafka := ke.Spec.Source.Kafka
-		natss := ke.Spec.Source.Natss
 		rabbitmq := ke.Spec.Source.Rabbitmq
 		redis := ke.Spec.Source.Redis
 		return &SourceConfigs{
@@ -38,7 +37,6 @@ func convertFromSourceConfigsBeta(ke *v1beta1.KnativeEventing) *SourceConfigs {
 			Github:   github,
 			Gitlab:   gitlab,
 			Kafka:    kafka,
-			Natss:    natss,
 			Rabbitmq: rabbitmq,
 			Redis:    redis,
 		}
@@ -53,7 +51,6 @@ func convertToSourceConfigs(ke *KnativeEventing) *v1beta1.SourceConfigs {
 		github := ke.Spec.Source.Github
 		gitlab := ke.Spec.Source.Gitlab
 		kafka := ke.Spec.Source.Kafka
-		natss := ke.Spec.Source.Natss
 		rabbitmq := ke.Spec.Source.Rabbitmq
 		redis := ke.Spec.Source.Redis
 		return &v1beta1.SourceConfigs{
@@ -61,7 +58,6 @@ func convertToSourceConfigs(ke *KnativeEventing) *v1beta1.SourceConfigs {
 			Github:   github,
 			Gitlab:   gitlab,
 			Kafka:    kafka,
-			Natss:    natss,
 			Rabbitmq: rabbitmq,
 			Redis:    redis,
 		}

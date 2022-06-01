@@ -67,9 +67,6 @@ func TestAppendInstalledSources(t *testing.T) {
 		instance: eventingv1beta1.KnativeEventing{
 			Spec: eventingv1beta1.KnativeEventingSpec{
 				Source: &eventingv1beta1.SourceConfigs{
-					Natss: base.NatssSourceConfiguration{
-						Enabled: true,
-					},
 					Kafka: base.KafkaSourceConfiguration{
 						Enabled: true,
 					},
@@ -168,9 +165,6 @@ func TestAppendTargetSources(t *testing.T) {
 					Version: "0.22",
 				},
 				Source: &eventingv1beta1.SourceConfigs{
-					Natss: base.NatssSourceConfiguration{
-						Enabled: true,
-					},
 					Kafka: base.KafkaSourceConfiguration{
 						Enabled: true,
 					},

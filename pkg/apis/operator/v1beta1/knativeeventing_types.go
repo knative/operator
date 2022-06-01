@@ -100,7 +100,6 @@ type SourceConfigs struct {
 	Github   base.GithubSourceConfiguration   `json:"github"`
 	Gitlab   base.GitlabSourceConfiguration   `json:"gitlab"`
 	Kafka    base.KafkaSourceConfiguration    `json:"kafka"`
-	Natss    base.NatssSourceConfiguration    `json:"natss"`
 	Rabbitmq base.RabbitmqSourceConfiguration `json:"rabbitmq"`
 	Redis    base.RedisSourceConfiguration    `json:"redis"`
 }

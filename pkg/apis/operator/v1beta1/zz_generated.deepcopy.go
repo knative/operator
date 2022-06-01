@@ -262,7 +262,6 @@ func (in *SourceConfigs) DeepCopyInto(out *SourceConfigs) {
 	out.Github = in.Github
 	out.Gitlab = in.Gitlab
 	out.Kafka = in.Kafka
-	out.Natss = in.Natss
 	out.Rabbitmq = in.Rabbitmq
 	out.Redis = in.Redis
 	return

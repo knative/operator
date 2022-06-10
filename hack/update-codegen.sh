@@ -37,14 +37,14 @@ group "Kubernetes Codegen"
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
 ${CODEGEN_PKG}/generate-groups.sh "deepcopy,client,informer,lister" \
   knative.dev/operator/pkg/client knative.dev/operator/pkg/apis \
-  "operator:v1alpha1 operator:v1beta1" \
+  "operator:v1beta1" \
   --go-header-file "${boilerplate}"
 
 group "Knative Codegen"
 
 ${KNATIVE_CODEGEN_PKG}/hack/generate-knative.sh "injection" \
   knative.dev/operator/pkg/client knative.dev/operator/pkg/apis \
-  "operator:v1alpha1 operator:v1beta1" \
+  "operator:v1beta1" \
   --go-header-file "${boilerplate}"
 
 group "Deepcopy Gen"
@@ -54,7 +54,6 @@ ${GOPATH}/bin/deepcopy-gen \
   -O zz_generated.deepcopy \
   --go-header-file "${boilerplate}" \
   -i knative.dev/operator/pkg/apis/operator/base \
-  -i knative.dev/operator/pkg/apis/operator/v1alpha1 \
   -i knative.dev/operator/pkg/apis/operator/v1beta1
 
 group "Update deps post-codegen"

@@ -24,7 +24,6 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	operatorv1alpha1 "knative.dev/operator/pkg/apis/operator/v1alpha1"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
@@ -32,7 +31,6 @@ var scheme = runtime.NewScheme()
 var codecs = serializer.NewCodecFactory(scheme)
 
 var localSchemeBuilder = runtime.SchemeBuilder{
-	operatorv1alpha1.AddToScheme,
 	operatorv1beta1.AddToScheme,
 }
 

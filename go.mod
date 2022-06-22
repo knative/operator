@@ -18,14 +18,14 @@ require (
 	gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485 // indirect
 	istio.io/api v0.0.0-20220420164308-b6a03a9e477e
 	istio.io/client-go v1.13.3
-	k8s.io/api v0.23.5
-	k8s.io/apimachinery v0.23.5
-	k8s.io/client-go v0.23.5
-	k8s.io/code-generator v0.23.5
-	knative.dev/caching v0.0.0-20220610113725-9c092893371a
-	knative.dev/eventing v0.32.1-0.20220614135415-c1b0ea692715
+	k8s.io/api v0.23.8
+	k8s.io/apimachinery v0.23.8
+	k8s.io/client-go v0.23.8
+	k8s.io/code-generator v0.23.8
+	knative.dev/caching v0.0.0-20220622130523-d885a807e7c9
+	knative.dev/eventing v0.32.1-0.20220622112123-0866e62ec48e
 	knative.dev/hack v0.0.0-20220610014127-dc6c287516dc
-	knative.dev/pkg v0.0.0-20220610014025-7d607d643ee2
-	knative.dev/serving v0.32.1-0.20220621060221-35a94ff382a6
+	knative.dev/pkg v0.0.0-20220621173822-9c5a7317fa9d
+	knative.dev/serving v0.32.1-0.20220621141822-357316355d00
 	sigs.k8s.io/yaml v1.3.0
 )

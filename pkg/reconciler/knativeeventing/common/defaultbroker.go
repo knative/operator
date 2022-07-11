@@ -18,6 +18,7 @@ package common
 
 import (
 	"encoding/json"
+	"strings"
 
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
@@ -40,6 +41,22 @@ func DefaultBrokerConfigMapTransform(instance *eventingv1beta1.KnativeEventing, 
 			if err != nil {
 				log.Error(err, "Error converting Unstructured to ConfigMap", "unstructured", u, "configMap", configMap)
 				return err
+			}
+
+			// Check if the default broker class is set with the configmap data in the spec
+			defaultBrokerClassDefined := false
+			config := instance.GetSpec().GetConfig()
+			if data, ok := config["br-defaults"]; ok {
+				defaultBrokerClassDefined = findDefaultBrokerClassDefined(data)
+			}
+			if defaultBrokerClassDefined {
+				return nil
+			}
+			if data, ok := config["config-br-defaults"]; ok {
+				defaultBrokerClassDefined = findDefaultBrokerClassDefined(data)
+			}
+			if defaultBrokerClassDefined {
+				return nil
 			}
 
 			defaults, err := eventingconfig.NewDefaultsConfigFromConfigMap(configMap)
@@ -88,4 +105,11 @@ func writeDefaultsToConfigMap(defaults *eventingconfig.Defaults, configMap *core
 
 	configMap.Data[eventingconfig.BrokerDefaultsKey] = string(yamlBytes)
 	return nil
+}
+
+func findDefaultBrokerClassDefined(data map[string]string) bool {
+	if dataBrDefault, ok := data["default-br-config"]; ok {
+		return strings.Contains(dataBrDefault, "brokerClass:")
+	}
+	return false
 }

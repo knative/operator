@@ -35,10 +35,10 @@ var log = zap.NewNop().Sugar()
 
 func TestDefaultBrokerTransform(t *testing.T) {
 	tests := []struct {
-		name               string
-		configMap          corev1.ConfigMap
-		defaultBrokerClass string
-		expected           corev1.ConfigMap
+		name      string
+		configMap corev1.ConfigMap
+		instance  *v1beta1.KnativeEventing
+		expected  corev1.ConfigMap
 	}{{
 		name: "UsesDefaultWhenNotSpecified",
 		configMap: makeConfigMap(t, "config-br-defaults", base.ConfigMapData{
@@ -50,7 +50,11 @@ func TestDefaultBrokerTransform(t *testing.T) {
 				"namespace":   "knative-eventing",
 			},
 		}),
-		defaultBrokerClass: "",
+		instance: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
+				DefaultBrokerClass: "",
+			},
+		},
 		expected: makeConfigMap(t, "config-br-defaults", base.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "MTChannelBasedBroker",
@@ -71,7 +75,11 @@ func TestDefaultBrokerTransform(t *testing.T) {
 				"namespace":   "knative-eventing",
 			},
 		}),
-		defaultBrokerClass: "MyCustomerBroker",
+		instance: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
+				DefaultBrokerClass: "MyCustomerBroker",
+			},
+		},
 		expected: makeConfigMap(t, "config-br-defaults", base.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "MyCustomerBroker",
@@ -92,10 +100,89 @@ func TestDefaultBrokerTransform(t *testing.T) {
 				"namespace":   "knative-eventing",
 			},
 		}),
-		defaultBrokerClass: "MyCustomerBroker",
+		instance: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
+				DefaultBrokerClass: "MyCustomerBroker",
+			},
+		},
 		expected: makeConfigMap(t, "config-br-defaults", base.ConfigMapData{
 			"clusterDefault": {
 				"brokerClass": "Foo",
+				"apiVersion":  "v1",
+				"kind":        "ConfigMap",
+				"name":        "config-br-default-channel",
+				"namespace":   "knative-eventing",
+			},
+		}),
+	}, {
+		name: "DefaultBrokerClassWithSpecConfig",
+		configMap: makeConfigMap(t, "config-br-defaults", base.ConfigMapData{
+			"clusterDefault": {
+				"brokerClass": "Foo",
+				"apiVersion":  "v1",
+				"kind":        "ConfigMap",
+				"name":        "config-br-default-channel",
+				"namespace":   "knative-eventing",
+			},
+		}),
+		instance: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
+				DefaultBrokerClass: "MyCustomerBroker",
+				CommonSpec: base.CommonSpec{
+					Config: base.ConfigMapData{
+						"br-defaults": {
+							"default-br-config": "|\n" +
+								"clusterDefault:\n" +
+								"brokerClass: MyCustomerBroker\n" +
+								"apiVersion: v1\n" +
+								"kind: ConfigMap\n" +
+								"name: config-br-default-channel\n" +
+								"namespace: knative-eventing",
+						},
+					},
+				},
+			},
+		},
+		expected: makeConfigMap(t, "config-br-defaults", base.ConfigMapData{
+			"clusterDefault": {
+				"brokerClass": "Foo",
+				"apiVersion":  "v1",
+				"kind":        "ConfigMap",
+				"name":        "config-br-default-channel",
+				"namespace":   "knative-eventing",
+			},
+		}),
+	}, {
+		name: "DefaultBrokerClassWithSpecConfigNoBrokerClass",
+		configMap: makeConfigMap(t, "config-br-defaults", base.ConfigMapData{
+			"clusterDefault": {
+				"brokerClass": "Foo",
+				"apiVersion":  "v1",
+				"kind":        "ConfigMap",
+				"name":        "config-br-default-channel",
+				"namespace":   "knative-eventing",
+			},
+		}),
+		instance: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
+				DefaultBrokerClass: "MyCustomerBroker",
+				CommonSpec: base.CommonSpec{
+					Config: base.ConfigMapData{
+						"br-defaults": {
+							"default-br-config": "|\n" +
+								"clusterDefault:\n" +
+								"apiVersion: v1\n" +
+								"kind: ConfigMap\n" +
+								"name: config-br-default-channel\n" +
+								"namespace: knative-eventing",
+						},
+					},
+				},
+			},
+		},
+		expected: makeConfigMap(t, "config-br-defaults", base.ConfigMapData{
+			"clusterDefault": {
+				"brokerClass": "MyCustomerBroker",
 				"apiVersion":  "v1",
 				"kind":        "ConfigMap",
 				"name":        "config-br-default-channel",
@@ -107,12 +194,7 @@ func TestDefaultBrokerTransform(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			unstructuredConfigMap := util.MakeUnstructured(t, &tt.configMap)
-			instance := &v1beta1.KnativeEventing{
-				Spec: v1beta1.KnativeEventingSpec{
-					DefaultBrokerClass: tt.defaultBrokerClass,
-				},
-			}
-			transform := DefaultBrokerConfigMapTransform(instance, log)
+			transform := DefaultBrokerConfigMapTransform(tt.instance, log)
 			transform(&unstructuredConfigMap)
 
 			var configMap = &corev1.ConfigMap{}

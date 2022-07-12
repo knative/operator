@@ -21,7 +21,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
-	policyv1 "k8s.io/api/policy/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -39,7 +39,7 @@ func TestPodDisruptionBudgetsTransform(t *testing.T) {
 		overrides: []base.PodDisruptionBudgetOverride{
 			{
 				Name: "activator-pdb",
-				PodDisruptionBudgetSpec: policyv1.PodDisruptionBudgetSpec{
+				PodDisruptionBudgetSpec: policyv1beta1.PodDisruptionBudgetSpec{
 					MinAvailable: &intstr.IntOrString{StrVal: "50%", Type: intstr.String},
 				},
 			},
@@ -70,7 +70,7 @@ func TestPodDisruptionBudgetsTransform(t *testing.T) {
 			for _, override := range test.overrides {
 				for _, u := range manifest.Resources() {
 					if u.GetKind() == "PodDisruptionBudget" && u.GetName() == override.Name {
-						got := &policyv1.PodDisruptionBudget{}
+						got := &policyv1beta1.PodDisruptionBudget{}
 						if err := scheme.Scheme.Convert(&u, got, nil); err != nil {
 							t.Fatalf("Failed to convert unstructured to PodDisruptionBudget: %v", err)
 						}

@@ -18,6 +18,7 @@ package base
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/apis"
@@ -72,6 +73,9 @@ type KComponentSpec interface {
 
 	// GetServiceOverride gets the service configurations to override.
 	GetServiceOverride() []ServiceOverride
+
+	// GetPodDisruptionBudgetOverride gets the PodDisruptionBudget configurations to override.
+	GetPodDisruptionBudgetOverride() []PodDisruptionBudgetOverride
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -156,6 +160,10 @@ type CommonSpec struct {
 	// HighAvailability allows specification of HA control plane.
 	// +optional
 	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
+
+	// PodDisruptionBudgetOverride overrides PodDisruptionBudget configurations via minAvailable.
+	// +optional
+	PodDisruptionBudgetOverride []PodDisruptionBudgetOverride `json:"podDisruptionBudgets,omitempty"`
 }
 
 // GetConfig implements KComponentSpec.
@@ -201,6 +209,11 @@ func (c *CommonSpec) GetDeploymentOverride() []DeploymentOverride {
 // GetServiceOverride implements KComponentSpec.
 func (c *CommonSpec) GetServiceOverride() []ServiceOverride {
 	return c.ServiceOverride
+}
+
+// GetPodDisruptionBudgetOverride implements KComponentSpec.
+func (c *CommonSpec) GetPodDisruptionBudgetOverride() []PodDisruptionBudgetOverride {
+	return c.PodDisruptionBudgetOverride
 }
 
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first
@@ -284,6 +297,13 @@ type ServiceOverride struct {
 	// Selector overrides the selector for the service
 	// +optional
 	Selector map[string]string `json:"selector,omitempty"`
+}
+
+type PodDisruptionBudgetOverride struct {
+	// Name is the name of the podDisruptionBudget to override.
+	Name string `json:"name"`
+	// The desired PodDisruptionBudgetSpec
+	policyv1.PodDisruptionBudgetSpec
 }
 
 // ResourceRequirementsOverride enables the user to override any container's

@@ -898,6 +898,21 @@ spec:
                         type: string
                       description: Selector overrides selector for the service
                       type: object
+              podDisruptionBudgets:
+                description: A mapping of podDisruptionBudget name to override
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      description: The name of the podDisruptionBudget
+                      type: string
+                    minAvailable:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      description: An eviction is allowed if at least "minAvailable" pods selected by "selector" will still be available after the eviction, i.e. even in the absence of the evicted pod.  So for example you can prevent all voluntary evictions by specifying "100%".
+                      x-kubernetes-int-or-string: true
               source:
                 description: The source configuration for Knative Eventing
                 properties:

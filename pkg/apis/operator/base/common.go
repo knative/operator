@@ -18,7 +18,7 @@ package base
 
 import (
 	corev1 "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
+	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/apis"
@@ -303,7 +303,7 @@ type PodDisruptionBudgetOverride struct {
 	// Name is the name of the podDisruptionBudget to override.
 	Name string `json:"name"`
 	// The desired PodDisruptionBudgetSpec
-	policyv1beta1.PodDisruptionBudgetSpec
+	policyv1.PodDisruptionBudgetSpec
 }
 
 // ResourceRequirementsOverride enables the user to override any container's

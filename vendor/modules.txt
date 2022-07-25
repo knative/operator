@@ -396,7 +396,7 @@ golang.org/x/oauth2/google/internal/externalaccount
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+# golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
 # golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9
@@ -409,6 +409,12 @@ golang.org/x/sys/windows/registry
 # golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 golang.org/x/term
 # golang.org/x/text v0.3.7
+golang.org/x/text/cases
+golang.org/x/text/internal
+golang.org/x/text/internal/language
+golang.org/x/text/internal/language/compact
+golang.org/x/text/internal/tag
+golang.org/x/text/language
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
@@ -1072,7 +1078,7 @@ k8s.io/utils/lru
 k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20220721132919-9d082ff35e00
+# knative.dev/caching v0.0.0-20220725105524-783e3361b29b
 ## explicit
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
@@ -1160,11 +1166,11 @@ knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/forwarder
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/hack v0.0.0-20220721014222-a6450400b5f1
+# knative.dev/hack v0.0.0-20220722185521-123a2783c4d8
 ## explicit
 knative.dev/hack
 knative.dev/hack/shell
-# knative.dev/networking v0.0.0-20220721014205-5ea1a8e86ebe
+# knative.dev/networking v0.0.0-20220722153221-1f4c9ce38742
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
 knative.dev/networking/pkg/apis/networking/v1alpha1
@@ -1178,7 +1184,7 @@ knative.dev/networking/pkg/http/probe
 knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/k8s
-# knative.dev/pkg v0.0.0-20220721014205-1a5e1682be3a
+# knative.dev/pkg v0.0.0-20220722175921-6c9c1c6098d5
 ## explicit
 knative.dev/pkg/apiextensions/storageversion
 knative.dev/pkg/apiextensions/storageversion/cmd/migrate
@@ -1225,7 +1231,6 @@ knative.dev/pkg/metrics/metricskey
 knative.dev/pkg/metrics/testing
 knative.dev/pkg/network
 knative.dev/pkg/network/handlers
-knative.dev/pkg/pool
 knative.dev/pkg/profiling
 knative.dev/pkg/ptr
 knative.dev/pkg/reconciler
@@ -1258,7 +1263,7 @@ knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates
 knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/resourcesemantics/conversion
-# knative.dev/serving v0.33.1-0.20220722144221-ed1397d61e66
+# knative.dev/serving v0.33.1-0.20220722192528-808923d8d8ea
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

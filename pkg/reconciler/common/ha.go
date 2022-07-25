@@ -43,7 +43,7 @@ func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.T
 
 		// stash the HA object
 		ha := obj.GetSpec().GetHighAvailability()
-		if ha == nil {
+		if ha == nil || ha.Replicas == nil {
 			return nil
 		}
 

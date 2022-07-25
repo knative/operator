@@ -78,6 +78,18 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		config:   makeHa(3),
 		in:       makeUnstructuredHPA(t, "activator", 2, 2),
 		expected: makeUnstructuredHPA(t, "activator", 3, 3),
+	}, {
+		name: "HA; empty replicas",
+		config: &base.HighAvailability{
+			Replicas: nil,
+		},
+		in:       makeUnstructuredHPA(t, "activator", 2, 2),
+		expected: makeUnstructuredHPA(t, "activator", 2, 2),
+	}, {
+		name:     "HA; empty high availability",
+		config:   nil,
+		in:       makeUnstructuredHPA(t, "activator", 2, 2),
+		expected: makeUnstructuredHPA(t, "activator", 2, 2),
 	}}
 
 	for _, tc := range cases {

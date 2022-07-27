@@ -18,7 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-VERSION=1.5.0
+VERSION=1.6.0
 
 rm -rf bundle
 kustomize build config/manifests | operator-sdk generate bundle -q --overwrite --version $VERSION
@@ -70,8 +70,12 @@ done
 # treated as separate deployment.
 WEBHOOK_DEFINITIONS="webhookdefinitions"
 CSV_FILE="bundle/manifests/knative-operator.v${VERSION}.clusterserviceversion.yaml"
-LINE_NUM=`cat -n ${CSV_FILE} | grep ${WEBHOOK_DEFINITIONS} | awk '{print $1}'`
-sed -i.bak -n "1,$(( LINE_NUM - 1 )) p; $LINE_NUM q" ${CSV_FILE}
+
+if grep -Fxq ${WEBHOOK_DEFINITIONS} ${CSV_FILE}
+then
+    LINE_NUM=`cat -n ${CSV_FILE} | grep ${WEBHOOK_DEFINITIONS} | awk '{print $1}'`
+    sed -i.bak -n "1,$(( LINE_NUM - 1 )) p; $LINE_NUM q" ${CSV_FILE}
+fi
 
 # Remove the file for the fake service account
 rm bundle/manifests/knative-operator-fake_v1_serviceaccount.yaml

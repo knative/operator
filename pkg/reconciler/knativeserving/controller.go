@@ -20,6 +20,7 @@ import (
 	mfc "github.com/manifestival/client-go-client"
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
+	apixclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/tools/cache"
 
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -32,6 +33,7 @@ import (
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/injection"
+	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
 )
 
@@ -73,6 +75,10 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 			Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 		})
 
+		err = common.MigrateCustomResource(ctx, dynamicclient.Get(ctx), apixclient.NewForConfigOrDie(injection.GetConfig(ctx)))
+		if err != nil {
+			logger.Fatalw("Unable to migrate existing custom resources", zap.Error(err))
+		}
 		return impl
 	}
 }

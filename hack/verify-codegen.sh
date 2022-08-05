@@ -21,6 +21,7 @@ set -o pipefail
 source $(dirname $0)/../vendor/knative.dev/hack/library.sh
 
 readonly TMP_DIFFROOT="$(mktemp -d ${REPO_ROOT_DIR}/tmpdiffroot.XXXXXX)"
+readonly RELEASE_VERSION="v1.5"
 
 cleanup() {
   rm -rf "${TMP_DIFFROOT}"
@@ -36,7 +37,7 @@ cp -aR "${REPO_ROOT_DIR}/go.sum" "${REPO_ROOT_DIR}/pkg" "${REPO_ROOT_DIR}/vendor
 
 # TODO(mattmoor): We should be able to rm -rf pkg/client/ and vendor/
 
-"${REPO_ROOT_DIR}/hack/update-codegen.sh"
+"${REPO_ROOT_DIR}/hack/update-codegen.sh" --release ${RELEASE_VERSION}
 echo "Diffing ${REPO_ROOT_DIR} against freshly generated codegen"
 ret=0
 diff -Nupr --no-dereference "${REPO_ROOT_DIR}/pkg" "${TMP_DIFFROOT}/pkg" || ret=1

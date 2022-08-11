@@ -1067,4 +1067,11 @@ spec:
     singular: knativeeventing
   scope: Namespaced
   conversion:
-    strategy: None
+    strategy: Webhook
+    webhook:
+      conversionReviewVersions: ["v1beta1"]
+      clientConfig:
+        service:
+          name: operator-webhook
+          namespace: default
+          path: /resource-conversion

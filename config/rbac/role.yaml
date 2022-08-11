@@ -360,3 +360,34 @@ rules:
     - knative-eventing-operator
     verbs:
     - delete
+  # for RabbitMQ messaging topology objects
+  - apiGroups:
+      - rabbitmq.com
+    resources:
+      - rabbitmqclusters
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - rabbitmq.com
+    resources:
+      - bindings
+      - queues
+      - exchanges
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - rabbitmq.com
+    resources:
+      - bindings/status
+      - queues/status
+      - exchanges/status
+    verbs:
+      - get

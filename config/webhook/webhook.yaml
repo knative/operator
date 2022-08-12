@@ -23,8 +23,6 @@ metadata:
     app.kubernetes.io/version: devel
     app.kubernetes.io/name: knative-operator
 spec:
-  # Set to 0 due to the removal of CRD at v1alpha1.
-  replicas: 0
   selector:
     matchLabels:
       app: operator-webhook

@@ -18,7 +18,9 @@ package source
 
 import (
 	"context"
+	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -34,6 +36,34 @@ func getSource(manifest *mf.Manifest, path string) (mf.Manifest, error) {
 		return mf.Manifest{}, nil
 	}
 	return common.FetchManifest(path)
+}
+
+func getAllSourcePath(version string) string {
+	koDataDir := os.Getenv(common.KoEnvKey)
+	sourceVersion := common.LATEST_VERSION
+	if !strings.EqualFold(version, common.LATEST_VERSION) {
+		sourceVersion = semver.MajorMinor(common.SanitizeSemver(version))[1:]
+	}
+
+	sourcePath := filepath.Join(koDataDir, "eventing-source", sourceVersion)
+	// List all the directories under the sourcePath, because we will append all the paths for eventing sources
+	fileList, err := ioutil.ReadDir(sourcePath)
+	if err != nil {
+		return ""
+	}
+
+	var urls []string
+	for _, file := range fileList {
+		name := path.Join(sourcePath, file.Name())
+		pathDirOrFile, err := os.Stat(name)
+		if err != nil {
+			continue
+		}
+		if pathDirOrFile.IsDir() {
+			urls = append(urls, name)
+		}
+	}
+	return strings.Join(urls, common.COMMA)
 }
 
 func getSourcePath(version string, ke *v1beta1.KnativeEventing) string {
@@ -95,13 +125,13 @@ func AppendTargetSources(ctx context.Context, manifest *mf.Manifest, instance ba
 	return err
 }
 
-// AppendInstalledSources appends the installed manifests of the eventing sources
-func AppendInstalledSources(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+// AppendAllSources appends all the manifests of the eventing sources
+func AppendAllSources(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	version := instance.GetStatus().GetVersion()
 	if version == "" {
 		version = common.TargetVersion(instance)
 	}
-	sourcePath := getSourcePath(version, convertToKE(instance))
+	sourcePath := getAllSourcePath(version)
 	m, err := getSource(manifest, sourcePath)
 	if err == nil {
 		*manifest = manifest.Append(m)

@@ -29,7 +29,7 @@ import (
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
-func TestAppendInstalledSources(t *testing.T) {
+func TestAppendAllSources(t *testing.T) {
 	os.Setenv(common.KoEnvKey, "testdata/kodata")
 	defer os.Unsetenv(common.KoEnvKey)
 
@@ -60,7 +60,10 @@ func TestAppendInstalledSources(t *testing.T) {
 		},
 		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/ceph" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/github" + common.COMMA +
-			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/redis",
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/gitlab" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/kafka" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/redis" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/rabbitmq",
 		expectedErr: nil,
 	}, {
 		name: "Available GitLab, Kafka, Rabbitmq and Prometheus as the target sources",
@@ -82,8 +85,11 @@ func TestAppendInstalledSources(t *testing.T) {
 				Version: "0.22",
 			},
 		},
-		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/kafka" + common.COMMA +
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/ceph" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/github" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/gitlab" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/kafka" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/redis" + common.COMMA +
 			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/rabbitmq",
 		expectedErr: nil,
 	}, {
@@ -94,8 +100,13 @@ func TestAppendInstalledSources(t *testing.T) {
 				Version: "0.23",
 			},
 		},
-		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/empty.yaml",
-		expectedErr:         nil,
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.23/ceph" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.23/github" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.23/gitlab" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.23/kafka" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.23/redis" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.23/rabbitmq",
+		expectedErr: nil,
 	}, {
 		name: "Unavailable eventing source",
 		instance: eventingv1beta1.KnativeEventing{
@@ -111,7 +122,7 @@ func TestAppendInstalledSources(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
-			err := AppendInstalledSources(context.TODO(), &manifest, &tt.instance)
+			err := AppendAllSources(context.TODO(), &manifest, &tt.instance)
 			if err != nil {
 				util.AssertEqual(t, err.Error(), tt.expectedErr.Error())
 				util.AssertEqual(t, len(manifest.Resources()), 0)

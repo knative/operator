@@ -17,9 +17,9 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-post-install-job-role
   labels:
-    app.kubernetes.io/version: "1.3.0"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-eventing
-    eventing.knative.dev/release: "v1.3.0"
+    eventing.knative.dev/release: "v1.7.0"
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
   - apiGroups:
@@ -139,8 +139,8 @@ metadata:
   name: knative-eventing-post-install-job
   namespace: knative-eventing
   labels:
-    eventing.knative.dev/release: "v1.3.0"
-    app.kubernetes.io/version: "1.3.0"
+    eventing.knative.dev/release: "v1.7.0"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-eventing
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -148,8 +148,8 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-post-install-job-role-binding
   labels:
-    eventing.knative.dev/release: "v1.3.0"
-    app.kubernetes.io/version: "1.3.0"
+    eventing.knative.dev/release: "v1.7.0"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -184,8 +184,8 @@ metadata:
     app: "storage-version-migration-eventing"
     app.kubernetes.io/name: knative-eventing
     app.kubernetes.io/component: storage-version-migration-job
-    app.kubernetes.io/version: "1.3.0"
-    eventing.knative.dev/release: "v1.3.0"
+    app.kubernetes.io/version: "1.7.0"
+    eventing.knative.dev/release: "v1.7.0"
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -195,8 +195,8 @@ spec:
         app: "storage-version-migration-eventing"
         app.kubernetes.io/name: knative-eventing
         app.kubernetes.io/component: storage-version-migration-job
-        app.kubernetes.io/version: "1.3.0"
-        eventing.knative.dev/release: "v1.3.0"
+        app.kubernetes.io/version: "1.7.0"
+        eventing.knative.dev/release: "v1.7.0"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -204,7 +204,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:a1d45df8143df44d12f1b81ecb241948e6b5f9797f983b195a182471da6e7387
+          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:307038fea3673b73c5318b0f04600c4f7924b6a5edfa9afa1296fc2751e16be4
           args:
             - "apiserversources.sources.knative.dev"
             - "brokers.eventing.knative.dev"

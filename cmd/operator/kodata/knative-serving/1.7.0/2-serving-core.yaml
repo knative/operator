@@ -18,8 +18,7 @@ metadata:
   name: knative-serving
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -44,8 +43,7 @@ metadata:
   # (which should be identical, but isn't guaranteed to be installed alongside serving).
   name: knative-serving-aggregated-addressable-resolver
   labels:
-    serving.knative.dev/release: "v1.3.1"
-    app.kubernetes.io/version: "1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-serving
 aggregationRule:
   clusterRoleSelectors:
@@ -57,8 +55,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-addressable-resolver
   labels:
-    serving.knative.dev/release: "v1.3.1"
-    app.kubernetes.io/version: "1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-serving
     # Labeled to facilitate aggregated cluster roles that act on Addressables.
     duck.knative.dev/addressable: "true"
@@ -97,8 +94,7 @@ metadata:
   name: knative-serving-namespaced-admin
   labels:
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
-    serving.knative.dev/release: "v1.3.1"
-    app.kubernetes.io/version: "1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-serving
 rules:
   - apiGroups: ["serving.knative.dev"]
@@ -114,8 +110,7 @@ metadata:
   name: knative-serving-namespaced-edit
   labels:
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
-    serving.knative.dev/release: "v1.3.1"
-    app.kubernetes.io/version: "1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-serving
 rules:
   - apiGroups: ["serving.knative.dev"]
@@ -131,8 +126,7 @@ metadata:
   name: knative-serving-namespaced-view
   labels:
     rbac.authorization.k8s.io/aggregate-to-view: "true"
-    serving.knative.dev/release: "v1.3.1"
-    app.kubernetes.io/version: "1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-serving
 rules:
   - apiGroups: ["serving.knative.dev", "networking.internal.knative.dev", "autoscaling.internal.knative.dev", "caching.internal.knative.dev"]
@@ -160,8 +154,7 @@ metadata:
   name: knative-serving-core
   labels:
     serving.knative.dev/controller: "true"
-    serving.knative.dev/release: "v1.3.1"
-    app.kubernetes.io/version: "1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-serving
 rules:
   - apiGroups: [""]
@@ -215,8 +208,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-podspecable-binding
   labels:
-    serving.knative.dev/release: "v1.3.1"
-    app.kubernetes.io/version: "1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-serving
     # Labeled to facilitate aggregated cluster roles that act on PodSpecables.
     duck.knative.dev/podspecable: "true"
@@ -255,8 +247,7 @@ metadata:
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -264,8 +255,7 @@ metadata:
   name: knative-serving-admin
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 aggregationRule:
   clusterRoleSelectors:
     - matchLabels:
@@ -278,8 +268,7 @@ metadata:
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 subjects:
   - kind: ServiceAccount
     name: controller
@@ -296,8 +285,7 @@ metadata:
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 subjects:
   - kind: ServiceAccount
     name: controller
@@ -328,7 +316,7 @@ metadata:
   name: images.caching.internal.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     knative.dev/crd-install: "true"
 spec:
   group: caching.internal.knative.dev
@@ -339,8 +327,6 @@ spec:
     categories:
       - knative-internal
       - caching
-    shortNames:
-      - img
   scope: Namespaced
   versions:
     - name: v1alpha1
@@ -350,12 +336,81 @@ spec:
         status: {}
       schema:
         openAPIV3Schema:
+          description: Image is a Knative abstraction that encapsulates the interface by which Knative components express a desire to have a particular image cached.
           type: object
-          # this is a work around so we don't need to flush out the
-          # schema for each version at this time
-          #
-          # see issue: https://github.com/knative/serving/issues/912
-          x-kubernetes-preserve-unknown-fields: true
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: Spec holds the desired state of the Image (from the client).
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  description: Image is the name of the container image url to cache across the cluster.
+                  type: string
+                imagePullSecrets:
+                  description: ImagePullSecrets contains the names of the Kubernetes Secrets containing login information used by the Pods which will run this container.
+                  type: array
+                  items:
+                    description: LocalObjectReference contains enough information to let you locate the referenced object inside the same namespace.
+                    type: object
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    x-kubernetes-map-type: atomic
+                serviceAccountName:
+                  description: 'ServiceAccountName is the name of the Kubernetes ServiceAccount as which the Pods will run this container.  This is potentially used to authenticate the image pull if the service account has attached pull secrets.  For more information: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account'
+                  type: string
+            status:
+              description: Status communicates the observed state of the Image (from the controller).
+              type: object
+              properties:
+                annotations:
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                  type: object
+                  additionalProperties:
+                    type: string
+                conditions:
+                  description: Conditions the latest available observations of a resource's current state.
+                  type: array
+                  items:
+                    description: 'Condition defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                    type: object
+                    required:
+                      - status
+                      - type
+                    properties:
+                      lastTransitionTime:
+                        description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
+                        type: string
+                      message:
+                        description: A human readable message indicating details about the transition.
+                        type: string
+                      reason:
+                        description: The reason for the condition's last transition.
+                        type: string
+                      severity:
+                        description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+                        type: string
+                      status:
+                        description: Status of the condition, one of True, False, Unknown.
+                        type: string
+                      type:
+                        description: Type of condition.
+                        type: string
+                observedGeneration:
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                  type: integer
+                  format: int64
       additionalPrinterColumns:
         - name: Image
           type: string
@@ -382,8 +437,8 @@ metadata:
   name: certificates.networking.internal.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/version: "1.7.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -395,12 +450,99 @@ spec:
         status: {}
       schema:
         openAPIV3Schema:
+          description: Certificate is responsible for provisioning a SSL certificate for the given hosts. It is a Knative abstraction for various SSL certificate provisioning solutions (such as cert-manager or self-signed SSL certificate).
           type: object
-          # this is a work around so we don't need to flush out the
-          # schema for each version at this time
-          #
-          # see issue: https://github.com/knative/serving/issues/912
-          x-kubernetes-preserve-unknown-fields: true
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: 'Spec is the desired state of the Certificate. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
+              type: object
+              required:
+                - dnsNames
+                - secretName
+              properties:
+                dnsNames:
+                  description: DNSNames is a list of DNS names the Certificate could support. The wildcard format of DNSNames (e.g. *.default.example.com) is supported.
+                  type: array
+                  items:
+                    type: string
+                secretName:
+                  description: SecretName is the name of the secret resource to store the SSL certificate in.
+                  type: string
+            status:
+              description: 'Status is the current state of the Certificate. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
+              type: object
+              properties:
+                annotations:
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                  type: object
+                  additionalProperties:
+                    type: string
+                conditions:
+                  description: Conditions the latest available observations of a resource's current state.
+                  type: array
+                  items:
+                    description: 'Condition defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                    type: object
+                    required:
+                      - status
+                      - type
+                    properties:
+                      lastTransitionTime:
+                        description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
+                        type: string
+                      message:
+                        description: A human readable message indicating details about the transition.
+                        type: string
+                      reason:
+                        description: The reason for the condition's last transition.
+                        type: string
+                      severity:
+                        description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+                        type: string
+                      status:
+                        description: Status of the condition, one of True, False, Unknown.
+                        type: string
+                      type:
+                        description: Type of condition.
+                        type: string
+                http01Challenges:
+                  description: HTTP01Challenges is a list of HTTP01 challenges that need to be fulfilled in order to get the TLS certificate..
+                  type: array
+                  items:
+                    description: HTTP01Challenge defines the status of a HTTP01 challenge that a certificate needs to fulfill.
+                    type: object
+                    properties:
+                      serviceName:
+                        description: ServiceName is the name of the service to serve HTTP01 challenge requests.
+                        type: string
+                      serviceNamespace:
+                        description: ServiceNamespace is the namespace of the service to serve HTTP01 challenge requests.
+                        type: string
+                      servicePort:
+                        description: ServicePort is the port of the service to serve HTTP01 challenge requests.
+                        anyOf:
+                          - type: integer
+                          - type: string
+                        x-kubernetes-int-or-string: true
+                      url:
+                        description: URL is the URL that the HTTP01 challenge is expected to serve on.
+                        type: string
+                notAfter:
+                  description: The expiration time of the TLS certificate stored in the secret named by this resource in spec.secretName.
+                  type: string
+                  format: date-time
+                observedGeneration:
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                  type: integer
+                  format: int64
       additionalPrinterColumns:
         - name: Ready
           type: string
@@ -442,8 +584,7 @@ metadata:
   name: configurations.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/podspecable: "true"
 spec:
@@ -526,6 +667,10 @@ spec:
                       required:
                         - containers
                       properties:
+                        affinity:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-affinity
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         automountServiceAccountToken:
                           description: AutomountServiceAccountToken indicates whether a service account token should be automatically mounted.
                           type: boolean
@@ -584,6 +729,17 @@ spec:
                                             optional:
                                               description: Specify whether the ConfigMap or its key must be defined
                                               type: boolean
+                                          x-kubernetes-map-type: atomic
+                                        fieldRef:
+                                          description: This is accessible behind a feature flag - kubernetes.podspec-fieldref
+                                          type: object
+                                          x-kubernetes-preserve-unknown-fields: true
+                                          x-kubernetes-map-type: atomic
+                                        resourceFieldRef:
+                                          description: This is accessible behind a feature flag - kubernetes.podspec-fieldref
+                                          type: object
+                                          x-kubernetes-preserve-unknown-fields: true
+                                          x-kubernetes-map-type: atomic
                                         secretKeyRef:
                                           description: Selects a key of a secret in the pod's namespace
                                           type: object
@@ -599,7 +755,7 @@ spec:
                                             optional:
                                               description: Specify whether the Secret or its key must be defined
                                               type: boolean
-                                      x-kubernetes-preserve-unknown-fields: true
+                                          x-kubernetes-map-type: atomic
                               envFrom:
                                 description: List of sources to populate environment variables in the container. The keys defined within a source must be a C_IDENTIFIER. All invalid keys will be reported as an event when the container is starting. When a key exists in multiple sources, the value associated with the last source will take precedence. Values defined by an Env with a duplicate key will take precedence. Cannot be updated.
                                 type: array
@@ -617,6 +773,7 @@ spec:
                                         optional:
                                           description: Specify whether the ConfigMap must be defined
                                           type: boolean
+                                      x-kubernetes-map-type: atomic
                                     prefix:
                                       description: An optional identifier to prepend to each key in the ConfigMap. Must be a C_IDENTIFIER.
                                       type: string
@@ -630,6 +787,7 @@ spec:
                                         optional:
                                           description: Specify whether the Secret must be defined
                                           type: boolean
+                                      x-kubernetes-map-type: atomic
                               image:
                                 description: 'Docker image name. More info: https://kubernetes.io/docs/concepts/containers/images This field is optional to allow higher level config management to default or override container images in workload controllers like Deployments and StatefulSets.'
                                 type: string
@@ -641,7 +799,7 @@ spec:
                                 type: object
                                 properties:
                                   exec:
-                                    description: One and only one of the following should be specified. Exec specifies the action to take.
+                                    description: Exec specifies the action to take.
                                     type: object
                                     properties:
                                       command:
@@ -679,10 +837,15 @@ spec:
                                       path:
                                         description: Path to access on the HTTP server.
                                         type: string
+                                      port:
+                                        description: Name or number of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                                        anyOf:
+                                          - type: integer
+                                          - type: string
+                                        x-kubernetes-int-or-string: true
                                       scheme:
                                         description: Scheme to use for connecting to the host. Defaults to HTTP.
                                         type: string
-                                    x-kubernetes-preserve-unknown-fields: true
                                   initialDelaySeconds:
                                     description: 'Number of seconds after the container has started before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                                     type: integer
@@ -696,13 +859,18 @@ spec:
                                     type: integer
                                     format: int32
                                   tcpSocket:
-                                    description: 'TCPSocket specifies an action involving a TCP port. TCP hooks not yet supported TODO: implement a realistic TCP lifecycle hook'
+                                    description: TCPSocket specifies an action involving a TCP port.
                                     type: object
                                     properties:
                                       host:
                                         description: 'Optional: Host name to connect to, defaults to the pod IP.'
                                         type: string
-                                    x-kubernetes-preserve-unknown-fields: true
+                                      port:
+                                        description: Number or name of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                                        anyOf:
+                                          - type: integer
+                                          - type: string
+                                        x-kubernetes-int-or-string: true
                                   timeoutSeconds:
                                     description: 'Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                                     type: integer
@@ -730,7 +898,6 @@ spec:
                                       description: Protocol for port. Must be UDP, TCP, or SCTP. Defaults to "TCP".
                                       type: string
                                       default: TCP
-                                  x-kubernetes-preserve-unknown-fields: true
                                 x-kubernetes-list-map-keys:
                                   - containerPort
                                   - protocol
@@ -740,7 +907,7 @@ spec:
                                 type: object
                                 properties:
                                   exec:
-                                    description: One and only one of the following should be specified. Exec specifies the action to take.
+                                    description: Exec specifies the action to take.
                                     type: object
                                     properties:
                                       command:
@@ -778,10 +945,15 @@ spec:
                                       path:
                                         description: Path to access on the HTTP server.
                                         type: string
+                                      port:
+                                        description: Name or number of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                                        anyOf:
+                                          - type: integer
+                                          - type: string
+                                        x-kubernetes-int-or-string: true
                                       scheme:
                                         description: Scheme to use for connecting to the host. Defaults to HTTP.
                                         type: string
-                                    x-kubernetes-preserve-unknown-fields: true
                                   initialDelaySeconds:
                                     description: 'Number of seconds after the container has started before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                                     type: integer
@@ -795,13 +967,18 @@ spec:
                                     type: integer
                                     format: int32
                                   tcpSocket:
-                                    description: 'TCPSocket specifies an action involving a TCP port. TCP hooks not yet supported TODO: implement a realistic TCP lifecycle hook'
+                                    description: TCPSocket specifies an action involving a TCP port.
                                     type: object
                                     properties:
                                       host:
                                         description: 'Optional: Host name to connect to, defaults to the pod IP.'
                                         type: string
-                                    x-kubernetes-preserve-unknown-fields: true
+                                      port:
+                                        description: Number or name of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                                        anyOf:
+                                          - type: integer
+                                          - type: string
+                                        x-kubernetes-int-or-string: true
                                   timeoutSeconds:
                                     description: 'Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                                     type: integer
@@ -833,24 +1010,35 @@ spec:
                                 type: object
                                 properties:
                                   capabilities:
-                                    description: The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime.
+                                    description: The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime. Note that this field cannot be set when spec.os.name is windows.
                                     type: object
                                     properties:
+                                      add:
+                                        description: This is accessible behind a feature flag - kubernetes.containerspec-addcapabilities
+                                        type: array
+                                        items:
+                                          description: Capability represent POSIX capabilities type
+                                          type: string
                                       drop:
                                         description: Removed capabilities
                                         type: array
                                         items:
                                           description: Capability represent POSIX capabilities type
                                           type: string
-                                    x-kubernetes-preserve-unknown-fields: true
                                   readOnlyRootFilesystem:
-                                    description: Whether this container has a read-only root filesystem. Default is false.
+                                    description: Whether this container has a read-only root filesystem. Default is false. Note that this field cannot be set when spec.os.name is windows.
                                     type: boolean
-                                  runAsUser:
-                                    description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
+                                  runAsGroup:
+                                    description: The GID to run the entrypoint of the container process. Uses runtime default if unset. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.
                                     type: integer
                                     format: int64
-                                x-kubernetes-preserve-unknown-fields: true
+                                  runAsNonRoot:
+                                    description: Indicates that the container must run as a non-root user. If true, the Kubelet will validate the image at runtime to ensure that it does not run as UID 0 (root) and fail to start the container if it does. If unset or false, no such validation will be performed. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
+                                    type: boolean
+                                  runAsUser:
+                                    description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.
+                                    type: integer
+                                    format: int64
                               terminationMessagePath:
                                 description: 'Optional: Path at which the file to which the container''s termination message will be written is mounted into the container''s filesystem. Message written is intended to be brief final status, such as an assertion failure message. Will be truncated by the node if greater than 4096 bytes. The total message length across all containers will be limited to 12kb. Defaults to /dev/termination-log. Cannot be updated.'
                                 type: string
@@ -882,10 +1070,27 @@ spec:
                               workingDir:
                                 description: Container's working directory. If not specified, the container runtime's default will be used, which might be configured in the container image. Cannot be updated.
                                 type: string
-                            x-kubernetes-preserve-unknown-fields: true
+                        dnsConfig:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-dnsconfig
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        dnsPolicy:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-dnspolicy
+                          type: string
                         enableServiceLinks:
-                          description: 'EnableServiceLinks indicates whether information about services should be injected into pod''s environment variables, matching the syntax of Docker links. Optional: Defaults to true.'
+                          description: 'EnableServiceLinks indicates whether information about services should be injected into pod''s environment variables, matching the syntax of Docker links. Optional: Knative defaults this to false.'
                           type: boolean
+                        hostAliases:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-hostaliases
+                          type: array
+                          items:
+                            description: This is accessible behind a feature flag - kubernetes.podspec-hostaliases
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                        idleTimeoutSeconds:
+                          description: IdleTimeoutSeconds is the maximum duration in seconds a request will be allowed to stay open while not receiving any bytes from the user's application. If unspecified, a system default will be provided.
+                          type: integer
+                          format: int64
                         imagePullSecrets:
                           description: 'ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod'
                           type: array
@@ -896,13 +1101,60 @@ spec:
                               name:
                                 description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
                                 type: string
+                            x-kubernetes-map-type: atomic
+                        initContainers:
+                          description: 'List of initialization containers belonging to the pod. Init containers are executed in order prior to containers being started. If any init container fails, the pod is considered to have failed and is handled according to its restartPolicy. The name for an init container or normal container must be unique among all containers. Init containers may not have Lifecycle actions, Readiness probes, Liveness probes, or Startup probes. The resourceRequirements of an init container are taken into account during scheduling by finding the highest request/limit for each resource type, and then using the max of of that value or the sum of the normal containers. Limits are applied to init containers in a similar fashion. Init containers cannot currently be added or removed. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/'
+                          type: array
+                          items:
+                            description: This is accessible behind a feature flag - kubernetes.podspec-init-containers
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                        nodeSelector:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-nodeselector
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                          x-kubernetes-map-type: atomic
+                        priorityClassName:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-priorityclassname
+                          type: string
+                          x-kubernetes-preserve-unknown-fields: true
+                        responseStartTimeoutSeconds:
+                          description: ResponseStartTimeoutSeconds is the maximum duration in seconds that the request routing layer will wait for a request delivered to a container to begin sending any network traffic.
+                          type: integer
+                          format: int64
+                        runtimeClassName:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-runtimeclassname
+                          type: string
+                          x-kubernetes-preserve-unknown-fields: true
+                        schedulerName:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-schedulername
+                          type: string
+                          x-kubernetes-preserve-unknown-fields: true
+                        securityContext:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-securitycontext
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         serviceAccountName:
                           description: 'ServiceAccountName is the name of the ServiceAccount to use to run this pod. More info: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/'
                           type: string
                         timeoutSeconds:
-                          description: TimeoutSeconds is the maximum duration in seconds that the request routing layer will wait for a request delivered to a container to begin replying (send network traffic). If unspecified, a system default will be provided.
+                          description: TimeoutSeconds is the maximum duration in seconds that the request instance is allowed to respond to a request. If unspecified, a system default will be provided.
                           type: integer
                           format: int64
+                        tolerations:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-tolerations
+                          type: array
+                          items:
+                            description: This is accessible behind a feature flag - kubernetes.podspec-tolerations
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                        topologySpreadConstraints:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
+                          type: array
+                          items:
+                            description: This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         volumes:
                           description: 'List of volumes that can be mounted by containers belonging to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes'
                           type: array
@@ -946,9 +1198,18 @@ spec:
                                   optional:
                                     description: Specify whether the ConfigMap or its keys must be defined
                                     type: boolean
+                                x-kubernetes-map-type: atomic
+                              emptyDir:
+                                description: This is accessible behind a feature flag - kubernetes.podspec-emptydir
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                               name:
                                 description: 'Volume''s name. Must be a DNS_LABEL and unique within the pod. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                                 type: string
+                              persistentVolumeClaim:
+                                description: This is accessible behind a feature flag - kubernetes.podspec-persistent-volume-claim
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                               projected:
                                 description: Items for all in one resources secrets, configmaps, and downward API
                                 type: object
@@ -994,6 +1255,7 @@ spec:
                                             optional:
                                               description: Specify whether the ConfigMap or its keys must be defined
                                               type: boolean
+                                          x-kubernetes-map-type: atomic
                                         secret:
                                           description: information about the secret data to project
                                           type: object
@@ -1024,6 +1286,7 @@ spec:
                                             optional:
                                               description: Specify whether the Secret or its key must be defined
                                               type: boolean
+                                          x-kubernetes-map-type: atomic
                                         serviceAccountToken:
                                           description: information about the serviceAccountToken data to project
                                           type: object
@@ -1074,8 +1337,6 @@ spec:
                                   secretName:
                                     description: 'Name of the secret in the pod''s namespace to use. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret'
                                     type: string
-                            x-kubernetes-preserve-unknown-fields: true
-                      x-kubernetes-preserve-unknown-fields: true
             status:
               description: ConfigurationStatus communicates the observed state of the Configuration (from the controller).
               type: object
@@ -1098,7 +1359,6 @@ spec:
                       lastTransitionTime:
                         description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
                         type: string
-                        format: date-time
                       message:
                         description: A human readable message indicating details about the transition.
                         type: string
@@ -1146,8 +1406,8 @@ metadata:
   name: clusterdomainclaims.networking.internal.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/version: "1.7.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -1159,12 +1419,26 @@ spec:
         status: {}
       schema:
         openAPIV3Schema:
+          description: ClusterDomainClaim is a cluster-wide reservation for a particular domain name.
           type: object
-          # this is a work around so we don't need to flush out the
-          # schema for each version at this time
-          #
-          # see issue: https://github.com/knative/serving/issues/912
-          x-kubernetes-preserve-unknown-fields: true
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: 'Spec is the desired state of the ClusterDomainClaim. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
+              type: object
+              required:
+                - namespace
+              properties:
+                namespace:
+                  description: Namespace is the namespace which is allowed to create a DomainMapping using this ClusterDomainClaim's name.
+                  type: string
   names:
     kind: ClusterDomainClaim
     plural: clusterdomainclaims
@@ -1197,8 +1471,7 @@ metadata:
   name: domainmappings.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
@@ -1296,7 +1569,6 @@ spec:
                       lastTransitionTime:
                         description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
                         type: string
-                        format: date-time
                       message:
                         description: A human readable message indicating details about the transition.
                         type: string
@@ -1402,7 +1674,6 @@ spec:
                       lastTransitionTime:
                         description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
                         type: string
-                        format: date-time
                       message:
                         description: A human readable message indicating details about the transition.
                         type: string
@@ -1468,8 +1739,8 @@ metadata:
   name: ingresses.networking.internal.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/version: "1.7.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -1481,12 +1752,212 @@ spec:
         status: {}
       schema:
         openAPIV3Schema:
+          description: "Ingress is a collection of rules that allow inbound connections to reach the endpoints defined by a backend. An Ingress can be configured to give services externally-reachable URLs, load balance traffic, offer name based virtual hosting, etc. \n This is heavily based on K8s Ingress https://godoc.org/k8s.io/api/networking/v1beta1#Ingress which some highlighted modifications."
           type: object
-          # this is a work around so we don't need to flush out the
-          # schema for each version at this time
-          #
-          # see issue: https://github.com/knative/serving/issues/912
-          x-kubernetes-preserve-unknown-fields: true
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: 'Spec is the desired state of the Ingress. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
+              type: object
+              properties:
+                httpOption:
+                  description: 'HTTPOption is the option of HTTP. It has the following two values: `HTTPOptionEnabled`, `HTTPOptionRedirected`'
+                  type: string
+                rules:
+                  description: A list of host rules used to configure the Ingress.
+                  type: array
+                  items:
+                    description: IngressRule represents the rules mapping the paths under a specified host to the related backend services. Incoming requests are first evaluated for a host match, then routed to the backend associated with the matching IngressRuleValue.
+                    type: object
+                    properties:
+                      hosts:
+                        description: 'Host is the fully qualified domain name of a network host, as defined by RFC 3986. Note the following deviations from the "host" part of the URI as defined in the RFC: 1. IPs are not allowed. Currently a rule value can only apply to the IP in the Spec of the parent . 2. The `:` delimiter is not respected because ports are not allowed. Currently the port of an Ingress is implicitly :80 for http and :443 for https. Both these may change in the future. If the host is unspecified, the Ingress routes all traffic based on the specified IngressRuleValue. If multiple matching Hosts were provided, the first rule will take precedent.'
+                        type: array
+                        items:
+                          type: string
+                      http:
+                        description: HTTP represents a rule to apply against incoming requests. If the rule is satisfied, the request is routed to the specified backend.
+                        type: object
+                        required:
+                          - paths
+                        properties:
+                          paths:
+                            description: "A collection of paths that map requests to backends. \n If they are multiple matching paths, the first match takes precedence."
+                            type: array
+                            items:
+                              description: HTTPIngressPath associates a path regex with a backend. Incoming URLs matching the path are forwarded to the backend.
+                              type: object
+                              required:
+                                - splits
+                              properties:
+                                appendHeaders:
+                                  description: "AppendHeaders allow specifying additional HTTP headers to add before forwarding a request to the destination service. \n NOTE: This differs from K8s Ingress which doesn't allow header appending."
+                                  type: object
+                                  additionalProperties:
+                                    type: string
+                                headers:
+                                  description: Headers defines header matching rules which is a map from a header name to HeaderMatch which specify a matching condition. When a request matched with all the header matching rules, the request is routed by the corresponding ingress rule. If it is empty, the headers are not used for matching
+                                  type: object
+                                  additionalProperties:
+                                    description: HeaderMatch represents a matching value of Headers in HTTPIngressPath. Currently, only the exact matching is supported.
+                                    type: object
+                                    required:
+                                      - exact
+                                    properties:
+                                      exact:
+                                        type: string
+                                path:
+                                  description: Path represents a literal prefix to which this rule should apply. Currently it can contain characters disallowed from the conventional "path" part of a URL as defined by RFC 3986. Paths must begin with a '/'. If unspecified, the path defaults to a catch all sending traffic to the backend.
+                                  type: string
+                                rewriteHost:
+                                  description: "RewriteHost rewrites the incoming request's host header. \n This field is currently experimental and not supported by all Ingress implementations."
+                                  type: string
+                                splits:
+                                  description: Splits defines the referenced service endpoints to which the traffic will be forwarded to.
+                                  type: array
+                                  items:
+                                    description: IngressBackendSplit describes all endpoints for a given service and port.
+                                    type: object
+                                    required:
+                                      - serviceName
+                                      - serviceNamespace
+                                      - servicePort
+                                    properties:
+                                      appendHeaders:
+                                        description: "AppendHeaders allow specifying additional HTTP headers to add before forwarding a request to the destination service. \n NOTE: This differs from K8s Ingress which doesn't allow header appending."
+                                        type: object
+                                        additionalProperties:
+                                          type: string
+                                      percent:
+                                        description: "Specifies the split percentage, a number between 0 and 100.  If only one split is specified, we default to 100. \n NOTE: This differs from K8s Ingress to allow percentage split."
+                                        type: integer
+                                      serviceName:
+                                        description: Specifies the name of the referenced service.
+                                        type: string
+                                      serviceNamespace:
+                                        description: "Specifies the namespace of the referenced service. \n NOTE: This differs from K8s Ingress to allow routing to different namespaces."
+                                        type: string
+                                      servicePort:
+                                        description: Specifies the port of the referenced service.
+                                        anyOf:
+                                          - type: integer
+                                          - type: string
+                                        x-kubernetes-int-or-string: true
+                      visibility:
+                        description: Visibility signifies whether this rule should `ClusterLocal`. If it's not specified then it defaults to `ExternalIP`.
+                        type: string
+                tls:
+                  description: 'TLS configuration. Currently Ingress only supports a single TLS port: 443. If multiple members of this list specify different hosts, they will be multiplexed on the same port according to the hostname specified through the SNI TLS extension, if the ingress controller fulfilling the ingress supports SNI.'
+                  type: array
+                  items:
+                    description: IngressTLS describes the transport layer security associated with an Ingress.
+                    type: object
+                    properties:
+                      hosts:
+                        description: Hosts is a list of hosts included in the TLS certificate. The values in this list must match the name/s used in the tlsSecret. Defaults to the wildcard host setting for the loadbalancer controller fulfilling this Ingress, if left unspecified.
+                        type: array
+                        items:
+                          type: string
+                      secretName:
+                        description: SecretName is the name of the secret used to terminate SSL traffic.
+                        type: string
+                      secretNamespace:
+                        description: SecretNamespace is the namespace of the secret used to terminate SSL traffic. If not set the namespace should be assumed to be the same as the Ingress. If set the secret should have the same namespace as the Ingress otherwise the behaviour is undefined and not supported.
+                        type: string
+            status:
+              description: 'Status is the current state of the Ingress. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
+              type: object
+              properties:
+                annotations:
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                  type: object
+                  additionalProperties:
+                    type: string
+                conditions:
+                  description: Conditions the latest available observations of a resource's current state.
+                  type: array
+                  items:
+                    description: 'Condition defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                    type: object
+                    required:
+                      - status
+                      - type
+                    properties:
+                      lastTransitionTime:
+                        description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
+                        type: string
+                      message:
+                        description: A human readable message indicating details about the transition.
+                        type: string
+                      reason:
+                        description: The reason for the condition's last transition.
+                        type: string
+                      severity:
+                        description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+                        type: string
+                      status:
+                        description: Status of the condition, one of True, False, Unknown.
+                        type: string
+                      type:
+                        description: Type of condition.
+                        type: string
+                observedGeneration:
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                  type: integer
+                  format: int64
+                privateLoadBalancer:
+                  description: PrivateLoadBalancer contains the current status of the load-balancer.
+                  type: object
+                  properties:
+                    ingress:
+                      description: Ingress is a list containing ingress points for the load-balancer. Traffic intended for the service should be sent to these ingress points.
+                      type: array
+                      items:
+                        description: 'LoadBalancerIngressStatus represents the status of a load-balancer ingress point: traffic intended for the service should be sent to an ingress point.'
+                        type: object
+                        properties:
+                          domain:
+                            description: Domain is set for load-balancer ingress points that are DNS based (typically AWS load-balancers)
+                            type: string
+                          domainInternal:
+                            description: "DomainInternal is set if there is a cluster-local DNS name to access the Ingress. \n NOTE: This differs from K8s Ingress, since we also desire to have a cluster-local DNS name to allow routing in case of not having a mesh."
+                            type: string
+                          ip:
+                            description: IP is set for load-balancer ingress points that are IP based (typically GCE or OpenStack load-balancers)
+                            type: string
+                          meshOnly:
+                            description: MeshOnly is set if the Ingress is only load-balanced through a Service mesh.
+                            type: boolean
+                publicLoadBalancer:
+                  description: PublicLoadBalancer contains the current status of the load-balancer.
+                  type: object
+                  properties:
+                    ingress:
+                      description: Ingress is a list containing ingress points for the load-balancer. Traffic intended for the service should be sent to these ingress points.
+                      type: array
+                      items:
+                        description: 'LoadBalancerIngressStatus represents the status of a load-balancer ingress point: traffic intended for the service should be sent to an ingress point.'
+                        type: object
+                        properties:
+                          domain:
+                            description: Domain is set for load-balancer ingress points that are DNS based (typically AWS load-balancers)
+                            type: string
+                          domainInternal:
+                            description: "DomainInternal is set if there is a cluster-local DNS name to access the Ingress. \n NOTE: This differs from K8s Ingress, since we also desire to have a cluster-local DNS name to allow routing in case of not having a mesh."
+                            type: string
+                          ip:
+                            description: IP is set for load-balancer ingress points that are IP based (typically GCE or OpenStack load-balancers)
+                            type: string
+                          meshOnly:
+                            description: MeshOnly is set if the Ingress is only load-balanced through a Service mesh.
+                            type: boolean
       additionalPrinterColumns:
         - name: Ready
           type: string
@@ -1529,8 +2000,7 @@ metadata:
   name: metrics.autoscaling.internal.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -1609,7 +2079,6 @@ spec:
                       lastTransitionTime:
                         description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
                         type: string
-                        format: date-time
                       message:
                         description: A human readable message indicating details about the transition.
                         type: string
@@ -1653,8 +2122,7 @@ metadata:
   name: podautoscalers.autoscaling.internal.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -1690,7 +2158,7 @@ spec:
           jsonPath: ".status.conditions[?(@.type=='Ready')].reason"
       schema:
         openAPIV3Schema:
-          description: 'PodAutoscaler is a Knative abstraction that encapsulates the interface by which Knative components instantiate autoscalers.  This definition is an abstraction that may be backed by multiple definitions.  For more information, see the Knative Pluggability presentation: https://docs.google.com/presentation/d/10KWynvAJYuOEWy69VBa6bHJVCqIsz1TNdEKosNvcpPY/edit'
+          description: 'PodAutoscaler is a Knative abstraction that encapsulates the interface by which Knative components instantiate autoscalers.  This definition is an abstraction that may be backed by multiple definitions.  For more information, see the Knative Pluggability presentation: https://docs.google.com/presentation/d/19vW9HFZ6Puxt31biNZF3uLRejDmu82rxJIk1cWmxF7w/edit'
           type: object
           properties:
             apiVersion:
@@ -1731,6 +2199,7 @@ spec:
                     name:
                       description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                       type: string
+                  x-kubernetes-map-type: atomic
             status:
               description: Status communicates the observed state of the PodAutoscaler (from the controller).
               type: object
@@ -1760,7 +2229,6 @@ spec:
                       lastTransitionTime:
                         description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
                         type: string
-                        format: date-time
                       message:
                         description: A human readable message indicating details about the transition.
                         type: string
@@ -1814,8 +2282,7 @@ metadata:
   name: revisions.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
@@ -1877,6 +2344,10 @@ spec:
               required:
                 - containers
               properties:
+                affinity:
+                  description: This is accessible behind a feature flag - kubernetes.podspec-affinity
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
                 automountServiceAccountToken:
                   description: AutomountServiceAccountToken indicates whether a service account token should be automatically mounted.
                   type: boolean
@@ -1935,6 +2406,17 @@ spec:
                                     optional:
                                       description: Specify whether the ConfigMap or its key must be defined
                                       type: boolean
+                                  x-kubernetes-map-type: atomic
+                                fieldRef:
+                                  description: This is accessible behind a feature flag - kubernetes.podspec-fieldref
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                  x-kubernetes-map-type: atomic
+                                resourceFieldRef:
+                                  description: This is accessible behind a feature flag - kubernetes.podspec-fieldref
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                  x-kubernetes-map-type: atomic
                                 secretKeyRef:
                                   description: Selects a key of a secret in the pod's namespace
                                   type: object
@@ -1950,7 +2432,7 @@ spec:
                                     optional:
                                       description: Specify whether the Secret or its key must be defined
                                       type: boolean
-                              x-kubernetes-preserve-unknown-fields: true
+                                  x-kubernetes-map-type: atomic
                       envFrom:
                         description: List of sources to populate environment variables in the container. The keys defined within a source must be a C_IDENTIFIER. All invalid keys will be reported as an event when the container is starting. When a key exists in multiple sources, the value associated with the last source will take precedence. Values defined by an Env with a duplicate key will take precedence. Cannot be updated.
                         type: array
@@ -1968,6 +2450,7 @@ spec:
                                 optional:
                                   description: Specify whether the ConfigMap must be defined
                                   type: boolean
+                              x-kubernetes-map-type: atomic
                             prefix:
                               description: An optional identifier to prepend to each key in the ConfigMap. Must be a C_IDENTIFIER.
                               type: string
@@ -1981,6 +2464,7 @@ spec:
                                 optional:
                                   description: Specify whether the Secret must be defined
                                   type: boolean
+                              x-kubernetes-map-type: atomic
                       image:
                         description: 'Docker image name. More info: https://kubernetes.io/docs/concepts/containers/images This field is optional to allow higher level config management to default or override container images in workload controllers like Deployments and StatefulSets.'
                         type: string
@@ -1992,7 +2476,7 @@ spec:
                         type: object
                         properties:
                           exec:
-                            description: One and only one of the following should be specified. Exec specifies the action to take.
+                            description: Exec specifies the action to take.
                             type: object
                             properties:
                               command:
@@ -2030,10 +2514,15 @@ spec:
                               path:
                                 description: Path to access on the HTTP server.
                                 type: string
+                              port:
+                                description: Name or number of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               scheme:
                                 description: Scheme to use for connecting to the host. Defaults to HTTP.
                                 type: string
-                            x-kubernetes-preserve-unknown-fields: true
                           initialDelaySeconds:
                             description: 'Number of seconds after the container has started before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                             type: integer
@@ -2047,13 +2536,18 @@ spec:
                             type: integer
                             format: int32
                           tcpSocket:
-                            description: 'TCPSocket specifies an action involving a TCP port. TCP hooks not yet supported TODO: implement a realistic TCP lifecycle hook'
+                            description: TCPSocket specifies an action involving a TCP port.
                             type: object
                             properties:
                               host:
                                 description: 'Optional: Host name to connect to, defaults to the pod IP.'
                                 type: string
-                            x-kubernetes-preserve-unknown-fields: true
+                              port:
+                                description: Number or name of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                           timeoutSeconds:
                             description: 'Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                             type: integer
@@ -2081,7 +2575,6 @@ spec:
                               description: Protocol for port. Must be UDP, TCP, or SCTP. Defaults to "TCP".
                               type: string
                               default: TCP
-                          x-kubernetes-preserve-unknown-fields: true
                         x-kubernetes-list-map-keys:
                           - containerPort
                           - protocol
@@ -2091,7 +2584,7 @@ spec:
                         type: object
                         properties:
                           exec:
-                            description: One and only one of the following should be specified. Exec specifies the action to take.
+                            description: Exec specifies the action to take.
                             type: object
                             properties:
                               command:
@@ -2129,10 +2622,15 @@ spec:
                               path:
                                 description: Path to access on the HTTP server.
                                 type: string
+                              port:
+                                description: Name or number of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                               scheme:
                                 description: Scheme to use for connecting to the host. Defaults to HTTP.
                                 type: string
-                            x-kubernetes-preserve-unknown-fields: true
                           initialDelaySeconds:
                             description: 'Number of seconds after the container has started before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                             type: integer
@@ -2146,13 +2644,18 @@ spec:
                             type: integer
                             format: int32
                           tcpSocket:
-                            description: 'TCPSocket specifies an action involving a TCP port. TCP hooks not yet supported TODO: implement a realistic TCP lifecycle hook'
+                            description: TCPSocket specifies an action involving a TCP port.
                             type: object
                             properties:
                               host:
                                 description: 'Optional: Host name to connect to, defaults to the pod IP.'
                                 type: string
-                            x-kubernetes-preserve-unknown-fields: true
+                              port:
+                                description: Number or name of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                                anyOf:
+                                  - type: integer
+                                  - type: string
+                                x-kubernetes-int-or-string: true
                           timeoutSeconds:
                             description: 'Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                             type: integer
@@ -2184,24 +2687,35 @@ spec:
                         type: object
                         properties:
                           capabilities:
-                            description: The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime.
+                            description: The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime. Note that this field cannot be set when spec.os.name is windows.
                             type: object
                             properties:
+                              add:
+                                description: This is accessible behind a feature flag - kubernetes.containerspec-addcapabilities
+                                type: array
+                                items:
+                                  description: Capability represent POSIX capabilities type
+                                  type: string
                               drop:
                                 description: Removed capabilities
                                 type: array
                                 items:
                                   description: Capability represent POSIX capabilities type
                                   type: string
-                            x-kubernetes-preserve-unknown-fields: true
                           readOnlyRootFilesystem:
-                            description: Whether this container has a read-only root filesystem. Default is false.
+                            description: Whether this container has a read-only root filesystem. Default is false. Note that this field cannot be set when spec.os.name is windows.
                             type: boolean
-                          runAsUser:
-                            description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
+                          runAsGroup:
+                            description: The GID to run the entrypoint of the container process. Uses runtime default if unset. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.
                             type: integer
                             format: int64
-                        x-kubernetes-preserve-unknown-fields: true
+                          runAsNonRoot:
+                            description: Indicates that the container must run as a non-root user. If true, the Kubelet will validate the image at runtime to ensure that it does not run as UID 0 (root) and fail to start the container if it does. If unset or false, no such validation will be performed. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
+                            type: boolean
+                          runAsUser:
+                            description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.
+                            type: integer
+                            format: int64
                       terminationMessagePath:
                         description: 'Optional: Path at which the file to which the container''s termination message will be written is mounted into the container''s filesystem. Message written is intended to be brief final status, such as an assertion failure message. Will be truncated by the node if greater than 4096 bytes. The total message length across all containers will be limited to 12kb. Defaults to /dev/termination-log. Cannot be updated.'
                         type: string
@@ -2233,10 +2747,27 @@ spec:
                       workingDir:
                         description: Container's working directory. If not specified, the container runtime's default will be used, which might be configured in the container image. Cannot be updated.
                         type: string
-                    x-kubernetes-preserve-unknown-fields: true
+                dnsConfig:
+                  description: This is accessible behind a feature flag - kubernetes.podspec-dnsconfig
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                dnsPolicy:
+                  description: This is accessible behind a feature flag - kubernetes.podspec-dnspolicy
+                  type: string
                 enableServiceLinks:
-                  description: 'EnableServiceLinks indicates whether information about services should be injected into pod''s environment variables, matching the syntax of Docker links. Optional: Defaults to true.'
+                  description: 'EnableServiceLinks indicates whether information about services should be injected into pod''s environment variables, matching the syntax of Docker links. Optional: Knative defaults this to false.'
                   type: boolean
+                hostAliases:
+                  description: This is accessible behind a feature flag - kubernetes.podspec-hostaliases
+                  type: array
+                  items:
+                    description: This is accessible behind a feature flag - kubernetes.podspec-hostaliases
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                idleTimeoutSeconds:
+                  description: IdleTimeoutSeconds is the maximum duration in seconds a request will be allowed to stay open while not receiving any bytes from the user's application. If unspecified, a system default will be provided.
+                  type: integer
+                  format: int64
                 imagePullSecrets:
                   description: 'ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod'
                   type: array
@@ -2247,13 +2778,60 @@ spec:
                       name:
                         description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
                         type: string
+                    x-kubernetes-map-type: atomic
+                initContainers:
+                  description: 'List of initialization containers belonging to the pod. Init containers are executed in order prior to containers being started. If any init container fails, the pod is considered to have failed and is handled according to its restartPolicy. The name for an init container or normal container must be unique among all containers. Init containers may not have Lifecycle actions, Readiness probes, Liveness probes, or Startup probes. The resourceRequirements of an init container are taken into account during scheduling by finding the highest request/limit for each resource type, and then using the max of of that value or the sum of the normal containers. Limits are applied to init containers in a similar fashion. Init containers cannot currently be added or removed. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/'
+                  type: array
+                  items:
+                    description: This is accessible behind a feature flag - kubernetes.podspec-init-containers
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                nodeSelector:
+                  description: This is accessible behind a feature flag - kubernetes.podspec-nodeselector
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                  x-kubernetes-map-type: atomic
+                priorityClassName:
+                  description: This is accessible behind a feature flag - kubernetes.podspec-priorityclassname
+                  type: string
+                  x-kubernetes-preserve-unknown-fields: true
+                responseStartTimeoutSeconds:
+                  description: ResponseStartTimeoutSeconds is the maximum duration in seconds that the request routing layer will wait for a request delivered to a container to begin sending any network traffic.
+                  type: integer
+                  format: int64
+                runtimeClassName:
+                  description: This is accessible behind a feature flag - kubernetes.podspec-runtimeclassname
+                  type: string
+                  x-kubernetes-preserve-unknown-fields: true
+                schedulerName:
+                  description: This is accessible behind a feature flag - kubernetes.podspec-schedulername
+                  type: string
+                  x-kubernetes-preserve-unknown-fields: true
+                securityContext:
+                  description: This is accessible behind a feature flag - kubernetes.podspec-securitycontext
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
                 serviceAccountName:
                   description: 'ServiceAccountName is the name of the ServiceAccount to use to run this pod. More info: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/'
                   type: string
                 timeoutSeconds:
-                  description: TimeoutSeconds is the maximum duration in seconds that the request routing layer will wait for a request delivered to a container to begin replying (send network traffic). If unspecified, a system default will be provided.
+                  description: TimeoutSeconds is the maximum duration in seconds that the request instance is allowed to respond to a request. If unspecified, a system default will be provided.
                   type: integer
                   format: int64
+                tolerations:
+                  description: This is accessible behind a feature flag - kubernetes.podspec-tolerations
+                  type: array
+                  items:
+                    description: This is accessible behind a feature flag - kubernetes.podspec-tolerations
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                topologySpreadConstraints:
+                  description: This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
+                  type: array
+                  items:
+                    description: This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
                 volumes:
                   description: 'List of volumes that can be mounted by containers belonging to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes'
                   type: array
@@ -2297,9 +2875,18 @@ spec:
                           optional:
                             description: Specify whether the ConfigMap or its keys must be defined
                             type: boolean
+                        x-kubernetes-map-type: atomic
+                      emptyDir:
+                        description: This is accessible behind a feature flag - kubernetes.podspec-emptydir
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
                       name:
                         description: 'Volume''s name. Must be a DNS_LABEL and unique within the pod. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                         type: string
+                      persistentVolumeClaim:
+                        description: This is accessible behind a feature flag - kubernetes.podspec-persistent-volume-claim
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
                       projected:
                         description: Items for all in one resources secrets, configmaps, and downward API
                         type: object
@@ -2345,6 +2932,7 @@ spec:
                                     optional:
                                       description: Specify whether the ConfigMap or its keys must be defined
                                       type: boolean
+                                  x-kubernetes-map-type: atomic
                                 secret:
                                   description: information about the secret data to project
                                   type: object
@@ -2375,6 +2963,7 @@ spec:
                                     optional:
                                       description: Specify whether the Secret or its key must be defined
                                       type: boolean
+                                  x-kubernetes-map-type: atomic
                                 serviceAccountToken:
                                   description: information about the serviceAccountToken data to project
                                   type: object
@@ -2425,8 +3014,6 @@ spec:
                           secretName:
                             description: 'Name of the secret in the pod''s namespace to use. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret'
                             type: string
-                    x-kubernetes-preserve-unknown-fields: true
-              x-kubernetes-preserve-unknown-fields: true
             status:
               description: RevisionStatus communicates the observed state of the Revision (from the controller).
               type: object
@@ -2453,7 +3040,6 @@ spec:
                       lastTransitionTime:
                         description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
                         type: string
-                        format: date-time
                       message:
                         description: A human readable message indicating details about the transition.
                         type: string
@@ -2526,8 +3112,7 @@ metadata:
   name: routes.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -2590,7 +3175,7 @@ spec:
                         description: LatestRevision may be optionally provided to indicate that the latest ready Revision of the Configuration should be used for this traffic target.  When provided LatestRevision must be true if RevisionName is empty; it must be false when RevisionName is non-empty.
                         type: boolean
                       percent:
-                        description: 'Percent indicates that percentage based routing should be used and the value indicates the percent of traffic that is be routed to this Revision or Configuration. `0` (zero) mean no traffic, `100` means all traffic. When percentage based routing is being used the follow rules apply: - the sum of all percent values must equal 100 - when not specified, the implied value for `percent` is zero for   that particular Revision or Configuration'
+                        description: 'Percent indicates that percentage based routing should be used and the value indicates the percent of traffic that is be routed to this Revision or Configuration. `0` (zero) mean no traffic, `100` means all traffic. When percentage based routing is being used the follow rules apply: - the sum of all percent values must equal 100 - when not specified, the implied value for `percent` is zero for that particular Revision or Configuration'
                         type: integer
                         format: int64
                       revisionName:
@@ -2630,7 +3215,6 @@ spec:
                       lastTransitionTime:
                         description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
                         type: string
-                        format: date-time
                       message:
                         description: A human readable message indicating details about the transition.
                         type: string
@@ -2664,7 +3248,7 @@ spec:
                         description: LatestRevision may be optionally provided to indicate that the latest ready Revision of the Configuration should be used for this traffic target.  When provided LatestRevision must be true if RevisionName is empty; it must be false when RevisionName is non-empty.
                         type: boolean
                       percent:
-                        description: 'Percent indicates that percentage based routing should be used and the value indicates the percent of traffic that is be routed to this Revision or Configuration. `0` (zero) mean no traffic, `100` means all traffic. When percentage based routing is being used the follow rules apply: - the sum of all percent values must equal 100 - when not specified, the implied value for `percent` is zero for   that particular Revision or Configuration'
+                        description: 'Percent indicates that percentage based routing should be used and the value indicates the percent of traffic that is be routed to this Revision or Configuration. `0` (zero) mean no traffic, `100` means all traffic. When percentage based routing is being used the follow rules apply: - the sum of all percent values must equal 100 - when not specified, the implied value for `percent` is zero for that particular Revision or Configuration'
                         type: integer
                         format: int64
                       revisionName:
@@ -2701,8 +3285,8 @@ metadata:
   name: serverlessservices.networking.internal.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/version: "1.7.0"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -2714,12 +3298,107 @@ spec:
         status: {}
       schema:
         openAPIV3Schema:
+          description: 'ServerlessService is a proxy for the K8s service objects containing the endpoints for the revision, whether those are endpoints of the activator or revision pods. See: https://knative.page.link/naxz for details.'
           type: object
-          # this is a work around so we don't need to flush out the
-          # schema for each version at this time
-          #
-          # see issue: https://github.com/knative/serving/issues/912
-          x-kubernetes-preserve-unknown-fields: true
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: 'Spec is the desired state of the ServerlessService. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
+              type: object
+              required:
+                - objectRef
+                - protocolType
+              properties:
+                mode:
+                  description: Mode describes the mode of operation of the ServerlessService.
+                  type: string
+                numActivators:
+                  description: NumActivators contains number of Activators that this revision should be assigned. O means — assign all.
+                  type: integer
+                  format: int32
+                objectRef:
+                  description: ObjectRef defines the resource that this ServerlessService is responsible for making "serverless".
+                  type: object
+                  properties:
+                    apiVersion:
+                      description: API version of the referent.
+                      type: string
+                    fieldPath:
+                      description: 'If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: "spec.containers{name}" (where "name" refers to the name of the container that triggered the event) or if no container name is specified "spec.containers[2]" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object. TODO: this design is not final and this field is subject to change in the future.'
+                      type: string
+                    kind:
+                      description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                      type: string
+                    name:
+                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                      type: string
+                    namespace:
+                      description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                      type: string
+                    resourceVersion:
+                      description: 'Specific resourceVersion to which this reference is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                      type: string
+                    uid:
+                      description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                      type: string
+                  x-kubernetes-map-type: atomic
+                protocolType:
+                  description: The application-layer protocol. Matches `RevisionProtocolType` set on the owning pa/revision. serving imports networking, so just use string.
+                  type: string
+            status:
+              description: 'Status is the current state of the ServerlessService. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
+              type: object
+              properties:
+                annotations:
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                  type: object
+                  additionalProperties:
+                    type: string
+                conditions:
+                  description: Conditions the latest available observations of a resource's current state.
+                  type: array
+                  items:
+                    description: 'Condition defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                    type: object
+                    required:
+                      - status
+                      - type
+                    properties:
+                      lastTransitionTime:
+                        description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
+                        type: string
+                      message:
+                        description: A human readable message indicating details about the transition.
+                        type: string
+                      reason:
+                        description: The reason for the condition's last transition.
+                        type: string
+                      severity:
+                        description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+                        type: string
+                      status:
+                        description: Status of the condition, one of True, False, Unknown.
+                        type: string
+                      type:
+                        description: Type of condition.
+                        type: string
+                observedGeneration:
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                  type: integer
+                  format: int64
+                privateServiceName:
+                  description: PrivateServiceName holds the name of a core K8s Service resource that load balances over the user service pods backing this Revision.
+                  type: string
+                serviceName:
+                  description: ServiceName holds the name of a core K8s Service resource that load balances over the pods backing this Revision (activator or revision).
+                  type: string
       additionalPrinterColumns:
         - name: Mode
           type: string
@@ -2773,8 +3452,7 @@ metadata:
   name: services.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
     duck.knative.dev/podspecable: "true"
@@ -2861,6 +3539,10 @@ spec:
                       required:
                         - containers
                       properties:
+                        affinity:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-affinity
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         automountServiceAccountToken:
                           description: AutomountServiceAccountToken indicates whether a service account token should be automatically mounted.
                           type: boolean
@@ -2919,6 +3601,17 @@ spec:
                                             optional:
                                               description: Specify whether the ConfigMap or its key must be defined
                                               type: boolean
+                                          x-kubernetes-map-type: atomic
+                                        fieldRef:
+                                          description: This is accessible behind a feature flag - kubernetes.podspec-fieldref
+                                          type: object
+                                          x-kubernetes-preserve-unknown-fields: true
+                                          x-kubernetes-map-type: atomic
+                                        resourceFieldRef:
+                                          description: This is accessible behind a feature flag - kubernetes.podspec-fieldref
+                                          type: object
+                                          x-kubernetes-preserve-unknown-fields: true
+                                          x-kubernetes-map-type: atomic
                                         secretKeyRef:
                                           description: Selects a key of a secret in the pod's namespace
                                           type: object
@@ -2934,7 +3627,7 @@ spec:
                                             optional:
                                               description: Specify whether the Secret or its key must be defined
                                               type: boolean
-                                      x-kubernetes-preserve-unknown-fields: true
+                                          x-kubernetes-map-type: atomic
                               envFrom:
                                 description: List of sources to populate environment variables in the container. The keys defined within a source must be a C_IDENTIFIER. All invalid keys will be reported as an event when the container is starting. When a key exists in multiple sources, the value associated with the last source will take precedence. Values defined by an Env with a duplicate key will take precedence. Cannot be updated.
                                 type: array
@@ -2952,6 +3645,7 @@ spec:
                                         optional:
                                           description: Specify whether the ConfigMap must be defined
                                           type: boolean
+                                      x-kubernetes-map-type: atomic
                                     prefix:
                                       description: An optional identifier to prepend to each key in the ConfigMap. Must be a C_IDENTIFIER.
                                       type: string
@@ -2965,6 +3659,7 @@ spec:
                                         optional:
                                           description: Specify whether the Secret must be defined
                                           type: boolean
+                                      x-kubernetes-map-type: atomic
                               image:
                                 description: 'Docker image name. More info: https://kubernetes.io/docs/concepts/containers/images This field is optional to allow higher level config management to default or override container images in workload controllers like Deployments and StatefulSets.'
                                 type: string
@@ -2976,7 +3671,7 @@ spec:
                                 type: object
                                 properties:
                                   exec:
-                                    description: One and only one of the following should be specified. Exec specifies the action to take.
+                                    description: Exec specifies the action to take.
                                     type: object
                                     properties:
                                       command:
@@ -3014,10 +3709,15 @@ spec:
                                       path:
                                         description: Path to access on the HTTP server.
                                         type: string
+                                      port:
+                                        description: Name or number of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                                        anyOf:
+                                          - type: integer
+                                          - type: string
+                                        x-kubernetes-int-or-string: true
                                       scheme:
                                         description: Scheme to use for connecting to the host. Defaults to HTTP.
                                         type: string
-                                    x-kubernetes-preserve-unknown-fields: true
                                   initialDelaySeconds:
                                     description: 'Number of seconds after the container has started before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                                     type: integer
@@ -3031,13 +3731,18 @@ spec:
                                     type: integer
                                     format: int32
                                   tcpSocket:
-                                    description: 'TCPSocket specifies an action involving a TCP port. TCP hooks not yet supported TODO: implement a realistic TCP lifecycle hook'
+                                    description: TCPSocket specifies an action involving a TCP port.
                                     type: object
                                     properties:
                                       host:
                                         description: 'Optional: Host name to connect to, defaults to the pod IP.'
                                         type: string
-                                    x-kubernetes-preserve-unknown-fields: true
+                                      port:
+                                        description: Number or name of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                                        anyOf:
+                                          - type: integer
+                                          - type: string
+                                        x-kubernetes-int-or-string: true
                                   timeoutSeconds:
                                     description: 'Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                                     type: integer
@@ -3065,7 +3770,6 @@ spec:
                                       description: Protocol for port. Must be UDP, TCP, or SCTP. Defaults to "TCP".
                                       type: string
                                       default: TCP
-                                  x-kubernetes-preserve-unknown-fields: true
                                 x-kubernetes-list-map-keys:
                                   - containerPort
                                   - protocol
@@ -3075,7 +3779,7 @@ spec:
                                 type: object
                                 properties:
                                   exec:
-                                    description: One and only one of the following should be specified. Exec specifies the action to take.
+                                    description: Exec specifies the action to take.
                                     type: object
                                     properties:
                                       command:
@@ -3113,10 +3817,15 @@ spec:
                                       path:
                                         description: Path to access on the HTTP server.
                                         type: string
+                                      port:
+                                        description: Name or number of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                                        anyOf:
+                                          - type: integer
+                                          - type: string
+                                        x-kubernetes-int-or-string: true
                                       scheme:
                                         description: Scheme to use for connecting to the host. Defaults to HTTP.
                                         type: string
-                                    x-kubernetes-preserve-unknown-fields: true
                                   initialDelaySeconds:
                                     description: 'Number of seconds after the container has started before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                                     type: integer
@@ -3130,13 +3839,18 @@ spec:
                                     type: integer
                                     format: int32
                                   tcpSocket:
-                                    description: 'TCPSocket specifies an action involving a TCP port. TCP hooks not yet supported TODO: implement a realistic TCP lifecycle hook'
+                                    description: TCPSocket specifies an action involving a TCP port.
                                     type: object
                                     properties:
                                       host:
                                         description: 'Optional: Host name to connect to, defaults to the pod IP.'
                                         type: string
-                                    x-kubernetes-preserve-unknown-fields: true
+                                      port:
+                                        description: Number or name of the port to access on the container. Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                                        anyOf:
+                                          - type: integer
+                                          - type: string
+                                        x-kubernetes-int-or-string: true
                                   timeoutSeconds:
                                     description: 'Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                                     type: integer
@@ -3168,24 +3882,35 @@ spec:
                                 type: object
                                 properties:
                                   capabilities:
-                                    description: The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime.
+                                    description: The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime. Note that this field cannot be set when spec.os.name is windows.
                                     type: object
                                     properties:
+                                      add:
+                                        description: This is accessible behind a feature flag - kubernetes.containerspec-addcapabilities
+                                        type: array
+                                        items:
+                                          description: Capability represent POSIX capabilities type
+                                          type: string
                                       drop:
                                         description: Removed capabilities
                                         type: array
                                         items:
                                           description: Capability represent POSIX capabilities type
                                           type: string
-                                    x-kubernetes-preserve-unknown-fields: true
                                   readOnlyRootFilesystem:
-                                    description: Whether this container has a read-only root filesystem. Default is false.
+                                    description: Whether this container has a read-only root filesystem. Default is false. Note that this field cannot be set when spec.os.name is windows.
                                     type: boolean
-                                  runAsUser:
-                                    description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
+                                  runAsGroup:
+                                    description: The GID to run the entrypoint of the container process. Uses runtime default if unset. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.
                                     type: integer
                                     format: int64
-                                x-kubernetes-preserve-unknown-fields: true
+                                  runAsNonRoot:
+                                    description: Indicates that the container must run as a non-root user. If true, the Kubelet will validate the image at runtime to ensure that it does not run as UID 0 (root) and fail to start the container if it does. If unset or false, no such validation will be performed. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
+                                    type: boolean
+                                  runAsUser:
+                                    description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.
+                                    type: integer
+                                    format: int64
                               terminationMessagePath:
                                 description: 'Optional: Path at which the file to which the container''s termination message will be written is mounted into the container''s filesystem. Message written is intended to be brief final status, such as an assertion failure message. Will be truncated by the node if greater than 4096 bytes. The total message length across all containers will be limited to 12kb. Defaults to /dev/termination-log. Cannot be updated.'
                                 type: string
@@ -3217,10 +3942,27 @@ spec:
                               workingDir:
                                 description: Container's working directory. If not specified, the container runtime's default will be used, which might be configured in the container image. Cannot be updated.
                                 type: string
-                            x-kubernetes-preserve-unknown-fields: true
+                        dnsConfig:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-dnsconfig
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        dnsPolicy:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-dnspolicy
+                          type: string
                         enableServiceLinks:
-                          description: 'EnableServiceLinks indicates whether information about services should be injected into pod''s environment variables, matching the syntax of Docker links. Optional: Defaults to true.'
+                          description: 'EnableServiceLinks indicates whether information about services should be injected into pod''s environment variables, matching the syntax of Docker links. Optional: Knative defaults this to false.'
                           type: boolean
+                        hostAliases:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-hostaliases
+                          type: array
+                          items:
+                            description: This is accessible behind a feature flag - kubernetes.podspec-hostaliases
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                        idleTimeoutSeconds:
+                          description: IdleTimeoutSeconds is the maximum duration in seconds a request will be allowed to stay open while not receiving any bytes from the user's application. If unspecified, a system default will be provided.
+                          type: integer
+                          format: int64
                         imagePullSecrets:
                           description: 'ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod'
                           type: array
@@ -3231,13 +3973,60 @@ spec:
                               name:
                                 description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
                                 type: string
+                            x-kubernetes-map-type: atomic
+                        initContainers:
+                          description: 'List of initialization containers belonging to the pod. Init containers are executed in order prior to containers being started. If any init container fails, the pod is considered to have failed and is handled according to its restartPolicy. The name for an init container or normal container must be unique among all containers. Init containers may not have Lifecycle actions, Readiness probes, Liveness probes, or Startup probes. The resourceRequirements of an init container are taken into account during scheduling by finding the highest request/limit for each resource type, and then using the max of of that value or the sum of the normal containers. Limits are applied to init containers in a similar fashion. Init containers cannot currently be added or removed. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/'
+                          type: array
+                          items:
+                            description: This is accessible behind a feature flag - kubernetes.podspec-init-containers
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                        nodeSelector:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-nodeselector
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                          x-kubernetes-map-type: atomic
+                        priorityClassName:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-priorityclassname
+                          type: string
+                          x-kubernetes-preserve-unknown-fields: true
+                        responseStartTimeoutSeconds:
+                          description: ResponseStartTimeoutSeconds is the maximum duration in seconds that the request routing layer will wait for a request delivered to a container to begin sending any network traffic.
+                          type: integer
+                          format: int64
+                        runtimeClassName:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-runtimeclassname
+                          type: string
+                          x-kubernetes-preserve-unknown-fields: true
+                        schedulerName:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-schedulername
+                          type: string
+                          x-kubernetes-preserve-unknown-fields: true
+                        securityContext:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-securitycontext
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         serviceAccountName:
                           description: 'ServiceAccountName is the name of the ServiceAccount to use to run this pod. More info: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/'
                           type: string
                         timeoutSeconds:
-                          description: TimeoutSeconds is the maximum duration in seconds that the request routing layer will wait for a request delivered to a container to begin replying (send network traffic). If unspecified, a system default will be provided.
+                          description: TimeoutSeconds is the maximum duration in seconds that the request instance is allowed to respond to a request. If unspecified, a system default will be provided.
                           type: integer
                           format: int64
+                        tolerations:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-tolerations
+                          type: array
+                          items:
+                            description: This is accessible behind a feature flag - kubernetes.podspec-tolerations
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                        topologySpreadConstraints:
+                          description: This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
+                          type: array
+                          items:
+                            description: This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
                         volumes:
                           description: 'List of volumes that can be mounted by containers belonging to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes'
                           type: array
@@ -3281,9 +4070,18 @@ spec:
                                   optional:
                                     description: Specify whether the ConfigMap or its keys must be defined
                                     type: boolean
+                                x-kubernetes-map-type: atomic
+                              emptyDir:
+                                description: This is accessible behind a feature flag - kubernetes.podspec-emptydir
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                               name:
                                 description: 'Volume''s name. Must be a DNS_LABEL and unique within the pod. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
                                 type: string
+                              persistentVolumeClaim:
+                                description: This is accessible behind a feature flag - kubernetes.podspec-persistent-volume-claim
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                               projected:
                                 description: Items for all in one resources secrets, configmaps, and downward API
                                 type: object
@@ -3329,6 +4127,7 @@ spec:
                                             optional:
                                               description: Specify whether the ConfigMap or its keys must be defined
                                               type: boolean
+                                          x-kubernetes-map-type: atomic
                                         secret:
                                           description: information about the secret data to project
                                           type: object
@@ -3359,6 +4158,7 @@ spec:
                                             optional:
                                               description: Specify whether the Secret or its key must be defined
                                               type: boolean
+                                          x-kubernetes-map-type: atomic
                                         serviceAccountToken:
                                           description: information about the serviceAccountToken data to project
                                           type: object
@@ -3409,8 +4209,6 @@ spec:
                                   secretName:
                                     description: 'Name of the secret in the pod''s namespace to use. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret'
                                     type: string
-                            x-kubernetes-preserve-unknown-fields: true
-                      x-kubernetes-preserve-unknown-fields: true
                 traffic:
                   description: Traffic specifies how to distribute traffic over a collection of revisions and configurations.
                   type: array
@@ -3425,7 +4223,7 @@ spec:
                         description: LatestRevision may be optionally provided to indicate that the latest ready Revision of the Configuration should be used for this traffic target.  When provided LatestRevision must be true if RevisionName is empty; it must be false when RevisionName is non-empty.
                         type: boolean
                       percent:
-                        description: 'Percent indicates that percentage based routing should be used and the value indicates the percent of traffic that is be routed to this Revision or Configuration. `0` (zero) mean no traffic, `100` means all traffic. When percentage based routing is being used the follow rules apply: - the sum of all percent values must equal 100 - when not specified, the implied value for `percent` is zero for   that particular Revision or Configuration'
+                        description: 'Percent indicates that percentage based routing should be used and the value indicates the percent of traffic that is be routed to this Revision or Configuration. `0` (zero) mean no traffic, `100` means all traffic. When percentage based routing is being used the follow rules apply: - the sum of all percent values must equal 100 - when not specified, the implied value for `percent` is zero for that particular Revision or Configuration'
                         type: integer
                         format: int64
                       revisionName:
@@ -3465,7 +4263,6 @@ spec:
                       lastTransitionTime:
                         description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
                         type: string
-                        format: date-time
                       message:
                         description: A human readable message indicating details about the transition.
                         type: string
@@ -3505,7 +4302,7 @@ spec:
                         description: LatestRevision may be optionally provided to indicate that the latest ready Revision of the Configuration should be used for this traffic target.  When provided LatestRevision must be true if RevisionName is empty; it must be false when RevisionName is non-empty.
                         type: boolean
                       percent:
-                        description: 'Percent indicates that percentage based routing should be used and the value indicates the percent of traffic that is be routed to this Revision or Configuration. `0` (zero) mean no traffic, `100` means all traffic. When percentage based routing is being used the follow rules apply: - the sum of all percent values must equal 100 - when not specified, the implied value for `percent` is zero for   that particular Revision or Configuration'
+                        description: 'Percent indicates that percentage based routing should be used and the value indicates the percent of traffic that is be routed to this Revision or Configuration. `0` (zero) mean no traffic, `100` means all traffic. When percentage based routing is being used the follow rules apply: - the sum of all percent values must equal 100 - when not specified, the implied value for `percent` is zero for that particular Revision or Configuration'
                         type: integer
                         format: int64
                       revisionName:
@@ -3520,6 +4317,41 @@ spec:
                 url:
                   description: URL holds the url that will distribute traffic over the provided traffic targets. It generally has the form http[s]://{route-name}.{route-namespace}.{cluster-level-suffix}
                   type: string
+
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: Secret
+metadata:
+  # Do not drop -ctrl-ca suffix as control-protocol requires it.
+  # https://github.com/knative-sandbox/control-protocol/blob/main/pkg/certificates/reconciler/controller.go
+  name: serving-certs-ctrl-ca
+  namespace: knative-serving
+
+# The data is populated when internal-encryption is enabled.
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: knative-serving-certs
+  namespace: knative-serving
+  labels:
+    serving-certs-ctrl: "data-plane"
+    networking.internal.knative.dev/certificate-uid: "serving-certs"
+# The data is populated when internal-encryption is enabled.
 
 ---
 # Copyright 2018 The Knative Authors
@@ -3544,12 +4376,11 @@ metadata:
   labels:
     app.kubernetes.io/component: queue-proxy
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 spec:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
-  image: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:777efd5ec77499a7a99fd29bf5936c5e7f5ba2c0b0a76a7adbae633902afb2f9
+  image: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:b9143bee43718e8802cdba20098a81afd8f6f9e59a2f9e55c537b36983534da4
 
 ---
 # Copyright 2018 The Knative Authors
@@ -3574,10 +4405,9 @@ metadata:
   labels:
     app.kubernetes.io/component: autoscaler
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
   annotations:
-    knative.dev/example-checksum: "16af78ce"
+    knative.dev/example-checksum: "47c2487f"
 data:
   _example: |
     ################################
@@ -3652,7 +4482,7 @@ data:
     # -1 denotes unlimited target-burst-capacity and activator will always
     # be in the request path.
     # Other negative values are invalid.
-    target-burst-capacity: "200"
+    target-burst-capacity: "211"
 
     # When operating in a stable mode, the autoscaler operates on the
     # average concurrency over the stable window.
@@ -3786,10 +4616,9 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
   annotations:
-    knative.dev/example-checksum: "a0feb4c6"
+    knative.dev/example-checksum: "4b3e0057"
 data:
   _example: |
     ################################
@@ -3820,6 +4649,16 @@ data:
     # If this value is increased, the activator's terminationGraceTimeSeconds
     # should also be increased to prevent in-flight requests being disrupted.
     max-revision-timeout-seconds: "600"  # 10 minutes
+
+    # revision-response-start-timeout-seconds contains the default number of
+    # seconds a request will be allowed to stay open while waiting to
+    # receive any bytes from the user's application, if none is specified.
+    revision-response-start-timeout-seconds: "300"
+
+    # revision-idle-timeout-seconds contains the default number of
+    # seconds a request will be allowed to stay open while not receiving any
+    # bytes from the user's application, if none is specified.
+    revision-idle-timeout-seconds: "0"  # infinite
 
     # revision-cpu-request contains the cpu allocation to assign
     # to revisions by default.  If omitted, no value is specified
@@ -3930,15 +4769,14 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
   annotations:
     knative.dev/example-checksum: "dd7ee769"
 data:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
   # TODO: switch to 'queue-sidecar-image' after 0.27
-  queueSidecarImage: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:777efd5ec77499a7a99fd29bf5936c5e7f5ba2c0b0a76a7adbae633902afb2f9
+  queueSidecarImage: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:b9143bee43718e8802cdba20098a81afd8f6f9e59a2f9e55c537b36983534da4
   _example: |-
     ################################
     #                              #
@@ -4034,8 +4872,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
   annotations:
     knative.dev/example-checksum: "81552d0b"
 data:
@@ -4100,10 +4937,9 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
   annotations:
-    knative.dev/example-checksum: "d9e300ba"
+    knative.dev/example-checksum: "4d5feafc"
 data:
   _example: |-
     ################################
@@ -4132,6 +4968,12 @@ data:
     # WARNING: Cannot safely be disabled once enabled.
     # See: https://knative.dev/docs/serving/feature-flags/#kubernetes-node-affinity
     kubernetes.podspec-affinity: "disabled"
+
+    # Indicates whether Kubernetes topologySpreadConstraints support is enabled
+    #
+    # WARNING: Cannot safely be disabled once enabled.
+    # See: https://knative.dev/docs/serving/feature-flags/#kubernetes-topology-spread-constraints
+    kubernetes.podspec-topologyspreadconstraints: "disabled"
 
     # Indicates whether Kubernetes hostAliases support is enabled
     #
@@ -4162,6 +5004,18 @@ data:
     # WARNING: Cannot safely be disabled once enabled.
     # See: https://knative.dev/docs/serving/feature-flags/#kubernetes-runtime-class
     kubernetes.podspec-runtimeclassname: "disabled"
+
+    # Indicates whether Kubernetes DNSPolicy support is enabled
+    #
+    # WARNING: Cannot safely be disabled once enabled.
+    # See: https://knative.dev/docs/serving/feature-flags/#kubernetes-dnspolicy
+    kubernetes.podspec-dnspolicy: "disabled"
+
+    # Indicates whether Kubernetes DNSConfig support is enabled
+    #
+    # WARNING: Cannot safely be disabled once enabled.
+    # See: https://knative.dev/docs/serving/feature-flags/#kubernetes-dnsconfig
+    kubernetes.podspec-dnsconfig: "disabled"
 
     # This feature allows end-users to set a subset of fields on the Pod's SecurityContext
     #
@@ -4240,6 +5094,23 @@ data:
     # 2. Disabled: disabling write access for persistent volumes
     kubernetes.podspec-persistent-volume-write: "disabled"
 
+    # Controls if the queue proxy podInfo feature is enabled, allowed or disabled
+    #
+    # This feature should be enabled/allowed when using queue proxy Options (Extensions)
+    # Enabling will mount a podInfo volume to the queue proxy container.
+    # The volume will contains an 'annotations' file (from the pod's annotation field).
+    # The annotations in this file include the Service annotations set by the client creating the service.
+    # If mounted, the annotations can be accessed by queue proxy extensions at /etc/podinfo/annnotations
+    #
+    # 1. "enabled": always mount a podInfo volume
+    # 2. "disabled": never mount a podInfo volume
+    # 3. "allowed": by default, do not mount a podInfo volume
+    #   However, a client may mount the podInfo volume on an individual Service by attaching
+    #   the following metadata annotation to the Service: "features.knative.dev/queueproxy-podinfo":"enabled".
+    #
+    # NOTE THAT THIS IS AN EXPERIMENTAL / ALPHA FEATURE
+    queueproxy.mount-podinfo: "disabled"
+
 ---
 # Copyright 2018 The Knative Authors
 #
@@ -4263,10 +5134,9 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
   annotations:
-    knative.dev/example-checksum: "45463e45"
+    knative.dev/example-checksum: "aa3813a8"
 data:
   _example: |
     ################################
@@ -4283,7 +5153,6 @@ data:
     # These sample configuration options may be copied out of
     # this example block and unindented to be in the data block
     # to actually change the configuration.
-
 
     # ---------------------------------------
     # Garbage Collector Settings
@@ -4316,7 +5185,7 @@ data:
     #     retain-since-last-active-time: "disabled"
     #     max-non-active-revisions: "10"
     #
-    # Example config to disable all GC:
+    # Example config to disable all garbage collection:
     #     retain-since-create-time: "disabled"
     #     retain-since-last-active-time: "disabled"
     #     max-non-active-revisions: "disabled"
@@ -4365,8 +5234,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
   annotations:
     knative.dev/example-checksum: "f4b71f57"
 data:
@@ -4426,8 +5294,7 @@ metadata:
   name: config-logging
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v1.3.1"
-    app.kubernetes.io/version: "1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/component: logging
     app.kubernetes.io/name: knative-serving
   annotations:
@@ -4509,10 +5376,9 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: networking
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
   annotations:
-    knative.dev/example-checksum: "ddc3250f"
+    knative.dev/example-checksum: "73d96d1b"
 data:
   _example: |
     ################################
@@ -4663,21 +5529,15 @@ data:
     # Knative doesn't know about that otherwise.
     default-external-scheme: "http"
 
-    # The CA public certificate used to sign the activator TLS certificate.
-    # It is specified by the secret name, which has the "ca.crt" data field.
-    # Use an empty value to disable the feature (default).
+    # internal-encryption indicates whether internal traffic is encrypted or not.
+    # If this is "true", the following traffic are encrypted:
+    #  - ingress to activator
+    #  - ingress to queue-proxy
+    #  - activator to queue-proxy
     #
     # NOTE: This flag is in an alpha state and is mostly here to enable internal testing
     #       for now. Use with caution.
-    activator-ca: ""
-
-    # The SAN (Subject Alt Name) used to validate the activator TLS certificate.
-    # It is available only when "activator-ca" is specified.
-    # Use an empty value to disable the feature (default).
-    #
-    # NOTE: This flag is in an alpha state and is mostly here to enable internal testing
-    #       for now. Use with caution.
-    activator-san: ""
+    internal-encryption: "false"
 
 ---
 # Copyright 2018 The Knative Authors
@@ -4702,8 +5562,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: observability
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
   annotations:
     knative.dev/example-checksum: "fed4756e"
 data:
@@ -4812,8 +5671,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: tracing
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
   annotations:
     knative.dev/example-checksum: "26614636"
 data:
@@ -4870,8 +5728,7 @@ metadata:
   labels:
     app.kubernetes.io/component: activator
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 spec:
   minReplicas: 1
   maxReplicas: 20
@@ -4899,8 +5756,7 @@ metadata:
   labels:
     app.kubernetes.io/component: activator
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 spec:
   minAvailable: 80%
   selector:
@@ -4929,9 +5785,8 @@ metadata:
   namespace: knative-serving
   labels:
     app.kubernetes.io/component: activator
-    app.kubernetes.io/version: "1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-serving
-    serving.knative.dev/release: "v1.3.1"
 spec:
   selector:
     matchLabels:
@@ -4946,15 +5801,14 @@ spec:
         role: activator
         app.kubernetes.io/component: activator
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "1.3.1"
-        serving.knative.dev/release: "v1.3.1"
+        app.kubernetes.io/version: "1.7.0"
     spec:
       serviceAccountName: controller
       containers:
         - name: activator
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:c1f35f2deb2acbcb1f71efb7b893f7eb8348b8d3f5208b25c73ec30fe33105f4
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:c1a88471baa3539bbd1770b97e53e1022c59ad097be1c6f9950248934f8e757c
           # The numbers are based on performance test results from
           # https://github.com/knative/serving/issues/1625#issuecomment-511930023
           resources:
@@ -5037,9 +5891,8 @@ metadata:
   labels:
     app: activator
     app.kubernetes.io/component: activator
-    app.kubernetes.io/version: "1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-serving
-    serving.knative.dev/release: "v1.3.1"
 spec:
   selector:
     app: activator
@@ -5057,6 +5910,9 @@ spec:
     - name: http2
       port: 81
       targetPort: 8013
+    - name: https
+      port: 443
+      targetPort: 8112
   type: ClusterIP
 
 ---
@@ -5082,8 +5938,7 @@ metadata:
   labels:
     app.kubernetes.io/component: autoscaler
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 spec:
   replicas: 1
   selector:
@@ -5101,8 +5956,7 @@ spec:
         app: autoscaler
         app.kubernetes.io/component: autoscaler
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "1.3.1"
-        serving.knative.dev/release: "v1.3.1"
+        app.kubernetes.io/version: "1.7.0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -5119,7 +5973,7 @@ spec:
         - name: autoscaler
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:0d692c5f6d97bfcb53de03d68ea1d4cf4d221e441251a3b5e39e5d7445422a91
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:006577b7a5ccae6bbfbddb12a9547eda22129611d718ce1dce26cfdaef2bcb7b
           resources:
             requests:
               cpu: 100m
@@ -5182,8 +6036,7 @@ metadata:
     app: autoscaler
     app.kubernetes.io/component: autoscaler
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
   name: autoscaler
   namespace: knative-serving
 spec:
@@ -5224,8 +6077,7 @@ metadata:
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 spec:
   selector:
     matchLabels:
@@ -5238,8 +6090,7 @@ spec:
         app: controller
         app.kubernetes.io/component: controller
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "1.3.1"
-        serving.knative.dev/release: "v1.3.1"
+        app.kubernetes.io/version: "1.7.0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -5256,7 +6107,7 @@ spec:
         - name: controller
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:086d7ceec128866245541bce673d0dda3665bce0ec8b38fd53c1bceab17369b5
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:87234bba877fd91d16ec4017df151dec7db4640634fde1be94e4be553213168f
           resources:
             requests:
               cpu: 100m
@@ -5300,8 +6151,7 @@ metadata:
     app: controller
     app.kubernetes.io/component: controller
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
   name: controller
   namespace: knative-serving
 spec:
@@ -5339,8 +6189,7 @@ metadata:
   labels:
     app.kubernetes.io/component: domain-mapping
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 spec:
   selector:
     matchLabels:
@@ -5353,8 +6202,7 @@ spec:
         app: domain-mapping
         app.kubernetes.io/component: domain-mapping
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "1.3.1"
-        serving.knative.dev/release: "v1.3.1"
+        app.kubernetes.io/version: "1.7.0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -5371,7 +6219,7 @@ spec:
         - name: domain-mapping
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:08865194932090f518acb8b6af13ef3afb8aa4f6c6a176af2a010cf398bf8bb1
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping@sha256:2a51e9aac3b83aa55cd2b6cc501f534b968e3d5000019a8357ecd614b1d7825b
           resources:
             requests:
               cpu: 30m
@@ -5427,8 +6275,7 @@ metadata:
   labels:
     app.kubernetes.io/component: domain-mapping
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 spec:
   selector:
     matchLabels:
@@ -5443,8 +6290,7 @@ spec:
         role: domainmapping-webhook
         app.kubernetes.io/component: domain-mapping
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "1.3.1"
-        serving.knative.dev/release: "v1.3.1"
+        app.kubernetes.io/version: "1.7.0"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -5461,7 +6307,7 @@ spec:
         - name: domainmapping-webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:3f3c547ad8d3650a523bde828faf3d8c5f3fa9190212d60b2dc6b10f779d6c46
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/domain-mapping-webhook@sha256:74a0f14ee2f16620fd07b8b9e4ba31fa74c2b33544ae5807c35139e37a1d7d03
           resources:
             requests:
               cpu: 100m
@@ -5530,8 +6376,7 @@ metadata:
     role: domainmapping-webhook
     app.kubernetes.io/component: domain-mapping
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
   name: domainmapping-webhook
   namespace: knative-serving
 spec:
@@ -5572,8 +6417,7 @@ metadata:
   labels:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 spec:
   minReplicas: 1
   maxReplicas: 5
@@ -5599,8 +6443,7 @@ metadata:
   labels:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 spec:
   minAvailable: 80%
   selector:
@@ -5628,9 +6471,8 @@ metadata:
   name: webhook
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v1.3.1"
     app.kubernetes.io/component: webhook
-    app.kubernetes.io/version: "1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-serving
 spec:
   selector:
@@ -5644,9 +6486,7 @@ spec:
       labels:
         app: webhook
         role: webhook
-        serving.knative.dev/release: "v1.3.1"
-        app.kubernetes.io/component: webhook
-        app.kubernetes.io/version: "1.3.1"
+        app.kubernetes.io/version: "1.7.0"
         app.kubernetes.io/name: knative-serving
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
@@ -5664,7 +6504,7 @@ spec:
         - name: webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:e9ac75b1723f0ae11ea5549306881979f34ef560d3c31f161090381f44cae707
+          image: gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:30b45236790b38f8cc18b7bf9ff4a91e13e5aaa15741867e46e8a9b2b26ca5c2
           resources:
             requests:
               cpu: 100m
@@ -5733,9 +6573,8 @@ kind: Service
 metadata:
   labels:
     role: webhook
-    serving.knative.dev/release: "v1.3.1"
     app.kubernetes.io/component: webhook
-    app.kubernetes.io/version: "1.3.1"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/name: knative-serving
   name: webhook
   namespace: knative-serving
@@ -5776,8 +6615,7 @@ metadata:
   labels:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -5819,8 +6657,7 @@ metadata:
   labels:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -5875,8 +6712,7 @@ metadata:
   labels:
     app.kubernetes.io/component: domain-mapping
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -5891,14 +6727,14 @@ webhooks:
       - apiGroups:
           - serving.knative.dev
         apiVersions:
-          - v1alpha1
-          - v1beta1
+          - "*"
         operations:
           - CREATE
           - UPDATE
         scope: "*"
         resources:
           - domainmappings
+          - domainmappings/status
 
 ---
 # Copyright 2020 The Knative Authors
@@ -5923,8 +6759,7 @@ metadata:
   labels:
     app.kubernetes.io/component: domain-mapping
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 # The data is populated at install time.
 
 ---
@@ -5949,8 +6784,7 @@ metadata:
   labels:
     app.kubernetes.io/component: domain-mapping
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -5965,8 +6799,7 @@ webhooks:
       - apiGroups:
           - serving.knative.dev
         apiVersions:
-          - v1alpha1
-          - v1beta1
+          - "*"
         operations:
           - CREATE
           - UPDATE
@@ -5974,6 +6807,7 @@ webhooks:
         scope: "*"
         resources:
           - domainmappings
+          - domainmappings/status
 
 ---
 # Copyright 2020 The Knative Authors
@@ -5997,8 +6831,7 @@ metadata:
   labels:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -6055,8 +6888,7 @@ metadata:
   labels:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.3.1"
-    serving.knative.dev/release: "v1.3.1"
+    app.kubernetes.io/version: "1.7.0"
 # The data is populated at install time.
 
 ---

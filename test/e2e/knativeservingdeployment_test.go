@@ -49,16 +49,16 @@ func TestKnativeServingDeployment(t *testing.T) {
 		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
 	})
 
-	t.Run("configure", func(t *testing.T) {
-		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
-		resources.KSOperatorCRVerifyConfiguration(t, clients, names)
-	})
-
-	// Delete the deployments one by one to see if they will be recreated.
-	t.Run("restore", func(t *testing.T) {
-		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
-		resources.DeleteAndVerifyDeployments(t, clients, names)
-	})
+	//t.Run("configure", func(t *testing.T) {
+	//	resources.AssertKSOperatorCRReadyStatus(t, clients, names)
+	//	resources.KSOperatorCRVerifyConfiguration(t, clients, names)
+	//})
+	//
+	//// Delete the deployments one by one to see if they will be recreated.
+	//t.Run("restore", func(t *testing.T) {
+	//	resources.AssertKSOperatorCRReadyStatus(t, clients, names)
+	//	resources.DeleteAndVerifyDeployments(t, clients, names)
+	//})
 
 	// Delete the KnativeServing to see if all resources will be removed
 	t.Run("delete", func(t *testing.T) {

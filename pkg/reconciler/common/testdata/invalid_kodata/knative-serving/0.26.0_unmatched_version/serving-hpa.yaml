@@ -18,3 +18,4 @@ metadata:
   name: knative-serving
   labels:
     serving.knative.dev/release: "v0.17.2"
+    app.kubernetes.io/version: "0.17.2"

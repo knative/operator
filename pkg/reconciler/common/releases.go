@@ -181,16 +181,6 @@ func IsVersionValidMigrationEligible(instance base.KComponent) error {
 		"installed KnativeServing version is %v.", current)
 }
 
-func getVersionKey(instance base.KComponent) string {
-	switch instance.(type) {
-	case *v1beta1.KnativeServing:
-		return "serving.knative.dev/release"
-	case *v1beta1.KnativeEventing:
-		return "eventing.knative.dev/release"
-	}
-	return ""
-}
-
 type manifestFetcher func(string) (mf.Manifest, error)
 
 func getManifestWithVersionValidation(manifestsPath string, instance base.KComponent, fn manifestFetcher) (mf.Manifest, error) {
@@ -218,14 +208,15 @@ func getManifestWithVersionValidation(manifestsPath string, instance base.KCompo
 	}
 
 	targetVersion := SanitizeSemver(version)
-	key := getVersionKey(instance)
+	key := "app.kubernetes.io/version"
 	for _, u := range manifests.Resources() {
 		// Check the labels of the resources one by one to see if the version matches the target version in terms of
 		// major.minor.
 		manifestVersion := u.GetLabels()[key]
-		if manifestVersion != "" && semver.MajorMinor(targetVersion) != semver.MajorMinor(manifestVersion) {
+		manifestVersionSan := SanitizeSemver(u.GetLabels()[key])
+		if manifestVersion != "" && semver.MajorMinor(targetVersion) != semver.MajorMinor(manifestVersionSan) {
 			return mf.Manifest{}, fmt.Errorf("the version of the manifests %s of the component %s does not match the target "+
-				"version of the operator CR %s", manifestVersion, u.GetName(), targetVersion)
+				"version of the operator CR %s", manifestVersionSan, u.GetName(), targetVersion)
 		}
 	}
 
@@ -341,7 +332,10 @@ func installedManifestPath(version string, instance base.KComponent) []string {
 // x.y.z is the standard format we use as the semantic version for Knative. The letter `v` is added for
 // comparison purpose.
 func SanitizeSemver(version string) string {
-	return fmt.Sprintf("v%s", version)
+	if !strings.HasPrefix(version, "v") {
+		return fmt.Sprintf("v%s", version)
+	}
+	return version
 }
 
 // allIngressReleases returns the all the available release versions

@@ -113,7 +113,7 @@ func getTestKSOperatorCRSpec() v1beta1.KnativeServingSpec {
 		CommonSpec: base.CommonSpec{
 			Config: base.ConfigMapData{
 				DefaultsConfigKey: {
-					"revision-timeout-seconds": "300",
+					"revision-timeout-seconds": "200",
 				},
 				LoggingConfigKey: {
 					"loglevel.controller": "debug",

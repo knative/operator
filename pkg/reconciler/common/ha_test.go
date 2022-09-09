@@ -59,6 +59,11 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		in:       makeUnstructuredHPA(t, "activator", 1, 4),
 		expected: makeUnstructuredHPA(t, "activator", 2, 5),
 	}, {
+		name:     "HA; do not adjust deployment directory which has HPA", // The replica should be djusted by HPA.
+		config:   makeHa(2),
+		in:       makeUnstructuredDeployment(t, "activator"),
+		expected: makeUnstructuredDeployment(t, "activator"),
+	}, {
 		name:     "HA; keep higher hpa value",
 		config:   makeHa(2),
 		in:       makeUnstructuredHPA(t, "activator", 3, 5),

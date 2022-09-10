@@ -36,9 +36,6 @@ func hasHorizontalPodAutoscaler(obj base.KComponent) sets.String {
 	return sets.NewString(
 		"webhook",
 		"activator",
-		"eventing-webhook",
-		"mt-broker-ingress",
-		"mt-broker-filter",
 	)
 }
 

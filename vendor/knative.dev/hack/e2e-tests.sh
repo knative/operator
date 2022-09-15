@@ -108,10 +108,6 @@ function setup_test_cluster() {
   if function_exists test_setup; then
     test_setup || fail_test "test setup failed"
   fi
-
-  # Restore error checking.
-  set -o errexit
-  set -o pipefail
 }
 
 # Signal (as return code and in the logs) that all E2E tests passed.

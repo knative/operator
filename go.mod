@@ -20,10 +20,10 @@ require (
 	k8s.io/client-go v0.24.4
 	k8s.io/code-generator v0.24.4
 	knative.dev/caching v0.0.0-20220914200406-7fef078a0ff7
-	knative.dev/eventing v0.34.1-0.20220912074833-e46f4d509d74
+	knative.dev/eventing v0.34.1-0.20220915121905-b8cb60cf89b8
 	knative.dev/hack v0.0.0-20220914183605-d1317b08c0c3
 	knative.dev/pkg v0.0.0-20220914154704-5f66ecf267fe
-	knative.dev/serving v0.34.1-0.20220914230604-c832f358b92f
+	knative.dev/serving v0.34.1-0.20220915131205-d6ab4640ebb2
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -104,7 +104,7 @@ require (
 	github.com/rickb777/plural v1.2.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/testify v1.7.0 // indirect
+	github.com/stretchr/testify v1.8.0 // indirect
 	github.com/tsenart/vegeta/v12 v12.8.4 // indirect
 	github.com/wavesoftware/go-ensure v1.0.0 // indirect
 	go.opencensus.io v0.23.0 // indirect

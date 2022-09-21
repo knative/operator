@@ -30,8 +30,10 @@ import (
 )
 
 const (
-	kourierGatewayNSEnvVarKey = "KOURIER_GATEWAY_NAMESPACE"
-	kourierGatewayServiceName = "kourier"
+	kourierGatewayNSEnvVarKey     = "KOURIER_GATEWAY_NAMESPACE"
+	kourierGatewayServiceName     = "kourier"
+	kourierDefaultVolumeName      = "kourier-bootstrap"
+	kourierGatewayDeploymentNames = "3scale-kourier-gateway"
 )
 
 var kourierControllerDeploymentNames = sets.NewString("3scale-kourier-control", "net-kourier-controller")
@@ -42,6 +44,7 @@ func kourierTransformers(ctx context.Context, instance *v1beta1.KnativeServing) 
 	return []mf.Transformer{
 		replaceGWNamespace(),
 		configureGWServiceType(instance),
+		configureBootstrapConfigMap(instance),
 	}
 }
 
@@ -97,6 +100,40 @@ func configureGWServiceType(instance *v1beta1.KnativeServing) mf.Transformer {
 			}
 
 			if err := scheme.Scheme.Convert(svc, u, nil); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
+// configureBootstrapConfigMap sets Kourier GW's bootstrap configmap name.
+func configureBootstrapConfigMap(instance *v1beta1.KnativeServing) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() == "Deployment" && u.GetName() == kourierGatewayDeploymentNames && hasProviderLabel(u) {
+			if instance.Spec.Ingress.Kourier.BootstrapConfigmapName == "" {
+				// Do nothing if BootstrapConfigmapName is not configured.
+				return nil
+			}
+			deployment := &appsv1.Deployment{}
+			if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
+				return err
+			}
+
+			bootstrapName := instance.Spec.Ingress.Kourier.BootstrapConfigmapName
+
+			for i := range deployment.Spec.Template.Spec.Volumes {
+				v := &deployment.Spec.Template.Spec.Volumes[i]
+				if v.VolumeSource.ConfigMap.Name == kourierDefaultVolumeName {
+					v.VolumeSource.ConfigMap = &v1.ConfigMapVolumeSource{
+						LocalObjectReference: v1.LocalObjectReference{
+							Name: bootstrapName,
+						},
+					}
+				}
+			}
+
+			if err := scheme.Scheme.Convert(deployment, u, nil); err != nil {
 				return err
 			}
 		}

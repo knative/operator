@@ -572,7 +572,7 @@ func TestTransformers(t *testing.T) {
 				},
 			},
 		},
-		expected: 2,
+		expected: 3,
 	}, {
 		name: "Available contour ingress",
 		instance: servingv1beta1.KnativeServing{
@@ -608,7 +608,7 @@ func TestTransformers(t *testing.T) {
 				},
 			},
 		},
-		expected: 3,
+		expected: 4,
 	}}
 
 	for _, tt := range tests {

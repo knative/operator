@@ -40,6 +40,9 @@ type KourierIngressConfiguration struct {
 
 	// ServiceType specifies the service type for kourier gateway.
 	ServiceType v1.ServiceType `json:"service-type,omitempty"`
+
+	// BootstrapConfigmapName specifies the ConfigMap name which contains envoy bootstrap.
+	BootstrapConfigmapName string `json:"bootstrap-configmap,omitempty"`
 }
 
 // ContourIngressConfiguration specifies whether to enable the contour ingresses.

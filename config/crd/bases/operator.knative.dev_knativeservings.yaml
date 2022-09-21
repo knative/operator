@@ -1022,6 +1022,8 @@ spec:
                         type: boolean
                       service-type:
                         type: string
+                      bootstrap-configmap:
+                        type: string
                     type: object
                 type: object
               manifests:

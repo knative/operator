@@ -22,12 +22,13 @@ source $(dirname $0)/../vendor/knative.dev/hack/codegen-library.sh
 
 # If we run with -mod=vendor here, then generate-groups.sh looks for vendor files in the wrong place.
 export GOFLAGS=-mod=
+readonly RELEASE_VERSION="v1.3"
 
 boilerplate="${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt"
 
 # download all the configurations for different release versions
 group "Downloading releases"
-(cd ${REPO_ROOT_DIR}; go run ./cmd/fetcher "$@")
+(cd ${REPO_ROOT_DIR}; go run ./cmd/fetcher --release ${RELEASE_VERSION} "$@")
 
 group "Kubernetes Codegen"
 

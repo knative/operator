@@ -75,7 +75,7 @@ spec:
                   replicas:
                     description: The number of replicas that HA parts of the control
                       plane will be scaled to
-                    minimum: 1
+                    minimum: 0
                     type: integer
                 type: object
               deployments:
@@ -227,7 +227,7 @@ spec:
                     replicas:
                       description: The number of replicas that HA parts of the control plane will be scaled to
                       type: integer
-                      minimum: 1
+                      minimum: 0
                     nodeSelector:
                       additionalProperties:
                         type: string

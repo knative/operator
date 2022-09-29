@@ -17,7 +17,7 @@ kind: ClusterRole
 metadata:
   name: natss-addressable-resolver
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -51,7 +51,7 @@ kind: ClusterRole
 metadata:
   name: natss-channelable-manipulator
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -88,7 +88,7 @@ kind: ClusterRole
 metadata:
   name: natss-ch-controller
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 rules:
   - apiGroups:
       - messaging.knative.dev
@@ -248,7 +248,7 @@ metadata:
   name: natss-ch-dispatcher
   namespace: knative-eventing
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
     messaging.knative.dev/channel: natss-channel
     messaging.knative.dev/role: dispatcher
 spec:
@@ -281,7 +281,7 @@ kind: ClusterRole
 metadata:
   name: nats-jsm-addressable-resolver
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -315,7 +315,7 @@ kind: ClusterRole
 metadata:
   name: nats-jsm-channelable-manipulator
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -352,7 +352,7 @@ kind: ClusterRole
 metadata:
   name: nats-jsm-ch-controller
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 rules:
   - apiGroups:
       - messaging.knative.dev
@@ -512,7 +512,7 @@ metadata:
   name: jetstream-ch-dispatcher
   namespace: knative-eventing
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
     messaging.knative.dev/channel: natsjsm-channel
     messaging.knative.dev/role: dispatcher
 spec:
@@ -546,7 +546,7 @@ metadata:
   name: nats-jsm-ch-controller
   namespace: knative-eventing
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -554,7 +554,7 @@ metadata:
   name: nats-jsm-ch-dispatcher
   namespace: knative-eventing
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -577,7 +577,7 @@ metadata:
   name: natss-ch-controller
   namespace: knative-eventing
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -585,7 +585,7 @@ metadata:
   name: natss-ch-dispatcher
   namespace: knative-eventing
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -685,7 +685,7 @@ kind: ClusterRoleBinding
 metadata:
   name: natss-ch-controller
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 subjects:
   - kind: ServiceAccount
     name: natss-ch-controller
@@ -728,7 +728,7 @@ kind: ClusterRoleBinding
 metadata:
   name: nats-jsm-ch-controller
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 subjects:
   - kind: ServiceAccount
     name: nats-jsm-ch-controller
@@ -772,14 +772,14 @@ metadata:
   name: nats-webhook
   namespace: knative-eventing
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: nats-webhook
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 subjects:
   - kind: ServiceAccount
     name: nats-webhook
@@ -809,7 +809,7 @@ kind: CustomResourceDefinition
 metadata:
   name: natsschannels.messaging.knative.dev
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -872,7 +872,7 @@ kind: CustomResourceDefinition
 metadata:
   name: natsjetstreamchannels.messaging.knative.dev
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -960,7 +960,7 @@ metadata:
   name: natss-ch-controller
   namespace: knative-eventing
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 spec:
   replicas: 1
   selector:
@@ -974,7 +974,7 @@ spec:
       serviceAccountName: natss-ch-controller
       containers:
         - name: controller
-          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/channel_controller@sha256:9f4d34b57c941074b0a7d5364342a75200adcd2be12cdfcdccd1489fdeee1b7d
+          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/channel_controller@sha256:7798389b21aabb2ca1a7c47b0d6e9f7e91ba38d247f68c3777646af89605e205
           env:
             - name: CONFIG_LOGGING_NAME
               value: config-logging
@@ -1020,7 +1020,7 @@ metadata:
   name: natss-ch-dispatcher
   namespace: knative-eventing
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 spec:
   replicas: 1
   selector:
@@ -1034,7 +1034,7 @@ spec:
       serviceAccountName: natss-ch-dispatcher
       containers:
         - name: dispatcher
-          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/channel_dispatcher@sha256:448b392295f0098daabf77dba36582b789a2f19bf0308fede2c94613b45ca165
+          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/channel_dispatcher@sha256:6aafe8163cda83636723971dca63bd6c3bf555193e7c1b5366144bb88bfec101
           readinessProbe: &probe
             failureThreshold: 3
             httpGet:
@@ -1100,7 +1100,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: webhook.nats.messaging.knative.dev
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 webhooks:
   - admissionReviewVersions: ["v1beta1"]
     clientConfig:
@@ -1132,7 +1132,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.nats.messaging.knative.dev
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 webhooks:
   - admissionReviewVersions: ["v1beta1"]
     clientConfig:
@@ -1165,7 +1165,7 @@ metadata:
   name: nats-webhook
   namespace: knative-eventing
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 spec:
   replicas: 1
   selector:
@@ -1192,7 +1192,7 @@ spec:
           terminationMessagePolicy: FallbackToLogsOnError
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/webhook@sha256:33d1034af960795ec4387fa6f322401f728cfd49a82536ae3017e6b7f8cb16c4
+          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/webhook@sha256:6758604882732501b2f8b396059d904ddbe8293919257297fbc402eef49be5df
           resources:
             requests:
               # taken from serving.
@@ -1243,7 +1243,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
     role: nats-webhook
   name: nats-webhook
   namespace: knative-eventing
@@ -1276,7 +1276,7 @@ metadata:
   name: jetstream-ch-controller
   namespace: knative-eventing
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 spec:
   replicas: 1
   selector:
@@ -1290,7 +1290,7 @@ spec:
       serviceAccountName: nats-jsm-ch-controller
       containers:
         - name: controller
-          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/jetstream_channel_controller@sha256:eda11f180431896cd1f6c38c8c8c22f7f722bd3abda4ed2586771b5ccd430b3d
+          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/jetstream_channel_controller@sha256:f88a8ceeb7071d8bb10672fa8ba46b8f051d4a228de64bbc4314784676538af2
           env:
             - name: CONFIG_LOGGING_NAME
               value: config-logging
@@ -1336,7 +1336,7 @@ metadata:
   name: jetstream-ch-dispatcher
   namespace: knative-eventing
   labels:
-    nats.eventing.knative.dev/release: "v1.3.0"
+    nats.eventing.knative.dev/release: "v1.3.2"
 spec:
   replicas: 1
   selector:
@@ -1350,7 +1350,7 @@ spec:
       serviceAccountName: nats-jsm-ch-dispatcher
       containers:
         - name: dispatcher
-          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/jetstream_channel_dispatcher@sha256:6b088c81d7ef987105951610216c8395a9dd78b36bfc4eccc328832c4c2bfa6e
+          image: gcr.io/knative-releases/knative.dev/eventing-natss/cmd/jetstream_channel_dispatcher@sha256:6ff9710f47a298d3aee640bb25113d7d06e03ec9bcc6d92627f084ddff486897
           readinessProbe: &probe
             failureThreshold: 3
             httpGet:

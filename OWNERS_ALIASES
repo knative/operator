@@ -66,9 +66,10 @@ aliases:
   - knative-test-reporter-robot
   - kvmware
   - lance
-  - matzew
-  - n3wscott
+  - lionelvillard
+  - nak3
   - pmorie
+  - psschwei
   - smoser-ibm
   - spencerdillard
   - thisisnotapril
@@ -76,8 +77,8 @@ aliases:
   - vaikas
   - zroubalik
   knative-release-leads:
-  - dprotaso
-  - matzew
+  - lionelvillard
+  - nak3
   knative-robots:
   - knative-automation
   - knative-prow-releaser-robot
@@ -196,7 +197,7 @@ aliases:
   - dprotaso
   - dsimansk
   - evankanderson
-  - n3wscott
+  - psschwei
   - zroubalik
   trademark-committee:
   - evankanderson

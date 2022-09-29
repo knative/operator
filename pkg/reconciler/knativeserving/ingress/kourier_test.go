@@ -34,7 +34,7 @@ import (
 
 const servingNamespace = "knative-serving"
 
-func servingInstance(ns string, serviceType v1.ServiceType) *servingv1beta1.KnativeServing {
+func servingInstance(ns string, serviceType v1.ServiceType, bootstrapConfigmapName string) *servingv1beta1.KnativeServing {
 	return &servingv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-instance",
@@ -43,8 +43,9 @@ func servingInstance(ns string, serviceType v1.ServiceType) *servingv1beta1.Knat
 		Spec: servingv1beta1.KnativeServingSpec{
 			Ingress: &servingv1beta1.IngressConfigs{
 				Kourier: base.KourierIngressConfiguration{
-					Enabled:     true,
-					ServiceType: serviceType,
+					Enabled:                true,
+					ServiceType:            serviceType,
+					BootstrapConfigmapName: bootstrapConfigmapName,
 				},
 			},
 		},
@@ -53,40 +54,46 @@ func servingInstance(ns string, serviceType v1.ServiceType) *servingv1beta1.Knat
 
 func TestTransformKourierManifest(t *testing.T) {
 	tests := []struct {
-		name           string
-		instance       *servingv1beta1.KnativeServing
-		dropLabel      bool
-		expNamespace   string
-		expServiceType string
-		expError       error
+		name             string
+		instance         *servingv1beta1.KnativeServing
+		dropLabel        bool
+		expNamespace     string
+		expServiceType   string
+		expConfigMapName string
+		expError         error
 	}{{
-		name:           "Replaces Kourier Gateway Namespace and ServiceType",
-		instance:       servingInstance(servingNamespace, "ClusterIP"),
-		expNamespace:   servingNamespace,
-		expServiceType: "ClusterIP",
+		name:             "Replaces Kourier Gateway Namespace, ServiceType and bootstrap cm",
+		instance:         servingInstance(servingNamespace, "ClusterIP", "my-bootstrap"),
+		expNamespace:     servingNamespace,
+		expConfigMapName: "my-bootstrap",
+		expServiceType:   "ClusterIP",
 	}, {
-		name:           "Use Kourier default service type",
-		instance:       servingInstance(servingNamespace, "" /* empty service type */),
-		expNamespace:   servingNamespace,
-		expServiceType: "LoadBalancer", // kourier GW default service type
+		name:             "Use Kourier default service type",
+		instance:         servingInstance(servingNamespace, "" /* empty service type */, ""),
+		expNamespace:     servingNamespace,
+		expConfigMapName: kourierDefaultVolumeName,
+		expServiceType:   "LoadBalancer", // kourier GW default service type
 	}, {
-		name:           "Use unsupported service type",
-		instance:       servingInstance(servingNamespace, "ExternalName"),
-		expNamespace:   servingNamespace,
-		expServiceType: "ExternalName",
-		expError:       fmt.Errorf("unsupported service type \"ExternalName\""),
+		name:             "Use unsupported service type",
+		instance:         servingInstance(servingNamespace, "ExternalName", ""),
+		expNamespace:     servingNamespace,
+		expServiceType:   "ExternalName",
+		expConfigMapName: kourierDefaultVolumeName,
+		expError:         fmt.Errorf("unsupported service type \"ExternalName\""),
 	}, {
-		name:           "Use unknown service type",
-		instance:       servingInstance(servingNamespace, "Foo"),
-		expNamespace:   servingNamespace,
-		expServiceType: "Foo",
-		expError:       fmt.Errorf("unknown service type \"Foo\""),
+		name:             "Use unknown service type",
+		instance:         servingInstance(servingNamespace, "Foo", ""),
+		expNamespace:     servingNamespace,
+		expServiceType:   "Foo",
+		expConfigMapName: kourierDefaultVolumeName,
+		expError:         fmt.Errorf("unknown service type \"Foo\""),
 	}, {
-		name:           "Do not transform without the ingress provier label",
-		dropLabel:      true,
-		instance:       servingInstance(servingNamespace, "ClusterIP"),
-		expNamespace:   "kourier-system", // kourier default namespace
-		expServiceType: "LoadBalancer",   // kourier GW default service type
+		name:             "Do not transform without the ingress provier label",
+		dropLabel:        true,
+		instance:         servingInstance(servingNamespace, "ClusterIP", "my-bootstrap"),
+		expNamespace:     "kourier-system", // kourier default namespace
+		expConfigMapName: kourierDefaultVolumeName,
+		expServiceType:   "LoadBalancer", // kourier GW default service type
 	}}
 
 	for _, tt := range tests {
@@ -116,9 +123,15 @@ func TestTransformKourierManifest(t *testing.T) {
 				util.AssertEqual(t, err, tt.expError)
 			}
 
+			manifest, err = manifest.Transform(configureBootstrapConfigMap(tt.instance))
+			if err != nil {
+				t.Fatalf("Failed to transform manifest: %v", err)
+			}
+
 			for _, u := range manifest.Resources() {
 				verifyControllerNamespace(t, &u, tt.expNamespace)
 				verifyGatewayServiceType(t, &u, tt.expServiceType)
+				verifyBootstrapVolumeName(t, &u, tt.expConfigMapName)
 			}
 		})
 	}
@@ -137,6 +150,16 @@ func verifyControllerNamespace(t *testing.T, u *unstructured.Unstructured, expNa
 			}
 		}
 		util.AssertDeepEqual(t, env, expNamespace)
+	}
+}
+
+func verifyBootstrapVolumeName(t *testing.T, u *unstructured.Unstructured, expConfigMapName string) {
+	if u.GetKind() == "Deployment" && u.GetName() == kourierGatewayDeploymentNames {
+		deployment := &appsv1.Deployment{}
+		err := scheme.Scheme.Convert(u, deployment, nil)
+		util.AssertEqual(t, err, nil)
+		configMapName := deployment.Spec.Template.Spec.Volumes[0].VolumeSource.ConfigMap.Name
+		util.AssertDeepEqual(t, configMapName, expConfigMapName)
 	}
 }
 

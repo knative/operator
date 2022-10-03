@@ -85,6 +85,10 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 		return nil
 	}
 
+	if manifest == nil {
+		return nil
+	}
+
 	if err = common.Uninstall(manifest); err != nil {
 		logger.Error("Failed to finalize platform resources", err)
 	}

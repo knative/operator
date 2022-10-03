@@ -20,6 +20,10 @@ import (
 	"fmt"
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/operator/pkg/apis/operator/base"
+
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -30,22 +34,44 @@ import (
 // invalid in Kubernetes 1.20+.
 func IngressServiceTransform(ks *v1beta1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetAPIVersion() == "v1" && u.GetKind() == "Service" && u.GetName() == "knative-local-gateway" {
-			u.SetNamespace("istio-system")
-			u.SetOwnerReferences(nil)
-			config := ks.GetSpec().GetConfig()
-			if data, ok := config["istio"]; ok {
-				UpdateNamespace(u, data, ks.GetNamespace())
-			}
+		if u.GetAPIVersion() == "v1" && u.GetKind() == "Service" {
+			if u.GetName() == "knative-local-gateway" {
+				u.SetNamespace("istio-system")
+				u.SetOwnerReferences(nil)
+				config := ks.GetSpec().GetConfig()
+				if data, ok := config["istio"]; ok {
+					UpdateNamespace(u, data, ks.GetNamespace())
+				}
 
-			// The "config-" prefix is optional
-			if data, ok := config["config-istio"]; ok {
-				UpdateNamespace(u, data, ks.GetNamespace())
-			}
+				// The "config-" prefix is optional
+				if data, ok := config["config-istio"]; ok {
+					UpdateNamespace(u, data, ks.GetNamespace())
+				}
 
+				return updateIstioService(ks, u, localGateway)
+			}
+			if u.GetName() == "knative-ingress-gateway" {
+				return updateIstioService(ks, u, ingressGateway)
+			}
 		}
 		return nil
 	}
+}
+
+func updateIstioService(ks *v1beta1.KnativeServing, u *unstructured.Unstructured,
+	ingressGateway func(instance *v1beta1.KnativeServing) *base.IstioGatewayOverride) error {
+	service := &corev1.Service{}
+	if err := scheme.Scheme.Convert(u, service, nil); err != nil {
+		return err
+	}
+	override := ingressGateway(ks)
+	if override != nil && len(override.Selector) > 0 {
+		service.Spec.Selector = override.Selector
+	}
+	if err := scheme.Scheme.Convert(service, u, nil); err != nil {
+		return err
+	}
+	return nil
 }
 
 // UpdateNamespace set correct namespace of istio to the service knative-local-gateway

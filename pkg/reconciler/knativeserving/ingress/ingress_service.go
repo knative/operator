@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package common
+package ingress
 
 import (
 	"fmt"
@@ -42,6 +42,7 @@ func IngressServiceTransform(ks *v1beta1.KnativeServing) mf.Transformer {
 			if data, ok := config["config-istio"]; ok {
 				UpdateNamespace(u, data, ks.GetNamespace())
 			}
+
 		}
 		return nil
 	}

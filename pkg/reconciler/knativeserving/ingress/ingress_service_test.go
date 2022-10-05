@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package common
+package ingress
 
 import (
 	"testing"
@@ -28,7 +28,7 @@ import (
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
-func TestIngressServiceTransform(t *testing.T) {
+func TestIngressServiceTransformIstioSelector(t *testing.T) {
 	tests := []struct {
 		name              string
 		namespace         string
@@ -131,6 +131,75 @@ func TestIngressServiceTransform(t *testing.T) {
 			IngressServiceTransform(tt.instance)(service)
 			util.AssertEqual(t, service.GetNamespace() == tt.expectedNamespace, tt.expected)
 			util.AssertEqual(t, service.GetOwnerReferences() == nil, true)
+		})
+	}
+}
+
+func TestIngressServiceTransform(t *testing.T) {
+	tests := []struct {
+		name                  string
+		namespace             string
+		serviceName           string
+		expectedNamespace     string
+		knativeIngressGateway *base.IstioGatewayOverride
+		clusterLocalGateway   *base.IstioGatewayOverride
+		instance              *servingv1beta1.KnativeServing
+		expected              map[string]string
+	}{{
+		name:              "Istio ingress selector configuration for local gateway service",
+		namespace:         "test-namespace",
+		serviceName:       "knative-local-gateway",
+		expectedNamespace: "istio-system",
+		instance: &servingv1beta1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-instance",
+				Namespace: "test-namespace",
+			},
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
+					Istio: base.IstioIngressConfiguration{
+						Enabled:             true,
+						KnativeLocalGateway: gatewayOverride(map[string]string{"istio": "cluster-local-1"}, nil),
+					},
+				},
+			},
+		},
+		expected: map[string]string{
+			"istio": "cluster-local-1",
+		},
+	}, {
+		name:              "Istio ingress selector configuration for ingress gateway service",
+		namespace:         "test-namespace",
+		serviceName:       "knative-ingress-gateway",
+		expectedNamespace: "istio-system",
+		instance: &servingv1beta1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-instance",
+				Namespace: "test-namespace",
+			},
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
+					Istio: base.IstioIngressConfiguration{
+						Enabled:               true,
+						KnativeIngressGateway: gatewayOverride(map[string]string{"istio": "ingress-gateway-1"}, nil),
+					},
+				},
+			},
+		},
+		expected: map[string]string{
+			"istio": "ingress-gateway-1",
+		},
+	}}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := makeIngressService(t, tt.serviceName, tt.namespace)
+			IngressServiceTransform(tt.instance)(service)
+
+			serviceResult := &v1.Service{}
+			err := scheme.Scheme.Convert(service, serviceResult, nil)
+			util.AssertEqual(t, err, nil)
+			util.AssertDeepEqual(t, serviceResult.Spec.Selector, tt.expected)
 		})
 	}
 }

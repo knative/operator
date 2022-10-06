@@ -19,11 +19,11 @@ require (
 	k8s.io/apimachinery v0.24.4
 	k8s.io/client-go v0.24.4
 	k8s.io/code-generator v0.24.4
-	knative.dev/caching v0.0.0-20220929014619-fba49b736a13
-	knative.dev/eventing v0.34.1-0.20220930110319-abe0a570af62
-	knative.dev/hack v0.0.0-20221003111221-b3c97904d3b5
-	knative.dev/pkg v0.0.0-20220930124718-7c4fef1af593
-	knative.dev/serving v0.34.1-0.20220930124818-affc8df51a1f
+	knative.dev/caching v0.0.0-20221005141329-dac2fa0dbe87
+	knative.dev/eventing v0.34.1-0.20221006013630-fdacfa352be7
+	knative.dev/hack v0.0.0-20221006013832-52a87e1514cb
+	knative.dev/pkg v0.0.0-20221006013630-1fb3e679f6d4
+	knative.dev/serving v0.34.1-0.20221005232330-c3f3eae18861
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -45,7 +45,7 @@ require (
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
-	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20211221011931-643d94fcab96 // indirect
+	github.com/antlr/antlr4/runtime/Go/antlr v1.4.10 // indirect
 	github.com/aws/aws-sdk-go v1.37.1 // indirect
 	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -135,7 +135,7 @@ require (
 	k8s.io/klog/v2 v2.70.2-0.20220707122935-0990e81f1a8f // indirect
 	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
-	knative.dev/networking v0.0.0-20220929142717-ce2a848e6ea9 // indirect
+	knative.dev/networking v0.0.0-20221003195429-a5c26fe64325 // indirect
 	sigs.k8s.io/controller-runtime v0.7.2 // indirect
 	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect

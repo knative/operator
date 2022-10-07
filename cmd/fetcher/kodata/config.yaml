@@ -65,14 +65,48 @@ eventing-source:
       bucket: "gs-noauth://knative-releases"
       prefix: "eventing/previous"
   additional:
+    overrides:
+      v1.7:
+        include:
+          - "eventing-kafka-source.yaml"
+          - "eventing-kafka-controller.yaml"
+          - "eventing-kafka-post-install.yaml"
+        exclude:
+          - "source.yaml"
+          - "mt-source.yaml"
+      v1.6:
+        include:
+          - "eventing-kafka-source.yaml"
+          - "eventing-kafka-controller.yaml"
+          - "eventing-kafka-post-install.yaml"
+        exclude:
+          - "source.yaml"
+          - "mt-source.yaml"
     - s3:
         bucket: "gs-noauth://knative-releases"
-        prefix: "eventing-kafka/previous"
+        prefix: "eventing-kafka-broker/previous"
       eventingService: kafka
       include:
-        - "source.yaml"
-      exclude:
-        - "mt-source.yaml"
+        - "eventing-kafka-source.yaml"
+        - "eventing-kafka-controller.yaml"
+        - "eventing-kafka-post-install.yaml"
+      overrides:
+        v1.5:
+          include:
+            - "source.yaml"
+          exclude:
+            - "eventing-kafka-source.yaml"
+            - "eventing-kafka-controller.yaml"
+            - "eventing-kafka-post-install.yaml"
+            - "mt-source.yaml"
+        v1.4:
+          include:
+            - "source.yaml"
+          exclude:
+            - "eventing-kafka-source.yaml"
+            - "eventing-kafka-controller.yaml"
+            - "eventing-kafka-post-install.yaml"
+            - "mt-source.yaml"
     - s3:
         bucket: "gs-noauth://knative-releases"
         prefix: "eventing-github/previous"

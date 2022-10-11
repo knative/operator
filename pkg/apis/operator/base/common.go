@@ -163,6 +163,7 @@ type CommonSpec struct {
 	AdditionalManifests []Manifest `json:"additionalManifests,omitempty"`
 
 	// HighAvailability allows specification of HA control plane.
+	// Deprecated: use WorkloadOverride to specify the replica on a per deployment base.
 	// +optional
 	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
 

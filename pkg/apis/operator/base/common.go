@@ -284,6 +284,14 @@ type WorkloadOverride struct {
 	// Env overrides env vars for the containers.
 	// +optional
 	Env []EnvRequirementsOverride `json:"env,omitempty"`
+
+	// ReadinessProbes overrides readiness probes for the containers.
+	// +optional
+	ReadinessProbes []ProbesRequirementsOverride `json:"readinessProbes,omitempty"`
+
+	// LivenessProbes overrides liveness probes for the containers.
+	// +optional
+	LivenessProbes []ProbesRequirementsOverride `json:"livenessProbes,omitempty"`
 }
 
 // ServiceOverride defines the configurations of the service to override.
@@ -326,6 +334,14 @@ type EnvRequirementsOverride struct {
 	Container string `json:"container"`
 	// The desired EnvVarRequirements
 	EnvVars []corev1.EnvVar `json:"envVars,omitempty"`
+}
+
+// ProbesRequirementsOverride enables the user to override any container's env vars.
+type ProbesRequirementsOverride struct {
+	// The container name
+	Container string `json:"container"`
+	// The desired ProbeRequirements
+	Probe corev1.Probe `json:"probe,omitempty"`
 }
 
 // Manifest enables the user to specify the links to the manifests' URLs

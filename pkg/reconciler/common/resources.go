@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
+
 	"knative.dev/operator/pkg/apis/operator/base"
 )
 
@@ -33,7 +34,7 @@ func ResourceRequirementsTransform(obj base.KComponent, log *zap.SugaredLogger) 
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" {
 			// Use spec.deployments.resources for the deployment instead of spec.resources.
-			for _, override := range obj.GetSpec().GetDeploymentOverride() {
+			for _, override := range obj.GetSpec().GetComponentsOverride() {
 				if override.Name == u.GetName() && len(override.Resources) > 0 {
 					return nil
 				}

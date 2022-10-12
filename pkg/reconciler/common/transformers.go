@@ -17,8 +17,9 @@ import (
 	"context"
 
 	mf "github.com/manifestival/manifestival"
-	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/pkg/logging"
+
+	"knative.dev/operator/pkg/apis/operator/base"
 )
 
 // transformers that are common to all components.
@@ -32,7 +33,7 @@ func transformers(ctx context.Context, obj base.KComponent) []mf.Transformer {
 		ImageTransform(obj.GetSpec().GetRegistry(), logger),
 		ConfigMapTransform(obj.GetSpec().GetConfig(), logger),
 		ResourceRequirementsTransform(obj, logger),
-		DeploymentsTransform(obj, logger),
+		ComponentsTransform(obj, logger),
 		ServicesTransform(obj, logger),
 		PodDisruptionBudgetsTransform(obj, logger),
 	}

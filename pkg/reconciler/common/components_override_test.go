@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
+
 	"knative.dev/operator/pkg/apis/operator/base"
 	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
@@ -51,7 +52,7 @@ func TestDeploymentsTransform(t *testing.T) {
 	var five int32 = 5
 	tests := []struct {
 		name           string
-		override       []base.DeploymentOverride
+		override       []base.ComponentOverride
 		globalReplicas int32
 		expDeployment  map[string]expDeployments
 	}{{
@@ -69,7 +70,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "simple override",
-		override: []base.DeploymentOverride{
+		override: []base.ComponentOverride{
 			{
 				Name:         "controller",
 				Labels:       map[string]string{"a": "b"},
@@ -109,7 +110,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "no replicas in deploymentoverride, use global replicas",
-		override: []base.DeploymentOverride{
+		override: []base.ComponentOverride{
 			{Name: "controller"},
 		},
 		globalReplicas: 10,
@@ -121,7 +122,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "override env vars",
-		override: []base.DeploymentOverride{
+		override: []base.ComponentOverride{
 			{
 				Name: "controller",
 				Env: []base.EnvRequirementsOverride{{
@@ -159,7 +160,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "duplicate env vars overrides are applied multiple times on existing env var",
-		override: []base.DeploymentOverride{
+		override: []base.ComponentOverride{
 			{
 				Name: "controller",
 				Env: []base.EnvRequirementsOverride{{
@@ -200,7 +201,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "env var overriding has no effect if container name does not exist",
-		override: []base.DeploymentOverride{
+		override: []base.ComponentOverride{
 			{
 				Name: "controller",
 				Env: []base.EnvRequirementsOverride{{
@@ -241,7 +242,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "add env var via overriding",
-		override: []base.DeploymentOverride{
+		override: []base.ComponentOverride{
 			{
 				Name: "controller",
 				Env: []base.EnvRequirementsOverride{{
@@ -282,7 +283,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "add env var via overriding and modify an existing one",
-		override: []base.DeploymentOverride{
+		override: []base.ComponentOverride{
 			{
 				Name: "controller",
 				Env: []base.EnvRequirementsOverride{{
@@ -326,7 +327,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "duplicate added env vars are overwritten",
-		override: []base.DeploymentOverride{
+		override: []base.ComponentOverride{
 			{
 				Name: "controller",
 				Env: []base.EnvRequirementsOverride{{
@@ -370,7 +371,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "neither replicas in deploymentoverride nor global replicas",
-		override: []base.DeploymentOverride{
+		override: []base.ComponentOverride{
 			{Name: "controller"},
 		},
 		expDeployment: map[string]expDeployments{"controller": {
@@ -381,7 +382,7 @@ func TestDeploymentsTransform(t *testing.T) {
 		}},
 	}, {
 		name: "multiple override",
-		override: []base.DeploymentOverride{
+		override: []base.ComponentOverride{
 			{
 				Name:         "controller",
 				Labels:       map[string]string{"a": "b"},
@@ -512,8 +513,8 @@ func TestDeploymentsTransform(t *testing.T) {
 				},
 			}
 
-			//manifest, err = manifest.Transform(DeploymentsTransform(ks, log), HighAvailabilityTransform(ks, log))
-			manifest, err = manifest.Transform(HighAvailabilityTransform(ks, log), DeploymentsTransform(ks, log))
+			//manifest, err = manifest.Transform(ComponentsTransform(ks, log), HighAvailabilityTransform(ks, log))
+			manifest, err = manifest.Transform(HighAvailabilityTransform(ks, log), ComponentsTransform(ks, log))
 			if err != nil {
 				t.Fatalf("Failed to transform manifest: %v", err)
 			}
@@ -585,7 +586,7 @@ func TestDeploymentResourceRequirementsTransform(t *testing.T) {
 			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: test.OperatorFlags.PreviousEventingVersion,
-					DeploymentOverride: []base.DeploymentOverride{
+					DeploymentOverride: []base.ComponentOverride{
 						{
 							Name: "net-istio-controller",
 							Resources: []base.ResourceRequirementsOverride{{
@@ -616,7 +617,7 @@ func TestDeploymentResourceRequirementsTransform(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create manifest: %v", err)
 			}
-			actual, err := manifest.Transform(DeploymentsTransform(&test.Input, log))
+			actual, err := manifest.Transform(ComponentsTransform(&test.Input, log))
 			if err != nil {
 				t.Fatalf("Failed to transform manifest: %v", err)
 			}

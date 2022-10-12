@@ -68,8 +68,8 @@ type KComponentSpec interface {
 	// GetHighAvailability returns means to set the number of desired replicas
 	GetHighAvailability() *HighAvailability
 
-	// GetDeploymentOverride gets the deployment configurations to override.
-	GetDeploymentOverride() []DeploymentOverride
+	// GetComponentsOverride gets the component configurations to override.
+	GetComponentsOverride() []ComponentOverride
 
 	// GetServiceOverride gets the service configurations to override.
 	GetServiceOverride() []ServiceOverride
@@ -137,9 +137,14 @@ type CommonSpec struct {
 	// +optional
 	DeprecatedResources []ResourceRequirementsOverride `json:"resources,omitempty"`
 
+	// DEPRECATED. Use components
 	// DeploymentOverride overrides Deployment configurations such as resources and replicas.
 	// +optional
-	DeploymentOverride []DeploymentOverride `json:"deployments,omitempty"`
+	DeploymentOverride []ComponentOverride `json:"deployments,omitempty"`
+
+	// ComponentsOverride overrides workloads configurations such as resources and replicas.
+	// +optional
+	ComponentsOverride []ComponentOverride `json:"components,omitempty"`
 
 	// ServiceOverride overrides Service configurations such as labels and annotations.
 	// +optional
@@ -202,8 +207,8 @@ func (c *CommonSpec) GetHighAvailability() *HighAvailability {
 }
 
 // GetDeploymentOverride implements KComponentSpec.
-func (c *CommonSpec) GetDeploymentOverride() []DeploymentOverride {
-	return c.DeploymentOverride
+func (c *CommonSpec) GetComponentsOverride() []ComponentOverride {
+	return append(c.DeploymentOverride, c.ComponentsOverride...)
 }
 
 // GetServiceOverride implements KComponentSpec.
@@ -242,8 +247,8 @@ type Registry struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
-// DeploymentOverride defines the configurations of deployments to override.
-type DeploymentOverride struct {
+// ComponentOverride defines the configurations of deployments to override.
+type ComponentOverride struct {
 	// Name is the name of the deployment to override.
 	Name string `json:"name"`
 

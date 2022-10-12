@@ -502,71 +502,87 @@ func TestComponentsTransform(t *testing.T) {
 				t.Fatalf("Failed to create manifest: %v", err)
 			}
 
-			ks := &servingv1beta1.KnativeServing{
-				Spec: servingv1beta1.KnativeServingSpec{
-					CommonSpec: base.CommonSpec{
-						DeploymentOverride: test.override,
-						HighAvailability: &base.HighAvailability{
-							Replicas: &test.globalReplicas,
+			kss := map[string]*servingv1beta1.KnativeServing{
+				"deprecated deployments": {
+					Spec: servingv1beta1.KnativeServingSpec{
+						CommonSpec: base.CommonSpec{
+							DeploymentOverride: test.override,
+							HighAvailability: &base.HighAvailability{
+								Replicas: &test.globalReplicas,
+							},
+						},
+					},
+				},
+				"components": {
+					Spec: servingv1beta1.KnativeServingSpec{
+						CommonSpec: base.CommonSpec{
+							ComponentsOverride: test.override,
+							HighAvailability: &base.HighAvailability{
+								Replicas: &test.globalReplicas,
+							},
 						},
 					},
 				},
 			}
+			for key, ks := range kss {
+				t.Run(key, func(t *testing.T) {
 
-			//manifest, err = manifest.Transform(ComponentsTransform(ks, log), HighAvailabilityTransform(ks, log))
-			manifest, err = manifest.Transform(HighAvailabilityTransform(ks, log), ComponentsTransform(ks, log))
-			if err != nil {
-				t.Fatalf("Failed to transform manifest: %v", err)
-			}
+					//manifest, err = manifest.Transform(ComponentsTransform(ks, log), HighAvailabilityTransform(ks, log))
+					manifest, err = manifest.Transform(HighAvailabilityTransform(ks, log), ComponentsTransform(ks, log))
+					if err != nil {
+						t.Fatalf("Failed to transform manifest: %v", err)
+					}
 
-			for expName, d := range test.expDeployment {
-				for _, u := range manifest.Resources() {
-					if u.GetKind() == "Deployment" && u.GetName() == expName {
-						got := &appsv1.Deployment{}
-						if err := scheme.Scheme.Convert(&u, got, nil); err != nil {
-							t.Fatalf("Failed to convert unstructured to deployment: %v", err)
-						}
+					for expName, d := range test.expDeployment {
+						for _, u := range manifest.Resources() {
+							if u.GetKind() == "Deployment" && u.GetName() == expName {
+								got := &appsv1.Deployment{}
+								if err := scheme.Scheme.Convert(&u, got, nil); err != nil {
+									t.Fatalf("Failed to convert unstructured to deployment: %v", err)
+								}
 
-						replicas := int32(0)
-						if got.Spec.Replicas != nil {
-							replicas = *got.Spec.Replicas
-						}
-						if diff := cmp.Diff(replicas, d.expReplicas); diff != "" {
-							t.Fatalf("Unexpected replicas: %v", diff)
-						}
+								replicas := int32(0)
+								if got.Spec.Replicas != nil {
+									replicas = *got.Spec.Replicas
+								}
+								if diff := cmp.Diff(replicas, d.expReplicas); diff != "" {
+									t.Fatalf("Unexpected replicas: %v", diff)
+								}
 
-						if diff := cmp.Diff(got.Spec.Template.Spec.NodeSelector, d.expNodeSelector); diff != "" {
-							t.Fatalf("Unexpected nodeSelector: %v", diff)
-						}
+								if diff := cmp.Diff(got.Spec.Template.Spec.NodeSelector, d.expNodeSelector); diff != "" {
+									t.Fatalf("Unexpected nodeSelector: %v", diff)
+								}
 
-						if diff := cmp.Diff(got.Spec.Template.Spec.Tolerations, d.expTolerations); diff != "" {
-							t.Fatalf("Unexpected tolerations: %v", diff)
-						}
+								if diff := cmp.Diff(got.Spec.Template.Spec.Tolerations, d.expTolerations); diff != "" {
+									t.Fatalf("Unexpected tolerations: %v", diff)
+								}
 
-						if diff := cmp.Diff(got.Spec.Template.Spec.Affinity, d.expAffinity); diff != "" {
-							t.Fatalf("Unexpected affinity: %v", diff)
-						}
+								if diff := cmp.Diff(got.Spec.Template.Spec.Affinity, d.expAffinity); diff != "" {
+									t.Fatalf("Unexpected affinity: %v", diff)
+								}
 
-						if diff := cmp.Diff(got.GetLabels(), d.expLabels); diff != "" {
-							t.Fatalf("Unexpected labels: %v", diff)
-						}
-						if diff := cmp.Diff(got.Spec.Template.GetLabels(), d.expTemplateLabels); diff != "" {
-							t.Fatalf("Unexpected labels in pod template: %v", diff)
-						}
+								if diff := cmp.Diff(got.GetLabels(), d.expLabels); diff != "" {
+									t.Fatalf("Unexpected labels: %v", diff)
+								}
+								if diff := cmp.Diff(got.Spec.Template.GetLabels(), d.expTemplateLabels); diff != "" {
+									t.Fatalf("Unexpected labels in pod template: %v", diff)
+								}
 
-						if diff := cmp.Diff(got.GetAnnotations(), d.expAnnotations); diff != "" {
-							t.Fatalf("Unexpected annotations: %v", diff)
-						}
-						if diff := cmp.Diff(got.Spec.Template.GetAnnotations(), d.expTemplateAnnotations); diff != "" {
-							t.Fatalf("Unexpected annotations in pod template: %v", diff)
-						}
-						for c, envPerContainer := range d.expEnv {
-							if diff := cmp.Diff(getEnv(got.Spec.Template.Spec.Containers, c), envPerContainer); diff != "" {
-								t.Fatalf("Unexpected env in pod template: %v", diff)
+								if diff := cmp.Diff(got.GetAnnotations(), d.expAnnotations); diff != "" {
+									t.Fatalf("Unexpected annotations: %v", diff)
+								}
+								if diff := cmp.Diff(got.Spec.Template.GetAnnotations(), d.expTemplateAnnotations); diff != "" {
+									t.Fatalf("Unexpected annotations in pod template: %v", diff)
+								}
+								for c, envPerContainer := range d.expEnv {
+									if diff := cmp.Diff(getEnv(got.Spec.Template.Spec.Containers, c), envPerContainer); diff != "" {
+										t.Fatalf("Unexpected env in pod template: %v", diff)
+									}
+								}
 							}
 						}
 					}
-				}
+				})
 			}
 		})
 	}

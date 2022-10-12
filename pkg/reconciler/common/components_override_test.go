@@ -47,7 +47,7 @@ type expDeployments struct {
 	expEnv                 map[string][]corev1.EnvVar
 }
 
-func TestDeploymentsTransform(t *testing.T) {
+func TestComponentsTransform(t *testing.T) {
 	var four int32 = 4
 	var five int32 = 5
 	tests := []struct {

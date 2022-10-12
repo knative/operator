@@ -46,7 +46,9 @@ func ComponentsTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transfo
 				}
 				obj = deployment
 				ps = &deployment.Spec.Template
-				replaceReplicas(&override, deployment.Spec.Replicas)
+				if override.Replicas != nil {
+					deployment.Spec.Replicas = override.Replicas
+				}
 			}
 			if u.GetKind() == "StatefulSet" && u.GetName() == override.Name {
 				ss := &appsv1.StatefulSet{}
@@ -55,7 +57,13 @@ func ComponentsTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transfo
 				}
 				obj = ss
 				ps = &ss.Spec.Template
-				replaceReplicas(&override, ss.Spec.Replicas)
+				if override.Replicas != nil {
+					ss.Spec.Replicas = override.Replicas
+				}
+			}
+
+			if obj == nil {
+				continue
 			}
 
 			replaceLabels(&override, obj, ps)
@@ -100,12 +108,6 @@ func replaceLabels(override *base.ComponentOverride, obj metav1.Object, ps *core
 	for key, val := range override.Labels {
 		obj.GetLabels()[key] = val
 		ps.Labels[key] = val
-	}
-}
-
-func replaceReplicas(override *base.ComponentOverride, replicas *int32) {
-	if override.Replicas != nil {
-		*replicas = *override.Replicas
 	}
 }
 

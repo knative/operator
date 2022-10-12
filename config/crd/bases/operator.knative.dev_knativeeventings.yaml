@@ -79,7 +79,7 @@ spec:
                     type: integer
                 type: object
               components:
-                description: A mapping of deployment name to override
+                description: A mapping of deployment or statefulset name to override
                 type: array
                 items:
                   type: object

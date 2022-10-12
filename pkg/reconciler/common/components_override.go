@@ -28,7 +28,7 @@ import (
 	"knative.dev/operator/pkg/apis/operator/base"
 )
 
-// DeploymentTransform transforms deployments based on the configuration in `spec.deployment`.
+// ComponentsTransform transforms deployments based on the configuration in `spec.deployment`.
 func ComponentsTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	overrides := obj.GetSpec().GetComponentsOverride()
 	if overrides == nil {

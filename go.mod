@@ -19,11 +19,11 @@ require (
 	k8s.io/apimachinery v0.25.2
 	k8s.io/client-go v0.25.2
 	k8s.io/code-generator v0.25.2
-	knative.dev/caching v0.0.0-20221006133034-775f84a21006
-	knative.dev/eventing v0.34.1-0.20221011150150-2899fcef641f
+	knative.dev/caching v0.0.0-20221012041550-ce26e9293067
+	knative.dev/eventing v0.34.1-0.20221017145257-53a186d7d92e
 	knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a
 	knative.dev/pkg v0.0.0-20221011175852-714b7630a836
-	knative.dev/serving v0.34.1-0.20221011230550-3ac6d4a5e660
+	knative.dev/serving v0.34.1-0.20221017223110-6e597fa7fd73
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -92,7 +92,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/openzipkin/zipkin-go v0.3.0 // indirect
-	github.com/pelletier/go-toml/v2 v2.0.0-beta.2 // indirect
+	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.12.1 // indirect
@@ -135,7 +135,7 @@ require (
 	k8s.io/klog/v2 v2.70.2-0.20220707122935-0990e81f1a8f // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
-	knative.dev/networking v0.0.0-20221007151732-fcbfa31ac035 // indirect
+	knative.dev/networking v0.0.0-20221012062251-58f3e6239b4f // indirect
 	sigs.k8s.io/controller-runtime v0.7.2 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect

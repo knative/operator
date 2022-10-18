@@ -78,7 +78,7 @@ spec:
                     minimum: 0
                     type: integer
                 type: object
-              components:
+              overrides:
                 description: A mapping of deployment or statefulset name to override
                 type: array
                 items:

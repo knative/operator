@@ -45,7 +45,7 @@ func hasHorizontalPodAutoscaler(obj base.KComponent) sets.String {
 func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Use spec.deployments.replicas for the deployment instead of spec.high-availability.
-		for _, override := range obj.GetSpec().GetComponentsOverride() {
+		for _, override := range obj.GetSpec().GetOverrides() {
 			if override.Replicas != nil && override.Name == u.GetName() {
 				return nil
 			}

@@ -69,7 +69,7 @@ type KComponentSpec interface {
 	GetHighAvailability() *HighAvailability
 
 	// GetComponentsOverride gets the component configurations to override.
-	GetComponentsOverride() []ComponentOverride
+	GetOverrides() []Override
 
 	// GetServiceOverride gets the service configurations to override.
 	GetServiceOverride() []ServiceOverride
@@ -140,11 +140,11 @@ type CommonSpec struct {
 	// DEPRECATED. Use components
 	// DeploymentOverride overrides Deployment configurations such as resources and replicas.
 	// +optional
-	DeploymentOverride []ComponentOverride `json:"deployments,omitempty"`
+	DeploymentOverride []Override `json:"deployments,omitempty"`
 
 	// ComponentsOverride overrides workloads configurations such as resources and replicas.
 	// +optional
-	ComponentsOverride []ComponentOverride `json:"components,omitempty"`
+	ComponentsOverride []Override `json:"overrides,omitempty"`
 
 	// ServiceOverride overrides Service configurations such as labels and annotations.
 	// +optional
@@ -207,7 +207,7 @@ func (c *CommonSpec) GetHighAvailability() *HighAvailability {
 }
 
 // GetDeploymentOverride implements KComponentSpec.
-func (c *CommonSpec) GetComponentsOverride() []ComponentOverride {
+func (c *CommonSpec) GetOverrides() []Override {
 	return append(c.DeploymentOverride, c.ComponentsOverride...)
 }
 
@@ -247,8 +247,8 @@ type Registry struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
-// ComponentOverride defines the configurations of deployments to override.
-type ComponentOverride struct {
+// Override defines the configurations of deployments to override.
+type Override struct {
 	// Name is the name of the deployment to override.
 	Name string `json:"name"`
 

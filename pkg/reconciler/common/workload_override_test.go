@@ -516,7 +516,7 @@ func TestComponentsTransform(t *testing.T) {
 				"components": {
 					Spec: servingv1beta1.KnativeServingSpec{
 						CommonSpec: base.CommonSpec{
-							ComponentsOverride: test.override,
+							Workloads: test.override,
 							HighAvailability: &base.HighAvailability{
 								Replicas: &test.globalReplicas,
 							},

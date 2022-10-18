@@ -93,8 +93,8 @@ func (in *CommonSpec) DeepCopyInto(out *CommonSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
-	if in.ComponentsOverride != nil {
-		in, out := &in.ComponentsOverride, &out.ComponentsOverride
+	if in.Workloads != nil {
+		in, out := &in.Workloads, &out.Workloads
 		*out = make([]WorkloadOverride, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])

@@ -142,9 +142,9 @@ type CommonSpec struct {
 	// +optional
 	DeploymentOverride []WorkloadOverride `json:"deployments,omitempty"`
 
-	// ComponentsOverride overrides workloads configurations such as resources and replicas.
+	// Workloads overrides workloads configurations such as resources and replicas.
 	// +optional
-	ComponentsOverride []WorkloadOverride `json:"workloads,omitempty"`
+	Workloads []WorkloadOverride `json:"workloads,omitempty"`
 
 	// ServiceOverride overrides Service configurations such as labels and annotations.
 	// +optional
@@ -208,7 +208,7 @@ func (c *CommonSpec) GetHighAvailability() *HighAvailability {
 
 // GetDeploymentOverride implements KComponentSpec.
 func (c *CommonSpec) GetWorkloadOverrides() []WorkloadOverride {
-	return append(c.DeploymentOverride, c.ComponentsOverride...)
+	return append(c.DeploymentOverride, c.Workloads...)
 }
 
 // GetServiceOverride implements KComponentSpec.

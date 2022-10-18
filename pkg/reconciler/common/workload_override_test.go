@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/utils/pointer"
 
 	"knative.dev/operator/pkg/apis/operator/base"
 	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -588,7 +589,7 @@ func TestComponentsTransform(t *testing.T) {
 	}
 }
 
-func TestStatefulSetResourceRequirementsTransform(t *testing.T) {
+func TestStatefulSetTransform(t *testing.T) {
 	tests := []struct {
 		DeployName string
 		Input      servingv1beta1.KnativeServing
@@ -604,7 +605,8 @@ func TestStatefulSetResourceRequirementsTransform(t *testing.T) {
 					Version: test.OperatorFlags.PreviousEventingVersion,
 					Workloads: []base.WorkloadOverride{
 						{
-							Name: "kafka-source-dispatcher",
+							Name:     "kafka-source-dispatcher",
+							Replicas: pointer.Int32(3),
 							Resources: []base.ResourceRequirementsOverride{{
 								Container: "kafka-source-dispatcher",
 								ResourceRequirements: corev1.ResourceRequirements{

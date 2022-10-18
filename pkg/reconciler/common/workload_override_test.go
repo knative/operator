@@ -382,6 +382,7 @@ func TestComponentsTransform(t *testing.T) {
 					Container:           "activator",
 					TimeoutSeconds:      15,
 					InitialDelaySeconds: 12,
+					SuccessThreshold:    3,
 				}},
 				LivenessProbes: []base.ProbesRequirementsOverride{{
 					Container:           "activator",
@@ -403,6 +404,7 @@ func TestComponentsTransform(t *testing.T) {
 					}},
 				TimeoutSeconds:      15,
 				InitialDelaySeconds: 12,
+				SuccessThreshold:    3,
 			},
 			expLivenessProbe: &v1.Probe{
 				ProbeHandler: v1.ProbeHandler{

@@ -158,19 +158,19 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 		containers := ps.Spec.Containers
 		for i := range containers {
 			if override := findProbeOverride(override.ReadinessProbes, containers[i].Name); override != nil {
+				overrideProbe := &v1.Probe{
+					InitialDelaySeconds:           override.InitialDelaySeconds,
+					TimeoutSeconds:                override.TimeoutSeconds,
+					PeriodSeconds:                 override.PeriodSeconds,
+					SuccessThreshold:              override.SuccessThreshold,
+					FailureThreshold:              override.FailureThreshold,
+					TerminationGracePeriodSeconds: override.TerminationGracePeriodSeconds,
+				}
 				if containers[i].ReadinessProbe == nil {
-					containers[i].ReadinessProbe = &v1.Probe{
-						InitialDelaySeconds: override.InitialDelaySeconds,
-						TimeoutSeconds:      override.TimeoutSeconds,
-						PeriodSeconds:       override.PeriodSeconds,
-					}
+					containers[i].ReadinessProbe = overrideProbe
 					continue
 				}
-				mergeProbe(&v1.Probe{
-					InitialDelaySeconds: override.InitialDelaySeconds,
-					TimeoutSeconds:      override.TimeoutSeconds,
-					PeriodSeconds:       override.PeriodSeconds,
-				}, containers[i].ReadinessProbe)
+				mergeProbe(overrideProbe, containers[i].ReadinessProbe)
 			}
 		}
 	}
@@ -179,19 +179,19 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 		containers := ps.Spec.Containers
 		for i := range containers {
 			if override := findProbeOverride(override.LivenessProbes, containers[i].Name); override != nil {
+				overrideProbe := &v1.Probe{
+					InitialDelaySeconds:           override.InitialDelaySeconds,
+					TimeoutSeconds:                override.TimeoutSeconds,
+					PeriodSeconds:                 override.PeriodSeconds,
+					SuccessThreshold:              override.SuccessThreshold,
+					FailureThreshold:              override.FailureThreshold,
+					TerminationGracePeriodSeconds: override.TerminationGracePeriodSeconds,
+				}
 				if containers[i].LivenessProbe == nil {
-					containers[i].LivenessProbe = &v1.Probe{
-						InitialDelaySeconds: override.InitialDelaySeconds,
-						TimeoutSeconds:      override.TimeoutSeconds,
-						PeriodSeconds:       override.PeriodSeconds,
-					}
+					containers[i].LivenessProbe = overrideProbe
 					continue
 				}
-				mergeProbe(&v1.Probe{
-					InitialDelaySeconds: override.InitialDelaySeconds,
-					TimeoutSeconds:      override.TimeoutSeconds,
-					PeriodSeconds:       override.PeriodSeconds,
-				}, containers[i].LivenessProbe)
+				mergeProbe(overrideProbe, containers[i].LivenessProbe)
 			}
 		}
 	}

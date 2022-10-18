@@ -34,7 +34,7 @@ func ResourceRequirementsTransform(obj base.KComponent, log *zap.SugaredLogger) 
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" {
 			// Use spec.deployments.resources for the deployment instead of spec.resources.
-			for _, override := range obj.GetSpec().GetOverrides() {
+			for _, override := range obj.GetSpec().GetWorkloadOverrides() {
 				if override.Name == u.GetName() && len(override.Resources) > 0 {
 					return nil
 				}

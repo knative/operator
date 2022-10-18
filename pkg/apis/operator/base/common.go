@@ -68,8 +68,8 @@ type KComponentSpec interface {
 	// GetHighAvailability returns means to set the number of desired replicas
 	GetHighAvailability() *HighAvailability
 
-	// GetComponentsOverride gets the component configurations to override.
-	GetOverrides() []Override
+	// GetWorkloadOverrides gets the component configurations to override.
+	GetWorkloadOverrides() []WorkloadOverride
 
 	// GetServiceOverride gets the service configurations to override.
 	GetServiceOverride() []ServiceOverride
@@ -140,17 +140,17 @@ type CommonSpec struct {
 	// DEPRECATED. Use components
 	// DeploymentOverride overrides Deployment configurations such as resources and replicas.
 	// +optional
-	DeploymentOverride []Override `json:"deployments,omitempty"`
+	DeploymentOverride []WorkloadOverride `json:"deployments,omitempty"`
 
 	// ComponentsOverride overrides workloads configurations such as resources and replicas.
 	// +optional
-	ComponentsOverride []Override `json:"overrides,omitempty"`
+	ComponentsOverride []WorkloadOverride `json:"workloads,omitempty"`
 
 	// ServiceOverride overrides Service configurations such as labels and annotations.
 	// +optional
 	ServiceOverride []ServiceOverride `json:"services,omitempty"`
 
-	// Override containers' resource requirements
+	// WorkloadOverride containers' resource requirements
 	// +optional
 	Version string `json:"version,omitempty"`
 
@@ -207,7 +207,7 @@ func (c *CommonSpec) GetHighAvailability() *HighAvailability {
 }
 
 // GetDeploymentOverride implements KComponentSpec.
-func (c *CommonSpec) GetOverrides() []Override {
+func (c *CommonSpec) GetWorkloadOverrides() []WorkloadOverride {
 	return append(c.DeploymentOverride, c.ComponentsOverride...)
 }
 
@@ -247,8 +247,8 @@ type Registry struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
-// Override defines the configurations of deployments to override.
-type Override struct {
+// WorkloadOverride defines the configurations of deployments to override.
+type WorkloadOverride struct {
 	// Name is the name of the deployment to override.
 	Name string `json:"name"`
 

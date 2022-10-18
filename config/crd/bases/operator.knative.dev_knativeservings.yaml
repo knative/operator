@@ -89,7 +89,7 @@ spec:
                     minimum: 0
                     type: integer
                 type: object
-              overrides:
+              workloads:
                 description: A mapping of deployment or statefulset name to override
                 type: array
                 items:

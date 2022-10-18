@@ -29,7 +29,7 @@ import (
 )
 
 // OverridesTransform transforms deployments based on the configuration in `spec.overrides`.
-func OverridesTransform(overrides []base.Override, log *zap.SugaredLogger) mf.Transformer {
+func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogger) mf.Transformer {
 	if overrides == nil {
 		return nil
 	}
@@ -84,7 +84,7 @@ func OverridesTransform(overrides []base.Override, log *zap.SugaredLogger) mf.Tr
 	}
 }
 
-func replaceAnnotations(override *base.Override, obj metav1.Object, ps *corev1.PodTemplateSpec) {
+func replaceAnnotations(override *base.WorkloadOverride, obj metav1.Object, ps *corev1.PodTemplateSpec) {
 	if obj.GetAnnotations() == nil {
 		obj.SetAnnotations(map[string]string{})
 	}
@@ -97,7 +97,7 @@ func replaceAnnotations(override *base.Override, obj metav1.Object, ps *corev1.P
 	}
 }
 
-func replaceLabels(override *base.Override, obj metav1.Object, ps *corev1.PodTemplateSpec) {
+func replaceLabels(override *base.WorkloadOverride, obj metav1.Object, ps *corev1.PodTemplateSpec) {
 	if obj.GetLabels() == nil {
 		obj.SetLabels(map[string]string{})
 	}
@@ -110,25 +110,25 @@ func replaceLabels(override *base.Override, obj metav1.Object, ps *corev1.PodTem
 	}
 }
 
-func replaceNodeSelector(override *base.Override, ps *corev1.PodTemplateSpec) {
+func replaceNodeSelector(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) {
 	if len(override.NodeSelector) > 0 {
 		ps.Spec.NodeSelector = override.NodeSelector
 	}
 }
 
-func replaceTolerations(override *base.Override, ps *corev1.PodTemplateSpec) {
+func replaceTolerations(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) {
 	if len(override.Tolerations) > 0 {
 		ps.Spec.Tolerations = override.Tolerations
 	}
 }
 
-func replaceAffinities(override *base.Override, ps *corev1.PodTemplateSpec) {
+func replaceAffinities(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) {
 	if override.Affinity != nil {
 		ps.Spec.Affinity = override.Affinity
 	}
 }
 
-func replaceResources(override *base.Override, ps *corev1.PodTemplateSpec) {
+func replaceResources(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) {
 	if len(override.Resources) > 0 {
 		containers := ps.Spec.Containers
 		for i := range containers {
@@ -140,7 +140,7 @@ func replaceResources(override *base.Override, ps *corev1.PodTemplateSpec) {
 	}
 }
 
-func replaceEnv(override *base.Override, ps *corev1.PodTemplateSpec) {
+func replaceEnv(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) {
 	if len(override.Env) > 0 {
 		containers := ps.Spec.Containers
 		for i := range containers {

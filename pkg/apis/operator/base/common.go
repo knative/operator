@@ -68,8 +68,8 @@ type KComponentSpec interface {
 	// GetHighAvailability returns means to set the number of desired replicas
 	GetHighAvailability() *HighAvailability
 
-	// GetDeploymentOverride gets the deployment configurations to override.
-	GetDeploymentOverride() []DeploymentOverride
+	// GetWorkloadOverrides gets the component configurations to override.
+	GetWorkloadOverrides() []WorkloadOverride
 
 	// GetServiceOverride gets the service configurations to override.
 	GetServiceOverride() []ServiceOverride
@@ -137,15 +137,20 @@ type CommonSpec struct {
 	// +optional
 	DeprecatedResources []ResourceRequirementsOverride `json:"resources,omitempty"`
 
+	// DEPRECATED. Use components
 	// DeploymentOverride overrides Deployment configurations such as resources and replicas.
 	// +optional
-	DeploymentOverride []DeploymentOverride `json:"deployments,omitempty"`
+	DeploymentOverride []WorkloadOverride `json:"deployments,omitempty"`
+
+	// Workloads overrides workloads configurations such as resources and replicas.
+	// +optional
+	Workloads []WorkloadOverride `json:"workloads,omitempty"`
 
 	// ServiceOverride overrides Service configurations such as labels and annotations.
 	// +optional
 	ServiceOverride []ServiceOverride `json:"services,omitempty"`
 
-	// Override containers' resource requirements
+	// WorkloadOverride containers' resource requirements
 	// +optional
 	Version string `json:"version,omitempty"`
 
@@ -202,8 +207,8 @@ func (c *CommonSpec) GetHighAvailability() *HighAvailability {
 }
 
 // GetDeploymentOverride implements KComponentSpec.
-func (c *CommonSpec) GetDeploymentOverride() []DeploymentOverride {
-	return c.DeploymentOverride
+func (c *CommonSpec) GetWorkloadOverrides() []WorkloadOverride {
+	return append(c.DeploymentOverride, c.Workloads...)
 }
 
 // GetServiceOverride implements KComponentSpec.
@@ -242,8 +247,8 @@ type Registry struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
-// DeploymentOverride defines the configurations of deployments to override.
-type DeploymentOverride struct {
+// WorkloadOverride defines the configurations of deployments to override.
+type WorkloadOverride struct {
 	// Name is the name of the deployment to override.
 	Name string `json:"name"`
 

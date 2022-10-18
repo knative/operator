@@ -21,6 +21,7 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"knative.dev/operator/pkg/apis/operator/base"
 )
 
@@ -44,7 +45,7 @@ func hasHorizontalPodAutoscaler(obj base.KComponent) sets.String {
 func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Use spec.deployments.replicas for the deployment instead of spec.high-availability.
-		for _, override := range obj.GetSpec().GetDeploymentOverride() {
+		for _, override := range obj.GetSpec().GetWorkloadOverrides() {
 			if override.Replicas != nil && override.Name == u.GetName() {
 				return nil
 			}

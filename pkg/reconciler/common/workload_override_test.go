@@ -379,17 +379,15 @@ func TestComponentsTransform(t *testing.T) {
 			{
 				Name: "activator",
 				ReadinessProbes: []base.ProbesRequirementsOverride{{
-					Container: "activator",
-					Probe: corev1.Probe{
-						TimeoutSeconds:      15,
-						InitialDelaySeconds: 12,
-					}}},
+					Container:           "activator",
+					TimeoutSeconds:      15,
+					InitialDelaySeconds: 12,
+				}},
 				LivenessProbes: []base.ProbesRequirementsOverride{{
-					Container: "activator",
-					Probe: corev1.Probe{
-						TimeoutSeconds:      4,
-						InitialDelaySeconds: 2,
-					}}},
+					Container:           "activator",
+					TimeoutSeconds:      4,
+					InitialDelaySeconds: 2,
+				}},
 			},
 		},
 		expDeployment: map[string]expDeployments{"activator": {
@@ -422,16 +420,10 @@ func TestComponentsTransform(t *testing.T) {
 			{
 				Name: "controller",
 				ReadinessProbes: []base.ProbesRequirementsOverride{{
-					Container: "controller",
-					Probe: corev1.Probe{
-						ProbeHandler: v1.ProbeHandler{
-							HTTPGet: &v1.HTTPGetAction{
-								Port:        intstr.IntOrString{IntVal: 8012},
-								HTTPHeaders: []v1.HTTPHeader{{Name: "k-kubelet-probe", Value: "controller"}},
-							}},
-						TimeoutSeconds:      15,
-						InitialDelaySeconds: 12,
-					}}},
+					Container:           "controller",
+					TimeoutSeconds:      15,
+					InitialDelaySeconds: 12,
+				}},
 			},
 		},
 		expDeployment: map[string]expDeployments{"controller": {
@@ -440,11 +432,6 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            0,
 			expReadinessProbe: &v1.Probe{
-				ProbeHandler: v1.ProbeHandler{
-					HTTPGet: &v1.HTTPGetAction{
-						Port:        intstr.IntOrString{IntVal: 8012},
-						HTTPHeaders: []v1.HTTPHeader{{Name: "k-kubelet-probe", Value: "controller"}},
-					}},
 				TimeoutSeconds:      15,
 				InitialDelaySeconds: 12,
 			}}},
@@ -695,7 +682,7 @@ func TestComponentsTransform(t *testing.T) {
 								}
 								if d.expLivenessProbe != nil {
 									if diff := cmp.Diff(*l, (*d.expLivenessProbe)); diff != "" {
-										t.Fatalf("Unexpected readiness probe in pod template: %v", diff)
+										t.Fatalf("Unexpected liveness probe in pod template: %v", diff)
 									}
 								}
 							}

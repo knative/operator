@@ -21,6 +21,7 @@ import (
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -158,10 +159,18 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 		for i := range containers {
 			if override := findProbeOverride(override.ReadinessProbes, containers[i].Name); override != nil {
 				if containers[i].ReadinessProbe == nil {
-					containers[i].ReadinessProbe = &override.Probe
+					containers[i].ReadinessProbe = &v1.Probe{
+						InitialDelaySeconds: override.InitialDelaySeconds,
+						TimeoutSeconds:      override.TimeoutSeconds,
+						PeriodSeconds:       override.PeriodSeconds,
+					}
 					continue
 				}
-				mergeProbe(&override.Probe, containers[i].ReadinessProbe)
+				mergeProbe(&v1.Probe{
+					InitialDelaySeconds: override.InitialDelaySeconds,
+					TimeoutSeconds:      override.TimeoutSeconds,
+					PeriodSeconds:       override.PeriodSeconds,
+				}, containers[i].ReadinessProbe)
 			}
 		}
 	}
@@ -171,10 +180,18 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 		for i := range containers {
 			if override := findProbeOverride(override.LivenessProbes, containers[i].Name); override != nil {
 				if containers[i].LivenessProbe == nil {
-					containers[i].LivenessProbe = &override.Probe
+					containers[i].LivenessProbe = &v1.Probe{
+						InitialDelaySeconds: override.InitialDelaySeconds,
+						TimeoutSeconds:      override.TimeoutSeconds,
+						PeriodSeconds:       override.PeriodSeconds,
+					}
 					continue
 				}
-				mergeProbe(&override.Probe, containers[i].LivenessProbe)
+				mergeProbe(&v1.Probe{
+					InitialDelaySeconds: override.InitialDelaySeconds,
+					TimeoutSeconds:      override.TimeoutSeconds,
+					PeriodSeconds:       override.PeriodSeconds,
+				}, containers[i].LivenessProbe)
 			}
 		}
 	}

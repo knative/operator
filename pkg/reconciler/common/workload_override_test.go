@@ -588,6 +588,72 @@ func TestComponentsTransform(t *testing.T) {
 	}
 }
 
+func TestStatefulSetResourceRequirementsTransform(t *testing.T) {
+	tests := []struct {
+		DeployName string
+		Input      servingv1beta1.KnativeServing
+		Expected   map[string]v1.ResourceRequirements
+	}{{
+		DeployName: "kafka-source-dispatcher",
+		Input: servingv1beta1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "specific-container-for-deployment",
+			},
+			Spec: servingv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Version: test.OperatorFlags.PreviousEventingVersion,
+					Workloads: []base.WorkloadOverride{
+						{
+							Name: "kafka-source-dispatcher",
+							Resources: []base.ResourceRequirementsOverride{{
+								Container: "kafka-source-dispatcher",
+								ResourceRequirements: corev1.ResourceRequirements{
+									Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+										corev1.ResourceMemory: resource.MustParse("999Mi")},
+									Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+										corev1.ResourceMemory: resource.MustParse("999Mi")},
+								},
+							}},
+						},
+					},
+				},
+			},
+		},
+		Expected: map[string]v1.ResourceRequirements{"kafka-source-dispatcher": {
+			Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+				corev1.ResourceMemory: resource.MustParse("999Mi")},
+			Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
+				corev1.ResourceMemory: resource.MustParse("999Mi")},
+		}},
+	}}
+
+	for _, test := range tests {
+		t.Run(test.Input.Name, func(t *testing.T) {
+			manifest, err := mf.NewManifest("testdata/manifest.yaml")
+			if err != nil {
+				t.Fatalf("Failed to create manifest: %v", err)
+			}
+			actual, err := manifest.Transform(OverridesTransform(test.Input.GetSpec().GetWorkloadOverrides(), log))
+			if err != nil {
+				t.Fatalf("Failed to transform manifest: %v", err)
+			}
+			resources := actual.Filter(mf.ByKind("StatefulSet")).Filter(mf.ByName(test.DeployName)).Resources()
+			util.AssertEqual(t, len(resources), 1)
+			ss := &appsv1.StatefulSet{}
+			if err = scheme.Scheme.Convert(&resources[0], ss, nil); err != nil {
+				t.Fatalf("Failed to convert unstructured to deployment: %v", err)
+			}
+			containers := ss.Spec.Template.Spec.Containers
+			for i := range containers {
+				expected := test.Expected[containers[i].Name]
+				if !reflect.DeepEqual(containers[i].Resources, expected) {
+					t.Errorf("\n    Name: %s\n  Expect: %v\n  Actual: %v", containers[i].Name, expected, containers[i].Resources)
+				}
+			}
+		})
+	}
+}
+
 func TestDeploymentResourceRequirementsTransform(t *testing.T) {
 	tests := []struct {
 		DeployName string

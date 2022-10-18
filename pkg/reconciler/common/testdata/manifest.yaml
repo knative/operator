@@ -2846,3 +2846,174 @@ spec:
   selector:
     matchLabels:
       app: activator
+---
+---
+
+# Copyright 2021 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka-source-dispatcher
+  namespace: knative-eventing
+  labels:
+    app: kafka-source-dispatcher
+    kafka.eventing.knative.dev/release: devel
+spec:
+  serviceName: kafka-source-dispatcher
+  podManagementPolicy: "Parallel"
+  selector:
+    matchLabels:
+      app: kafka-source-dispatcher
+  template:
+    metadata:
+      name: kafka-source-dispatcher
+      labels:
+        app: kafka-source-dispatcher
+        app.kubernetes.io/component: kafka-dispatcher
+        kafka.eventing.knative.dev/release: devel
+    spec:
+      # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: kafka-source-dispatcher
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: kafka-source-dispatcher
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      serviceAccountName: knative-kafka-source-data-plane
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: kafka-source-dispatcher
+          image: ${KNATIVE_KAFKA_DISPATCHER_IMAGE}
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /etc/config
+              name: config-kafka-source-data-plane
+              readOnly: true
+            - mountPath: /etc/contract-resources
+              name: contract-resources
+              readOnly: true
+            - mountPath: /tmp
+              name: cache
+            - mountPath: /etc/logging
+              name: kafka-config-logging
+              readOnly: true
+            - mountPath: /etc/tracing
+              name: config-tracing
+              readOnly: true
+          ports:
+            - containerPort: 9090
+              name: http-metrics
+              protocol: TCP
+          env:
+            - name: SERVICE_NAME
+              value: "kafka-source-dispatcher"
+            - name: SERVICE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: PRODUCER_CONFIG_FILE_PATH
+              value: /etc/config/config-kafka-source-producer.properties
+            - name: CONSUMER_CONFIG_FILE_PATH
+              value: /etc/config/config-kafka-source-consumer.properties
+            - name: WEBCLIENT_CONFIG_FILE_PATH
+              value: /etc/config/config-kafka-source-webclient.properties
+            - name: DATA_PLANE_CONFIG_FILE_PATH
+              value: /etc/contract-resources/data
+            - name: EGRESSES_INITIAL_CAPACITY
+              value: "20"
+            - name: INSTANCE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+            - name: METRICS_PATH
+              value: /metrics
+            - name: METRICS_PORT
+              value: "9090"
+            - name: METRICS_PUBLISH_QUANTILES
+              value: "false"
+            - name: METRICS_JVM_ENABLED
+              value: "false"
+            - name: CONFIG_TRACING_PATH
+              value: "/etc/tracing"
+            # https://github.com/fabric8io/kubernetes-client/issues/2212
+            - name: HTTP2_DISABLE
+              value: "true"
+            # This should be set according to initial delay seconds
+            - name: WAIT_STARTUP_SECONDS
+              value: "8"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:+CrashOnOutOfMemoryError -XX:InitialRAMPercentage=70.0 -XX:MinRAMPercentage=70.0 -XX:MaxRAMPercentage=70.0"
+
+          resources:
+            requests:
+              cpu: 1000m
+              # 600Mi for virtual replicas + 100Mi overhead
+              memory: 700Mi
+            limits:
+              cpu: 2000m
+              memory: 1000Mi
+
+          livenessProbe:
+            failureThreshold: 3
+            tcpSocket:
+              port: 9090
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              port: 9090
+              path: /metrics
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+          terminationMessagePolicy: FallbackToLogsOnError
+          terminationMessagePath: /dev/temination-log
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+      volumes:
+        - name: config-kafka-source-data-plane
+          configMap:
+            name: config-kafka-source-data-plane
+        - name: cache
+          emptyDir: { }
+        - name: kafka-config-logging
+          configMap:
+            name: kafka-config-logging
+        - name: config-tracing
+          configMap:
+            name: config-tracing
+      restartPolicy: Always
+      dnsConfig:
+        options:
+          - name: single-request-reopen

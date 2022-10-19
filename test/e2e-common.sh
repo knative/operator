@@ -17,6 +17,7 @@
 # This script provides helper methods to perform cluster actions.
 source "$(dirname "${BASH_SOURCE[0]}")/../vendor/knative.dev/hack/e2e-tests.sh"
 
+export ENABLE_GKE_TELEMETRY=true
 # The previous serving release, installed by the operator. This value should be in the semantic format of major.minor.
 readonly PREVIOUS_SERVING_RELEASE_VERSION="1.7"
 # The previous eventing release, installed by the operator. This value should be in the semantic format of major.minor.

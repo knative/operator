@@ -74,6 +74,14 @@ eventing-source:
       exclude:
         - "mt-source.yaml"
       overrides:
+        v1.8:
+          include:
+            - "eventing-kafka-source.yaml"
+            - "eventing-kafka-controller.yaml"
+            - "eventing-kafka-post-install.yaml"
+          exclude:
+            - "source.yaml"
+            - "mt-source.yaml"
         v1.7:
           include:
             - "eventing-kafka-source.yaml"
@@ -100,14 +108,6 @@ eventing-source:
         - "eventing-kafka-post-install.yaml"
       overrides:
         v1.5:
-          include:
-            - "source.yaml"
-          exclude:
-            - "eventing-kafka-source.yaml"
-            - "eventing-kafka-controller.yaml"
-            - "eventing-kafka-post-install.yaml"
-            - "mt-source.yaml"
-        v1.4:
           include:
             - "source.yaml"
           exclude:

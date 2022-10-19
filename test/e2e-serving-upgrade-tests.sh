@@ -73,8 +73,9 @@ function create_test_namespace_serving() {
 }
 
 # Skip installing istio as an add-on.
-#initialize "$@" --skip-istio-addon
-initialize "$@" --skip-istio-addon --min-nodes=4 --max-nodes=4 --cluster-version=1.23 "$@"
+initialize "$@" --skip-istio-addon
+
+export ENABLE_GKE_TELEMETRY=true
 
 TIMEOUT=30m
 

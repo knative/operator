@@ -235,7 +235,7 @@ spec:
   version: "${version}"
   config:
     domain:
-      svc.cluster.local: |
+      example.com: |
     tracing:
       backend: "zipkin"
       zipkin-endpoint: "http://zipkin.${TEST_EVENTING_MONITORING_NAMESPACE}.svc:9411/api/v2/spans"
@@ -276,7 +276,7 @@ spec:
   version: "${TARGET_RELEASE_VERSION}"
   config:
     domain:
-      svc.cluster.local: |
+      example.com: |
     tracing:
       backend: "zipkin"
       zipkin-endpoint: "http://zipkin.${TEST_EVENTING_MONITORING_NAMESPACE}.svc:9411/api/v2/spans"

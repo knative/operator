@@ -29,17 +29,25 @@ import (
 
 func TestServingUpgrades(t *testing.T) {
 	suite := pkgupgrade.Suite{
+		//Tests: pkgupgrade.Tests{
+		//	PreUpgrade: append([]pkgupgrade.Operation{
+		//		ServingCRPreUpgradeTests(),
+		//	}, servingupgrade.ServingPreUpgradeTests()...),
+		//	PostUpgrade: append([]pkgupgrade.Operation{
+		//		ServingCRPostUpgradeTests(),
+		//	}, servingupgrade.ServingPostUpgradeTests()...),
+		//	PostDowngrade: append([]pkgupgrade.Operation{
+		//		ServingCRPostDowngradeTests(),
+		//	}, servingupgrade.ServingPostDowngradeTests()...),
+		//	Continual: nil,
+		//},
 		Tests: pkgupgrade.Tests{
 			PreUpgrade: append([]pkgupgrade.Operation{
 				ServingCRPreUpgradeTests(),
 			}, servingupgrade.ServingPreUpgradeTests()...),
-			PostUpgrade: append([]pkgupgrade.Operation{
-				ServingCRPostUpgradeTests(),
-			}, servingupgrade.ServingPostUpgradeTests()...),
-			PostDowngrade: append([]pkgupgrade.Operation{
-				ServingCRPostDowngradeTests(),
-			}, servingupgrade.ServingPostDowngradeTests()...),
-			Continual: nil,
+			PostUpgrade:   nil,
+			PostDowngrade: nil,
+			Continual:     nil,
 		},
 		Installations: pkgupgrade.Installations{
 			Base: []pkgupgrade.Operation{

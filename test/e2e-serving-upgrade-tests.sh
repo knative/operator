@@ -75,6 +75,8 @@ function create_test_namespace_serving() {
 # Skip installing istio as an add-on.
 initialize "$@" --skip-istio-addon
 
+export ENABLE_GKE_TELEMETRY=true
+
 TIMEOUT=30m
 
 header "Running upgrade tests"

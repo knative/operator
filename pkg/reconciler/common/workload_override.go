@@ -21,6 +21,7 @@ import (
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -72,6 +73,7 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 			replaceAffinities(&override, ps)
 			replaceResources(&override, ps)
 			replaceEnv(&override, ps)
+			replaceProbes(&override, ps)
 
 			if err := scheme.Scheme.Convert(obj, u, nil); err != nil {
 				return err
@@ -146,6 +148,50 @@ func replaceEnv(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) {
 		for i := range containers {
 			if override := findEnvOverride(override.Env, containers[i].Name); override != nil {
 				mergeEnv(&override.EnvVars, &containers[i].Env)
+			}
+		}
+	}
+}
+
+func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) {
+	if len(override.ReadinessProbes) > 0 {
+		containers := ps.Spec.Containers
+		for i := range containers {
+			if override := findProbeOverride(override.ReadinessProbes, containers[i].Name); override != nil {
+				overrideProbe := &v1.Probe{
+					InitialDelaySeconds:           override.InitialDelaySeconds,
+					TimeoutSeconds:                override.TimeoutSeconds,
+					PeriodSeconds:                 override.PeriodSeconds,
+					SuccessThreshold:              override.SuccessThreshold,
+					FailureThreshold:              override.FailureThreshold,
+					TerminationGracePeriodSeconds: override.TerminationGracePeriodSeconds,
+				}
+				if containers[i].ReadinessProbe == nil {
+					containers[i].ReadinessProbe = overrideProbe
+					continue
+				}
+				mergeProbe(overrideProbe, containers[i].ReadinessProbe)
+			}
+		}
+	}
+
+	if len(override.LivenessProbes) > 0 {
+		containers := ps.Spec.Containers
+		for i := range containers {
+			if override := findProbeOverride(override.LivenessProbes, containers[i].Name); override != nil {
+				overrideProbe := &v1.Probe{
+					InitialDelaySeconds:           override.InitialDelaySeconds,
+					TimeoutSeconds:                override.TimeoutSeconds,
+					PeriodSeconds:                 override.PeriodSeconds,
+					SuccessThreshold:              override.SuccessThreshold,
+					FailureThreshold:              override.FailureThreshold,
+					TerminationGracePeriodSeconds: override.TerminationGracePeriodSeconds,
+				}
+				if containers[i].LivenessProbe == nil {
+					containers[i].LivenessProbe = overrideProbe
+					continue
+				}
+				mergeProbe(overrideProbe, containers[i].LivenessProbe)
 			}
 		}
 	}

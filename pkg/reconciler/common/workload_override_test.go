@@ -27,6 +27,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/utils/pointer"
 
@@ -46,6 +47,8 @@ type expDeployments struct {
 	expTolerations         []corev1.Toleration
 	expAffinity            *corev1.Affinity
 	expEnv                 map[string][]corev1.EnvVar
+	expReadinessProbe      *v1.Probe
+	expLivenessProbe       *v1.Probe
 }
 
 func TestComponentsTransform(t *testing.T) {
@@ -371,6 +374,99 @@ func TestComponentsTransform(t *testing.T) {
 				}}},
 		}},
 	}, {
+		name: "simple probe overrides",
+		override: []base.WorkloadOverride{
+			{
+				Name: "activator",
+				ReadinessProbes: []base.ProbesRequirementsOverride{{
+					Container:           "activator",
+					TimeoutSeconds:      15,
+					InitialDelaySeconds: 12,
+					SuccessThreshold:    3,
+				}},
+				LivenessProbes: []base.ProbesRequirementsOverride{{
+					Container:           "activator",
+					TimeoutSeconds:      4,
+					InitialDelaySeconds: 2,
+				}},
+			},
+		},
+		expDeployment: map[string]expDeployments{"activator": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
+			expReplicas:            0,
+			expReadinessProbe: &v1.Probe{
+				ProbeHandler: v1.ProbeHandler{
+					HTTPGet: &v1.HTTPGetAction{
+						Port:        intstr.IntOrString{IntVal: 8012},
+						HTTPHeaders: []v1.HTTPHeader{{Name: "k-kubelet-probe", Value: "activator"}},
+					}},
+				TimeoutSeconds:      15,
+				InitialDelaySeconds: 12,
+				SuccessThreshold:    3,
+			},
+			expLivenessProbe: &v1.Probe{
+				ProbeHandler: v1.ProbeHandler{
+					HTTPGet: &v1.HTTPGetAction{
+						Port:        intstr.IntOrString{IntVal: 8012},
+						HTTPHeaders: []v1.HTTPHeader{{Name: "k-kubelet-probe", Value: "activator"}},
+					}},
+				TimeoutSeconds:      4,
+				InitialDelaySeconds: 2,
+			},
+		}},
+	}, {
+		name: "override nil probe",
+		override: []base.WorkloadOverride{
+			{
+				Name: "controller",
+				ReadinessProbes: []base.ProbesRequirementsOverride{{
+					Container:           "controller",
+					TimeoutSeconds:      15,
+					InitialDelaySeconds: 12,
+				}},
+			},
+		},
+		expDeployment: map[string]expDeployments{"controller": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:            0,
+			expReadinessProbe: &v1.Probe{
+				TimeoutSeconds:      15,
+				InitialDelaySeconds: 12,
+			}}},
+	}, {
+		name: "empty probe has no effect",
+		override: []base.WorkloadOverride{
+			{
+				Name: "activator",
+				ReadinessProbes: []base.ProbesRequirementsOverride{{
+					Container: "activator",
+				}}},
+		},
+		expDeployment: map[string]expDeployments{"activator": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
+			expReplicas:            0,
+			expReadinessProbe: &v1.Probe{
+				ProbeHandler: v1.ProbeHandler{
+					HTTPGet: &v1.HTTPGetAction{
+						Port:        intstr.IntOrString{IntVal: 8012},
+						HTTPHeaders: []v1.HTTPHeader{{Name: "k-kubelet-probe", Value: "activator"}},
+					}},
+			},
+			expLivenessProbe: &v1.Probe{
+				ProbeHandler: v1.ProbeHandler{
+					HTTPGet: &v1.HTTPGetAction{
+						Port:        intstr.IntOrString{IntVal: 8012},
+						HTTPHeaders: []v1.HTTPHeader{{Name: "k-kubelet-probe", Value: "activator"}},
+					}},
+			},
+		}},
+	}, {
 		name: "neither replicas in deploymentoverride nor global replicas",
 		override: []base.WorkloadOverride{
 			{Name: "controller"},
@@ -580,6 +676,17 @@ func TestComponentsTransform(t *testing.T) {
 										t.Fatalf("Unexpected env in pod template: %v", diff)
 									}
 								}
+								r, l := getProbes(got.Spec.Template.Spec.Containers, expName)
+								if d.expReadinessProbe != nil {
+									if diff := cmp.Diff(*r, (*d.expReadinessProbe)); diff != "" {
+										t.Fatalf("Unexpected readiness probe in pod template: %v", diff)
+									}
+								}
+								if d.expLivenessProbe != nil {
+									if diff := cmp.Diff(*l, (*d.expLivenessProbe)); diff != "" {
+										t.Fatalf("Unexpected liveness probe in pod template: %v", diff)
+									}
+								}
 							}
 						}
 					}
@@ -729,4 +836,13 @@ func getEnv(containers []v1.Container, container string) []v1.EnvVar {
 		}
 	}
 	return nil
+}
+
+func getProbes(containers []v1.Container, container string) (readiness *v1.Probe, liveness *v1.Probe) {
+	for _, c := range containers {
+		if c.Name == container {
+			return c.ReadinessProbe, c.LivenessProbe
+		}
+	}
+	return nil, nil
 }

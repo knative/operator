@@ -1490,12 +1490,12 @@ knative.dev/caching v0.0.0-20221012041550-ce26e9293067 h1:MdDI6dtZ9969kdEDA91aXC
 knative.dev/caching v0.0.0-20221012041550-ce26e9293067/go.mod h1:d9+oJfahkIbUy+9vXFqf02b2o9ez4EMNfusqcbF3zvU=
 knative.dev/eventing v0.35.0 h1:0sn4Fc0OajdEf4s+0SucwzAIGvO3LZA/BZHsSwfjHes=
 knative.dev/eventing v0.35.0/go.mod h1:MEqB5frQ5jQ2/A+WHpDU2VNLXum+4o7TiMhTdCvji9w=
-knative.dev/hack v0.0.0-20221018223210-cf1a127cfdcd h1:jz8JdM+U70vz8QY++trQv65zWNn0QKfIhqNwXcM8SIo=
-knative.dev/hack v0.0.0-20221018223210-cf1a127cfdcd/go.mod h1:yk2OjGDsbEnQjfxdm0/HJKS2WqTLEFg/N6nUs6Rqx3Q=
+knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a h1:yfq1OMrkyYkxDeM0pmAOeN4YF16R/WG0C+VvLBeq4uc=
+knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a/go.mod h1:yk2OjGDsbEnQjfxdm0/HJKS2WqTLEFg/N6nUs6Rqx3Q=
 knative.dev/networking v0.0.0-20221012062251-58f3e6239b4f h1:e/08+ofUjGjSYV2Usvb22IbkX4MjoiywbRtnXUK3FQY=
 knative.dev/networking v0.0.0-20221012062251-58f3e6239b4f/go.mod h1:GciicKYf4aWE138pT2ZKkZ/E10rd0Kt4ziX52A/HnVY=
-knative.dev/pkg v0.0.0-20221014164553-b812affa3893 h1:RU6XnkYE017AWfKgN+eQLyDcT99eJKgz+ZWOvb+3fhc=
-knative.dev/pkg v0.0.0-20221014164553-b812affa3893/go.mod h1:DMTRDJ5WRxf/DrlOPzohzfhSuJggscLZ8EavOq9O/x8=
+knative.dev/pkg v0.0.0-20221011175852-714b7630a836 h1:0N7Zo/O+xeUUebJPm9keBaGclrUoEbljr3J1MsqtaIM=
+knative.dev/pkg v0.0.0-20221011175852-714b7630a836/go.mod h1:DMTRDJ5WRxf/DrlOPzohzfhSuJggscLZ8EavOq9O/x8=
 knative.dev/serving v0.35.0 h1:t2hsXoa9+YLb7NkOeL6sPVYCPvpiVuy8YK7hbMVW1NU=
 knative.dev/serving v0.35.0/go.mod h1:eKvzlUmOFunHbVqkP5kmrNKSsjpo9TrYjWk/TK/4eGA=
 nhooyr.io/websocket v1.8.6/go.mod h1:B70DZP8IakI65RVQ51MsWP/8jndNma26DVA/nFSCgW0=

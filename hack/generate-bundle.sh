@@ -71,7 +71,7 @@ done
 WEBHOOK_DEFINITIONS="webhookdefinitions"
 CSV_FILE="bundle/manifests/knative-operator.v${VERSION}.clusterserviceversion.yaml"
 
-if grep -Fxq ${WEBHOOK_DEFINITIONS} ${CSV_FILE}
+if grep -q ${WEBHOOK_DEFINITIONS} ${CSV_FILE}
 then
     LINE_NUM=`cat -n ${CSV_FILE} | grep ${WEBHOOK_DEFINITIONS} | awk '{print $1}'`
     sed -i.bak -n "1,$(( LINE_NUM - 1 )) p; $LINE_NUM q" ${CSV_FILE}

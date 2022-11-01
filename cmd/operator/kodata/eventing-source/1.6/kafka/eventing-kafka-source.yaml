@@ -17,7 +17,7 @@ metadata:
   name: config-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "1b3574e762ca66b51542094a95569e3449e912f2"
+    kafka.eventing.knative.dev/release: "daa67148de3ea89c14694ba06a473e7ae963a20c"
   annotations:
     knative.dev/example-checksum: "8157ecb1"
 data:
@@ -178,7 +178,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "1b3574e762ca66b51542094a95569e3449e912f2"
+    kafka.eventing.knative.dev/release: "daa67148de3ea89c14694ba06a473e7ae963a20c"
 rules:
   - apiGroups:
       - "*"
@@ -209,7 +209,7 @@ metadata:
   name: knative-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    kafka.eventing.knative.dev/release: "1b3574e762ca66b51542094a95569e3449e912f2"
+    kafka.eventing.knative.dev/release: "daa67148de3ea89c14694ba06a473e7ae963a20c"
 
 ---
 # Copyright 2021 The Knative Authors
@@ -230,7 +230,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    kafka.eventing.knative.dev/release: "1b3574e762ca66b51542094a95569e3449e912f2"
+    kafka.eventing.knative.dev/release: "daa67148de3ea89c14694ba06a473e7ae963a20c"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-source-data-plane
@@ -261,7 +261,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-source-dispatcher
-    kafka.eventing.knative.dev/release: "1b3574e762ca66b51542094a95569e3449e912f2"
+    kafka.eventing.knative.dev/release: "daa67148de3ea89c14694ba06a473e7ae963a20c"
 spec:
   serviceName: kafka-source-dispatcher
   podManagementPolicy: "Parallel"
@@ -274,7 +274,7 @@ spec:
       labels:
         app: kafka-source-dispatcher
         app.kubernetes.io/component: kafka-dispatcher
-        kafka.eventing.knative.dev/release: "1b3574e762ca66b51542094a95569e3449e912f2"
+        kafka.eventing.knative.dev/release: "daa67148de3ea89c14694ba06a473e7ae963a20c"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes and zones.
       topologySpreadConstraints:
@@ -298,7 +298,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: kafka-source-dispatcher
-          image: gcr.io/knative-releases/knative-kafka-broker-dispatcher:v1.6.9
+          image: gcr.io/knative-releases/knative-kafka-broker-dispatcher:v1.6.10
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config

@@ -137,7 +137,7 @@ type CommonSpec struct {
 	// +optional
 	DeprecatedResources []ResourceRequirementsOverride `json:"resources,omitempty"`
 
-	// DEPRECATED. Use components
+	// DEPRECATED. Use workloads
 	// DeploymentOverride overrides Deployment configurations such as resources and replicas.
 	// +optional
 	DeploymentOverride []WorkloadOverride `json:"deployments,omitempty"`

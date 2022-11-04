@@ -541,8 +541,6 @@ rules:
       - "*"
     resources:
       - leases
-    resourceNames:
-      - kafkachannel-dispatcher.knative.dev.eventing-kafka.pkg.channel.consolidated.reconciler.dispatcher.reconciler.00-of-01
     verbs:
       - delete
   - apiGroups:

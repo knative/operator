@@ -250,11 +250,13 @@ func (a *AND) equals(other interface{}) bool {
 	}
 }
 
+//
 // {@inheritDoc}
 //
 // <p>
 // The evaluation of predicates by a context is short-circuiting, but
 // unordered.</p>
+//
 func (a *AND) evaluate(parser Recognizer, outerContext RuleContext) bool {
 	for i := 0; i < len(a.opnds); i++ {
 		if !a.opnds[i].evaluate(parser, outerContext) {
@@ -404,6 +406,7 @@ func (o *OR) equals(other interface{}) bool {
 // <p>
 // The evaluation of predicates by o context is short-circuiting, but
 // unordered.</p>
+//
 func (o *OR) evaluate(parser Recognizer, outerContext RuleContext) bool {
 	for i := 0; i < len(o.opnds); i++ {
 		if o.opnds[i].evaluate(parser, outerContext) {

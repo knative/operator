@@ -100,20 +100,20 @@ const Scheme = "file"
 //
 // If either of base_url / secret_key_path are provided, both must be.
 //
-//   - file:///a/directory
-//     -> Passes "/a/directory" to OpenBucket.
-//   - file://localhost/a/directory
-//     -> Also passes "/a/directory".
-//   - file://./../..
-//     -> The hostname is ".", signaling a relative path; passes "../..".
-//   - file:///c:/foo/bar on Windows.
-//     -> Passes "c:\foo\bar".
-//   - file://localhost/c:/foo/bar on Windows.
-//     -> Also passes "c:\foo\bar".
-//   - file:///a/directory?base_url=/show&secret_key_path=secret.key
-//     -> Passes "/a/directory" to OpenBucket, and sets Options.URLSigner
-//     to a URLSignerHMAC initialized with base URL "/show" and secret key
-//     bytes read from the file "secret.key".
+//  - file:///a/directory
+//    -> Passes "/a/directory" to OpenBucket.
+//  - file://localhost/a/directory
+//    -> Also passes "/a/directory".
+//  - file://./../..
+//    -> The hostname is ".", signaling a relative path; passes "../..".
+//  - file:///c:/foo/bar on Windows.
+//    -> Passes "c:\foo\bar".
+//  - file://localhost/c:/foo/bar on Windows.
+//    -> Also passes "c:\foo\bar".
+//  - file:///a/directory?base_url=/show&secret_key_path=secret.key
+//    -> Passes "/a/directory" to OpenBucket, and sets Options.URLSigner
+//       to a URLSignerHMAC initialized with base URL "/show" and secret key
+//       bytes read from the file "secret.key".
 type URLOpener struct {
 	// Options specifies the default options to pass to OpenBucket.
 	Options Options

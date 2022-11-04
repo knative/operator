@@ -44,7 +44,8 @@
 // "google.golang.org/protobuf/encoding/protojson" package
 // ensures that they will be serialized as their JSON equivalent.
 //
-// # Conversion to and from a Go interface
+//
+// Conversion to and from a Go interface
 //
 // The standard Go "encoding/json" package has functionality to serialize
 // arbitrary types to a large degree. The Value.AsInterface, Struct.AsMap, and
@@ -57,7 +58,8 @@
 // forms back as Value, Struct, and ListValue messages, use the NewStruct,
 // NewList, and NewValue constructor functions.
 //
-// # Example usage
+//
+// Example usage
 //
 // Consider the following example JSON object:
 //
@@ -116,6 +118,7 @@
 //		... // handle error
 //	}
 //	... // make use of m as a *structpb.Value
+//
 package structpb
 
 import (
@@ -132,7 +135,7 @@ import (
 // `NullValue` is a singleton enumeration to represent the null value for the
 // `Value` type union.
 //
-//	The JSON representation for `NullValue` is JSON `null`.
+//  The JSON representation for `NullValue` is JSON `null`.
 type NullValue int32
 
 const (

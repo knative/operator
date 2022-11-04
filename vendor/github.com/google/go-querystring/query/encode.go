@@ -6,15 +6,15 @@
 //
 // As a simple example:
 //
-//	type Options struct {
-//		Query   string `url:"q"`
-//		ShowAll bool   `url:"all"`
-//		Page    int    `url:"page"`
-//	}
+// 	type Options struct {
+// 		Query   string `url:"q"`
+// 		ShowAll bool   `url:"all"`
+// 		Page    int    `url:"page"`
+// 	}
 //
-//	opt := Options{ "foo", true, 2 }
-//	v, _ := query.Values(opt)
-//	fmt.Print(v.Encode()) // will output: "q=foo&all=true&page=2"
+// 	opt := Options{ "foo", true, 2 }
+// 	v, _ := query.Values(opt)
+// 	fmt.Print(v.Encode()) // will output: "q=foo&all=true&page=2"
 //
 // The exact mapping between Go values and url.Values is described in the
 // documentation for the Values() function.
@@ -47,8 +47,8 @@ type Encoder interface {
 //
 // Each exported struct field is encoded as a URL parameter unless
 //
-//   - the field's tag is "-", or
-//   - the field is empty and its tag specifies the "omitempty" option
+//	- the field's tag is "-", or
+//	- the field is empty and its tag specifies the "omitempty" option
 //
 // The empty values are false, 0, any nil pointer or interface value, any array
 // slice, map, or string of length zero, and any time.Time that returns true
@@ -59,19 +59,19 @@ type Encoder interface {
 // field's tag value is the key name, followed by an optional comma and
 // options.  For example:
 //
-//	// Field is ignored by this package.
-//	Field int `url:"-"`
+// 	// Field is ignored by this package.
+// 	Field int `url:"-"`
 //
-//	// Field appears as URL parameter "myName".
-//	Field int `url:"myName"`
+// 	// Field appears as URL parameter "myName".
+// 	Field int `url:"myName"`
 //
-//	// Field appears as URL parameter "myName" and the field is omitted if
-//	// its value is empty
-//	Field int `url:"myName,omitempty"`
+// 	// Field appears as URL parameter "myName" and the field is omitted if
+// 	// its value is empty
+// 	Field int `url:"myName,omitempty"`
 //
-//	// Field appears as URL parameter "Field" (the default), but the field
-//	// is skipped if empty.  Note the leading comma.
-//	Field int `url:",omitempty"`
+// 	// Field appears as URL parameter "Field" (the default), but the field
+// 	// is skipped if empty.  Note the leading comma.
+// 	Field int `url:",omitempty"`
 //
 // For encoding individual field values, the following type-dependent rules
 // apply:
@@ -104,7 +104,7 @@ type Encoder interface {
 // Nested structs are encoded including parent fields in value names for
 // scoping. e.g:
 //
-//	"user[name]=acme&user[addr][postcode]=1234&user[addr][city]=SFO"
+// 	"user[name]=acme&user[addr][postcode]=1234&user[addr][city]=SFO"
 //
 // All other values are encoded using their default string representation.
 //

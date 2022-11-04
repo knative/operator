@@ -22,11 +22,10 @@ import (
 )
 
 // NodeWithStartTime creates a node using nodeName and derives:
-//
-//	Hostname from the environment
-//	Pid from the current process
-//	StartTimestamp from the start time of this process
-//	Language and library information.
+//  Hostname from the environment
+//  Pid from the current process
+//  StartTimestamp from the start time of this process
+//  Language and library information.
 func NodeWithStartTime(nodeName string) *commonpb.Node {
 	return &commonpb.Node{
 		Identifier: &commonpb.ProcessIdentifier{

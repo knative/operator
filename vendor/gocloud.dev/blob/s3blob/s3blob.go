@@ -15,7 +15,7 @@
 // Package s3blob provides a blob implementation that uses S3. Use OpenBucket
 // to construct a *blob.Bucket.
 //
-// # URLs
+// URLs
 //
 // For blob.OpenBucket, s3blob registers for the scheme "s3".
 // The default URL opener will use an AWS session with the default credentials
@@ -25,36 +25,36 @@
 // see URLOpener.
 // See https://gocloud.dev/concepts/urls/ for background information.
 //
-// # Escaping
+// Escaping
 //
 // Go CDK supports all UTF-8 strings; to make this work with services lacking
 // full UTF-8 support, strings must be escaped (during writes) and unescaped
 // (during reads). The following escapes are performed for s3blob:
-//   - Blob keys: ASCII characters 0-31 are escaped to "__0x<hex>__".
-//     Additionally, the "/" in "../" and the trailing "/" in "//" are escaped in
-//     the same way.
-//   - Metadata keys: Escaped using URL encoding, then additionally "@:=" are
-//     escaped using "__0x<hex>__". These characters were determined by
-//     experimentation.
-//   - Metadata values: Escaped using URL encoding.
+//  - Blob keys: ASCII characters 0-31 are escaped to "__0x<hex>__".
+//    Additionally, the "/" in "../" and the trailing "/" in "//" are escaped in
+//    the same way.
+//  - Metadata keys: Escaped using URL encoding, then additionally "@:=" are
+//    escaped using "__0x<hex>__". These characters were determined by
+//    experimentation.
+//  - Metadata values: Escaped using URL encoding.
 //
-// # As
+// As
 //
 // s3blob exposes the following types for As:
-//   - Bucket: *s3.S3
-//   - Error: awserr.Error
-//   - ListObject: s3.Object for objects, s3.CommonPrefix for "directories"
-//   - ListOptions.BeforeList: *s3.ListObjectsV2Input, or *s3.ListObjectsInput
-//     when Options.UseLegacyList == true.
-//   - Reader: s3.GetObjectOutput
-//   - ReaderOptions.BeforeRead: *s3.GetObjectInput
-//   - Attributes: s3.HeadObjectOutput
-//   - CopyOptions.BeforeCopy: *s3.CopyObjectInput
-//   - WriterOptions.BeforeWrite: *s3manager.UploadInput, *s3manager.Uploader
-//   - SignedURLOptions.BeforeSign:
-//     *s3.GetObjectInput when Options.Method == http.MethodGet, or
-//     *s3.PutObjectInput when Options.Method == http.MethodPut, or
-//     *s3.DeleteObjectInput when Options.Method == http.MethodDelete
+//  - Bucket: *s3.S3
+//  - Error: awserr.Error
+//  - ListObject: s3.Object for objects, s3.CommonPrefix for "directories"
+//  - ListOptions.BeforeList: *s3.ListObjectsV2Input, or *s3.ListObjectsInput
+//      when Options.UseLegacyList == true.
+//  - Reader: s3.GetObjectOutput
+//  - ReaderOptions.BeforeRead: *s3.GetObjectInput
+//  - Attributes: s3.HeadObjectOutput
+//  - CopyOptions.BeforeCopy: *s3.CopyObjectInput
+//  - WriterOptions.BeforeWrite: *s3manager.UploadInput, *s3manager.Uploader
+//  - SignedURLOptions.BeforeSign:
+//      *s3.GetObjectInput when Options.Method == http.MethodGet, or
+//      *s3.PutObjectInput when Options.Method == http.MethodPut, or
+//      *s3.DeleteObjectInput when Options.Method == http.MethodDelete
 package s3blob // import "gocloud.dev/blob/s3blob"
 
 import (

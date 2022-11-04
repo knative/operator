@@ -101,10 +101,8 @@ func SerializeBlobTags(blobTagsMap BlobTagsMap) BlobTags {
 // Download reads a range of bytes from a blob. The response also includes the blob's properties and metadata.
 // Passing azblob.CountToEnd (0) for count will download the blob from the offset to the end.
 // Note: Snapshot/VersionId are optional parameters which are part of request URL query params.
-//
-//	These parameters can be explicitly set by calling WithSnapshot(snapshot string)/WithVersionID(versionID string)
-//	Therefore it not required to pass these here.
-//
+// 	These parameters can be explicitly set by calling WithSnapshot(snapshot string)/WithVersionID(versionID string)
+// 	Therefore it not required to pass these here.
 // For more information, see https://docs.microsoft.com/rest/api/storageservices/get-blob.
 func (b BlobURL) Download(ctx context.Context, offset int64, count int64, ac BlobAccessConditions, rangeGetContentMD5 bool, cpk ClientProvidedKeyOptions) (*DownloadResponse, error) {
 	var xRangeGetContentMD5 *bool
@@ -133,10 +131,8 @@ func (b BlobURL) Download(ctx context.Context, offset int64, count int64, ac Blo
 // Delete marks the specified blob or snapshot for deletion. The blob is later deleted during garbage collection.
 // Note 1: that deleting a blob also deletes all its snapshots.
 // Note 2: Snapshot/VersionId are optional parameters which are part of request URL query params.
-//
-//	These parameters can be explicitly set by calling WithSnapshot(snapshot string)/WithVersionID(versionID string)
-//	Therefore it not required to pass these here.
-//
+// 	These parameters can be explicitly set by calling WithSnapshot(snapshot string)/WithVersionID(versionID string)
+// 	Therefore it not required to pass these here.
 // For more information, see https://docs.microsoft.com/rest/api/storageservices/delete-blob.
 func (b BlobURL) Delete(ctx context.Context, deleteOptions DeleteSnapshotsOptionType, ac BlobAccessConditions) (*BlobDeleteResponse, error) {
 	ifModifiedSince, ifUnmodifiedSince, ifMatchETag, ifNoneMatchETag := ac.ModifiedAccessConditions.pointers()

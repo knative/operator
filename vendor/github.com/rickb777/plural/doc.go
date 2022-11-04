@@ -16,4 +16,5 @@
 // what you need, you should consider products such as https://github.com/nicksnyder/go-i18n instead.
 //
 // Please see the examples and associated api documentation.
+//
 package plural

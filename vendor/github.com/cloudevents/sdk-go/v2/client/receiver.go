@@ -57,6 +57,7 @@ var (
 // * func(event.Event) (*event.Event, protocol.Result)
 // * func(context.Context, event.Event) *event.Event
 // * func(context.Context, event.Event) (*event.Event, protocol.Result)
+//
 func receiver(fn interface{}) (*receiverFn, error) {
 	fnType := reflect.TypeOf(fn)
 	if fnType.Kind() != reflect.Func {

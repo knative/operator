@@ -86,6 +86,7 @@ func NewPredictionContextCache() *PredictionContextCache {
 // Add a context to the cache and return it. If the context already exists,
 // return that one instead and do not add a Newcontext to the cache.
 // Protect shared cache from unsafe thread access.
+//
 func (p *PredictionContextCache) add(ctx PredictionContext) PredictionContext {
 	if ctx == BasePredictionContextEMPTY {
 		return BasePredictionContextEMPTY
@@ -389,6 +390,7 @@ func merge(a, b PredictionContext, rootIsWildcard bool, mergeCache *DoubleDict) 
 	return mergeArrays(a.(*ArrayPredictionContext), b.(*ArrayPredictionContext), rootIsWildcard, mergeCache)
 }
 
+//
 // Merge two {@link SingletonBasePredictionContext} instances.
 //
 // <p>Stack tops equal, parents merge is same return left graph.<br>
@@ -497,6 +499,7 @@ func mergeSingletons(a, b *BaseSingletonPredictionContext, rootIsWildcard bool, 
 	return apc
 }
 
+//
 // Handle case where at least one of {@code a} or {@code b} is
 // {@link //EMPTY}. In the following diagrams, the symbol {@code $} is used
 // to represent {@link //EMPTY}.
@@ -558,6 +561,7 @@ func mergeRoot(a, b SingletonPredictionContext, rootIsWildcard bool) PredictionC
 	return nil
 }
 
+//
 // Merge two {@link ArrayBasePredictionContext} instances.
 //
 // <p>Different tops, different parents.<br>
@@ -679,6 +683,7 @@ func mergeArrays(a, b *ArrayPredictionContext, rootIsWildcard bool, mergeCache *
 	return M
 }
 
+//
 // Make pass over all <em>M</em> {@code parents} merge any {@code equals()}
 // ones.
 // /

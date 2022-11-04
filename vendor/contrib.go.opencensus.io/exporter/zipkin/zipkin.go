@@ -41,9 +41,7 @@ type Exporter struct {
 //
 // localEndpoint sets the local endpoint of exported spans.  It can be
 // constructed with github.com/openzipkin/zipkin-go.NewEndpoint, e.g.:
-//
-//	localEndpoint, err := NewEndpoint("my server", listener.Addr().String())
-//
+// 	localEndpoint, err := NewEndpoint("my server", listener.Addr().String())
 // localEndpoint can be nil.
 func NewExporter(reporter reporter.Reporter, localEndpoint *model.Endpoint) *Exporter {
 	return &Exporter{

@@ -87,6 +87,7 @@ func (d *DiagnosticErrorListener) getDecisionDescription(recognizer Parser, dfa 
 	return strconv.Itoa(decision) + " (" + ruleName + ")"
 }
 
+//
 // Computes the set of conflicting or ambiguous alternatives from a
 // configuration set, if that information was not already provided by the
 // parser.
@@ -96,6 +97,7 @@ func (d *DiagnosticErrorListener) getDecisionDescription(recognizer Parser, dfa 
 // @param configs The conflicting or ambiguous configuration set.
 // @return Returns {@code ReportedAlts} if it is not {@code nil}, otherwise
 // returns the set of alternatives represented in {@code configs}.
+//
 func (d *DiagnosticErrorListener) getConflictingAlts(ReportedAlts *BitSet, set ATNConfigSet) *BitSet {
 	if ReportedAlts != nil {
 		return ReportedAlts

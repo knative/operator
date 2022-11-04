@@ -28,13 +28,14 @@ const opAssumeRole = "AssumeRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
-//	// Example sending a request using the AssumeRoleRequest method.
-//	req, resp := client.AssumeRoleRequest(params)
 //
-//	err := req.Send()
-//	if err == nil { // resp is now filled
-//	    fmt.Println(resp)
-//	}
+//    // Example sending a request using the AssumeRoleRequest method.
+//    req, resp := client.AssumeRoleRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRole
 func (c *STS) AssumeRoleRequest(input *AssumeRoleInput) (req *request.Request, output *AssumeRoleOutput) {
@@ -77,7 +78,7 @@ func (c *STS) AssumeRoleRequest(input *AssumeRoleInput) (req *request.Request, o
 // IAM Roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html)
 // in the IAM User Guide.
 //
-// # Session Duration
+// Session Duration
 //
 // By default, the temporary security credentials created by AssumeRole last
 // for one hour. However, you can use the optional DurationSeconds parameter
@@ -92,7 +93,7 @@ func (c *STS) AssumeRoleRequest(input *AssumeRoleInput) (req *request.Request, o
 // URL. For more information, see Using IAM Roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html)
 // in the IAM User Guide.
 //
-// # Permissions
+// Permissions
 //
 // The temporary security credentials created by AssumeRole can be used to make
 // API calls to any AWS service with the following exception: You cannot call
@@ -123,10 +124,10 @@ func (c *STS) AssumeRoleRequest(input *AssumeRoleInput) (req *request.Request, o
 // of the role in the other account. If the user is in the same account as the
 // role, then you can do either of the following:
 //
-//   - Attach a policy to the user (identical to the previous user in a different
-//     account).
+//    * Attach a policy to the user (identical to the previous user in a different
+//    account).
 //
-//   - Add the user as a principal directly in the role's trust policy.
+//    * Add the user as a principal directly in the role's trust policy.
 //
 // In this case, the trust policy acts as an IAM resource-based policy. Users
 // in the same account as the role do not need explicit permission to assume
@@ -134,7 +135,7 @@ func (c *STS) AssumeRoleRequest(input *AssumeRoleInput) (req *request.Request, o
 // see IAM Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html)
 // in the IAM User Guide.
 //
-// # Tags
+// Tags
 //
 // (Optional) You can pass tag key-value pairs to your session. These tags are
 // called session tags. For more information about session tags, see Passing
@@ -152,7 +153,7 @@ func (c *STS) AssumeRoleRequest(input *AssumeRoleInput) (req *request.Request, o
 // (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html#id_session-tags_role-chaining)
 // in the IAM User Guide.
 //
-// # Using MFA with AssumeRole
+// Using MFA with AssumeRole
 //
 // (Optional) You can include multi-factor authentication (MFA) information
 // when you call AssumeRole. This is useful for cross-account scenarios to ensure
@@ -181,35 +182,34 @@ func (c *STS) AssumeRoleRequest(input *AssumeRoleInput) (req *request.Request, o
 // API operation AssumeRole for usage and error information.
 //
 // Returned Error Codes:
+//   * ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
+//   The request was rejected because the policy document was malformed. The error
+//   message describes the specific error.
 //
-//   - ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
-//     The request was rejected because the policy document was malformed. The error
-//     message describes the specific error.
+//   * ErrCodePackedPolicyTooLargeException "PackedPolicyTooLarge"
+//   The request was rejected because the total packed size of the session policies
+//   and session tags combined was too large. An AWS conversion compresses the
+//   session policy document, session policy ARNs, and session tags into a packed
+//   binary format that has a separate limit. The error message indicates by percentage
+//   how close the policies and tags are to the upper size limit. For more information,
+//   see Passing Session Tags in STS (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html)
+//   in the IAM User Guide.
 //
-//   - ErrCodePackedPolicyTooLargeException "PackedPolicyTooLarge"
-//     The request was rejected because the total packed size of the session policies
-//     and session tags combined was too large. An AWS conversion compresses the
-//     session policy document, session policy ARNs, and session tags into a packed
-//     binary format that has a separate limit. The error message indicates by percentage
-//     how close the policies and tags are to the upper size limit. For more information,
-//     see Passing Session Tags in STS (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html)
-//     in the IAM User Guide.
+//   You could receive this error even though you meet other defined session policy
+//   and session tag limits. For more information, see IAM and STS Entity Character
+//   Limits (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
+//   in the IAM User Guide.
 //
-//     You could receive this error even though you meet other defined session policy
-//     and session tag limits. For more information, see IAM and STS Entity Character
-//     Limits (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
-//     in the IAM User Guide.
+//   * ErrCodeRegionDisabledException "RegionDisabledException"
+//   STS is not activated in the requested region for the account that is being
+//   asked to generate credentials. The account administrator must use the IAM
+//   console to activate STS in that region. For more information, see Activating
+//   and Deactivating AWS STS in an AWS Region (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
+//   in the IAM User Guide.
 //
-//   - ErrCodeRegionDisabledException "RegionDisabledException"
-//     STS is not activated in the requested region for the account that is being
-//     asked to generate credentials. The account administrator must use the IAM
-//     console to activate STS in that region. For more information, see Activating
-//     and Deactivating AWS STS in an AWS Region (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
-//     in the IAM User Guide.
-//
-//   - ErrCodeExpiredTokenException "ExpiredTokenException"
-//     The web identity token that was passed is expired or is not valid. Get a
-//     new identity token from the identity provider and then retry the request.
+//   * ErrCodeExpiredTokenException "ExpiredTokenException"
+//   The web identity token that was passed is expired or is not valid. Get a
+//   new identity token from the identity provider and then retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRole
 func (c *STS) AssumeRole(input *AssumeRoleInput) (*AssumeRoleOutput, error) {
@@ -249,13 +249,14 @@ const opAssumeRoleWithSAML = "AssumeRoleWithSAML"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
-//	// Example sending a request using the AssumeRoleWithSAMLRequest method.
-//	req, resp := client.AssumeRoleWithSAMLRequest(params)
 //
-//	err := req.Send()
-//	if err == nil { // resp is now filled
-//	    fmt.Println(resp)
-//	}
+//    // Example sending a request using the AssumeRoleWithSAMLRequest method.
+//    req, resp := client.AssumeRoleWithSAMLRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleWithSAML
 func (c *STS) AssumeRoleWithSAMLRequest(input *AssumeRoleWithSAMLInput) (req *request.Request, output *AssumeRoleWithSAMLOutput) {
@@ -290,7 +291,7 @@ func (c *STS) AssumeRoleWithSAMLRequest(input *AssumeRoleWithSAMLInput) (req *re
 // an access key ID, a secret access key, and a security token. Applications
 // can use these temporary security credentials to sign calls to AWS services.
 //
-// # Session Duration
+// Session Duration
 //
 // By default, the temporary security credentials created by AssumeRoleWithSAML
 // last for one hour. However, you can use the optional DurationSeconds parameter
@@ -307,7 +308,7 @@ func (c *STS) AssumeRoleWithSAMLRequest(input *AssumeRoleWithSAMLInput) (req *re
 // URL. For more information, see Using IAM Roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html)
 // in the IAM User Guide.
 //
-// # Permissions
+// Permissions
 //
 // The temporary security credentials created by AssumeRoleWithSAML can be used
 // to make API calls to any AWS service with the following exception: you cannot
@@ -337,7 +338,7 @@ func (c *STS) AssumeRoleWithSAMLRequest(input *AssumeRoleWithSAMLInput) (req *re
 // identifiable information (PII). For example, you could instead use the persistent
 // identifier (urn:oasis:names:tc:SAML:2.0:nameid-format:persistent).
 //
-// # Tags
+// Tags
 //
 // (Optional) You can configure your IdP to pass attributes into your SAML assertion
 // as session tags. Each session tag consists of a key name and an associated
@@ -371,7 +372,7 @@ func (c *STS) AssumeRoleWithSAMLRequest(input *AssumeRoleWithSAMLInput) (req *re
 // (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html#id_session-tags_role-chaining)
 // in the IAM User Guide.
 //
-// # SAML Configuration
+// SAML Configuration
 //
 // Before your application can call AssumeRoleWithSAML, you must configure your
 // SAML identity provider (IdP) to issue the claims required by AWS. Additionally,
@@ -381,17 +382,17 @@ func (c *STS) AssumeRoleWithSAMLRequest(input *AssumeRoleWithSAMLInput) (req *re
 //
 // For more information, see the following resources:
 //
-//   - About SAML 2.0-based Federation (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_saml.html)
-//     in the IAM User Guide.
+//    * About SAML 2.0-based Federation (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_saml.html)
+//    in the IAM User Guide.
 //
-//   - Creating SAML Identity Providers (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_saml.html)
-//     in the IAM User Guide.
+//    * Creating SAML Identity Providers (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_saml.html)
+//    in the IAM User Guide.
 //
-//   - Configuring a Relying Party and Claims (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_saml_relying-party.html)
-//     in the IAM User Guide.
+//    * Configuring a Relying Party and Claims (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_saml_relying-party.html)
+//    in the IAM User Guide.
 //
-//   - Creating a Role for SAML 2.0 Federation (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-idp_saml.html)
-//     in the IAM User Guide.
+//    * Creating a Role for SAML 2.0 Federation (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-idp_saml.html)
+//    in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -401,46 +402,45 @@ func (c *STS) AssumeRoleWithSAMLRequest(input *AssumeRoleWithSAMLInput) (req *re
 // API operation AssumeRoleWithSAML for usage and error information.
 //
 // Returned Error Codes:
+//   * ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
+//   The request was rejected because the policy document was malformed. The error
+//   message describes the specific error.
 //
-//   - ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
-//     The request was rejected because the policy document was malformed. The error
-//     message describes the specific error.
+//   * ErrCodePackedPolicyTooLargeException "PackedPolicyTooLarge"
+//   The request was rejected because the total packed size of the session policies
+//   and session tags combined was too large. An AWS conversion compresses the
+//   session policy document, session policy ARNs, and session tags into a packed
+//   binary format that has a separate limit. The error message indicates by percentage
+//   how close the policies and tags are to the upper size limit. For more information,
+//   see Passing Session Tags in STS (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html)
+//   in the IAM User Guide.
 //
-//   - ErrCodePackedPolicyTooLargeException "PackedPolicyTooLarge"
-//     The request was rejected because the total packed size of the session policies
-//     and session tags combined was too large. An AWS conversion compresses the
-//     session policy document, session policy ARNs, and session tags into a packed
-//     binary format that has a separate limit. The error message indicates by percentage
-//     how close the policies and tags are to the upper size limit. For more information,
-//     see Passing Session Tags in STS (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html)
-//     in the IAM User Guide.
+//   You could receive this error even though you meet other defined session policy
+//   and session tag limits. For more information, see IAM and STS Entity Character
+//   Limits (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
+//   in the IAM User Guide.
 //
-//     You could receive this error even though you meet other defined session policy
-//     and session tag limits. For more information, see IAM and STS Entity Character
-//     Limits (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
-//     in the IAM User Guide.
+//   * ErrCodeIDPRejectedClaimException "IDPRejectedClaim"
+//   The identity provider (IdP) reported that authentication failed. This might
+//   be because the claim is invalid.
 //
-//   - ErrCodeIDPRejectedClaimException "IDPRejectedClaim"
-//     The identity provider (IdP) reported that authentication failed. This might
-//     be because the claim is invalid.
+//   If this error is returned for the AssumeRoleWithWebIdentity operation, it
+//   can also mean that the claim has expired or has been explicitly revoked.
 //
-//     If this error is returned for the AssumeRoleWithWebIdentity operation, it
-//     can also mean that the claim has expired or has been explicitly revoked.
+//   * ErrCodeInvalidIdentityTokenException "InvalidIdentityToken"
+//   The web identity token that was passed could not be validated by AWS. Get
+//   a new identity token from the identity provider and then retry the request.
 //
-//   - ErrCodeInvalidIdentityTokenException "InvalidIdentityToken"
-//     The web identity token that was passed could not be validated by AWS. Get
-//     a new identity token from the identity provider and then retry the request.
+//   * ErrCodeExpiredTokenException "ExpiredTokenException"
+//   The web identity token that was passed is expired or is not valid. Get a
+//   new identity token from the identity provider and then retry the request.
 //
-//   - ErrCodeExpiredTokenException "ExpiredTokenException"
-//     The web identity token that was passed is expired or is not valid. Get a
-//     new identity token from the identity provider and then retry the request.
-//
-//   - ErrCodeRegionDisabledException "RegionDisabledException"
-//     STS is not activated in the requested region for the account that is being
-//     asked to generate credentials. The account administrator must use the IAM
-//     console to activate STS in that region. For more information, see Activating
-//     and Deactivating AWS STS in an AWS Region (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
-//     in the IAM User Guide.
+//   * ErrCodeRegionDisabledException "RegionDisabledException"
+//   STS is not activated in the requested region for the account that is being
+//   asked to generate credentials. The account administrator must use the IAM
+//   console to activate STS in that region. For more information, see Activating
+//   and Deactivating AWS STS in an AWS Region (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
+//   in the IAM User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleWithSAML
 func (c *STS) AssumeRoleWithSAML(input *AssumeRoleWithSAMLInput) (*AssumeRoleWithSAMLOutput, error) {
@@ -480,13 +480,14 @@ const opAssumeRoleWithWebIdentity = "AssumeRoleWithWebIdentity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
-//	// Example sending a request using the AssumeRoleWithWebIdentityRequest method.
-//	req, resp := client.AssumeRoleWithWebIdentityRequest(params)
 //
-//	err := req.Send()
-//	if err == nil { // resp is now filled
-//	    fmt.Println(resp)
-//	}
+//    // Example sending a request using the AssumeRoleWithWebIdentityRequest method.
+//    req, resp := client.AssumeRoleWithWebIdentityRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleWithWebIdentity
 func (c *STS) AssumeRoleWithWebIdentityRequest(input *AssumeRoleWithWebIdentityInput) (req *request.Request, output *AssumeRoleWithWebIdentityOutput) {
@@ -539,7 +540,7 @@ func (c *STS) AssumeRoleWithWebIdentityRequest(input *AssumeRoleWithWebIdentityI
 // key ID, a secret access key, and a security token. Applications can use these
 // temporary security credentials to sign calls to AWS service API operations.
 //
-// # Session Duration
+// Session Duration
 //
 // By default, the temporary security credentials created by AssumeRoleWithWebIdentity
 // last for one hour. However, you can use the optional DurationSeconds parameter
@@ -554,7 +555,7 @@ func (c *STS) AssumeRoleWithWebIdentityRequest(input *AssumeRoleWithWebIdentityI
 // URL. For more information, see Using IAM Roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html)
 // in the IAM User Guide.
 //
-// # Permissions
+// Permissions
 //
 // The temporary security credentials created by AssumeRoleWithWebIdentity can
 // be used to make API calls to any AWS service with the following exception:
@@ -574,7 +575,7 @@ func (c *STS) AssumeRoleWithWebIdentityRequest(input *AssumeRoleWithWebIdentityI
 // information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 // in the IAM User Guide.
 //
-// # Tags
+// Tags
 //
 // (Optional) You can configure your IdP to pass attributes into your web identity
 // token as session tags. Each session tag consists of a key name and an associated
@@ -608,7 +609,7 @@ func (c *STS) AssumeRoleWithWebIdentityRequest(input *AssumeRoleWithWebIdentityI
 // (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html#id_session-tags_role-chaining)
 // in the IAM User Guide.
 //
-// # Identities
+// Identities
 //
 // Before your application can call AssumeRoleWithWebIdentity, you must have
 // an identity token from a supported identity provider and create a role that
@@ -626,24 +627,24 @@ func (c *STS) AssumeRoleWithWebIdentityRequest(input *AssumeRoleWithWebIdentityI
 // For more information about how to use web identity federation and the AssumeRoleWithWebIdentity
 // API, see the following resources:
 //
-//   - Using Web Identity Federation API Operations for Mobile Apps (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_oidc_manual.html)
-//     and Federation Through a Web-based Identity Provider (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html#api_assumerolewithwebidentity).
+//    * Using Web Identity Federation API Operations for Mobile Apps (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_oidc_manual.html)
+//    and Federation Through a Web-based Identity Provider (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html#api_assumerolewithwebidentity).
 //
-//   - Web Identity Federation Playground (https://aws.amazon.com/blogs/aws/the-aws-web-identity-federation-playground/).
-//     Walk through the process of authenticating through Login with Amazon,
-//     Facebook, or Google, getting temporary security credentials, and then
-//     using those credentials to make a request to AWS.
+//    * Web Identity Federation Playground (https://aws.amazon.com/blogs/aws/the-aws-web-identity-federation-playground/).
+//    Walk through the process of authenticating through Login with Amazon,
+//    Facebook, or Google, getting temporary security credentials, and then
+//    using those credentials to make a request to AWS.
 //
-//   - AWS SDK for iOS Developer Guide (http://aws.amazon.com/sdkforios/) and
-//     AWS SDK for Android Developer Guide (http://aws.amazon.com/sdkforandroid/).
-//     These toolkits contain sample apps that show how to invoke the identity
-//     providers. The toolkits then show how to use the information from these
-//     providers to get and use temporary security credentials.
+//    * AWS SDK for iOS Developer Guide (http://aws.amazon.com/sdkforios/) and
+//    AWS SDK for Android Developer Guide (http://aws.amazon.com/sdkforandroid/).
+//    These toolkits contain sample apps that show how to invoke the identity
+//    providers. The toolkits then show how to use the information from these
+//    providers to get and use temporary security credentials.
 //
-//   - Web Identity Federation with Mobile Applications (http://aws.amazon.com/articles/web-identity-federation-with-mobile-applications).
-//     This article discusses web identity federation and shows an example of
-//     how to use web identity federation to get access to content in Amazon
-//     S3.
+//    * Web Identity Federation with Mobile Applications (http://aws.amazon.com/articles/web-identity-federation-with-mobile-applications).
+//    This article discusses web identity federation and shows an example of
+//    how to use web identity federation to get access to content in Amazon
+//    S3.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -653,53 +654,52 @@ func (c *STS) AssumeRoleWithWebIdentityRequest(input *AssumeRoleWithWebIdentityI
 // API operation AssumeRoleWithWebIdentity for usage and error information.
 //
 // Returned Error Codes:
+//   * ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
+//   The request was rejected because the policy document was malformed. The error
+//   message describes the specific error.
 //
-//   - ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
-//     The request was rejected because the policy document was malformed. The error
-//     message describes the specific error.
+//   * ErrCodePackedPolicyTooLargeException "PackedPolicyTooLarge"
+//   The request was rejected because the total packed size of the session policies
+//   and session tags combined was too large. An AWS conversion compresses the
+//   session policy document, session policy ARNs, and session tags into a packed
+//   binary format that has a separate limit. The error message indicates by percentage
+//   how close the policies and tags are to the upper size limit. For more information,
+//   see Passing Session Tags in STS (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html)
+//   in the IAM User Guide.
 //
-//   - ErrCodePackedPolicyTooLargeException "PackedPolicyTooLarge"
-//     The request was rejected because the total packed size of the session policies
-//     and session tags combined was too large. An AWS conversion compresses the
-//     session policy document, session policy ARNs, and session tags into a packed
-//     binary format that has a separate limit. The error message indicates by percentage
-//     how close the policies and tags are to the upper size limit. For more information,
-//     see Passing Session Tags in STS (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html)
-//     in the IAM User Guide.
+//   You could receive this error even though you meet other defined session policy
+//   and session tag limits. For more information, see IAM and STS Entity Character
+//   Limits (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
+//   in the IAM User Guide.
 //
-//     You could receive this error even though you meet other defined session policy
-//     and session tag limits. For more information, see IAM and STS Entity Character
-//     Limits (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
-//     in the IAM User Guide.
+//   * ErrCodeIDPRejectedClaimException "IDPRejectedClaim"
+//   The identity provider (IdP) reported that authentication failed. This might
+//   be because the claim is invalid.
 //
-//   - ErrCodeIDPRejectedClaimException "IDPRejectedClaim"
-//     The identity provider (IdP) reported that authentication failed. This might
-//     be because the claim is invalid.
+//   If this error is returned for the AssumeRoleWithWebIdentity operation, it
+//   can also mean that the claim has expired or has been explicitly revoked.
 //
-//     If this error is returned for the AssumeRoleWithWebIdentity operation, it
-//     can also mean that the claim has expired or has been explicitly revoked.
+//   * ErrCodeIDPCommunicationErrorException "IDPCommunicationError"
+//   The request could not be fulfilled because the identity provider (IDP) that
+//   was asked to verify the incoming identity token could not be reached. This
+//   is often a transient error caused by network conditions. Retry the request
+//   a limited number of times so that you don't exceed the request rate. If the
+//   error persists, the identity provider might be down or not responding.
 //
-//   - ErrCodeIDPCommunicationErrorException "IDPCommunicationError"
-//     The request could not be fulfilled because the identity provider (IDP) that
-//     was asked to verify the incoming identity token could not be reached. This
-//     is often a transient error caused by network conditions. Retry the request
-//     a limited number of times so that you don't exceed the request rate. If the
-//     error persists, the identity provider might be down or not responding.
+//   * ErrCodeInvalidIdentityTokenException "InvalidIdentityToken"
+//   The web identity token that was passed could not be validated by AWS. Get
+//   a new identity token from the identity provider and then retry the request.
 //
-//   - ErrCodeInvalidIdentityTokenException "InvalidIdentityToken"
-//     The web identity token that was passed could not be validated by AWS. Get
-//     a new identity token from the identity provider and then retry the request.
+//   * ErrCodeExpiredTokenException "ExpiredTokenException"
+//   The web identity token that was passed is expired or is not valid. Get a
+//   new identity token from the identity provider and then retry the request.
 //
-//   - ErrCodeExpiredTokenException "ExpiredTokenException"
-//     The web identity token that was passed is expired or is not valid. Get a
-//     new identity token from the identity provider and then retry the request.
-//
-//   - ErrCodeRegionDisabledException "RegionDisabledException"
-//     STS is not activated in the requested region for the account that is being
-//     asked to generate credentials. The account administrator must use the IAM
-//     console to activate STS in that region. For more information, see Activating
-//     and Deactivating AWS STS in an AWS Region (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
-//     in the IAM User Guide.
+//   * ErrCodeRegionDisabledException "RegionDisabledException"
+//   STS is not activated in the requested region for the account that is being
+//   asked to generate credentials. The account administrator must use the IAM
+//   console to activate STS in that region. For more information, see Activating
+//   and Deactivating AWS STS in an AWS Region (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
+//   in the IAM User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleWithWebIdentity
 func (c *STS) AssumeRoleWithWebIdentity(input *AssumeRoleWithWebIdentityInput) (*AssumeRoleWithWebIdentityOutput, error) {
@@ -739,13 +739,14 @@ const opDecodeAuthorizationMessage = "DecodeAuthorizationMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
-//	// Example sending a request using the DecodeAuthorizationMessageRequest method.
-//	req, resp := client.DecodeAuthorizationMessageRequest(params)
 //
-//	err := req.Send()
-//	if err == nil { // resp is now filled
-//	    fmt.Println(resp)
-//	}
+//    // Example sending a request using the DecodeAuthorizationMessageRequest method.
+//    req, resp := client.DecodeAuthorizationMessageRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/DecodeAuthorizationMessage
 func (c *STS) DecodeAuthorizationMessageRequest(input *DecodeAuthorizationMessageInput) (req *request.Request, output *DecodeAuthorizationMessageOutput) {
@@ -786,18 +787,18 @@ func (c *STS) DecodeAuthorizationMessageRequest(input *DecodeAuthorizationMessag
 //
 // The decoded message includes the following type of information:
 //
-//   - Whether the request was denied due to an explicit deny or due to the
-//     absence of an explicit allow. For more information, see Determining Whether
-//     a Request is Allowed or Denied (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html#policy-eval-denyallow)
-//     in the IAM User Guide.
+//    * Whether the request was denied due to an explicit deny or due to the
+//    absence of an explicit allow. For more information, see Determining Whether
+//    a Request is Allowed or Denied (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html#policy-eval-denyallow)
+//    in the IAM User Guide.
 //
-//   - The principal who made the request.
+//    * The principal who made the request.
 //
-//   - The requested action.
+//    * The requested action.
 //
-//   - The requested resource.
+//    * The requested resource.
 //
-//   - The values of condition keys in the context of the user's request.
+//    * The values of condition keys in the context of the user's request.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -807,10 +808,10 @@ func (c *STS) DecodeAuthorizationMessageRequest(input *DecodeAuthorizationMessag
 // API operation DecodeAuthorizationMessage for usage and error information.
 //
 // Returned Error Codes:
-//   - ErrCodeInvalidAuthorizationMessageException "InvalidAuthorizationMessageException"
-//     The error returned if the message passed to DecodeAuthorizationMessage was
-//     invalid. This can happen if the token contains invalid characters, such as
-//     linebreaks.
+//   * ErrCodeInvalidAuthorizationMessageException "InvalidAuthorizationMessageException"
+//   The error returned if the message passed to DecodeAuthorizationMessage was
+//   invalid. This can happen if the token contains invalid characters, such as
+//   linebreaks.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/DecodeAuthorizationMessage
 func (c *STS) DecodeAuthorizationMessage(input *DecodeAuthorizationMessageInput) (*DecodeAuthorizationMessageOutput, error) {
@@ -850,13 +851,14 @@ const opGetAccessKeyInfo = "GetAccessKeyInfo"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
-//	// Example sending a request using the GetAccessKeyInfoRequest method.
-//	req, resp := client.GetAccessKeyInfoRequest(params)
 //
-//	err := req.Send()
-//	if err == nil { // resp is now filled
-//	    fmt.Println(resp)
-//	}
+//    // Example sending a request using the GetAccessKeyInfoRequest method.
+//    req, resp := client.GetAccessKeyInfoRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetAccessKeyInfo
 func (c *STS) GetAccessKeyInfoRequest(input *GetAccessKeyInfoInput) (req *request.Request, output *GetAccessKeyInfoOutput) {
@@ -946,13 +948,14 @@ const opGetCallerIdentity = "GetCallerIdentity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
-//	// Example sending a request using the GetCallerIdentityRequest method.
-//	req, resp := client.GetCallerIdentityRequest(params)
 //
-//	err := req.Send()
-//	if err == nil { // resp is now filled
-//	    fmt.Println(resp)
-//	}
+//    // Example sending a request using the GetCallerIdentityRequest method.
+//    req, resp := client.GetCallerIdentityRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetCallerIdentity
 func (c *STS) GetCallerIdentityRequest(input *GetCallerIdentityInput) (req *request.Request, output *GetCallerIdentityOutput) {
@@ -1028,13 +1031,14 @@ const opGetFederationToken = "GetFederationToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
-//	// Example sending a request using the GetFederationTokenRequest method.
-//	req, resp := client.GetFederationTokenRequest(params)
 //
-//	err := req.Send()
-//	if err == nil { // resp is now filled
-//	    fmt.Println(resp)
-//	}
+//    // Example sending a request using the GetFederationTokenRequest method.
+//    req, resp := client.GetFederationTokenRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetFederationToken
 func (c *STS) GetFederationTokenRequest(input *GetFederationTokenInput) (req *request.Request, output *GetFederationTokenOutput) {
@@ -1084,7 +1088,7 @@ func (c *STS) GetFederationTokenRequest(input *GetFederationTokenInput) (req *re
 // Practices (https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html)
 // in the IAM User Guide.
 //
-// # Session duration
+// Session duration
 //
 // The temporary credentials are valid for the specified duration, from 900
 // seconds (15 minutes) up to a maximum of 129,600 seconds (36 hours). The default
@@ -1092,14 +1096,14 @@ func (c *STS) GetFederationTokenRequest(input *GetFederationTokenInput) (req *re
 // are obtained by using AWS account root user credentials have a maximum duration
 // of 3,600 seconds (1 hour).
 //
-// # Permissions
+// Permissions
 //
 // You can use the temporary credentials created by GetFederationToken in any
 // AWS service except the following:
 //
-//   - You cannot call any IAM operations using the AWS CLI or the AWS API.
+//    * You cannot call any IAM operations using the AWS CLI or the AWS API.
 //
-//   - You cannot call any STS operations except GetCallerIdentity.
+//    * You cannot call any STS operations except GetCallerIdentity.
 //
 // You must pass an inline or managed session policy (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 // to this operation. You can pass a single JSON policy document to use as an
@@ -1125,7 +1129,7 @@ func (c *STS) GetFederationTokenRequest(input *GetFederationTokenInput) (req *re
 // by the policy. These permissions are granted in addition to the permissions
 // granted by the session policies.
 //
-// # Tags
+// Tags
 //
 // (Optional) You can pass tag key-value pairs to your session. These are called
 // session tags. For more information about session tags, see Passing Session
@@ -1153,31 +1157,30 @@ func (c *STS) GetFederationTokenRequest(input *GetFederationTokenInput) (req *re
 // API operation GetFederationToken for usage and error information.
 //
 // Returned Error Codes:
+//   * ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
+//   The request was rejected because the policy document was malformed. The error
+//   message describes the specific error.
 //
-//   - ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
-//     The request was rejected because the policy document was malformed. The error
-//     message describes the specific error.
+//   * ErrCodePackedPolicyTooLargeException "PackedPolicyTooLarge"
+//   The request was rejected because the total packed size of the session policies
+//   and session tags combined was too large. An AWS conversion compresses the
+//   session policy document, session policy ARNs, and session tags into a packed
+//   binary format that has a separate limit. The error message indicates by percentage
+//   how close the policies and tags are to the upper size limit. For more information,
+//   see Passing Session Tags in STS (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html)
+//   in the IAM User Guide.
 //
-//   - ErrCodePackedPolicyTooLargeException "PackedPolicyTooLarge"
-//     The request was rejected because the total packed size of the session policies
-//     and session tags combined was too large. An AWS conversion compresses the
-//     session policy document, session policy ARNs, and session tags into a packed
-//     binary format that has a separate limit. The error message indicates by percentage
-//     how close the policies and tags are to the upper size limit. For more information,
-//     see Passing Session Tags in STS (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html)
-//     in the IAM User Guide.
+//   You could receive this error even though you meet other defined session policy
+//   and session tag limits. For more information, see IAM and STS Entity Character
+//   Limits (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
+//   in the IAM User Guide.
 //
-//     You could receive this error even though you meet other defined session policy
-//     and session tag limits. For more information, see IAM and STS Entity Character
-//     Limits (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
-//     in the IAM User Guide.
-//
-//   - ErrCodeRegionDisabledException "RegionDisabledException"
-//     STS is not activated in the requested region for the account that is being
-//     asked to generate credentials. The account administrator must use the IAM
-//     console to activate STS in that region. For more information, see Activating
-//     and Deactivating AWS STS in an AWS Region (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
-//     in the IAM User Guide.
+//   * ErrCodeRegionDisabledException "RegionDisabledException"
+//   STS is not activated in the requested region for the account that is being
+//   asked to generate credentials. The account administrator must use the IAM
+//   console to activate STS in that region. For more information, see Activating
+//   and Deactivating AWS STS in an AWS Region (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
+//   in the IAM User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetFederationToken
 func (c *STS) GetFederationToken(input *GetFederationTokenInput) (*GetFederationTokenOutput, error) {
@@ -1217,13 +1220,14 @@ const opGetSessionToken = "GetSessionToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
-//	// Example sending a request using the GetSessionTokenRequest method.
-//	req, resp := client.GetSessionTokenRequest(params)
 //
-//	err := req.Send()
-//	if err == nil { // resp is now filled
-//	    fmt.Println(resp)
-//	}
+//    // Example sending a request using the GetSessionTokenRequest method.
+//    req, resp := client.GetSessionTokenRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetSessionToken
 func (c *STS) GetSessionTokenRequest(input *GetSessionTokenInput) (req *request.Request, output *GetSessionTokenOutput) {
@@ -1258,7 +1262,7 @@ func (c *STS) GetSessionTokenRequest(input *GetSessionTokenInput) (req *request.
 // and Comparing the AWS STS API operations (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html#stsapi_comparison)
 // in the IAM User Guide.
 //
-// # Session Duration
+// Session Duration
 //
 // The GetSessionToken operation must be called by using the long-term AWS security
 // credentials of the AWS account root user or an IAM user. Credentials that
@@ -1268,15 +1272,15 @@ func (c *STS) GetSessionTokenRequest(input *GetSessionTokenInput) (req *request.
 // based on account credentials can range from 900 seconds (15 minutes) up to
 // 3,600 seconds (1 hour), with a default of 1 hour.
 //
-// # Permissions
+// Permissions
 //
 // The temporary security credentials created by GetSessionToken can be used
 // to make API calls to any AWS service with the following exceptions:
 //
-//   - You cannot call any IAM API operations unless MFA authentication information
-//     is included in the request.
+//    * You cannot call any IAM API operations unless MFA authentication information
+//    is included in the request.
 //
-//   - You cannot call any STS API except AssumeRole or GetCallerIdentity.
+//    * You cannot call any STS API except AssumeRole or GetCallerIdentity.
 //
 // We recommend that you do not call GetSessionToken with AWS account root user
 // credentials. Instead, follow our best practices (https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#create-iam-users)
@@ -1302,12 +1306,12 @@ func (c *STS) GetSessionTokenRequest(input *GetSessionTokenInput) (req *request.
 // API operation GetSessionToken for usage and error information.
 //
 // Returned Error Codes:
-//   - ErrCodeRegionDisabledException "RegionDisabledException"
-//     STS is not activated in the requested region for the account that is being
-//     asked to generate credentials. The account administrator must use the IAM
-//     console to activate STS in that region. For more information, see Activating
-//     and Deactivating AWS STS in an AWS Region (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
-//     in the IAM User Guide.
+//   * ErrCodeRegionDisabledException "RegionDisabledException"
+//   STS is not activated in the requested region for the account that is being
+//   asked to generate credentials. The account administrator must use the IAM
+//   console to activate STS in that region. For more information, see Activating
+//   and Deactivating AWS STS in an AWS Region (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html)
+//   in the IAM User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetSessionToken
 func (c *STS) GetSessionToken(input *GetSessionTokenInput) (*GetSessionTokenOutput, error) {

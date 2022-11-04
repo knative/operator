@@ -37,7 +37,7 @@ const (
 
 // parseTable is a state machine to dictate the grammar above.
 var parseTable = map[ASTKind]map[TokenType]int{
-	ASTKindStart: {
+	ASTKindStart: map[TokenType]int{
 		TokenLit:     StatementState,
 		TokenSep:     OpenScopeState,
 		TokenWS:      SkipTokenState,
@@ -45,7 +45,7 @@ var parseTable = map[ASTKind]map[TokenType]int{
 		TokenComment: CommentState,
 		TokenNone:    TerminalState,
 	},
-	ASTKindCommentStatement: {
+	ASTKindCommentStatement: map[TokenType]int{
 		TokenLit:     StatementState,
 		TokenSep:     OpenScopeState,
 		TokenWS:      SkipTokenState,
@@ -53,7 +53,7 @@ var parseTable = map[ASTKind]map[TokenType]int{
 		TokenComment: CommentState,
 		TokenNone:    MarkCompleteState,
 	},
-	ASTKindExpr: {
+	ASTKindExpr: map[TokenType]int{
 		TokenOp:      StatementPrimeState,
 		TokenLit:     ValueState,
 		TokenSep:     OpenScopeState,
@@ -62,13 +62,13 @@ var parseTable = map[ASTKind]map[TokenType]int{
 		TokenComment: CommentState,
 		TokenNone:    MarkCompleteState,
 	},
-	ASTKindEqualExpr: {
-		TokenLit:  ValueState,
-		TokenWS:   SkipTokenState,
-		TokenNL:   SkipState,
-		TokenNone: SkipState,
+	ASTKindEqualExpr: map[TokenType]int{
+		TokenLit:     ValueState,
+		TokenWS:      SkipTokenState,
+		TokenNL:      SkipState,
+		TokenNone:    SkipState,
 	},
-	ASTKindStatement: {
+	ASTKindStatement: map[TokenType]int{
 		TokenLit:     SectionState,
 		TokenSep:     CloseScopeState,
 		TokenWS:      SkipTokenState,
@@ -76,7 +76,7 @@ var parseTable = map[ASTKind]map[TokenType]int{
 		TokenComment: CommentState,
 		TokenNone:    MarkCompleteState,
 	},
-	ASTKindExprStatement: {
+	ASTKindExprStatement: map[TokenType]int{
 		TokenLit:     ValueState,
 		TokenSep:     OpenScopeState,
 		TokenOp:      ValueState,
@@ -86,14 +86,14 @@ var parseTable = map[ASTKind]map[TokenType]int{
 		TokenNone:    TerminalState,
 		TokenComma:   SkipState,
 	},
-	ASTKindSectionStatement: {
+	ASTKindSectionStatement: map[TokenType]int{
 		TokenLit: SectionState,
 		TokenOp:  SectionState,
 		TokenSep: CloseScopeState,
 		TokenWS:  SectionState,
 		TokenNL:  SkipTokenState,
 	},
-	ASTKindCompletedSectionStatement: {
+	ASTKindCompletedSectionStatement: map[TokenType]int{
 		TokenWS:      SkipTokenState,
 		TokenNL:      SkipTokenState,
 		TokenLit:     StatementState,
@@ -101,7 +101,7 @@ var parseTable = map[ASTKind]map[TokenType]int{
 		TokenComment: CommentState,
 		TokenNone:    MarkCompleteState,
 	},
-	ASTKindSkipStatement: {
+	ASTKindSkipStatement: map[TokenType]int{
 		TokenLit:     StatementState,
 		TokenSep:     OpenScopeState,
 		TokenWS:      SkipTokenState,

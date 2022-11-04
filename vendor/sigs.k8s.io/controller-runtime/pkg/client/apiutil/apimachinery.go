@@ -125,7 +125,7 @@ func RESTClientForGVK(gvk schema.GroupVersionKind, isUnstructured bool, baseConf
 	return rest.RESTClientFor(cfg)
 }
 
-// createRestConfig copies the base config and updates needed fields for a new rest config
+//createRestConfig copies the base config and updates needed fields for a new rest config
 func createRestConfig(gvk schema.GroupVersionKind, isUnstructured bool, baseConfig *rest.Config) *rest.Config {
 	gv := gvk.GroupVersion()
 

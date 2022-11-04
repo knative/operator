@@ -5,17 +5,17 @@
 /*
 Package azblob allows you to manipulate Azure Storage containers and blobs objects.
 
-# URL Types
+URL Types
 
 The most common types you'll work with are the XxxURL types. The methods of these types make requests
 against the Azure Storage Service.
 
-  - ServiceURL's          methods perform operations on a storage account.
-  - ContainerURL's     methods perform operations on an account's container.
-  - BlockBlobURL's  methods perform operations on a container's block blob.
-  - AppendBlobURL's methods perform operations on a container's append blob.
-  - PageBlobURL's   methods perform operations on a container's page blob.
-  - BlobURL's       methods perform operations on a container's blob regardless of the blob's type.
+ - ServiceURL's          methods perform operations on a storage account.
+    - ContainerURL's     methods perform operations on an account's container.
+       - BlockBlobURL's  methods perform operations on a container's block blob.
+       - AppendBlobURL's methods perform operations on a container's append blob.
+       - PageBlobURL's   methods perform operations on a container's page blob.
+       - BlobURL's       methods perform operations on a container's blob regardless of the blob's type.
 
 Internally, each XxxURL object contains a URL and a request pipeline. The URL indicates the endpoint where each HTTP
 request is sent and the pipeline indicates how the outgoing HTTP request and incoming HTTP response is processed.
@@ -44,24 +44,24 @@ All of XxxURL's methods that make HTTP requests return rich error handling infor
 transient failures, timeout failures, service failures, etc. See the StorageError interface for more information and an
 example of how to do deal with errors.
 
-# URL and Shared Access Signature Manipulation
+URL and Shared Access Signature Manipulation
 
 The library includes a BlobURLParts type for deconstructing and reconstructing URLs. And you can use the following types
 for generating and parsing Shared Access Signature (SAS)
-  - Use the AccountSASSignatureValues type to create a SAS for a storage account.
-  - Use the BlobSASSignatureValues type to create a SAS for a container or blob.
-  - Use the SASQueryParameters type to turn signature values in to query parameres or to parse query parameters.
+ - Use the AccountSASSignatureValues type to create a SAS for a storage account.
+ - Use the BlobSASSignatureValues type to create a SAS for a container or blob.
+ - Use the SASQueryParameters type to turn signature values in to query parameres or to parse query parameters.
 
 To generate a SAS, you must use the SharedKeyCredential type.
 
-# Credentials
+Credentials
 
 When creating a request pipeline, you must specify one of this package's credential types.
-  - Call the NewAnonymousCredential function for requests that contain a Shared Access Signature (SAS).
-  - Call the NewSharedKeyCredential function (with an account name & key) to access any account resources. You must also use this
-    to generate Shared Access Signatures.
+ - Call the NewAnonymousCredential function for requests that contain a Shared Access Signature (SAS).
+ - Call the NewSharedKeyCredential function (with an account name & key) to access any account resources. You must also use this
+   to generate Shared Access Signatures.
 
-# HTTP Request Policy Factories
+HTTP Request Policy Factories
 
 This package defines several request policy factories for use with the pipeline package.
 Most applications will not use these factories directly; instead, the NewPipeline
@@ -77,10 +77,10 @@ possibilities are endless!
 
 Below are the request pipeline policy factory functions that are provided with this
 package:
-  - NewRetryPolicyFactory           Enables rich retry semantics for failed HTTP requests.
-  - NewRequestLogPolicyFactory      Enables rich logging support for HTTP requests/responses & failures.
-  - NewTelemetryPolicyFactory       Enables simple modification of the HTTP request's User-Agent header so each request reports the SDK version & language/runtime making the requests.
-  - NewUniqueRequestIDPolicyFactory Adds a x-ms-client-request-id header with a unique UUID value to an HTTP request to help with diagnosing failures.
+ - NewRetryPolicyFactory           Enables rich retry semantics for failed HTTP requests.
+ - NewRequestLogPolicyFactory      Enables rich logging support for HTTP requests/responses & failures.
+ - NewTelemetryPolicyFactory       Enables simple modification of the HTTP request's User-Agent header so each request reports the SDK version & language/runtime making the requests.
+ - NewUniqueRequestIDPolicyFactory Adds a x-ms-client-request-id header with a unique UUID value to an HTTP request to help with diagnosing failures.
 
 Also, note that all the NewXxxCredential functions return request policy factory objects which get injected into the pipeline.
 */

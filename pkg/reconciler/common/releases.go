@@ -18,7 +18,6 @@ package common
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -357,7 +356,7 @@ func allReleases(instance base.KComponent) ([]string, error) {
 // allComponentReleases returns the all the available release versions
 // available under kodata directory for a certain path.
 func allReleasesUnderPath(pathname string) ([]string, error) {
-	fileList, err := ioutil.ReadDir(pathname)
+	fileList, err := os.ReadDir(pathname)
 	if err != nil {
 		return nil, err
 	}

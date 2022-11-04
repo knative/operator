@@ -31,14 +31,14 @@ limitations under the License.
 // Package zapr defines an implementation of the github.com/go-logr/logr
 // interfaces built on top of Zap (go.uber.org/zap).
 //
-// Usage
+// # Usage
 //
 // A new logr.Logger can be constructed from an existing zap.Logger using
 // the NewLogger function:
 //
-//  log := zapr.NewLogger(someZapLogger)
+//	log := zapr.NewLogger(someZapLogger)
 //
-// Implementation Details
+// # Implementation Details
 //
 // For the most part, concepts in Zap correspond directly with those in
 // logr.

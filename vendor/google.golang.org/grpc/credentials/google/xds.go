@@ -35,6 +35,7 @@ const cfeClusterNamePrefix = "google_cfe_"
 // - if attributes has cluster name
 //   - if cluster name has prefix "google_cfe_", use TLS
 //   - otherwise, use ALTS
+//
 // - else, do TLS
 //
 // On the server, ServerHandshake always does TLS.

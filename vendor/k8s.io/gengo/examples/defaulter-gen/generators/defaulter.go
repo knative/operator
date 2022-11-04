@@ -795,26 +795,26 @@ func (g *genDefaulter) generateDefaulter(inType *types.Type, callTree *callNode,
 // how in Go code an access would be performed. For example, if a defaulting function exists on a container
 // lifecycle hook, to invoke that defaulter correctly would require this Go code:
 //
-//     for i := range pod.Spec.Containers {
-//       o := &pod.Spec.Containers[i]
-//       if o.LifecycleHook != nil {
-//         SetDefaults_LifecycleHook(o.LifecycleHook)
-//       }
-//     }
+//	for i := range pod.Spec.Containers {
+//	  o := &pod.Spec.Containers[i]
+//	  if o.LifecycleHook != nil {
+//	    SetDefaults_LifecycleHook(o.LifecycleHook)
+//	  }
+//	}
 //
 // That would be represented by a call tree like:
 //
-//   callNode
-//     field: "Spec"
-//     children:
-//     - field: "Containers"
-//       children:
-//       - index: true
-//         children:
-//         - field: "LifecycleHook"
-//           elem: true
-//           call:
-//           - SetDefaults_LifecycleHook
+//	callNode
+//	  field: "Spec"
+//	  children:
+//	  - field: "Containers"
+//	    children:
+//	    - index: true
+//	      children:
+//	      - field: "LifecycleHook"
+//	        elem: true
+//	        call:
+//	        - SetDefaults_LifecycleHook
 //
 // which we can traverse to build that Go struct (you must call the field Spec, then Containers, then range over
 // that field, then check whether the LifecycleHook field is nil, before calling SetDefaults_LifecycleHook on

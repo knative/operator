@@ -287,7 +287,6 @@ func (l *LexerATNConfig) equals(other interface{}) bool {
 	return l.BaseATNConfig.equals(othert.BaseATNConfig)
 }
 
-
 func checkNonGreedyDecision(source *LexerATNConfig, target ATNState) bool {
 	var ds, ok = target.(DecisionState)
 

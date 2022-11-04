@@ -516,7 +516,8 @@ func (v *HistogramVec) GetMetricWith(labels Labels) (Observer, error) {
 // WithLabelValues works as GetMetricWithLabelValues, but panics where
 // GetMetricWithLabelValues would have returned an error. Not returning an
 // error allows shortcuts like
-//     myVec.WithLabelValues("404", "GET").Observe(42.21)
+//
+//	myVec.WithLabelValues("404", "GET").Observe(42.21)
 func (v *HistogramVec) WithLabelValues(lvs ...string) Observer {
 	h, err := v.GetMetricWithLabelValues(lvs...)
 	if err != nil {
@@ -527,7 +528,8 @@ func (v *HistogramVec) WithLabelValues(lvs ...string) Observer {
 
 // With works as GetMetricWith but panics where GetMetricWithLabels would have
 // returned an error. Not returning an error allows shortcuts like
-//     myVec.With(prometheus.Labels{"code": "404", "method": "GET"}).Observe(42.21)
+//
+//	myVec.With(prometheus.Labels{"code": "404", "method": "GET"}).Observe(42.21)
 func (v *HistogramVec) With(labels Labels) Observer {
 	h, err := v.GetMetricWith(labels)
 	if err != nil {

@@ -56,8 +56,9 @@ const (
 // ```yaml
 // issuer: https://example.com
 // audiences:
-// - bookstore_android.apps.example.com
-//   bookstore_web.apps.example.com
+//   - bookstore_android.apps.example.com
+//     bookstore_web.apps.example.com
+//
 // ```
 //
 // This example specifies a token in a non-default location (`x-goog-iap-jwt-assertion` header). It also

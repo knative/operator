@@ -59,7 +59,6 @@ func (b *BaseLexerAction) equals(other LexerAction) bool {
 	return b == other
 }
 
-//
 // Implements the {@code Skip} lexer action by calling {@link Lexer//Skip}.
 //
 // <p>The {@code Skip} command does not have any parameters, so l action is
@@ -85,7 +84,8 @@ func (l *LexerSkipAction) String() string {
 	return "skip"
 }
 
-//  Implements the {@code type} lexer action by calling {@link Lexer//setType}
+//	Implements the {@code type} lexer action by calling {@link Lexer//setType}
+//
 // with the assigned type.
 type LexerTypeAction struct {
 	*BaseLexerAction

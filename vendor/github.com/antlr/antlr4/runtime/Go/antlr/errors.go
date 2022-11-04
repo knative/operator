@@ -74,7 +74,6 @@ func (b *BaseRecognitionException) GetInputStream() IntStream {
 
 // <p>If the state number is not known, b method returns -1.</p>
 
-//
 // Gets the set of input symbols which could potentially follow the
 // previously Matched symbol at the time b exception was panicn.
 //
@@ -136,7 +135,6 @@ type NoViableAltException struct {
 // to take based upon the remaining input. It tracks the starting token
 // of the offending input and also knows where the parser was
 // in the various paths when the error. Reported by ReportNoViableAlternative()
-//
 func NewNoViableAltException(recognizer Parser, input TokenStream, startToken Token, offendingToken Token, deadEndConfigs ATNConfigSet, ctx ParserRuleContext) *NoViableAltException {
 
 	if ctx == nil {
@@ -177,7 +175,6 @@ type InputMisMatchException struct {
 
 // This signifies any kind of mismatched input exceptions such as
 // when the current input does not Match the expected token.
-//
 func NewInputMisMatchException(recognizer Parser) *InputMisMatchException {
 
 	i := new(InputMisMatchException)

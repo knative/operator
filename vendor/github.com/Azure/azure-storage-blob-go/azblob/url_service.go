@@ -28,8 +28,8 @@ func NewServiceURL(primaryURL url.URL, p pipeline.Pipeline) ServiceURL {
 	return ServiceURL{client: client}
 }
 
-//GetUserDelegationCredential obtains a UserDelegationKey object using the base ServiceURL object.
-//OAuth is required for this call, as well as any role that can delegate access to the storage account.
+// GetUserDelegationCredential obtains a UserDelegationKey object using the base ServiceURL object.
+// OAuth is required for this call, as well as any role that can delegate access to the storage account.
 func (s ServiceURL) GetUserDelegationCredential(ctx context.Context, info KeyInfo, timeout *int32, requestID *string) (UserDelegationCredential, error) {
 	sc := newServiceClient(s.client.url, s.client.p)
 	udk, err := sc.GetUserDelegationKey(ctx, info, timeout, requestID)
@@ -39,8 +39,8 @@ func (s ServiceURL) GetUserDelegationCredential(ctx context.Context, info KeyInf
 	return NewUserDelegationCredential(strings.Split(s.client.url.Host, ".")[0], *udk), nil
 }
 
-//TODO this was supposed to be generated
-//NewKeyInfo creates a new KeyInfo struct with the correct time formatting & conversion
+// TODO this was supposed to be generated
+// NewKeyInfo creates a new KeyInfo struct with the correct time formatting & conversion
 func NewKeyInfo(Start, Expiry time.Time) KeyInfo {
 	return KeyInfo{
 		Start:  Start.UTC().Format(SASTimeFormat),

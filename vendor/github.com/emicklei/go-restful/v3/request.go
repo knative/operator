@@ -31,7 +31,8 @@ func NewRequest(httpRequest *http.Request) *Request {
 // a "Unable to unmarshal content of type:" response is returned.
 // Valid values are restful.MIME_JSON and restful.MIME_XML
 // Example:
-// 	restful.DefaultRequestContentType(restful.MIME_JSON)
+//
+//	restful.DefaultRequestContentType(restful.MIME_JSON)
 func DefaultRequestContentType(mime string) {
 	defaultRequestContentType = mime
 }

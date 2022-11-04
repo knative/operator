@@ -74,10 +74,10 @@ func (co ConfigOverrider) ClientConfig(serviceName string, cfgs ...*aws.Config) 
 // ConfigFromURLParams.
 //
 // The following query options are supported:
-//  - region: The AWS region for requests; sets aws.Config.Region.
-//  - endpoint: The endpoint URL (hostname only or fully qualified URI); sets aws.Config.Endpoint.
-//  - disableSSL: A value of "true" disables SSL when sending requests; sets aws.Config.DisableSSL.
-//  - s3ForcePathStyle: A value of "true" forces the request to use path-style addressing; sets aws.Config.S3ForcePathStyle.
+//   - region: The AWS region for requests; sets aws.Config.Region.
+//   - endpoint: The endpoint URL (hostname only or fully qualified URI); sets aws.Config.Endpoint.
+//   - disableSSL: A value of "true" disables SSL when sending requests; sets aws.Config.DisableSSL.
+//   - s3ForcePathStyle: A value of "true" forces the request to use path-style addressing; sets aws.Config.S3ForcePathStyle.
 func ConfigFromURLParams(q url.Values) (*aws.Config, error) {
 	var cfg aws.Config
 	for param, values := range q {

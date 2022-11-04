@@ -78,10 +78,13 @@ var _ http.Handler = (*Exporter)(nil)
 
 // ensureRegisteredOnce invokes reg.Register on the collector itself
 // exactly once to ensure that we don't get errors such as
-//  cannot register the collector: descriptor Desc{fqName: *}
-//  already exists with the same fully-qualified name and const label values
+//
+//	cannot register the collector: descriptor Desc{fqName: *}
+//	already exists with the same fully-qualified name and const label values
+//
 // which is documented by Prometheus at
-//  https://github.com/prometheus/client_golang/blob/fcc130e101e76c5d303513d0e28f4b6d732845c7/prometheus/registry.go#L89-L101
+//
+//	https://github.com/prometheus/client_golang/blob/fcc130e101e76c5d303513d0e28f4b6d732845c7/prometheus/registry.go#L89-L101
 func (c *collector) ensureRegisteredOnce() {
 	c.registerOnce.Do(func() {
 		if err := c.reg.Register(c); err != nil {

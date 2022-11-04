@@ -55,8 +55,9 @@ type InstallationTokenOptions struct {
 // InstallationPermissions lists the repository and organization permissions for an installation.
 //
 // Permission names taken from:
-//   https://docs.github.com/en/free-pro-team@latest/rest/reference/apps/permissions/
-//   https://developer.github.com/enterprise/v3/apps/permissions/
+//
+//	https://docs.github.com/en/free-pro-team@latest/rest/reference/apps/permissions/
+//	https://developer.github.com/enterprise/v3/apps/permissions/
 type InstallationPermissions struct {
 	Administration              *string `json:"administration,omitempty"`
 	Blocking                    *string `json:"blocking,omitempty"`

@@ -18,7 +18,6 @@ package source
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -47,7 +46,7 @@ func getAllSourcePath(version string) string {
 
 	sourcePath := filepath.Join(koDataDir, "eventing-source", sourceVersion)
 	// List all the directories under the sourcePath, because we will append all the paths for eventing sources
-	fileList, err := ioutil.ReadDir(sourcePath)
+	fileList, err := os.ReadDir(sourcePath)
 	if err != nil {
 		return ""
 	}

@@ -1207,7 +1207,7 @@ k8s.io/utils/trace
 ## explicit; go 1.18
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.35.1-0.20221117061338-e2140727bd48
+# knative.dev/eventing v0.35.1-0.20221118131140-41653ce64478
 ## explicit; go 1.18
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck

@@ -20,20 +20,21 @@ import (
 	"context"
 	"fmt"
 
-	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
-
 	mf "github.com/manifestival/manifestival"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
+	"knative.dev/pkg/logging"
+	pkgreconciler "knative.dev/pkg/reconciler"
+
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 	knsreconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1beta1/knativeserving"
 	"knative.dev/operator/pkg/reconciler/common"
 	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
-	"knative.dev/pkg/logging"
-	pkgreconciler "knative.dev/pkg/reconciler"
+	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
+	"knative.dev/operator/pkg/reconciler/knativeserving/security"
 )
 
 // Reconciler implements controller.Reconciler for Knativeserving resources.
@@ -116,6 +117,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 	stages := common.Stages{
 		common.AppendTarget,
 		ingress.AppendTargetIngresses,
+		security.AppendTargetSecurity,
 		common.AppendAdditionalManifests,
 		r.filterDisabledIngresses,
 		r.appendExtensionManifests,
@@ -147,6 +149,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	extra = append(extra, r.extension.Transformers(instance)...)
 	extra = append(extra, ingress.Transformers(ctx, instance)...)
 	extra = append(extra, ingress.IngressServiceTransform(instance))
+	extra = append(extra, security.Transformers(ctx, instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 

@@ -58,6 +58,9 @@ type KnativeServingSpec struct {
 
 	// Ingress allows configuration of different ingress adapters to be shipped.
 	Ingress *IngressConfigs `json:"ingress,omitempty"`
+
+	// Security allows configuration of different security adapters to be shipped.
+	Security *SecurityConfigs `json:"security,omitempty"`
 }
 
 // KnativeServingStatus defines the observed state of KnativeServing
@@ -86,4 +89,9 @@ type IngressConfigs struct {
 	Istio   base.IstioIngressConfiguration   `json:"istio"`
 	Kourier base.KourierIngressConfiguration `json:"kourier"`
 	Contour base.ContourIngressConfiguration `json:"contour"`
+}
+
+// SecurityConfigs specifies options for the security
+type SecurityConfigs struct {
+	SecurityGuard base.SecurityGuardConfiguration `json:"security-guard"`
 }

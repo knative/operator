@@ -2070,6 +2070,16 @@ spec:
                         type: string
                     type: object
                 type: object
+              security:
+                description: The security configuration for Knative Serving
+                properties:
+                  securityGuard:
+                    description: Security Guard settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
+                type: object
               manifests:
                 description: A list of serving manifests, which will be installed
                   by the operator

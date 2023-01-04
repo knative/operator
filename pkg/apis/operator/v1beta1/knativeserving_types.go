@@ -93,5 +93,5 @@ type IngressConfigs struct {
 
 // SecurityConfigs specifies options for the security
 type SecurityConfigs struct {
-	SecurityGuard base.SecurityGuardConfiguration `json:"security-guard"`
+	SecurityGuard base.SecurityGuardConfiguration `json:"securityGuard"`
 }

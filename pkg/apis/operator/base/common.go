@@ -269,6 +269,10 @@ type WorkloadOverride struct {
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 
+	// TopologySpreadConstraints overrides topologySpreadConstraints for the deployment.
+	// +optional
+	TopologySpreadConstraints []corev1.TopologySpreadConstraint `json:"topologySpreadConstraints,omitempty"`
+
 	// Tolerations overrides tolerations for the deployment.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`

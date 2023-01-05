@@ -38,17 +38,18 @@ import (
 )
 
 type expDeployments struct {
-	expLabels              map[string]string
-	expTemplateLabels      map[string]string
-	expAnnotations         map[string]string
-	expTemplateAnnotations map[string]string
-	expReplicas            int32
-	expNodeSelector        map[string]string
-	expTolerations         []corev1.Toleration
-	expAffinity            *corev1.Affinity
-	expEnv                 map[string][]corev1.EnvVar
-	expReadinessProbe      *v1.Probe
-	expLivenessProbe       *v1.Probe
+	expLabels                    map[string]string
+	expTemplateLabels            map[string]string
+	expAnnotations               map[string]string
+	expTemplateAnnotations       map[string]string
+	expReplicas                  int32
+	expNodeSelector              map[string]string
+	expTopologySpreadConstraints []corev1.TopologySpreadConstraint
+	expTolerations               []corev1.Toleration
+	expAffinity                  *corev1.Affinity
+	expEnv                       map[string][]corev1.EnvVar
+	expReadinessProbe            *v1.Probe
+	expLivenessProbe             *v1.Probe
 }
 
 func TestComponentsTransform(t *testing.T) {
@@ -63,14 +64,15 @@ func TestComponentsTransform(t *testing.T) {
 		name:     "no override",
 		override: nil,
 		expDeployment: map[string]expDeployments{"controller": {
-			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
-			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
-			expAnnotations:         nil,
-			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
-			expReplicas:            0,
-			expNodeSelector:        nil,
-			expTolerations:         nil,
-			expAffinity:            nil,
+			expLabels:                    map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:            map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expAnnotations:               nil,
+			expTemplateAnnotations:       map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:                  0,
+			expNodeSelector:              nil,
+			expTopologySpreadConstraints: nil,
+			expTolerations:               nil,
+			expAffinity:                  nil,
 		}},
 	}, {
 		name: "simple override",
@@ -81,6 +83,14 @@ func TestComponentsTransform(t *testing.T) {
 				Annotations:  map[string]string{"c": "d"},
 				Replicas:     &five,
 				NodeSelector: map[string]string{"env": "prod"},
+				TopologySpreadConstraints: []corev1.TopologySpreadConstraint{{
+					MaxSkew:           1,
+					TopologyKey:       corev1.LabelTopologyZone,
+					WhenUnsatisfiable: corev1.DoNotSchedule,
+					LabelSelector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{"app": "controller"},
+					},
+				}},
 				Tolerations: []corev1.Toleration{{
 					Key:      corev1.TaintNodeNotReady,
 					Operator: corev1.TolerationOpExists,
@@ -101,6 +111,14 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true", "c": "d"},
 			expReplicas:            5,
 			expNodeSelector:        map[string]string{"env": "prod"},
+			expTopologySpreadConstraints: []corev1.TopologySpreadConstraint{{
+				MaxSkew:           1,
+				TopologyKey:       corev1.LabelTopologyZone,
+				WhenUnsatisfiable: corev1.DoNotSchedule,
+				LabelSelector: &metav1.LabelSelector{
+					MatchLabels: map[string]string{"app": "controller"},
+				},
+			}},
 			expTolerations: []corev1.Toleration{{
 				Key:      corev1.TaintNodeNotReady,
 				Operator: corev1.TolerationOpExists,
@@ -486,6 +504,14 @@ func TestComponentsTransform(t *testing.T) {
 				Annotations:  map[string]string{"c": "d"},
 				Replicas:     &five,
 				NodeSelector: map[string]string{"env": "dev"},
+				TopologySpreadConstraints: []corev1.TopologySpreadConstraint{{
+					MaxSkew:           1,
+					TopologyKey:       corev1.LabelTopologyZone,
+					WhenUnsatisfiable: corev1.DoNotSchedule,
+					LabelSelector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{"app": "controller"},
+					},
+				}},
 				Tolerations: []corev1.Toleration{{
 					Key:      corev1.TaintNodeNotReady,
 					Operator: corev1.TolerationOpExists,
@@ -512,6 +538,14 @@ func TestComponentsTransform(t *testing.T) {
 				Annotations:  map[string]string{"g": "h"},
 				Replicas:     &four,
 				NodeSelector: map[string]string{"env": "prod"},
+				TopologySpreadConstraints: []corev1.TopologySpreadConstraint{{
+					MaxSkew:           1,
+					TopologyKey:       corev1.LabelTopologyZone,
+					WhenUnsatisfiable: corev1.DoNotSchedule,
+					LabelSelector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{"app": "controller"},
+					},
+				}},
 				Tolerations: []corev1.Toleration{{
 					Key:      corev1.TaintNodeUnschedulable,
 					Operator: corev1.TolerationOpExists,
@@ -542,6 +576,14 @@ func TestComponentsTransform(t *testing.T) {
 				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true", "c": "d"},
 				expReplicas:            5,
 				expNodeSelector:        map[string]string{"env": "dev"},
+				expTopologySpreadConstraints: []corev1.TopologySpreadConstraint{{
+					MaxSkew:           1,
+					TopologyKey:       corev1.LabelTopologyZone,
+					WhenUnsatisfiable: corev1.DoNotSchedule,
+					LabelSelector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{"app": "controller"},
+					},
+				}},
 				expTolerations: []corev1.Toleration{{
 					Key:      corev1.TaintNodeNotReady,
 					Operator: corev1.TolerationOpExists,
@@ -569,6 +611,14 @@ func TestComponentsTransform(t *testing.T) {
 				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false", "g": "h"},
 				expReplicas:            4,
 				expNodeSelector:        map[string]string{"env": "prod"},
+				expTopologySpreadConstraints: []corev1.TopologySpreadConstraint{{
+					MaxSkew:           1,
+					TopologyKey:       corev1.LabelTopologyZone,
+					WhenUnsatisfiable: corev1.DoNotSchedule,
+					LabelSelector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{"app": "controller"},
+					},
+				}},
 				expTolerations: []corev1.Toleration{{
 					Key:      corev1.TaintNodeUnschedulable,
 					Operator: corev1.TolerationOpExists,
@@ -652,6 +702,10 @@ func TestComponentsTransform(t *testing.T) {
 
 								if diff := cmp.Diff(got.Spec.Template.Spec.Tolerations, d.expTolerations); diff != "" {
 									t.Fatalf("Unexpected tolerations: %v", diff)
+								}
+
+								if diff := cmp.Diff(got.Spec.Template.Spec.TopologySpreadConstraints, d.expTopologySpreadConstraints); diff != "" {
+									t.Fatalf("Unexpected topologySpreadConstraints: %v", diff)
 								}
 
 								if diff := cmp.Diff(got.Spec.Template.Spec.Affinity, d.expAffinity); diff != "" {

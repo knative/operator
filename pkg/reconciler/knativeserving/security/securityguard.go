@@ -35,7 +35,7 @@ var (
 	// SecurityGuardVersion is the hash map to maintain the relationship between knative version and the security guard version
 	SecurityGuardVersion = map[string]string{
 		"v1.9": "0.3",
-		"v1.8": "0.2",
+		"v1.8": "0.3",
 	}
 
 	// QueueProxyMountPodInfoKey is the key for the QueueProxyMountPodInfo

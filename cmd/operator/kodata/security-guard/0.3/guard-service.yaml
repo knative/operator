@@ -22,7 +22,7 @@ spec:
             secretName: knative-serving-certs
       containers:
         - name: guard-service
-          image: gcr.io/knative-releases/knative.dev/security-guard/cmd/guard-service@sha256:315e78f17cad07bd050680ebc772696912e2a15d1b894a6260dd0b7d95cce09c
+          image: gcr.io/knative-releases/knative.dev/security-guard/cmd/guard-service@sha256:2b9ad0c6b8a4cfbaedec51b5d591c816ec403ff41dc7038f3054f948beba1b79
           imagePullPolicy: Always
           volumeMounts:
             - mountPath: /secrets
@@ -37,7 +37,7 @@ spec:
             - name: GUARD_SERVICE_AUTH
               value: "false"
             - name: GUARD_SERVICE_LOG_LEVEL
-              value: "debug"
+              value: "info"
 ---
 apiVersion: v1
 kind: Service

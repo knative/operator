@@ -69,6 +69,7 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 			replaceLabels(&override, obj, ps)
 			replaceAnnotations(&override, obj, ps)
 			replaceNodeSelector(&override, ps)
+			replaceTopologySpreadConstraints(&override, ps)
 			replaceTolerations(&override, ps)
 			replaceAffinities(&override, ps)
 			replaceResources(&override, ps)
@@ -115,6 +116,12 @@ func replaceLabels(override *base.WorkloadOverride, obj metav1.Object, ps *corev
 func replaceNodeSelector(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) {
 	if len(override.NodeSelector) > 0 {
 		ps.Spec.NodeSelector = override.NodeSelector
+	}
+}
+
+func replaceTopologySpreadConstraints(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) {
+	if len(override.TopologySpreadConstraints) > 0 {
+		ps.Spec.TopologySpreadConstraints = override.TopologySpreadConstraints
 	}
 }
 

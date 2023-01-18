@@ -147,3 +147,19 @@ eventing-source:
       eventingService: ceph
       include:
         - "ceph.yaml"
+security-guard:
+  alternatives: true
+  primary:
+    s3:
+      bucket: "gs-noauth://knative-releases"
+      prefix: "security-guard/previous"
+  additional:
+    - s3:
+        bucket: "gs-noauth://knative-releases"
+        prefix: "security-guard/previous"
+      include:
+        - "guard-service.yaml"
+        - "queue-proxy.yaml"
+        - "gate-account.yaml"
+        - "guardian-crd.yaml"
+        - "service-account.yaml"

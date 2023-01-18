@@ -385,7 +385,7 @@ func TestGetLatestRelease(t *testing.T) {
 	defer os.Unsetenv(KoEnvKey)
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			version := getLatestRelease(test.component, test.component.GetSpec().GetVersion())
+			version := GetLatestRelease(test.component, test.component.GetSpec().GetVersion())
 			util.AssertEqual(t, version, test.expected)
 		})
 	}
@@ -412,7 +412,7 @@ func TestLatestRelease(t *testing.T) {
 	defer os.Unsetenv(KoEnvKey)
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			version := latestRelease(test.component)
+			version := LatestRelease(test.component)
 			util.AssertEqual(t, version, test.expected)
 		})
 	}

@@ -64,7 +64,8 @@ type KnativeEventingSpec struct {
 	// will be considered by the sinkbinding webhook;
 	// If `exclusion` is selected, namespaces/objects labelled as `bindings.knative.dev/exclude:true`
 	// will NOT be considered by the sinkbinding webhook.
-	// The default is `exclusion`.
+	// If no SINK_BINDING_SELECTION_MODE env var is given in the workloadOverrides for the
+	// sinkinding webhook, the default `exclusion` is used.
 	// +optional
 	SinkBindingSelectionMode string `json:"sinkBindingSelectionMode,omitempty"`
 

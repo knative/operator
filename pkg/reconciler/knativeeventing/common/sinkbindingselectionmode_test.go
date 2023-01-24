@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/client-go/kubernetes/scheme"
 
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
@@ -36,6 +37,7 @@ func TestSinkBindingSelectionModeTransform(t *testing.T) {
 		deployment               appsv1.Deployment
 		sinkBindingSelectionMode string
 		expected                 appsv1.Deployment
+		workloads                []base.WorkloadOverride
 	}{{
 		name: "UsesDefaultWhenNotSpecified",
 		deployment: makeDeployment("eventing-webhook", []corev1.Container{{
@@ -128,6 +130,62 @@ func TestSinkBindingSelectionModeTransform(t *testing.T) {
 				}},
 			},
 		}),
+	}, {
+		name: "TakesWorkloadOverridesIntoAccount",
+		deployment: makeDeployment("eventing-webhook", []corev1.Container{{
+			Name: "foo",
+			Env: []corev1.EnvVar{{
+				Name:  "SINK_BINDING_SELECTION_MODE",
+				Value: "toBeOverridden",
+			}},
+		}}),
+		sinkBindingSelectionMode: "",
+		workloads: []base.WorkloadOverride{{
+			Name: "eventing-webhook",
+			Env: []base.EnvRequirementsOverride{{
+				Container: "eventing-webhook",
+				EnvVars: []corev1.EnvVar{{
+					Name:  "SINK_BINDING_SELECTION_MODE",
+					Value: "inclusion",
+				}},
+			}},
+		},
+		},
+		expected: makeDeployment("eventing-webhook", []corev1.Container{{
+			Name: "foo",
+			Env: []corev1.EnvVar{{
+				Name:  "SINK_BINDING_SELECTION_MODE",
+				Value: "inclusion",
+			}},
+		}}),
+	}, {
+		name: "sinkBindingSelectionModeHasPriorityOverWorkloadOverrides",
+		deployment: makeDeployment("eventing-webhook", []corev1.Container{{
+			Name: "foo",
+			Env: []corev1.EnvVar{{
+				Name:  "SINK_BINDING_SELECTION_MODE",
+				Value: "toBeOverridden",
+			}},
+		}}),
+		sinkBindingSelectionMode: "smFromSelectionMode",
+		workloads: []base.WorkloadOverride{{
+			Name: "eventing-webhook",
+			Env: []base.EnvRequirementsOverride{{
+				Container: "eventing-webhook",
+				EnvVars: []corev1.EnvVar{{
+					Name:  "SINK_BINDING_SELECTION_MODE",
+					Value: "smFromWorkloadOverride",
+				}},
+			}},
+		},
+		},
+		expected: makeDeployment("eventing-webhook", []corev1.Container{{
+			Name: "foo",
+			Env: []corev1.EnvVar{{
+				Name:  "SINK_BINDING_SELECTION_MODE",
+				Value: "smFromSelectionMode",
+			}},
+		}}),
 	}}
 
 	for _, tt := range tests {
@@ -136,6 +194,9 @@ func TestSinkBindingSelectionModeTransform(t *testing.T) {
 			instance := &v1beta1.KnativeEventing{
 				Spec: v1beta1.KnativeEventingSpec{
 					SinkBindingSelectionMode: tt.sinkBindingSelectionMode,
+					CommonSpec: base.CommonSpec{
+						Workloads: tt.workloads,
+					},
 				},
 			}
 			transform := SinkBindingSelectionModeTransform(instance, log)

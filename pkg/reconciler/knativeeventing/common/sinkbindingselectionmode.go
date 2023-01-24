@@ -42,7 +42,11 @@ func SinkBindingSelectionModeTransform(instance *eventingv1beta1.KnativeEventing
 
 			sinkBindingSelectionMode := instance.Spec.SinkBindingSelectionMode
 			if sinkBindingSelectionMode == "" {
-				sinkBindingSelectionMode = "exclusion"
+				if smFromWorkloadOverrides := sinkBindingSelectionModeFromWorkloadOverrides(instance); smFromWorkloadOverrides != "" {
+					sinkBindingSelectionMode = smFromWorkloadOverrides
+				} else {
+					sinkBindingSelectionMode = "exclusion"
+				}
 			}
 
 			for i := range deployment.Spec.Template.Spec.Containers {
@@ -72,4 +76,22 @@ func SinkBindingSelectionModeTransform(instance *eventingv1beta1.KnativeEventing
 		}
 		return nil
 	}
+}
+
+func sinkBindingSelectionModeFromWorkloadOverrides(instance *eventingv1beta1.KnativeEventing) string {
+	for _, workloadOverride := range instance.Spec.Workloads {
+		if workloadOverride.Name == "eventing-webhook" {
+			for _, envRequirement := range workloadOverride.Env {
+				if envRequirement.Container == "eventing-webhook" {
+					for _, env := range envRequirement.EnvVars {
+						if env.Name == SinkBindingSelectionModeEnvVarKey {
+							return env.Value
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return ""
 }

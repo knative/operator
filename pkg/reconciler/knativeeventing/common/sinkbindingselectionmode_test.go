@@ -302,6 +302,52 @@ func Test_sinkBindingSelectionModeFromWorkloadOverrides(t *testing.T) {
 			want: "sbsmFromWorkloadOverride",
 		},
 		{
+			name: "should_take_deprecated_deployment_overrides_into_account_too",
+			instanceSpec: &eventingv1beta1.KnativeEventingSpec{
+				CommonSpec: base.CommonSpec{
+					DeploymentOverride: []base.WorkloadOverride{{
+						Name: "eventing-webhook",
+						Env: []base.EnvRequirementsOverride{{
+							Container: "eventing-webhook",
+							EnvVars: []corev1.EnvVar{{
+								Name:  "SINK_BINDING_SELECTION_MODE",
+								Value: "sbsmFromDeploymentOverride",
+							}},
+						}}},
+					},
+				},
+			},
+			want: "sbsmFromDeploymentOverride",
+		},
+		{
+			name: "workload_overrides_should_have_priority_over_deprecated_deployment_overrides",
+			instanceSpec: &eventingv1beta1.KnativeEventingSpec{
+				CommonSpec: base.CommonSpec{
+					Workloads: []base.WorkloadOverride{{
+						Name: "eventing-webhook",
+						Env: []base.EnvRequirementsOverride{{
+							Container: "eventing-webhook",
+							EnvVars: []corev1.EnvVar{{
+								Name:  "SINK_BINDING_SELECTION_MODE",
+								Value: "sbsmFromWorkloadOverride",
+							}},
+						}}},
+					},
+					DeploymentOverride: []base.WorkloadOverride{{
+						Name: "eventing-webhook",
+						Env: []base.EnvRequirementsOverride{{
+							Container: "eventing-webhook",
+							EnvVars: []corev1.EnvVar{{
+								Name:  "SINK_BINDING_SELECTION_MODE",
+								Value: "sbsmFromDeploymentOverride",
+							}},
+						}}},
+					},
+				},
+			},
+			want: "sbsmFromWorkloadOverride",
+		},
+		{
 			name: "should_return_empty_string_if_not_found",
 			instanceSpec: &eventingv1beta1.KnativeEventingSpec{
 				CommonSpec: base.CommonSpec{

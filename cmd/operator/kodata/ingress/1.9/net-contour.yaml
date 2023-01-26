@@ -152,6 +152,11 @@ kind: TLSCertificateDelegation
 metadata:
   name: knative-serving-certs
   namespace: knative-serving
+  labels:
+    networking.knative.dev/ingress-provider: contour
+    app.kubernetes.io/component: net-contour
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.9.0"
 spec:
   delegations:
     - secretName: knative-serving-certs

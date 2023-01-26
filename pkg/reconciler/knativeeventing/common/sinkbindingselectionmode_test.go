@@ -20,14 +20,12 @@ import (
 	"testing"
 
 	appsv1 "k8s.io/api/apps/v1"
-
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"k8s.io/client-go/kubernetes/scheme"
-
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
+	eventingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
@@ -226,5 +224,111 @@ func makeDeployment(name string, containers []corev1.Container) appsv1.Deploymen
 				},
 			},
 		},
+	}
+}
+
+func Test_sinkBindingSelectionModeFromWorkloadOverrides(t *testing.T) {
+	tests := []struct {
+		name         string
+		instanceSpec *eventingv1beta1.KnativeEventingSpec
+		want         string
+	}{
+		{
+			name: "should_return_SBSM_from_webhook",
+			instanceSpec: &eventingv1beta1.KnativeEventingSpec{
+				CommonSpec: base.CommonSpec{
+					Workloads: []base.WorkloadOverride{{
+						Name: "eventing-webhook",
+						Env: []base.EnvRequirementsOverride{{
+							Container: "eventing-webhook",
+							EnvVars: []corev1.EnvVar{{
+								Name:  "SINK_BINDING_SELECTION_MODE",
+								Value: "sbsmFromWorkloadOverride",
+							}},
+						}},
+					},
+					},
+				},
+			},
+			want: "sbsmFromWorkloadOverride",
+		},
+		{
+			name: "should_return_SBSM_from_webhook_with_multiple_workloadOverrides",
+			instanceSpec: &eventingv1beta1.KnativeEventingSpec{
+				CommonSpec: base.CommonSpec{
+					Workloads: []base.WorkloadOverride{{
+						Name: "another-workload",
+						Env: []base.EnvRequirementsOverride{{
+							Container: "eventing-webhook",
+							EnvVars: []corev1.EnvVar{{
+								Name:  "SINK_BINDING_SELECTION_MODE",
+								Value: "anotherSbsmFromWorkloadOverride",
+							}},
+						}}}, {
+						Name: "eventing-webhook",
+						Env: []base.EnvRequirementsOverride{{
+							Container: "eventing-webhook",
+							EnvVars: []corev1.EnvVar{{
+								Name:  "SINK_BINDING_SELECTION_MODE",
+								Value: "sbsmFromWorkloadOverride",
+							}},
+						}}},
+					},
+				},
+			},
+			want: "sbsmFromWorkloadOverride",
+		},
+		{
+			name: "should_return_SBSM_from_webhook_with_multiple_containers",
+			instanceSpec: &eventingv1beta1.KnativeEventingSpec{
+				CommonSpec: base.CommonSpec{
+					Workloads: []base.WorkloadOverride{{
+						Name: "eventing-webhook",
+						Env: []base.EnvRequirementsOverride{{
+							Container: "another-container",
+							EnvVars: []corev1.EnvVar{{
+								Name:  "SINK_BINDING_SELECTION_MODE",
+								Value: "anotherSbsmFromWorkloadOverride",
+							}}}, {
+							Container: "eventing-webhook",
+							EnvVars: []corev1.EnvVar{{
+								Name:  "SINK_BINDING_SELECTION_MODE",
+								Value: "sbsmFromWorkloadOverride",
+							}},
+						}}},
+					},
+				},
+			},
+			want: "sbsmFromWorkloadOverride",
+		},
+		{
+			name: "should_return_empty_string_if_not_found",
+			instanceSpec: &eventingv1beta1.KnativeEventingSpec{
+				CommonSpec: base.CommonSpec{
+					Workloads: []base.WorkloadOverride{{
+						Name: "eventing-webhook",
+						Env: []base.EnvRequirementsOverride{{
+							Container: "eventing-webhook",
+							EnvVars: []corev1.EnvVar{{
+								Name:  "ANOTHER_ENV",
+								Value: "foobar",
+							}},
+						}}},
+					},
+				},
+			},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			instance := &eventingv1beta1.KnativeEventing{
+				Spec: *tt.instanceSpec,
+			}
+
+			if got := sinkBindingSelectionModeFromWorkloadOverrides(instance); got != tt.want {
+				t.Errorf("sinkBindingSelectionModeFromWorkloadOverrides() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

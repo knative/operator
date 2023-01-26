@@ -79,7 +79,8 @@ func SinkBindingSelectionModeTransform(instance *eventingv1beta1.KnativeEventing
 }
 
 func sinkBindingSelectionModeFromWorkloadOverrides(instance *eventingv1beta1.KnativeEventing) string {
-	for _, workloadOverride := range instance.Spec.Workloads {
+	overrides := append(instance.Spec.Workloads, instance.Spec.DeploymentOverride...)
+	for _, workloadOverride := range overrides {
 		if workloadOverride.Name == "eventing-webhook" {
 			for _, envRequirement := range workloadOverride.Env {
 				if envRequirement.Container == "eventing-webhook" {

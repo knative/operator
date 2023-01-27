@@ -201,6 +201,22 @@ rules:
   verbs:
   - delete
 
+# for contour TLS
+- apiGroups:
+  - projectcontour.io
+  resources:
+  - httpproxies
+  - tlscertificatedelegations
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - create
+  - delete
+  - deletecollection
+  - patch
+
 # for security-guard
 - apiGroups:
   - guard.security.knative.dev

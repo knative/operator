@@ -37,6 +37,7 @@ func hasHorizontalPodAutoscaler(obj base.KComponent) sets.String {
 	return sets.NewString(
 		"webhook",
 		"activator",
+		"3scale-kourier-gateway",
 	)
 }
 

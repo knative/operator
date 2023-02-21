@@ -34,7 +34,7 @@ import (
 
 const servingNamespace = "knative-serving"
 
-func servingInstance(ns string, serviceType v1.ServiceType, bootstrapConfigmapName string) *servingv1beta1.KnativeServing {
+func servingInstance(ns string, serviceType v1.ServiceType, bootstrapConfigmapName string, serviceLoadBalancerIP string) *servingv1beta1.KnativeServing {
 	return &servingv1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-instance",
@@ -45,6 +45,7 @@ func servingInstance(ns string, serviceType v1.ServiceType, bootstrapConfigmapNa
 				Kourier: base.KourierIngressConfiguration{
 					Enabled:                true,
 					ServiceType:            serviceType,
+					ServiceLoadBalancerIP:  serviceLoadBalancerIP,
 					BootstrapConfigmapName: bootstrapConfigmapName,
 				},
 			},
@@ -54,38 +55,50 @@ func servingInstance(ns string, serviceType v1.ServiceType, bootstrapConfigmapNa
 
 func TestTransformKourierManifest(t *testing.T) {
 	tests := []struct {
-		name             string
-		instance         *servingv1beta1.KnativeServing
-		expNamespace     string
-		expServiceType   string
-		expConfigMapName string
-		expError         error
+		name                     string
+		instance                 *servingv1beta1.KnativeServing
+		expNamespace             string
+		expServiceType           string
+		expServiceLoadBalancerIP string
+		expConfigMapName         string
+		expError                 error
 	}{{
-		name:             "Replaces Kourier Gateway Namespace, ServiceType and bootstrap cm",
-		instance:         servingInstance(servingNamespace, "ClusterIP", "my-bootstrap"),
-		expNamespace:     servingNamespace,
-		expConfigMapName: "my-bootstrap",
-		expServiceType:   "ClusterIP",
+		name:                     "Replaces Kourier Gateway Namespace, ServiceType and bootstrap cm",
+		instance:                 servingInstance(servingNamespace, "ClusterIP", "my-bootstrap", ""),
+		expNamespace:             servingNamespace,
+		expConfigMapName:         "my-bootstrap",
+		expServiceType:           "ClusterIP",
+		expServiceLoadBalancerIP: "",
 	}, {
-		name:             "Use Kourier default service type",
-		instance:         servingInstance(servingNamespace, "" /* empty service type */, ""),
-		expNamespace:     servingNamespace,
-		expConfigMapName: kourierDefaultVolumeName,
-		expServiceType:   "LoadBalancer", // kourier GW default service type
+		name:                     "Use Kourier default service type",
+		instance:                 servingInstance(servingNamespace, "" /* empty service type */, "", ""),
+		expNamespace:             servingNamespace,
+		expConfigMapName:         kourierDefaultVolumeName,
+		expServiceType:           "LoadBalancer", // kourier GW default service type
+		expServiceLoadBalancerIP: "",
 	}, {
-		name:             "Use unsupported service type",
-		instance:         servingInstance(servingNamespace, "ExternalName", ""),
-		expNamespace:     servingNamespace,
-		expServiceType:   "ExternalName",
-		expConfigMapName: kourierDefaultVolumeName,
-		expError:         fmt.Errorf("unsupported service type \"ExternalName\""),
+		name:                     "Sets Kourier Gateway ServiceLoadBalancerIP",
+		instance:                 servingInstance(servingNamespace, "" /* empty service type */, "", "1.2.3.4"),
+		expNamespace:             servingNamespace,
+		expConfigMapName:         kourierDefaultVolumeName,
+		expServiceType:           "LoadBalancer",
+		expServiceLoadBalancerIP: "1.2.3.4",
 	}, {
-		name:             "Use unknown service type",
-		instance:         servingInstance(servingNamespace, "Foo", ""),
-		expNamespace:     servingNamespace,
-		expServiceType:   "Foo",
-		expConfigMapName: kourierDefaultVolumeName,
-		expError:         fmt.Errorf("unknown service type \"Foo\""),
+		name:                     "Use unsupported service type",
+		instance:                 servingInstance(servingNamespace, "ExternalName", "", ""),
+		expNamespace:             servingNamespace,
+		expServiceType:           "ExternalName",
+		expConfigMapName:         kourierDefaultVolumeName,
+		expError:                 fmt.Errorf("unsupported service type \"ExternalName\""),
+		expServiceLoadBalancerIP: "",
+	}, {
+		name:                     "Use unknown service type",
+		instance:                 servingInstance(servingNamespace, "Foo", "", ""),
+		expNamespace:             servingNamespace,
+		expServiceType:           "Foo",
+		expConfigMapName:         kourierDefaultVolumeName,
+		expError:                 fmt.Errorf("unknown service type \"Foo\""),
+		expServiceLoadBalancerIP: "",
 	}}
 
 	for _, tt := range tests {
@@ -113,9 +126,15 @@ func TestTransformKourierManifest(t *testing.T) {
 				t.Fatalf("Failed to transform manifest: %v", err)
 			}
 
+			manifest, err = manifest.Transform(configureGWServiceLoadBalancerIP(tt.instance))
+			if err != nil {
+				t.Fatalf("Failed to transform manifest: %v", err)
+			}
+
 			for _, u := range manifest.Resources() {
 				verifyControllerNamespace(t, &u, tt.expNamespace)
 				verifyGatewayServiceType(t, &u, tt.expServiceType)
+				verifyGatewayServiceLoadBalancerIP(t, &u, tt.expServiceLoadBalancerIP)
 				verifyBootstrapVolumeName(t, &u, tt.expConfigMapName)
 			}
 		})
@@ -155,6 +174,16 @@ func verifyGatewayServiceType(t *testing.T, u *unstructured.Unstructured, expSer
 		util.AssertEqual(t, err, nil)
 		svcType := svc.Spec.Type
 		util.AssertDeepEqual(t, string(svcType), expServiceType)
+	}
+}
+
+func verifyGatewayServiceLoadBalancerIP(t *testing.T, u *unstructured.Unstructured, expServiceLoadBalancerIP string) {
+	if u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName {
+		svc := &v1.Service{}
+		err := scheme.Scheme.Convert(u, svc, nil)
+		util.AssertEqual(t, err, nil)
+		svcLoadBalancerIP := svc.Spec.LoadBalancerIP
+		util.AssertDeepEqual(t, string(svcLoadBalancerIP), expServiceLoadBalancerIP)
 	}
 }
 

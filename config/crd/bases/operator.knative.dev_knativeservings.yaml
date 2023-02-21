@@ -2311,6 +2311,8 @@ spec:
                         type: boolean
                       service-type:
                         type: string
+                      service-loadBalancerIP:
+                        type: string
                       bootstrap-configmap:
                         type: string
                     type: object

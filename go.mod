@@ -20,7 +20,7 @@ require (
 	k8s.io/client-go v0.25.2
 	k8s.io/code-generator v0.25.2
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
-	knative.dev/caching v0.0.0-20221012041550-ce26e9293067
+	knative.dev/caching v0.0.0-20230224210130-1a465b33f202
 	knative.dev/eventing v0.35.6
 	knative.dev/hack v0.0.0-20221010154335-3fdc50b9c24a
 	knative.dev/pkg v0.0.0-20230224191730-67fb5f6e6735

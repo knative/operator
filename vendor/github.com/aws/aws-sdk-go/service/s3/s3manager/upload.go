@@ -109,9 +109,6 @@ type UploadOutput struct {
 	// The ID for a multipart upload to S3. In the case of an error the error
 	// can be cast to the MultiUploadFailure interface to extract the upload ID.
 	UploadID string
-
-	// Entity tag of the object.
-	ETag *string
 }
 
 // WithUploaderRequestOptions appends to the Uploader's API request options.
@@ -530,7 +527,6 @@ func (u *uploader) singlePart(r io.ReadSeeker, cleanup func()) (*UploadOutput, e
 	return &UploadOutput{
 		Location:  url,
 		VersionID: out.VersionId,
-		ETag:      out.ETag,
 	}, nil
 }
 
@@ -636,7 +632,6 @@ func (u *multiuploader) upload(firstBuf io.ReadSeeker, cleanup func()) (*UploadO
 		Location:  uploadLocation,
 		VersionID: complete.VersionId,
 		UploadID:  u.uploadID,
-		ETag:      complete.ETag,
 	}, nil
 }
 

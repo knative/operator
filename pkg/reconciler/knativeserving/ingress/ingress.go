@@ -32,42 +32,44 @@ import (
 
 const providerLabel = "networking.knative.dev/ingress-provider"
 
-func ingressFilter(name string) mf.Predicate {
-	return func(u *unstructured.Unstructured) bool {
-		provider, hasLabel := u.GetLabels()[providerLabel]
-		if !hasLabel {
-			return true
-		}
-		return provider == name
-	}
-}
-
-// noneFilter drops all ingresses but allows everything else.
-func noneFilter(u *unstructured.Unstructured) bool {
-	_, hasLabel := u.GetLabels()[providerLabel]
-	return !hasLabel
-}
-
-// Filters makes sure the disabled ingress resources are removed from the manifest.
-func Filters(ks *v1beta1.KnativeServing) mf.Predicate {
-	var filters []mf.Predicate
-	if ks.Spec.Ingress == nil {
-		return istioFilter
-	}
-	if ks.Spec.Ingress.Istio.Enabled {
-		filters = append(filters, istioFilter)
-	}
-	if ks.Spec.Ingress.Kourier.Enabled {
-		filters = append(filters, kourierFilter)
-	}
-	if ks.Spec.Ingress.Contour.Enabled {
-		filters = append(filters, contourFilter)
-	}
-	if len(filters) == 0 {
-		return noneFilter
-	}
-	return mf.Any(filters...)
-}
+//
+//func ingressFilter(name string) mf.Predicate {
+//	return func(u *unstructured.Unstructured) bool {
+//		provider, hasLabel := u.GetLabels()[providerLabel]
+//		if !hasLabel {
+//			return true
+//		}
+//		return provider == name
+//	}
+//}
+//
+//// noneFilter drops all ingresses but allows everything else.
+//func noneFilter(u *unstructured.Unstructured) bool {
+//	_, hasLabel := u.GetLabels()[providerLabel]
+//	return !hasLabel
+//}
+//
+//// Filters makes sure the disabled ingress resources are removed from the manifest.
+//func Filters(ks *v1beta1.KnativeServing) mf.Predicate {
+//	var filters []mf.Predicate
+//	if ks.Spec.Ingress == nil {
+//		return istioFilter
+//	}
+//	if ks.Spec.Ingress.Istio.Enabled {
+//		filters = append(filters, istioFilter)
+//	}
+//	if ks.Spec.Ingress.Kourier.Enabled {
+//		filters = append(filters, kourierFilter)
+//	}
+//	if ks.Spec.Ingress.Contour.Enabled {
+//		filters = append(filters, contourFilter)
+//	}
+//	if len(filters) == 0 {
+//		return noneFilter
+//	}
+//	return mf.Any(filters...)
+//}
+//
 
 // Transformers returns a list of transformers based on the enabled ingresses
 func Transformers(ctx context.Context, ks *v1beta1.KnativeServing) []mf.Transformer {
@@ -87,61 +89,150 @@ func Transformers(ctx context.Context, ks *v1beta1.KnativeServing) []mf.Transfor
 	return transformers
 }
 
-func getIngress(version string) (mf.Manifest, error) {
-	// If we can not determine the version, append no ingress manifest.
-	if version == "" {
-		return mf.Manifest{}, nil
-	}
-	koDataDir := os.Getenv(common.KoEnvKey)
-	// Ingresses are saved in the directory named major.minor. We remove the patch number.
-	ingressVersion := common.LATEST_VERSION
-	if !strings.EqualFold(version, common.LATEST_VERSION) {
-		ingressVersion = semver.MajorMinor(common.SanitizeSemver(version))[1:]
-	}
-
-	// This line can make sure a valid available ingress version is returned.
-	ingressVersion = common.GetLatestIngressRelease(ingressVersion)
-	ingressPath := filepath.Join(koDataDir, "ingress", ingressVersion)
-	return common.FetchManifest(ingressPath)
-}
-
-// AppendTargetIngresses appends the manifests of ingresses to be installed
-func AppendTargetIngresses(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
-	m, err := getIngress(common.TargetVersion(instance))
-	if err == nil {
-		*manifest = manifest.Append(m)
-	}
-
-	if len(instance.GetSpec().GetManifests()) != 0 {
-		// If spec.manifests is not empty, it is possible that the ingress is not available with the specified version.
-		// The user can specify the ingress link in the spec.manifests.
-		return nil
-	}
-	return err
-}
-
-// AppendInstalledIngresses appends the installed manifests of ingresses
-func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
-	version := instance.GetStatus().GetVersion()
-	if version == "" {
-		version = common.TargetVersion(instance)
-	}
-
-	m, err := getIngress(version)
-	if err == nil {
-		*manifest = manifest.Append(m)
-	}
-
-	// It is possible that the ingress is not available with the specified version.
-	// If the user specified a version with a minor version, which is not supported by the current operator, as long as
-	// spec.manifests contains all the manifest links, the operator can still work. This function can always return nil,
-	// even if the ingress is not available.
-	return nil
-}
-
+//	func getIngress(version string) (mf.Manifest, error) {
+//		// If we can not determine the version, append no ingress manifest.
+//		if version == "" {
+//			return mf.Manifest{}, nil
+//		}
+//		koDataDir := os.Getenv(common.KoEnvKey)
+//		// Ingresses are saved in the directory named major.minor. We remove the patch number.
+//		ingressVersion := common.LATEST_VERSION
+//		if !strings.EqualFold(version, common.LATEST_VERSION) {
+//			ingressVersion = semver.MajorMinor(common.SanitizeSemver(version))[1:]
+//		}
+//
+//		// This line can make sure a valid available ingress version is returned.
+//		ingressVersion = common.GetLatestIngressRelease(ingressVersion)
+//		ingressPath := filepath.Join(koDataDir, "ingress", ingressVersion)
+//		return common.FetchManifest(ingressPath)
+//	}
+//
+// // AppendTargetIngresses appends the manifests of ingresses to be installed
+//
+//	func AppendTargetIngresses(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+//		m, err := getIngress(common.TargetVersion(instance))
+//		if err == nil {
+//			*manifest = manifest.Append(m)
+//		}
+//
+//		if len(instance.GetSpec().GetManifests()) != 0 {
+//			// If spec.manifests is not empty, it is possible that the ingress is not available with the specified version.
+//			// The user can specify the ingress link in the spec.manifests.
+//			return nil
+//		}
+//		return err
+//	}
+//
+// // AppendInstalledIngresses appends the installed manifests of ingresses
+//
+//	func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+//		version := instance.GetStatus().GetVersion()
+//		if version == "" {
+//			version = common.TargetVersion(instance)
+//		}
+//
+//		m, err := getIngress(version)
+//		if err == nil {
+//			*manifest = manifest.Append(m)
+//		}
+//
+//		// It is possible that the ingress is not available with the specified version.
+//		// If the user specified a version with a minor version, which is not supported by the current operator, as long as
+//		// spec.manifests contains all the manifest links, the operator can still work. This function can always return nil,
+//		// even if the ingress is not available.
+//		return nil
+//	}
 func hasProviderLabel(u *unstructured.Unstructured) bool {
 	if _, hasLabel := u.GetLabels()[providerLabel]; hasLabel {
 		return true
 	}
 	return false
+}
+
+func getIngress(path string) (mf.Manifest, error) {
+	if path == "" {
+		return mf.Manifest{}, nil
+	}
+	return common.FetchManifest(path)
+}
+
+func getIngressPath(version string, ks *v1beta1.KnativeServing) string {
+	var urls []string
+	koDataDir := os.Getenv(common.KoEnvKey)
+	sourceVersion := common.LATEST_VERSION
+	if !strings.EqualFold(version, common.LATEST_VERSION) {
+		sourceVersion = semver.MajorMinor(common.SanitizeSemver(version))[1:]
+	}
+
+	// This line can make sure a valid available source version is returned.
+	ingressPath := filepath.Join(koDataDir, "ingress", sourceVersion)
+	if ks.Spec.Ingress == nil {
+		url := filepath.Join(ingressPath, "istio")
+		urls = append(urls, url)
+		return strings.Join(urls, common.COMMA)
+	}
+
+	if ks.Spec.Ingress.Istio.Enabled {
+		url := filepath.Join(ingressPath, "istio")
+		urls = append(urls, url)
+	}
+	if ks.Spec.Ingress.Contour.Enabled {
+		url := filepath.Join(ingressPath, "contour")
+		urls = append(urls, url)
+	}
+	if ks.Spec.Ingress.Kourier.Enabled {
+		url := filepath.Join(ingressPath, "kourier")
+		urls = append(urls, url)
+	}
+
+	if len(urls) == 0 {
+		url := filepath.Join(ingressPath, "istio")
+		urls = append(urls, url)
+	}
+
+	return strings.Join(urls, common.COMMA)
+}
+
+// AppendTargetIngress appends the manifests of the ingress to be installed
+func AppendTargetIngress(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+	version := common.TargetVersion(instance)
+	ingressPath := getIngressPath(version, convertToKS(instance))
+	m, err := getIngress(ingressPath)
+	if err == nil {
+		*manifest = manifest.Append(m)
+	}
+	if len(instance.GetSpec().GetManifests()) != 0 {
+		// If spec.manifests is not empty, it is possible that the eventing source is not available with the
+		// specified version. The user can specify the eventing source link in the spec.manifests.
+		return nil
+	}
+	return err
+}
+
+// AppendInstalledIngresses appends all the manifests of the ingresses
+func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+	version := instance.GetStatus().GetVersion()
+	if version == "" {
+		version = common.TargetVersion(instance)
+	}
+	ingressPath := getIngressPath(version, convertToKS(instance))
+	m, err := getIngress(ingressPath)
+	if err == nil {
+		*manifest = manifest.Append(m)
+	}
+
+	// It is possible that the ingress is not available with the specified version.
+	// If the user specified a version with a minor version, which is not supported by the current operator, the operator
+	// can still work, as long as spec.manifests contains all the manifest links. This function can always return nil,
+	// even if the ingress is not available.
+	return nil
+}
+
+func convertToKS(instance base.KComponent) *v1beta1.KnativeServing {
+	ks := &v1beta1.KnativeServing{}
+	switch instance := instance.(type) {
+	case *v1beta1.KnativeServing:
+		ks = instance
+	}
+	return ks
 }

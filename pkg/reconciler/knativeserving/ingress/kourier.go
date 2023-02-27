@@ -38,7 +38,7 @@ const (
 
 var kourierControllerDeploymentNames = sets.NewString("3scale-kourier-control", "net-kourier-controller")
 
-var kourierFilter = ingressFilter("kourier")
+//var kourierFilter = ingressFilter("kourier")
 
 func kourierTransformers(ctx context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
 	return []mf.Transformer{

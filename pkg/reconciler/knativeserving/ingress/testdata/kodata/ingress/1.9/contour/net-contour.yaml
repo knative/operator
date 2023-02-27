@@ -3,9 +3,12 @@
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-contour-core
+  name: knative-serving-contour
   labels:
     networking.knative.dev/ingress-provider: contour
+    app.kubernetes.io/component: net-contour
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.9.2"
     serving.knative.dev/controller: "true"
 rules:
   - apiGroups: ["projectcontour.io"]
@@ -33,7 +36,9 @@ metadata:
   namespace: knative-serving
   labels:
     networking.knative.dev/ingress-provider: contour
-    serving.knative.dev/release: "v0.21.0"
+    app.kubernetes.io/component: net-contour
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.9.2"
 data:
   _example: |
     ################################
@@ -46,7 +51,7 @@ data:
     timeout-policy-idle: "infinity"
 
     # timeout-policy-response sets TimeoutPolicy.Response in contour HTTPProxy spec
-    timeou-policy-response: "infinity"
+    timeout-policy-response: "infinity"
 
     # If auto-TLS is disabled fallback to the following certificate
     #
@@ -84,26 +89,32 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: contour-ingress-controller
+  name: net-contour-controller
   namespace: knative-serving
   labels:
     networking.knative.dev/ingress-provider: contour
+    app.kubernetes.io/component: net-contour
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.9.2"
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: contour-ingress-controller
+      app: net-contour-controller
   template:
     metadata:
       labels:
-        app: contour-ingress-controller
+        app: net-contour-controller
+        app.kubernetes.io/component: net-contour
+        app.kubernetes.io/name: knative-serving
+        app.kubernetes.io/version: "1.9.2"
     spec:
       serviceAccountName: controller
       containers:
         - name: controller
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:61d2fcbe586e99d755447550d465897ddd1c54157399fd79e51547ed75108c3a
+          image: gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:616f1bece9e576ec89421b86c40b03d27e97c9f960708336e77420f27620cbc4
           resources:
             requests:
               cpu: 40m
@@ -133,6 +144,23 @@ spec:
             runAsNonRoot: true
             capabilities:
               drop:
-                - all
+                - ALL
+---
+#! Used when internal-encryption is set to "true"
+apiVersion: projectcontour.io/v1
+kind: TLSCertificateDelegation
+metadata:
+  name: knative-serving-certs
+  namespace: knative-serving
+  labels:
+    networking.knative.dev/ingress-provider: contour
+    app.kubernetes.io/component: net-contour
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.9.2"
+spec:
+  delegations:
+    - secretName: knative-serving-certs
+      targetNamespaces:
+        - "*"
 ---
 

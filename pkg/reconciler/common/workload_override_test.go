@@ -22,6 +22,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
+	"google.golang.org/api/googleapi"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
@@ -50,11 +51,15 @@ type expDeployments struct {
 	expEnv                       map[string][]corev1.EnvVar
 	expReadinessProbe            *v1.Probe
 	expLivenessProbe             *v1.Probe
+	expHostNetwork               *bool
+	expDNSPolicy                 *corev1.DNSPolicy
 }
 
 func TestComponentsTransform(t *testing.T) {
 	var four int32 = 4
 	var five int32 = 5
+	var defaultDnsPolicy = corev1.DNSPolicy("")
+	var dnsClusterFirstWithHostNet corev1.DNSPolicy = corev1.DNSClusterFirstWithHostNet
 	tests := []struct {
 		name           string
 		override       []base.WorkloadOverride
@@ -73,6 +78,8 @@ func TestComponentsTransform(t *testing.T) {
 			expTopologySpreadConstraints: nil,
 			expTolerations:               nil,
 			expAffinity:                  nil,
+			expHostNetwork:               nil,
+			expDNSPolicy:                 nil,
 		}},
 	}, {
 		name: "simple override",
@@ -101,6 +108,7 @@ func TestComponentsTransform(t *testing.T) {
 					PodAffinity:     &corev1.PodAffinity{},
 					PodAntiAffinity: &corev1.PodAntiAffinity{},
 				},
+				HostNetwork: googleapi.Bool(false),
 			},
 		},
 		globalReplicas: 10,
@@ -129,6 +137,8 @@ func TestComponentsTransform(t *testing.T) {
 				PodAffinity:     &corev1.PodAffinity{},
 				PodAntiAffinity: &corev1.PodAntiAffinity{},
 			},
+			expHostNetwork: googleapi.Bool(false),
+			expDNSPolicy:   nil,
 		}},
 	}, {
 		name: "no replicas in deploymentoverride, use global replicas",
@@ -141,6 +151,56 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            10,
+		}},
+	}, {
+		name: "unset host network",
+		override: []base.WorkloadOverride{
+			{
+				Name:        "controller",
+				HostNetwork: nil,
+			},
+		},
+		globalReplicas: 10,
+		expDeployment: map[string]expDeployments{"controller": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:            10,
+			expHostNetwork:         nil,
+		}},
+	}, {
+		name: "host network is true",
+		override: []base.WorkloadOverride{
+			{
+				Name:        "controller",
+				HostNetwork: googleapi.Bool(true),
+			},
+		},
+		globalReplicas: 10,
+		expDeployment: map[string]expDeployments{"controller": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:            10,
+			expHostNetwork:         googleapi.Bool(true),
+			expDNSPolicy:           &dnsClusterFirstWithHostNet,
+		}},
+	}, {
+		name: "host network is false",
+		override: []base.WorkloadOverride{
+			{
+				Name:        "controller",
+				HostNetwork: googleapi.Bool(false),
+			},
+		},
+		globalReplicas: 10,
+		expDeployment: map[string]expDeployments{"controller": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
+			expReplicas:            10,
+			expHostNetwork:         googleapi.Bool(false),
+			expDNSPolicy:           nil,
 		}},
 	}, {
 		name: "override env vars",
@@ -531,6 +591,7 @@ func TestComponentsTransform(t *testing.T) {
 						},
 					},
 				},
+				HostNetwork: googleapi.Bool(false),
 			},
 			{
 				Name:         "webhook",
@@ -565,6 +626,7 @@ func TestComponentsTransform(t *testing.T) {
 					},
 					PodAntiAffinity: &corev1.PodAntiAffinity{},
 				},
+				HostNetwork: googleapi.Bool(true),
 			},
 		},
 		globalReplicas: 10,
@@ -603,6 +665,8 @@ func TestComponentsTransform(t *testing.T) {
 						},
 					},
 				},
+				expHostNetwork: googleapi.Bool(false),
+				expDNSPolicy:   nil,
 			},
 			"webhook": {
 				expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0", "e": "f"},
@@ -638,6 +702,8 @@ func TestComponentsTransform(t *testing.T) {
 					},
 					PodAntiAffinity: &corev1.PodAntiAffinity{},
 				},
+				expHostNetwork: googleapi.Bool(true),
+				expDNSPolicy:   &dnsClusterFirstWithHostNet,
 			},
 		},
 	}}
@@ -740,6 +806,20 @@ func TestComponentsTransform(t *testing.T) {
 									if diff := cmp.Diff(*l, (*d.expLivenessProbe)); diff != "" {
 										t.Fatalf("Unexpected liveness probe in pod template: %v", diff)
 									}
+								}
+								hostNetwork := googleapi.Bool(false)
+								if d.expHostNetwork != nil {
+									hostNetwork = d.expHostNetwork
+								}
+								if diff := cmp.Diff(&got.Spec.Template.Spec.HostNetwork, hostNetwork); diff != "" {
+									t.Fatalf("Unexpected hostNetwork: %v", diff)
+								}
+								dnsPolicy := &defaultDnsPolicy
+								if d.expDNSPolicy != nil {
+									dnsPolicy = d.expDNSPolicy
+								}
+								if diff := cmp.Diff(&got.Spec.Template.Spec.DNSPolicy, dnsPolicy); diff != "" {
+									t.Fatalf("Unexpected dnsPolicy: %v", diff)
 								}
 							}
 						}

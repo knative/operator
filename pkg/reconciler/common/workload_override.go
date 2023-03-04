@@ -75,6 +75,7 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 			replaceResources(&override, ps)
 			replaceEnv(&override, ps)
 			replaceProbes(&override, ps)
+			replaceHostNetwork(&override, ps)
 
 			if err := scheme.Scheme.Convert(obj, u, nil); err != nil {
 				return err
@@ -200,6 +201,16 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 				}
 				mergeProbe(overrideProbe, containers[i].LivenessProbe)
 			}
+		}
+	}
+}
+
+func replaceHostNetwork(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) {
+	if override.HostNetwork != nil {
+		ps.Spec.HostNetwork = *override.HostNetwork
+
+		if *override.HostNetwork {
+			ps.Spec.DNSPolicy = corev1.DNSClusterFirstWithHostNet
 		}
 	}
 }

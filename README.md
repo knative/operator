@@ -12,6 +12,8 @@ The Knative Operator defines custom resources for the
 [Knative](https://knative.dev/) components, including serving and eventing, enabling users to configure, install,
 upgrade and maintain these components over their lifecycle through a simple API.
 
+I want to check the CLA.
+
 Details:
 
 - [Installation](https://knative.dev/docs/install/operator/knative-with-operators/)

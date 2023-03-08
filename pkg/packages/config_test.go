@@ -18,7 +18,6 @@ limitations under the License.
 package packages
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -88,7 +87,7 @@ b:
 			},
 		},
 	}
-	yamlFile, err := ioutil.TempFile("", "config-yaml")
+	yamlFile, err := os.CreateTemp("", "config-yaml")
 	if err != nil {
 		t.Fatal("Unable to open tempfile: ", err)
 	}

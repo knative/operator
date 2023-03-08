@@ -19,7 +19,7 @@ package packages
 
 import (
 	"errors"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
 
@@ -105,7 +105,7 @@ type AssetFilter struct {
 // ReadConfig reads a set of Packages (as a map from package name to package configuration) from a yaml file a the selected path
 func ReadConfig(path string) (retval map[string]*Package, err error) {
 	retval = map[string]*Package{}
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return
 	}

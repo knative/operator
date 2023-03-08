@@ -681,6 +681,11 @@ func (in *WorkloadOverride) DeepCopyInto(out *WorkloadOverride) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.HostNetwork != nil {
+		in, out := &in.HostNetwork, &out.HostNetwork
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

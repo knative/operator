@@ -397,6 +397,12 @@ spec:
                             type: string
                         type: object
                       type: array
+                    hostNetwork:
+                      description: Use the host's network namespace if true. Make sure to
+                        understand the security implications if you want to enable it. When
+                        hostNetwork is enabled, this will set dnsPolicy to ClusterFirstWithHostNet
+                        automatically.
+                      type: boolean
                     topologySpreadConstraints:
                       description: If specified, the pod's topology spread constraints.
                       items:
@@ -1456,6 +1462,12 @@ spec:
                             type: string
                         type: object
                       type: array
+                    hostNetwork:
+                      description: Use the host's network namespace if true. Make sure to
+                        understand the security implications if you want to enable it. When
+                        hostNetwork is enabled, this will set dnsPolicy to ClusterFirstWithHostNet
+                        automatically.
+                      type: boolean
                     topologySpreadConstraints:
                       description: If specified, the pod's topology spread constraints.
                       items:

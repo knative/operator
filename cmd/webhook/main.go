@@ -36,7 +36,7 @@ func main() {
 	ctx := webhook.WithOptions(signals.NewContext(), webhook.Options{
 		ServiceName: webhook.NameFromEnv(),
 		Port:        webhook.PortFromEnv(8443),
-		SecretName:  "operator-webhook-certs",
+		SecretName:  webhook.SecretNameFromEnv("operator-webhook-certs"),
 	})
 
 	sharedmain.WebhookMainWithContext(ctx, webhook.NameFromEnv(),

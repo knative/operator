@@ -47,7 +47,7 @@ spec:
           - podAffinityTerm:
               labelSelector:
                 matchLabels:
-                  app: webhook
+                  app: operator-webhook
               topologyKey: kubernetes.io/hostname
             weight: 100
 

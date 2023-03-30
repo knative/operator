@@ -119,10 +119,13 @@ func TestAppendTargetSecurityGuard(t *testing.T) {
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
 			err := AppendTargetSecurity(context.TODO(), &manifest, &tt.instance)
 			if err != nil {
+				if tt.expectedErr == nil {
+					t.Errorf("Unexpcted Error %v", err)
+					return
+				}
 				util.AssertEqual(t, err.Error(), tt.expectedErr.Error())
 				util.AssertEqual(t, len(manifest.Resources()), 0)
 			} else {
-				util.AssertEqual(t, err, tt.expectedErr)
 				util.AssertEqual(t, util.DeepMatchWithPath(manifest, tt.expectedSecurityPath), true)
 			}
 		})

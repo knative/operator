@@ -26,7 +26,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
-	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/common"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
@@ -54,11 +53,11 @@ func TestConfigMapTransform(t *testing.T) {
 			Data: map[string]string{},
 		},
 		instance: &v1beta1.KnativeServing{
-			Spec: servingv1beta1.KnativeServingSpec{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "1.8.0",
 				},
-				Security: &servingv1beta1.SecurityConfigs{
+				Security: &v1beta1.SecurityConfigs{
 					SecurityGuard: base.SecurityGuardConfiguration{
 						Enabled: true,
 					},
@@ -88,11 +87,11 @@ func TestConfigMapTransform(t *testing.T) {
 			Data: map[string]string{},
 		},
 		instance: &v1beta1.KnativeServing{
-			Spec: servingv1beta1.KnativeServingSpec{
+			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					Version: "1.8.0",
 				},
-				Security: &servingv1beta1.SecurityConfigs{
+				Security: &v1beta1.SecurityConfigs{
 					SecurityGuard: base.SecurityGuardConfiguration{
 						Enabled: false,
 					},

@@ -28,7 +28,6 @@ import (
 	"knative.dev/pkg/logging"
 
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
-	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 var (
@@ -47,7 +46,7 @@ func securityGuardTransformers(ctx context.Context, instance *v1beta1.KnativeSer
 	return []mf.Transformer{configMapTransform(instance, logger)}
 }
 
-func configMapTransform(instance *servingv1beta1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
+func configMapTransform(instance *v1beta1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "ConfigMap" && u.GetName() == "config-features" {
 			if instance.Spec.Security == nil || !instance.Spec.Security.SecurityGuard.Enabled {

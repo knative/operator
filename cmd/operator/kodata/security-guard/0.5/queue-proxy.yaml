@@ -20,10 +20,9 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "0.1.1"
 data:
   # This overrides the configmap produced by knative serving
-  # It is useful for demonstration purposes or when using an unchanged configmap
-  queue-sidecar-image: gcr.io/knative-releases/knative.dev/security-guard/cmd/queue@sha256:0656762b8d2168ca6cad6540434c1bc5d5898d59fc6f47b36cbeee2f512a1903
+  queue-sidecar-image: gcr.io/knative-releases/knative.dev/security-guard/cmd/queue@sha256:ed81f60e4b8a80f1d406c7772f91002728a2360229a7bf926fa6b8c3d3fa1e40
+  queue-sidecar-token-audiences: guard-service
 
 ---

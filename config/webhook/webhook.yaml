@@ -83,6 +83,8 @@ spec:
           value: operator-webhook
         - name: WEBHOOK_PORT
           value: "8443"
+        - name: WEBHOOK_SECRET_NAME
+          value: operator-webhook-certs
 
         - name: METRICS_DOMAIN
           value: knative.dev/operator

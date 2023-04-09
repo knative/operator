@@ -117,7 +117,9 @@ function download_knative() {
 # Install Istio.
 function install_istio() {
   echo ">> Installing Istio"
+
   curl -sL https://istio.io/downloadIstioctl | sh -
+
   $HOME/.istioctl/bin/istioctl install -y
 }
 

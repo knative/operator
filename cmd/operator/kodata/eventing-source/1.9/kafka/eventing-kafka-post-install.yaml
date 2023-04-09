@@ -1,0 +1,960 @@
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-kafka-controller-post-install
+  labels:
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+rules:
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - delete
+      - deletecollection
+  - apiGroups:
+      - "apps"
+    resources:
+      - statefulsets
+    verbs:
+      - get
+      - list
+  # sources.knative.dev resources and finalizers we care about.
+  - apiGroups:
+      - sources.knative.dev
+    resources:
+      - kafkasources
+      - kafkasources/status
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - mutatingwebhookconfigurations
+    resourceNames:
+      - defaulting.webhook.kafka.sources.knative.dev
+      - defaulting.webhook.kafka.messaging.knative.dev
+    verbs:
+      - delete
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - validatingwebhookconfigurations
+    resourceNames:
+      - validation.webhook.kafka.sources.knative.dev
+      - config.webhook.kafka.sources.knative.dev
+      - validation.webhook.kafka.messaging.knative.dev
+    verbs:
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    resourceNames:
+      - kafka-source-webhook
+      - kafka-controller
+      - kafka-webhook
+      - kafka-ch-dispatcher
+    verbs:
+      - delete
+  # to be able to list channel services and patch them
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - list
+      - patch
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    resourceNames:
+      - kafka-controller-manager
+      - kafka-webhook
+      - kafka-ch-controller
+      - kafka-ch-dispatcher
+      - kafka-source-dispatcher
+    verbs:
+      - delete
+  # to be able to check readiness of the new dataplane
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    resourceNames:
+      - kafka-channel-dispatcher
+      - kafka-channel-receiver
+      - kafka-controller
+    verbs:
+      - get
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - clusterrolebindings
+    resourceNames:
+      - eventing-sources-kafka-controller
+      - eventing-sources-kafka-controller-addressable-resolver
+      - kafka-webhook
+      - kafka-ch-controller
+      - kafka-ch-dispatcher
+      - eventing-sources-kafka-controller-podspecable-binding
+    verbs:
+      - delete
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - clusterroles
+    resourceNames:
+      - eventing-sources-kafka-controller
+      - kafka-webhook
+      - kafka-ch-controller
+      - kafka-addressable-resolver
+      - kafka-channelable-manipulator
+      - kafka-ch-dispatcher
+    verbs:
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    resourceNames:
+      - kafka-controller-manager
+      - kafka-webhook
+      - kafka-ch-controller
+      - kafka-ch-dispatcher
+    verbs:
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    resourceNames:
+      - kafka-source-webhook-certs
+      - messaging-webhook-certs
+    verbs:
+      - delete
+  - apiGroups:
+      - "autoscaling"
+    resources:
+      - horizontalpodautoscalers
+    resourceNames:
+      - kafka-webhook
+    verbs:
+      - delete
+  - apiGroups:
+      - "policy"
+    resources:
+      - poddisruptionbudgets
+    resourceNames:
+      - kafka-webhook
+    verbs:
+      - delete
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - leases
+    resourceNames:
+      - kafkachannel-dispatcher.knative.dev.eventing-kafka.pkg.channel.consolidated.reconciler.dispatcher.reconciler.00-of-01
+    verbs:
+      - delete
+  # to be able to read the old configmap and migrate
+  # and then delete them
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - config-leader-election-kafkachannel
+      - config-kafka
+    verbs:
+      - get
+      - delete
+  # to be able update config in the new configmap
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - kafka-channel-config
+    verbs:
+      - patch
+
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: knative-kafka-controller-post-install
+  namespace: knative-eventing
+  labels:
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-kafka-storage-version-migrator
+  labels:
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+rules:
+  # Storage version upgrader needs to be able to patch CRDs.
+  - apiGroups:
+      - "apiextensions.k8s.io"
+    resources:
+      - "customresourcedefinitions"
+      - "customresourcedefinitions/status"
+    verbs:
+      - "get"
+      - "list"
+      - "update"
+      - "patch"
+      - "watch"
+  # Our own resources we care about.
+  - apiGroups:
+      - "sources.knative.dev"
+    resources:
+      - "kafkasources"
+      - "kafkasources/finalizers"
+      - "kafkasources/status"
+    verbs:
+      - "get"
+      - "list"
+      - "create"
+      - "update"
+      - "patch"
+      - "watch"
+  - apiGroups:
+      - "messaging.knative.dev"
+    resources:
+      - "kafkachannels"
+      - "kafkachannels/finalizers"
+      - "kafkachannels/status"
+    verbs:
+      - "get"
+      - "list"
+      - "create"
+      - "update"
+      - "patch"
+      - "watch"
+  - apiGroups:
+      - "eventing.knative.dev"
+    resources:
+      - "kafkasinks"
+      - "kafkasinks/finalizers"
+      - "kafkasinks/status"
+    verbs:
+      - "get"
+      - "list"
+      - "create"
+      - "update"
+      - "patch"
+      - "watch"
+  - apiGroups:
+      - ""
+    resources:
+      - "namespaces"
+    verbs:
+      - "get"
+      - "list"
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: knative-kafka-storage-version-migrator
+  namespace: knative-eventing
+  labels:
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-kafka-storage-version-migrator
+  labels:
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+subjects:
+  - kind: ServiceAccount
+    name: knative-kafka-storage-version-migrator
+    namespace: knative-eventing
+roleRef:
+  kind: ClusterRole
+  name: knative-kafka-storage-version-migrator
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-kafka-controller-post-install
+  labels:
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+subjects:
+  - kind: ServiceAccount
+    name: knative-kafka-controller-post-install
+    namespace: knative-eventing
+roleRef:
+  kind: ClusterRole
+  name: knative-kafka-controller-post-install
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kafka-controller-post-install
+  namespace: knative-eventing
+  labels:
+    app: kafka-controller-post-install
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: kafka-controller-post-install
+        kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      serviceAccountName: knative-kafka-controller-post-install
+      restartPolicy: OnFailure
+      containers:
+        - name: post-install
+          image: gcr.io/knative-releases/knative.dev/eventing-kafka-broker/control-plane/cmd/post-install@sha256:f2dd395f8c8cd0636b8af61f54e1e0387bbd0895e4db1c056c3389ca85313f16
+          env:
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CHANNEL_GENERAL_CONFIG_MAP_NAME
+              value: kafka-channel-config
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: knative-kafka-storage-version-migrator
+  namespace: knative-eventing
+  labels:
+    app: "knative-kafka-storage-version-migrator"
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: "knative-kafka-storage-version-migrator"
+        kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      serviceAccountName: knative-kafka-storage-version-migrator
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:237efa3c00b59782b0251d30bed106c5e788c6fd20a2090be41c4037cf51c695
+          env:
+            - name: IGNORE_NOT_FOUND
+              value: "true"
+          args:
+            - "kafkasources.sources.knative.dev"
+            - "kafkachannels.messaging.knative.dev"
+            - "kafkasinks.eventing.knative.dev"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-kafka-controller-post-install
+  labels:
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+rules:
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - delete
+      - deletecollection
+  - apiGroups:
+      - "apps"
+    resources:
+      - statefulsets
+    verbs:
+      - get
+      - list
+  # sources.knative.dev resources and finalizers we care about.
+  - apiGroups:
+      - sources.knative.dev
+    resources:
+      - kafkasources
+      - kafkasources/status
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - mutatingwebhookconfigurations
+    resourceNames:
+      - defaulting.webhook.kafka.sources.knative.dev
+      - defaulting.webhook.kafka.messaging.knative.dev
+    verbs:
+      - delete
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - validatingwebhookconfigurations
+    resourceNames:
+      - validation.webhook.kafka.sources.knative.dev
+      - config.webhook.kafka.sources.knative.dev
+      - validation.webhook.kafka.messaging.knative.dev
+    verbs:
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    resourceNames:
+      - kafka-source-webhook
+      - kafka-controller
+      - kafka-webhook
+      - kafka-ch-dispatcher
+    verbs:
+      - delete
+  # to be able to list channel services and patch them
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - list
+      - patch
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    resourceNames:
+      - kafka-controller-manager
+      - kafka-webhook
+      - kafka-ch-controller
+      - kafka-ch-dispatcher
+      - kafka-source-dispatcher
+    verbs:
+      - delete
+  # to be able to check readiness of the new dataplane
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    resourceNames:
+      - kafka-channel-dispatcher
+      - kafka-channel-receiver
+      - kafka-controller
+    verbs:
+      - get
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - clusterrolebindings
+    resourceNames:
+      - eventing-sources-kafka-controller
+      - eventing-sources-kafka-controller-addressable-resolver
+      - kafka-webhook
+      - kafka-ch-controller
+      - kafka-ch-dispatcher
+      - eventing-sources-kafka-controller-podspecable-binding
+    verbs:
+      - delete
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - clusterroles
+    resourceNames:
+      - eventing-sources-kafka-controller
+      - kafka-webhook
+      - kafka-ch-controller
+      - kafka-addressable-resolver
+      - kafka-channelable-manipulator
+      - kafka-ch-dispatcher
+    verbs:
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    resourceNames:
+      - kafka-controller-manager
+      - kafka-webhook
+      - kafka-ch-controller
+      - kafka-ch-dispatcher
+    verbs:
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    resourceNames:
+      - kafka-source-webhook-certs
+      - messaging-webhook-certs
+    verbs:
+      - delete
+  - apiGroups:
+      - "autoscaling"
+    resources:
+      - horizontalpodautoscalers
+    resourceNames:
+      - kafka-webhook
+    verbs:
+      - delete
+  - apiGroups:
+      - "policy"
+    resources:
+      - poddisruptionbudgets
+    resourceNames:
+      - kafka-webhook
+    verbs:
+      - delete
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - leases
+    resourceNames:
+      - kafkachannel-dispatcher.knative.dev.eventing-kafka.pkg.channel.consolidated.reconciler.dispatcher.reconciler.00-of-01
+    verbs:
+      - delete
+  # to be able to read the old configmap and migrate
+  # and then delete them
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - config-leader-election-kafkachannel
+      - config-kafka
+    verbs:
+      - get
+      - delete
+  # to be able update config in the new configmap
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - kafka-channel-config
+    verbs:
+      - patch
+
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: knative-kafka-controller-post-install
+  namespace: knative-eventing
+  labels:
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-kafka-storage-version-migrator
+  labels:
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+rules:
+  # Storage version upgrader needs to be able to patch CRDs.
+  - apiGroups:
+      - "apiextensions.k8s.io"
+    resources:
+      - "customresourcedefinitions"
+      - "customresourcedefinitions/status"
+    verbs:
+      - "get"
+      - "list"
+      - "update"
+      - "patch"
+      - "watch"
+  # Our own resources we care about.
+  - apiGroups:
+      - "sources.knative.dev"
+    resources:
+      - "kafkasources"
+      - "kafkasources/finalizers"
+      - "kafkasources/status"
+    verbs:
+      - "get"
+      - "list"
+      - "create"
+      - "update"
+      - "patch"
+      - "watch"
+  - apiGroups:
+      - "messaging.knative.dev"
+    resources:
+      - "kafkachannels"
+      - "kafkachannels/finalizers"
+      - "kafkachannels/status"
+    verbs:
+      - "get"
+      - "list"
+      - "create"
+      - "update"
+      - "patch"
+      - "watch"
+  - apiGroups:
+      - "eventing.knative.dev"
+    resources:
+      - "kafkasinks"
+      - "kafkasinks/finalizers"
+      - "kafkasinks/status"
+    verbs:
+      - "get"
+      - "list"
+      - "create"
+      - "update"
+      - "patch"
+      - "watch"
+  - apiGroups:
+      - ""
+    resources:
+      - "namespaces"
+    verbs:
+      - "get"
+      - "list"
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: knative-kafka-storage-version-migrator
+  namespace: knative-eventing
+  labels:
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-kafka-storage-version-migrator
+  labels:
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+subjects:
+  - kind: ServiceAccount
+    name: knative-kafka-storage-version-migrator
+    namespace: knative-eventing
+roleRef:
+  kind: ClusterRole
+  name: knative-kafka-storage-version-migrator
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-kafka-controller-post-install
+  labels:
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+subjects:
+  - kind: ServiceAccount
+    name: knative-kafka-controller-post-install
+    namespace: knative-eventing
+roleRef:
+  kind: ClusterRole
+  name: knative-kafka-controller-post-install
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kafka-controller-post-install
+  namespace: knative-eventing
+  labels:
+    app: kafka-controller-post-install
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: kafka-controller-post-install
+        kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      serviceAccountName: knative-kafka-controller-post-install
+      restartPolicy: OnFailure
+      containers:
+        - name: post-install
+          image: gcr.io/knative-releases/knative.dev/eventing-kafka-broker/control-plane/cmd/post-install@sha256:f2dd395f8c8cd0636b8af61f54e1e0387bbd0895e4db1c056c3389ca85313f16
+          env:
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CHANNEL_GENERAL_CONFIG_MAP_NAME
+              value: kafka-channel-config
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: knative-kafka-storage-version-migrator
+  namespace: knative-eventing
+  labels:
+    app: "knative-kafka-storage-version-migrator"
+    kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: "knative-kafka-storage-version-migrator"
+        kafka.eventing.knative.dev/release: "44c60b11c471210c372a26a1beb10500d181ad7b"
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      serviceAccountName: knative-kafka-storage-version-migrator
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:237efa3c00b59782b0251d30bed106c5e788c6fd20a2090be41c4037cf51c695
+          env:
+            - name: IGNORE_NOT_FOUND
+              value: "true"
+          args:
+            - "kafkasources.sources.knative.dev"
+            - "kafkachannels.messaging.knative.dev"
+            - "kafkasinks.eventing.knative.dev"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+
+---

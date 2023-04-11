@@ -17,7 +17,7 @@ kind: Namespace
 metadata:
   name: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -40,7 +40,7 @@ metadata:
   name: gitlab-controller-manager
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -48,7 +48,7 @@ metadata:
   name: gitlab-webhook
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -70,7 +70,7 @@ kind: ClusterRole
 metadata:
   name: gitlabsource-manager-role
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
 rules:
   - apiGroups:
       - sources.knative.dev
@@ -143,7 +143,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: eventing-contrib-gitlab-source-observer
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
     duck.knative.dev/source: "true"
 rules:
   - apiGroups:
@@ -175,7 +175,7 @@ kind: ClusterRoleBinding
 metadata:
   name: gitlabsource-manager-rolebinding
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -190,7 +190,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-gitlab-addressable-resolver
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
 subjects:
   - kind: ServiceAccount
     name: gitlab-controller-manager
@@ -207,7 +207,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-gitlab-webhook
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
 subjects:
   - kind: ServiceAccount
     name: gitlab-webhook
@@ -237,7 +237,7 @@ kind: ClusterRole
 metadata:
   name: gitlab-webhook
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
 rules:
   # Sources admin
   - apiGroups:
@@ -387,7 +387,7 @@ kind: CustomResourceDefinition
 metadata:
   name: gitlabbindings.bindings.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
     duck.knative.dev/binding: "true"
     knative.dev/crd-install: "true"
 spec:
@@ -514,7 +514,7 @@ kind: CustomResourceDefinition
 metadata:
   name: gitlabsources.sources.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -760,7 +760,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
     control-plane: gitlab-controller-manager
   name: gitlab-controller-manager-service
   namespace: knative-sources
@@ -776,7 +776,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
     control-plane: gitlab-controller-manager
   name: gitlab-controller-manager
   namespace: knative-sources
@@ -804,12 +804,12 @@ spec:
             - name: METRICS_DOMAIN
               value: knative.dev/sources
             - name: GL_RA_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing-gitlab/cmd/receive_adapter@sha256:01d5cd854c5614be878f1dc651209fd645313f4c88a9c3835b0c55aceb3a067b
+              value: gcr.io/knative-releases/knative.dev/eventing-gitlab/cmd/receive_adapter@sha256:c606b30fe55d0ad0450ffa249474fc4d53145aae8a76d9abec8accfed8a6aa04
             - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          image: gcr.io/knative-releases/knative.dev/eventing-gitlab/cmd/controller@sha256:1da1ad1e8faae8745d15fc9d6991999b3d7c794378d0a8555c45151a74bfb82f
+          image: gcr.io/knative-releases/knative.dev/eventing-gitlab/cmd/controller@sha256:209a889aa5550223c57f1e4c96264539e1c29d1a5bedaf096eaa674c01eaed1c
           resources:
             limits:
               cpu: 100m
@@ -839,7 +839,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.gitlab.sources.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
 webhooks:
   - admissionReviewVersions:
       - v1beta1
@@ -856,7 +856,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.gitlab.sources.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
 webhooks:
   - admissionReviewVersions:
       - v1beta1
@@ -873,7 +873,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: gitlabbindings.webhook.gitlab.sources.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
 webhooks:
   - admissionReviewVersions:
       - v1beta1
@@ -906,14 +906,14 @@ metadata:
   name: gitlab-webhook-certs
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
 # The data is populated at install time.
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
     role: webhook
   name: gitlab-webhook
   namespace: knative-sources
@@ -931,7 +931,7 @@ metadata:
   name: gitlab-webhook
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.9.0"
+    contrib.eventing.knative.dev/release: "v1.9.1"
 spec:
   replicas: 1
   selector:
@@ -946,7 +946,7 @@ spec:
       containers:
         - name: gitlab-webhook
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing-gitlab/cmd/webhook@sha256:4e3ad43c7018845ae873c9bd7406d5276186eca00b10c38ac2b6744ab9816a8b
+          image: gcr.io/knative-releases/knative.dev/eventing-gitlab/cmd/webhook@sha256:e00b3ab57522adec38a598d436e69d33cf63c6385dbf82ec98373e47cf721d55
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:

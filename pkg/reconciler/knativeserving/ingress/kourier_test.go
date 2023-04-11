@@ -99,7 +99,7 @@ func TestTransformKourierManifest(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			client := fake.New()
-			manifest, err := mf.NewManifest("testdata/kodata/ingress/0.20/kourier.yaml", mf.UseClient(client))
+			manifest, err := mf.NewManifest("testdata/kodata/ingress/1.9/kourier/kourier.yaml", mf.UseClient(client))
 			if err != nil {
 				t.Fatalf("Failed to read manifest: %v", err)
 			}

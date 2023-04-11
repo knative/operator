@@ -23,8 +23,6 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
-//var contourFilter = ingressFilter("contour")
-
 func contourTransformers(ctx context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
 	return nil
 }

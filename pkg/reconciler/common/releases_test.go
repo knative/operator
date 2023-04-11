@@ -246,11 +246,11 @@ func TestTargetVersion(t *testing.T) {
 		component: &v1beta1.KnativeServing{
 			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
-					Version: "0.22.0",
+					Version: "1.9.0",
 				},
 			},
 		},
-		expected: "0.22.0",
+		expected: "1.9.0",
 	}, {
 		name: "eventing CR with major.minor.patch version not available",
 		component: &v1beta1.KnativeEventing{
@@ -1135,7 +1135,7 @@ func TestInstalledManifest(t *testing.T) {
 				},
 			},
 			Status: v1beta1.KnativeServingStatus{
-				Version: "0.22.0",
+				Version: "1.9.0",
 			},
 		},
 		expectedManifestsPath: "testdata/kodata/empty/empty-resource.yaml",

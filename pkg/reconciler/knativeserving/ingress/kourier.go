@@ -38,8 +38,6 @@ const (
 
 var kourierControllerDeploymentNames = sets.NewString("3scale-kourier-control", "net-kourier-controller")
 
-//var kourierFilter = ingressFilter("kourier")
-
 func kourierTransformers(ctx context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
 	return []mf.Transformer{
 		replaceGWNamespace(),
@@ -139,4 +137,11 @@ func configureBootstrapConfigMap(instance *v1beta1.KnativeServing) mf.Transforme
 		}
 		return nil
 	}
+}
+
+func hasProviderLabel(u *unstructured.Unstructured) bool {
+	if _, hasLabel := u.GetLabels()[providerLabel]; hasLabel {
+		return true
+	}
+	return false
 }

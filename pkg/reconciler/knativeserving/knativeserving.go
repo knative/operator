@@ -119,7 +119,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		ingress.AppendTargetIngress,
 		security.AppendTargetSecurity,
 		common.AppendAdditionalManifests,
-		//r.filterDisabledIngresses,
 		r.appendExtensionManifests,
 		r.transform,
 		common.Install,
@@ -129,13 +128,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 	manifest := r.manifest.Append()
 	return stages.Execute(ctx, &manifest, ks)
 }
-
-// filterDisabledIngresses removes the disabled ingresses from the manifests
-//func (r *Reconciler) filterDisabledIngresses(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
-//	ks := instance.(*v1beta1.KnativeServing)
-//	*manifest = manifest.Filter(ingress.Filters(ks))
-//	return nil
-//}
 
 // transform mutates the passed manifest to one with common, component
 // and platform transformations applied

@@ -85,11 +85,6 @@ func getIngressPath(version string, ks *v1beta1.KnativeServing) string {
 		urls = append(urls, url)
 	}
 
-	if len(urls) == 0 {
-		url := filepath.Join(ingressPath, "istio")
-		urls = append(urls, url)
-	}
-
 	return strings.Join(urls, common.COMMA)
 }
 

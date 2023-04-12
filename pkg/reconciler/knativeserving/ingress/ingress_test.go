@@ -161,6 +161,22 @@ func TestGetIngressPath(t *testing.T) {
 		ks:           &servingv1beta1.KnativeServing{},
 		expectedPath: os.Getenv(common.KoEnvKey) + "/ingress/1.9/istio",
 	}, {
+		name:    "Available ingress path for istio with empty spec",
+		version: "1.9",
+		ks: &servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{},
+		},
+		expectedPath: os.Getenv(common.KoEnvKey) + "/ingress/1.9/istio",
+	}, {
+		name:    "Available ingress path for istio with nil ingress",
+		version: "1.8",
+		ks: &servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: nil,
+			},
+		},
+		expectedPath: os.Getenv(common.KoEnvKey) + "/ingress/1.8/istio",
+	}, {
 		name:    "Available ingress path for kourier",
 		version: "1.8",
 		ks: &servingv1beta1.KnativeServing{

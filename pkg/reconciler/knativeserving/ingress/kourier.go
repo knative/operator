@@ -50,7 +50,7 @@ func kourierTransformers(ctx context.Context, instance *v1beta1.KnativeServing) 
 // namespace of the deployment its set on.
 func replaceGWNamespace() mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Deployment" && kourierControllerDeploymentNames.Has(u.GetName()) && hasProviderLabel(u) {
+		if u.GetKind() == "Deployment" && kourierControllerDeploymentNames.Has(u.GetName()) {
 			deployment := &appsv1.Deployment{}
 			if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
 				return err
@@ -77,7 +77,7 @@ func replaceGWNamespace() mf.Transformer {
 // configureGWServiceType configures Kourier GW's service type such as ClusterIP, LoadBalancer and NodePort.
 func configureGWServiceType(instance *v1beta1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName && hasProviderLabel(u) {
+		if u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName {
 			if instance.Spec.Ingress.Kourier.ServiceType == "" {
 				// Do nothing if ServiceType is not configured.
 				return nil
@@ -108,7 +108,7 @@ func configureGWServiceType(instance *v1beta1.KnativeServing) mf.Transformer {
 // configureBootstrapConfigMap sets Kourier GW's bootstrap configmap name.
 func configureBootstrapConfigMap(instance *v1beta1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Deployment" && u.GetName() == kourierGatewayDeploymentNames && hasProviderLabel(u) {
+		if u.GetKind() == "Deployment" && u.GetName() == kourierGatewayDeploymentNames {
 			if instance.Spec.Ingress.Kourier.BootstrapConfigmapName == "" {
 				// Do nothing if BootstrapConfigmapName is not configured.
 				return nil
@@ -137,11 +137,4 @@ func configureBootstrapConfigMap(instance *v1beta1.KnativeServing) mf.Transforme
 		}
 		return nil
 	}
-}
-
-func hasProviderLabel(u *unstructured.Unstructured) bool {
-	if _, hasLabel := u.GetLabels()[providerLabel]; hasLabel {
-		return true
-	}
-	return false
 }

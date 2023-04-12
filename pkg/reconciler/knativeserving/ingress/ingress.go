@@ -27,9 +27,8 @@ import (
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/common"
+	servingcommon "knative.dev/operator/pkg/reconciler/knativeserving/common"
 )
-
-const providerLabel = "networking.knative.dev/ingress-provider"
 
 // Transformers returns a list of transformers based on the enabled ingresses
 func Transformers(ctx context.Context, ks *v1beta1.KnativeServing) []mf.Transformer {
@@ -91,7 +90,7 @@ func getIngressPath(version string, ks *v1beta1.KnativeServing) string {
 // AppendTargetIngress appends the manifests of the ingress to be installed
 func AppendTargetIngress(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	version := common.TargetVersion(instance)
-	ingressPath := getIngressPath(version, convertToKS(instance))
+	ingressPath := getIngressPath(version, servingcommon.ConvertToKS(instance))
 	m, err := getIngress(ingressPath)
 	if err == nil {
 		*manifest = manifest.Append(m)
@@ -110,7 +109,7 @@ func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instan
 	if version == "" {
 		version = common.TargetVersion(instance)
 	}
-	ingressPath := getIngressPath(version, convertToKS(instance))
+	ingressPath := getIngressPath(version, servingcommon.ConvertToKS(instance))
 	m, err := getIngress(ingressPath)
 	if err == nil {
 		*manifest = manifest.Append(m)
@@ -121,13 +120,4 @@ func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instan
 	// can still work, as long as spec.manifests contains all the manifest links. This function can always return nil,
 	// even if the ingress is not available.
 	return nil
-}
-
-func convertToKS(instance base.KComponent) *v1beta1.KnativeServing {
-	ks := &v1beta1.KnativeServing{}
-	switch instance := instance.(type) {
-	case *v1beta1.KnativeServing:
-		ks = instance
-	}
-	return ks
 }

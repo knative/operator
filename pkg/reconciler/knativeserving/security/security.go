@@ -28,12 +28,13 @@ import (
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/common"
+	servingcommon "knative.dev/operator/pkg/reconciler/knativeserving/common"
 )
 
 // AppendTargetSecurity appends the manifests of the security guard to be installed
 func AppendTargetSecurity(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	version := common.TargetVersion(instance)
-	m, err := getSecurity(version, convertToKS(instance))
+	m, err := getSecurity(version, servingcommon.ConvertToKS(instance))
 
 	if err == nil {
 		*manifest = manifest.Append(m)
@@ -59,15 +60,6 @@ func Transformers(ctx context.Context, ks *v1beta1.KnativeServing) []mf.Transfor
 	}
 
 	return transformers
-}
-
-func convertToKS(instance base.KComponent) *v1beta1.KnativeServing {
-	ks := &v1beta1.KnativeServing{}
-	switch instance := instance.(type) {
-	case *v1beta1.KnativeServing:
-		ks = instance
-	}
-	return ks
 }
 
 func getSecurity(version string, ks *v1beta1.KnativeServing) (mf.Manifest, error) {

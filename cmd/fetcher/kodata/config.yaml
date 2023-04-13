@@ -23,19 +23,19 @@ ingress:
   - s3:
       bucket: "gs-noauth://knative-releases"
       prefix: "net-istio/previous"
-    eventingService: istio
+    ingressService: istio
     include:
     - "net-istio.yaml"
   - s3:
       bucket: "gs-noauth://knative-releases"
       prefix: "net-contour/previous"
-    eventingService: contour
+    ingressService: contour
     include:
       - "net-contour.yaml"
   - s3:
       bucket: "gs-noauth://knative-releases"
       prefix: "net-kourier/previous"
-    eventingService: kourier
+    ingressService: kourier
     include:
       - "kourier.yaml"
 knative-eventing:

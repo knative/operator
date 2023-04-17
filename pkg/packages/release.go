@@ -255,6 +255,13 @@ func handleAlternatives(ctx context.Context, base string, client *http.Client, p
 				return err
 			}
 		}
+		if src.IngressService != "" {
+			resourcePath = filepath.Join(path, src.IngressService)
+			err := os.MkdirAll(resourcePath, 0755)
+			if err != nil {
+				return err
+			}
+		}
 		release := latestMinor(minor, candidates)
 		// Download assets and concatenate them.
 		assets := release.Assets.FilterAssets(src.Accept(release.TagName))

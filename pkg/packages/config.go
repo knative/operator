@@ -63,7 +63,8 @@ type Source struct {
 	S3 S3Source `json:"s3,omitempty"`
 	// EventingService represents the name of the service for the eventing source
 	EventingService string `json:"eventingService,omitempty"`
-
+	// IngressService represents the name of the network plugin for the ingress
+	IngressService string `json:"ingressService,omitempty"`
 	// Overrides provides a mechanism for modifying include/exclude (and
 	// possibly other settings) on a per-release or per-minor-version basis, to
 	// allow fixing up discontinuities in release patterns.

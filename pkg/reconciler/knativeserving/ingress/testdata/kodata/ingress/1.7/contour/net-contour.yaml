@@ -3,16 +3,18 @@
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: knative-contour-core
+  name: knative-serving-contour
   labels:
     networking.knative.dev/ingress-provider: contour
+    app.kubernetes.io/component: net-contour
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.7.1"
     serving.knative.dev/controller: "true"
 rules:
   - apiGroups: ["projectcontour.io"]
     resources: ["httpproxies"]
     verbs: ["get", "list", "create", "update", "delete", "deletecollection", "patch", "watch"]
 
----
 # Copyright 2019 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +28,7 @@ rules:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -34,7 +36,9 @@ metadata:
   namespace: knative-serving
   labels:
     networking.knative.dev/ingress-provider: contour
-    serving.knative.dev/release: "v0.19.0"
+    app.kubernetes.io/component: net-contour
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.7.1"
 data:
   _example: |
     ################################
@@ -47,7 +51,7 @@ data:
     timeout-policy-idle: "infinity"
 
     # timeout-policy-response sets TimeoutPolicy.Response in contour HTTPProxy spec
-    timeou-policy-response: "infinity"
+    timeout-policy-response: "infinity"
 
     # If auto-TLS is disabled fallback to the following certificate
     #
@@ -68,7 +72,6 @@ data:
         class: contour-internal
         service: contour-internal/envoy
 
----
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -82,11 +85,11 @@ data:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: contour-ingress-controller
+  name: net-contour-controller
   namespace: knative-serving
   labels:
     networking.knative.dev/ingress-provider: contour
@@ -94,18 +97,21 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: contour-ingress-controller
+      app: net-contour-controller
   template:
     metadata:
       labels:
-        app: contour-ingress-controller
+        app: net-contour-controller
+        app.kubernetes.io/component: net-contour
+        app.kubernetes.io/name: knative-serving
+        app.kubernetes.io/version: "1.7.1"
     spec:
       serviceAccountName: controller
       containers:
         - name: controller
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:bdff6f57bbded077639f223459acd92a9b2639ffb0f8569736019c2e0ece9612
+          image: gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:9ac595b67aaf822576c5d870acd9d8b69fffa72aeda809b3d35d31f266f7d7f6
           resources:
             requests:
               cpu: 40m
@@ -136,5 +142,5 @@ spec:
             capabilities:
               drop:
                 - all
-
 ---
+

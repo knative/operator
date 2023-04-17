@@ -56,7 +56,6 @@ func TestTransformKourierManifest(t *testing.T) {
 	tests := []struct {
 		name             string
 		instance         *servingv1beta1.KnativeServing
-		dropLabel        bool
 		expNamespace     string
 		expServiceType   string
 		expConfigMapName string
@@ -87,28 +86,14 @@ func TestTransformKourierManifest(t *testing.T) {
 		expServiceType:   "Foo",
 		expConfigMapName: kourierDefaultVolumeName,
 		expError:         fmt.Errorf("unknown service type \"Foo\""),
-	}, {
-		name:             "Do not transform without the ingress provier label",
-		dropLabel:        true,
-		instance:         servingInstance(servingNamespace, "ClusterIP", "my-bootstrap"),
-		expNamespace:     "kourier-system", // kourier default namespace
-		expConfigMapName: kourierDefaultVolumeName,
-		expServiceType:   "LoadBalancer", // kourier GW default service type
 	}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			client := fake.New()
-			manifest, err := mf.NewManifest("testdata/kodata/ingress/0.20/kourier.yaml", mf.UseClient(client))
+			manifest, err := mf.NewManifest("testdata/kodata/ingress/1.9/kourier/kourier.yaml", mf.UseClient(client))
 			if err != nil {
 				t.Fatalf("Failed to read manifest: %v", err)
-			}
-
-			if tt.dropLabel {
-				manifest, err = manifest.Transform(removeLabels())
-				if err != nil {
-					t.Fatalf("Failed to transform manifest: %v", err)
-				}
 			}
 
 			manifest, err = manifest.Transform(replaceGWNamespace())

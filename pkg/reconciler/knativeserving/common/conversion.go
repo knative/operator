@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2022 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,15 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ingress
+package common
 
 import (
-	"context"
-
-	mf "github.com/manifestival/manifestival"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
-func contourTransformers(ctx context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
-	return nil
+func ConvertToKS(instance base.KComponent) *v1beta1.KnativeServing {
+	ks := &v1beta1.KnativeServing{}
+	switch instance := instance.(type) {
+	case *v1beta1.KnativeServing:
+		ks = instance
+	}
+	return ks
 }

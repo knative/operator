@@ -1,4 +1,4 @@
-# Generated when HEAD was 9f0302e48909925303ccbdc2da86ca9b93d2cff0
+# Generated when HEAD was 31bdd1668cd75f9e8958fab08edc88f68679a3e0
 #
 # Copyright 2019 The Knative Authors
 #
@@ -20,12 +20,14 @@ metadata:
   # These are the permissions needed by the Istio Ingress implementation.
   name: knative-serving-istio
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
     serving.knative.dev/controller: "true"
     networking.knative.dev/ingress-provider: istio
 rules:
   - apiGroups: ["networking.istio.io"]
-    resources: ["virtualservices", "gateways"]
+    resources: ["virtualservices", "gateways", "destinationrules"]
     verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
 
 ---
@@ -50,7 +52,9 @@ metadata:
   name: knative-ingress-gateway
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -87,7 +91,9 @@ metadata:
   name: knative-local-gateway
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -106,8 +112,11 @@ metadata:
   name: knative-local-gateway
   namespace: istio-system
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
     networking.knative.dev/ingress-provider: istio
+    experimental.istio.io/disable-gateway-port-translation: "true"
 spec:
   type: ClusterIP
   selector:
@@ -116,136 +125,6 @@ spec:
     - name: http2
       port: 80
       targetPort: 8081
-
----
-# Allows the Webhooks to be reached by kube-api with or without
-# sidecar injection and with mTLS PERMISSIVE and STRICT.
-apiVersion: "security.istio.io/v1beta1"
-kind: "PeerAuthentication"
-metadata:
-  name: "webhook"
-  namespace: "knative-serving"
-  labels:
-    serving.knative.dev/release: "v0.20.0"
-    networking.knative.dev/ingress-provider: istio
-spec:
-  selector:
-    matchLabels:
-      app: webhook
-  mtls:
-    mode: PERMISSIVE
----
-apiVersion: "security.istio.io/v1beta1"
-kind: "PeerAuthentication"
-metadata:
-  name: "istio-webhook"
-  namespace: "knative-serving"
-  labels:
-    serving.knative.dev/release: "v0.20.0"
-    networking.knative.dev/ingress-provider: istio
-spec:
-  selector:
-    matchLabels:
-      app: istio-webhook
-  mtls:
-    mode: PERMISSIVE
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: admissionregistration.k8s.io/v1
-kind: MutatingWebhookConfiguration
-metadata:
-  name: webhook.istio.networking.internal.knative.dev
-  labels:
-    serving.knative.dev/release: "v0.20.0"
-    networking.knative.dev/ingress-provider: istio
-webhooks:
-  - admissionReviewVersions:
-      - v1beta1
-    clientConfig:
-      service:
-        name: istio-webhook
-        namespace: knative-serving
-    failurePolicy: Fail
-    sideEffects: None
-    objectSelector:
-      matchExpressions:
-        - {key: "serving.knative.dev/configuration", operator: Exists}
-    name: webhook.istio.networking.internal.knative.dev
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: admissionregistration.k8s.io/v1
-kind: ValidatingWebhookConfiguration
-metadata:
-  name: config.webhook.istio.networking.internal.knative.dev
-  labels:
-    serving.knative.dev/release: "v0.20.0"
-    networking.knative.dev/ingress-provider: istio
-webhooks:
-  - admissionReviewVersions:
-      - v1beta1
-    clientConfig:
-      service:
-        name: istio-webhook
-        namespace: knative-serving
-    failurePolicy: Fail
-    sideEffects: None
-    name: config.webhook.istio.networking.internal.knative.dev
-    namespaceSelector:
-      matchExpressions:
-        - key: serving.knative.dev/release
-          operator: Exists
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: v1
-kind: Secret
-metadata:
-  name: istio-webhook-certs
-  namespace: knative-serving
-  labels:
-    serving.knative.dev/release: "v0.20.0"
-    networking.knative.dev/ingress-provider: istio
 
 ---
 # Copyright 2018 The Knative Authors
@@ -268,9 +147,12 @@ metadata:
   name: config-istio
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
     networking.knative.dev/ingress-provider: istio
 data:
+  # TODO(nghia): Extract the .svc.cluster.local suffix into its own config.
   _example: |
     ################################
     #                              #
@@ -287,12 +169,10 @@ data:
     # this example block and unindented to be in the data block
     # to actually change the configuration.
 
-    # Default Knative Gateway after v0.3. It points to the Istio
-    # standard istio-ingressgateway, instead of a custom one that we
-    # used pre-0.3. The configuration format should be `gateway.
-    # {{gateway_namespace}}.{{gateway_name}}: "{{ingress_name}}.
-    # {{ingress_namespace}}.svc.cluster.local"`. The {{gateway_namespace}}
-    # is optional; when it is omitted, the system will search for
+    # A gateway and Istio service to serve external traffic.
+    # The configuration format should be
+    # `gateway.{{gateway_namespace}}.{{gateway_name}}: "{{ingress_name}}.{{ingress_namespace}}.svc.cluster.local"`.
+    # The {{gateway_namespace}} is optional; when it is omitted, the system will search for
     # the gateway in the serving system namespace `knative-serving`
     gateway.knative-serving.knative-ingress-gateway: "istio-ingressgateway.istio-system.svc.cluster.local"
 
@@ -312,14 +192,67 @@ data:
     # `knative-serving`
     local-gateway.knative-serving.knative-local-gateway: "knative-local-gateway.istio-system.svc.cluster.local"
 
-    # To use only Istio service mesh and no knative-local-gateway, replace
-    # all local-gateway.* entries by the following entry.
-    local-gateway.mesh: "mesh"
-
     # If true, knative will use the Istio VirtualService's status to determine
     # endpoint readiness. Otherwise, probe as usual.
+    # NOTE: This feature is currently experimental and should not be used in production.
     enable-virtualservice-status: "false"
-  # TODO(nghia): Extract the .svc.cluster.local suffix into its own config.
+
+---
+# Allows the Webhooks to be reached by kube-api with or without
+# sidecar injection and with mTLS PERMISSIVE and STRICT.
+apiVersion: "security.istio.io/v1beta1"
+kind: "PeerAuthentication"
+metadata:
+  name: "webhook"
+  namespace: "knative-serving"
+  labels:
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
+    networking.knative.dev/ingress-provider: istio
+spec:
+  selector:
+    matchLabels:
+      app: webhook
+  portLevelMtls:
+    "8443":
+      mode: PERMISSIVE
+---
+apiVersion: "security.istio.io/v1beta1"
+kind: "PeerAuthentication"
+metadata:
+  name: "domainmapping-webhook"
+  namespace: "knative-serving"
+  labels:
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
+    networking.knative.dev/ingress-provider: istio
+spec:
+  selector:
+    matchLabels:
+      app: domainmapping-webhook
+  portLevelMtls:
+    "8443":
+      mode: PERMISSIVE
+---
+apiVersion: "security.istio.io/v1beta1"
+kind: "PeerAuthentication"
+metadata:
+  name: "net-istio-webhook"
+  namespace: "knative-serving"
+  labels:
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
+    networking.knative.dev/ingress-provider: istio
+spec:
+  selector:
+    matchLabels:
+      app: net-istio-webhook
+  portLevelMtls:
+    "8443":
+      mode: PERMISSIVE
 
 ---
 # Copyright 2019 The Knative Authors
@@ -339,15 +272,17 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: networking-istio
+  name: net-istio-controller
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
     matchLabels:
-      app: networking-istio
+      app: net-istio-controller
   template:
     metadata:
       annotations:
@@ -357,15 +292,17 @@ spec:
         # this is the Istio controller, and so it may be Istio-aware.
         sidecar.istio.io/inject: "false"
       labels:
-        app: networking-istio
-        serving.knative.dev/release: "v0.20.0"
+        app: net-istio-controller
+        app.kubernetes.io/component: net-istio
+        app.kubernetes.io/name: knative-serving
+        app.kubernetes.io/version: "1.6.1"
     spec:
       serviceAccountName: controller
       containers:
-        - name: networking-istio
+        - name: controller
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/net-istio/cmd/controller@sha256:f3791f496a075898d20b51b179c193dcb55d3acd3006815853dd7f07b6e63425
+          image: gcr.io/knative-releases/knative.dev/net-istio/cmd/controller@sha256:b10f96bca1f2d4cf6cf00b2aa046d92798ab1a8e7432f75f7f92f3dc6024987f
           resources:
             requests:
               cpu: 30m
@@ -382,6 +319,8 @@ spec:
               value: config-logging
             - name: CONFIG_OBSERVABILITY_NAME
               value: config-observability
+            - name: ENABLE_SECRET_INFORMER_FILTERING_BY_CERT_UID
+              value: "false"
             # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
             - name: METRICS_DOMAIN
               value: knative.dev/net-istio
@@ -419,31 +358,35 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: istio-webhook
+  name: net-istio-webhook
   namespace: knative-serving
   labels:
-    serving.knative.dev/release: "v0.20.0"
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
     matchLabels:
-      app: istio-webhook
-      role: istio-webhook
+      app: net-istio-webhook
+      role: net-istio-webhook
   template:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
       labels:
-        app: istio-webhook
-        role: istio-webhook
-        serving.knative.dev/release: "v0.20.0"
+        app: net-istio-webhook
+        role: net-istio-webhook
+        app.kubernetes.io/component: net-istio
+        app.kubernetes.io/name: knative-serving
+        app.kubernetes.io/version: "1.6.1"
     spec:
       serviceAccountName: controller
       containers:
         - name: webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/net-istio/cmd/webhook@sha256:d044519f9b1f1e9eff45cf9657d73b6b3d943266eda5684ff5b9cd3c312dfebb
+          image: gcr.io/knative-releases/knative.dev/net-istio/cmd/webhook@sha256:1729c1244d1c35826036d4a65780070c1af89cb6189e279e51db0d73a735b4cb
           resources:
             requests:
               cpu: 20m
@@ -464,7 +407,7 @@ spec:
             - name: METRICS_DOMAIN
               value: knative.dev/net-istio
             - name: WEBHOOK_NAME
-              value: istio-webhook
+              value: net-istio-webhook
           securityContext:
             allowPrivilegeEscalation: false
           ports:
@@ -491,13 +434,41 @@ spec:
 # limitations under the License.
 
 apiVersion: v1
-kind: Service
+kind: Secret
 metadata:
-  name: istio-webhook
+  name: net-istio-webhook-certs
   namespace: knative-serving
   labels:
-    role: istio-webhook
-    serving.knative.dev/release: "v0.20.0"
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
+    networking.knative.dev/ingress-provider: istio
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: net-istio-webhook
+  namespace: knative-serving
+  labels:
+    role: net-istio-webhook
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
     networking.knative.dev/ingress-provider: istio
 spec:
   ports:
@@ -512,6 +483,85 @@ spec:
       port: 443
       targetPort: 8443
   selector:
-    app: istio-webhook
+    app: net-istio-webhook
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: webhook.istio.networking.internal.knative.dev
+  labels:
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
+    networking.knative.dev/ingress-provider: istio
+webhooks:
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: net-istio-webhook
+        namespace: knative-serving
+    failurePolicy: Fail
+    sideEffects: None
+    objectSelector:
+      matchExpressions:
+        - {key: "serving.knative.dev/configuration", operator: Exists}
+    name: webhook.istio.networking.internal.knative.dev
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: config.webhook.istio.networking.internal.knative.dev
+  labels:
+    app.kubernetes.io/component: net-istio
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.6.1"
+    networking.knative.dev/ingress-provider: istio
+webhooks:
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: net-istio-webhook
+        namespace: knative-serving
+    failurePolicy: Fail
+    sideEffects: None
+    name: config.webhook.istio.networking.internal.knative.dev
+    objectSelector:
+      matchLabels:
+        app.kubernetes.io/name: knative-serving
+        app.kubernetes.io/component: net-istio
 
 ---

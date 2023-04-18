@@ -20,20 +20,20 @@ import (
 	"context"
 	"fmt"
 
-	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1beta1"
-
 	mf "github.com/manifestival/manifestival"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 
+	"knative.dev/pkg/logging"
+	pkgreconciler "knative.dev/pkg/reconciler"
+
+	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/operator/pkg/apis/operator/v1beta1"
+	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1beta1/knativeeventing"
 	"knative.dev/operator/pkg/reconciler/common"
 	kec "knative.dev/operator/pkg/reconciler/knativeeventing/common"
 	"knative.dev/operator/pkg/reconciler/knativeeventing/source"
-	"knative.dev/pkg/logging"
-	pkgreconciler "knative.dev/pkg/reconciler"
 )
 
 // Reconciler implements controller.Reconciler for KnativeEventing resources.
@@ -113,18 +113,27 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 	if err := r.extension.Reconcile(ctx, ke); err != nil {
 		return err
 	}
+	manifest := r.manifest.Append()
 	stages := common.Stages{
 		common.AppendTarget,
 		source.AppendTargetSources,
 		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
 		r.transform,
-		common.Install,
+		common.Install(ctx, &manifest, ke, r.setManifestsPath),
 		common.CheckDeployments,
 		common.DeleteObsoleteResources(ctx, ke, r.installed),
 	}
-	manifest := r.manifest.Append()
 	return stages.Execute(ctx, &manifest, ke)
+}
+
+func (r *Reconciler) setManifestsPath(instance base.KComponent) error {
+	status := instance.GetStatus()
+	version := common.TargetVersion(instance)
+	status.SetVersion(version)
+	sourcePath := source.GetSourcePath(version, instance)
+	status.SetManifests(append(common.TargetManifestPathArray(instance), sourcePath))
+	return nil
 }
 
 // transform mutates the passed manifest to one with common, component

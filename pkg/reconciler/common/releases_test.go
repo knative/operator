@@ -1021,6 +1021,16 @@ func TestTargetManifestPathArray(t *testing.T) {
 		},
 		expectedManifestsPath: []string{os.Getenv(KoEnvKey) + "/knative-serving/0.26.1"},
 	}, {
+		name: "knative-eventing with no manifests",
+		component: &v1beta1.KnativeEventing{
+			Spec: v1beta1.KnativeEventingSpec{
+				CommonSpec: base.CommonSpec{
+					Version: "1.0.0",
+				},
+			},
+		},
+		expectedManifestsPath: []string{os.Getenv(KoEnvKey) + "/knative-eventing/1.0.0"},
+	}, {
 		name: "knative-serving with multiple paths in spec.manifests and spec.additionalManifests",
 		component: &v1beta1.KnativeServing{
 			Spec: v1beta1.KnativeServingSpec{
@@ -1062,7 +1072,7 @@ func TestTargetManifestPathArray(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			path := targetManifestPathArray(test.component)
+			path := TargetManifestPathArray(test.component)
 			if test.expectedManifestsPath == nil {
 				util.AssertEqual(t, len(path), 0)
 			} else {

@@ -304,7 +304,9 @@ func targetManifestPath(instance base.KComponent) string {
 	return manifestPath
 }
 
-func targetManifestPathArray(instance base.KComponent) []string {
+// TargetManifestPathArray creates and returns the path of knative serving or
+// eventing manifests to be installed.
+func TargetManifestPathArray(instance base.KComponent) []string {
 	targetMPath := targetManifestPath(instance)
 	manifestPaths := []string{targetMPath}
 	if len(instance.GetSpec().GetAdditionalManifests()) > 0 {

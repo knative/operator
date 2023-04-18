@@ -114,6 +114,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 	if err := r.extension.Reconcile(ctx, ks); err != nil {
 		return err
 	}
+	manifest := r.manifest.Append()
 	stages := common.Stages{
 		common.AppendTarget,
 		ingress.AppendTargetIngress,
@@ -121,12 +122,20 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
 		r.transform,
-		common.Install,
+		common.Install(ctx, &manifest, ks, r.setManifestsPath),
 		common.CheckDeployments,
 		common.DeleteObsoleteResources(ctx, ks, r.installed),
 	}
-	manifest := r.manifest.Append()
 	return stages.Execute(ctx, &manifest, ks)
+}
+
+func (r *Reconciler) setManifestsPath(instance base.KComponent) error {
+	status := instance.GetStatus()
+	version := common.TargetVersion(instance)
+	status.SetVersion(version)
+	ingressPath := ingress.GetIngressPath(version, instance)
+	status.SetManifests(append(common.TargetManifestPathArray(instance), ingressPath))
+	return nil
 }
 
 // transform mutates the passed manifest to one with common, component

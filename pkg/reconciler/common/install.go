@@ -34,9 +34,12 @@ var (
 	gatewayNotMatch              = "no matches for kind \"Gateway\""
 )
 
+// ManifestSetter sets the manifest path
+type ManifestSetter func(instance base.KComponent) error
+
 // Install applies the manifest resources for the given version and updates the given
 // status accordingly.
-func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponent, manifestSet ManifestSetter) Stage {
 	logger := logging.FromContext(ctx)
 	logger.Debug("Installing manifest")
 	status := instance.GetStatus()
@@ -45,11 +48,15 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponen
 	// (Cluster)RoleBindings, then the rest of the manifest.
 	if err := manifest.Filter(role).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())
-		return fmt.Errorf("failed to apply (cluster)roles: %w", err)
+		return func(_ context.Context, manifest *mf.Manifest, _ base.KComponent) error {
+			return fmt.Errorf("failed to apply (cluster)roles: %w", err)
+		}
 	}
 	if err := manifest.Filter(rolebinding).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())
-		return fmt.Errorf("failed to apply (cluster)rolebindings: %w", err)
+		return func(_ context.Context, manifest *mf.Manifest, _ base.KComponent) error {
+			return fmt.Errorf("failed to apply (cluster)rolebindings: %w", err)
+		}
 	}
 	if err := manifest.Filter(mf.Not(mf.Any(role, rolebinding, webhook))).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())
@@ -57,18 +64,23 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponen
 			(ks.Spec.Ingress == nil || ks.Spec.Ingress.Istio.Enabled) {
 			errMessage := fmt.Errorf("please install istio or disable the istio ingress plugin: %w", err)
 			status.MarkInstallFailed(errMessage.Error())
-			return errMessage
+			return func(_ context.Context, manifest *mf.Manifest, _ base.KComponent) error {
+				return errMessage
+			}
 		}
 
-		return fmt.Errorf("failed to apply non rbac manifest: %w", err)
+		return func(_ context.Context, manifest *mf.Manifest, _ base.KComponent) error {
+			return fmt.Errorf("failed to apply non rbac manifest: %w", err)
+		}
 	}
 	if err := manifest.Filter(webhook).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())
-		return fmt.Errorf("failed to apply webhooks: %w", err)
+		return func(_ context.Context, manifest *mf.Manifest, _ base.KComponent) error {
+			return fmt.Errorf("failed to apply webhooks: %w", err)
+		}
 	}
 	status.MarkInstallSucceeded()
-	status.SetVersion(TargetVersion(instance))
-	status.SetManifests(targetManifestPathArray(instance))
+	manifestSet(instance)
 	return nil
 }
 

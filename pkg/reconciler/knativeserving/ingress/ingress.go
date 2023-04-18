@@ -55,6 +55,11 @@ func getIngress(path string) (mf.Manifest, error) {
 	return common.FetchManifest(path)
 }
 
+// GetIngressPath returns the path of the ingress plugin manifests.
+func GetIngressPath(version string, instance base.KComponent) string {
+	return getIngressPath(version, servingcommon.ConvertToKS(instance))
+}
+
 func getIngressPath(version string, ks *v1beta1.KnativeServing) string {
 	var urls []string
 	koDataDir := os.Getenv(common.KoEnvKey)

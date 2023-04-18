@@ -77,7 +77,7 @@ func TestInstall(t *testing.T) {
 			Version: "0.13-test",
 		},
 	}
-	if err := Install(context.TODO(), &manifest, instance); err != nil {
+	if err := Install(context.TODO(), &manifest, instance, setManifestsPath); err != nil {
 		t.Fatalf("Install() = %v, want no error", err)
 	}
 
@@ -93,6 +93,12 @@ func TestInstall(t *testing.T) {
 	if got, want := instance.GetStatus().GetVersion(), version; got != want {
 		t.Fatalf("GetVersion() = %s, want %s", got, want)
 	}
+}
+
+func setManifestsPath(instance base.KComponent) error {
+	status := instance.GetStatus()
+	status.SetVersion(TargetVersion(instance))
+	return nil
 }
 
 func TestInstallError(t *testing.T) {
@@ -117,7 +123,7 @@ func TestInstallError(t *testing.T) {
 			Version: oldVersion,
 		},
 	}
-	if err := Install(context.TODO(), &manifest, instance); err == nil {
+	if err := Install(context.TODO(), &manifest, instance, setManifestsPath); err == nil {
 		t.Fatalf("Install() = nil, wanted an error")
 	}
 

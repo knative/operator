@@ -65,6 +65,11 @@ func getAllSourcePath(version string) string {
 	return strings.Join(urls, common.COMMA)
 }
 
+// GetSourcePath returns the path of the eventing source manifests.
+func GetSourcePath(version string, instance base.KComponent) string {
+	return getSourcePath(version, convertToKE(instance))
+}
+
 func getSourcePath(version string, ke *v1beta1.KnativeEventing) string {
 	if ke.Spec.Source == nil {
 		// If no eventing source is defined, return an empty string.

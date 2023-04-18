@@ -259,6 +259,14 @@ func TestResourceTransform(t *testing.T) {
 			util.AssertEqual(t, err, nil)
 			util.AssertDeepEqual(t, job.Spec.Template.Spec.Containers, tt.expected)
 
+			// test for job with generated name
+			unstructuredJobGenerated := util.MakeUnstructured(t, makeJobGenerated(tt.name, podSpec))
+			transform(&unstructuredJobGenerated)
+			jobGenerated := &batchv1.Job{}
+			err = scheme.Scheme.Convert(&unstructuredJobGenerated, jobGenerated, nil)
+			util.AssertEqual(t, err, nil)
+			util.AssertDeepEqual(t, jobGenerated.Spec.Template.Spec.Containers, tt.expected)
+
 			// test for statefulset
 			unstructuredStatefulSet := util.MakeUnstructured(t, makeStatefulSet(tt.name, podSpec))
 			transform(&unstructuredStatefulSet)
@@ -460,6 +468,22 @@ func makeJob(name string, podSpec corev1.PodSpec) *batchv1.Job {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
+		},
+		Spec: batchv1.JobSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: podSpec,
+			},
+		},
+	}
+}
+
+func makeJobGenerated(name string, podSpec corev1.PodSpec) *batchv1.Job {
+	return &batchv1.Job{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "Job",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			GenerateName: name,
 		},
 		Spec: batchv1.JobSpec{
 			Template: corev1.PodTemplateSpec{

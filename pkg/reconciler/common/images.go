@@ -93,14 +93,18 @@ func ImageTransform(registry *base.Registry, log *zap.SugaredLogger) mf.Transfor
 			return nil
 		}
 
-		log.Debugw("Updating", "name", obj.GetName(), "registry", registry)
+		objName := obj.GetName()
+		if objName == "" {
+			objName = obj.GetGenerateName()
+		}
+		log.Debugw("Updating", "name", objName, "registry", registry)
 
 		containers := podSpec.Containers
 		for i := range containers {
 			container := &containers[i]
 
 			// Replace direct image YAML references.
-			if image, ok := registry.Override[obj.GetName()+delimiter+container.Name]; ok {
+			if image, ok := registry.Override[objName+delimiter+container.Name]; ok {
 				container.Image = image
 			} else if image, ok := registry.Override[container.Name]; ok {
 				container.Image = image

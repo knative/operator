@@ -72,6 +72,14 @@ func ImageTransform(registry *base.Registry, log *zap.SugaredLogger) mf.Transfor
 
 			obj = ds
 			podSpec = &ds.Spec.Template.Spec
+		case "StatefulSet":
+			ss := &appsv1.StatefulSet{}
+			if err := scheme.Scheme.Convert(u, ss, nil); err != nil {
+				return fmt.Errorf("failed to convert Unstructured to StatefulSet: %w", err)
+			}
+
+			obj = ss
+			podSpec = &ss.Spec.Template.Spec
 		case "Job":
 			job := &batchv1.Job{}
 			if err := scheme.Scheme.Convert(u, job, nil); err != nil {

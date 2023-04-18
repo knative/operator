@@ -258,6 +258,14 @@ func TestResourceTransform(t *testing.T) {
 			err = scheme.Scheme.Convert(&unstructuredJob, job, nil)
 			util.AssertEqual(t, err, nil)
 			util.AssertDeepEqual(t, job.Spec.Template.Spec.Containers, tt.expected)
+
+			// test for statefulset
+			unstructuredStatefulSet := util.MakeUnstructured(t, makeStatefulSet(tt.name, podSpec))
+			transform(&unstructuredStatefulSet)
+			statefulSet := &appsv1.StatefulSet{}
+			err = scheme.Scheme.Convert(&unstructuredStatefulSet, statefulSet, nil)
+			util.AssertEqual(t, err, nil)
+			util.AssertDeepEqual(t, job.Spec.Template.Spec.Containers, tt.expected)
 		})
 	}
 }
@@ -401,6 +409,14 @@ func TestImagePullSecrets(t *testing.T) {
 			err = scheme.Scheme.Convert(&unstructuredDaemonSet, daemonSet, nil)
 			util.AssertEqual(t, err, nil)
 			util.AssertDeepEqual(t, daemonSet.Spec.Template.Spec.ImagePullSecrets, tt.expectedSecrets)
+
+			unstructuredStatefulSet := util.MakeUnstructured(t, makeStatefulSet(tt.name, podSpec))
+			statefulSetTransform := ImageTransform(&tt.registry, log)
+			statefulSetTransform(&unstructuredStatefulSet)
+			statefulSet := &appsv1.StatefulSet{}
+			err = scheme.Scheme.Convert(&unstructuredStatefulSet, statefulSet, nil)
+			util.AssertEqual(t, err, nil)
+			util.AssertDeepEqual(t, statefulSet.Spec.Template.Spec.ImagePullSecrets, tt.expectedSecrets)
 		})
 	}
 }
@@ -414,6 +430,22 @@ func makeDaemonSet(name string, podSpec corev1.PodSpec) *appsv1.DaemonSet {
 			Name: name,
 		},
 		Spec: appsv1.DaemonSetSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: podSpec,
+			},
+		},
+	}
+}
+
+func makeStatefulSet(name string, podSpec corev1.PodSpec) *appsv1.StatefulSet {
+	return &appsv1.StatefulSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "StatefulSet",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: appsv1.StatefulSetSpec{
 			Template: corev1.PodTemplateSpec{
 				Spec: podSpec,
 			},

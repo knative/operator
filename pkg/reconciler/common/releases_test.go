@@ -1062,7 +1062,7 @@ func TestTargetManifestPathArray(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			path := targetManifestPathArray(test.component)
+			path := TargetManifestPathArray(test.component)
 			if test.expectedManifestsPath == nil {
 				util.AssertEqual(t, len(path), 0)
 			} else {

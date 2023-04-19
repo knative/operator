@@ -219,7 +219,7 @@ func TestGetIngressPath(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			path := getIngressPath(tt.version, tt.ks)
+			path := GetIngressPath(tt.version, tt.ks)
 			util.AssertEqual(t, path, tt.expectedPath)
 		})
 	}

@@ -55,7 +55,9 @@ func getIngress(path string) (mf.Manifest, error) {
 	return common.FetchManifest(path)
 }
 
-func getIngressPath(version string, ks *v1beta1.KnativeServing) string {
+// GetIngressPath returns the path of the ingress plugin manifests, selected
+// by the Serving CR.
+func GetIngressPath(version string, ks *v1beta1.KnativeServing) string {
 	var urls []string
 	koDataDir := os.Getenv(common.KoEnvKey)
 	sourceVersion := common.LATEST_VERSION
@@ -90,7 +92,7 @@ func getIngressPath(version string, ks *v1beta1.KnativeServing) string {
 // AppendTargetIngress appends the manifests of the ingress to be installed
 func AppendTargetIngress(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	version := common.TargetVersion(instance)
-	ingressPath := getIngressPath(version, servingcommon.ConvertToKS(instance))
+	ingressPath := GetIngressPath(version, servingcommon.ConvertToKS(instance))
 	m, err := getIngress(ingressPath)
 	if err == nil {
 		*manifest = manifest.Append(m)
@@ -109,7 +111,7 @@ func AppendInstalledIngresses(ctx context.Context, manifest *mf.Manifest, instan
 	if version == "" {
 		version = common.TargetVersion(instance)
 	}
-	ingressPath := getIngressPath(version, servingcommon.ConvertToKS(instance))
+	ingressPath := GetIngressPath(version, servingcommon.ConvertToKS(instance))
 	m, err := getIngress(ingressPath)
 	if err == nil {
 		*manifest = manifest.Append(m)

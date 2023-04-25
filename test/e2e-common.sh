@@ -43,9 +43,7 @@ export INGRESS_CLASS=${INGRESS_CLASS:-istio.ingress.networking.knative.dev}
 GENERATE_SERVING_YAML=0
 
 readonly OPERATOR_DIR="$(dirname "${BASH_SOURCE[0]}")/.."
-readonly KNATIVE_DIR=$(dirname ${OPERATOR_DIR})
-release_yaml="$(mktemp)"
-release_eventing_yaml="$(mktemp)"
+readonly KNATIVE_DIR="$(dirname "${OPERATOR_DIR}")"
 
 readonly SERVING_ARTIFACTS=("serving" "serving-crds.yaml" "serving-core.yaml" "serving-hpa.yaml" "serving-post-install-jobs.yaml")
 readonly EVENTING_ARTIFACTS=("eventing" "eventing-crds.yaml" "eventing-core.yaml" "in-memory-channel.yaml" "mt-channel-broker.yaml"
@@ -61,11 +59,11 @@ function is_ingress_class() {
 function add_trap() {
   local cmd=$1
   shift
-  for trap_signal in $@; do
-    local current_trap="$(trap -p $trap_signal | cut -d\' -f2)"
+  for trap_signal in "$@"; do
+    local current_trap="$(trap -p "$trap_signal" | cut -d\' -f2)"
     local new_cmd="($cmd)"
     [[ -n "${current_trap}" ]] && new_cmd="${current_trap};${new_cmd}"
-    trap -- "${new_cmd}" $trap_signal
+    trap -- "${new_cmd}" "$trap_signal"
   done
 }
 
@@ -80,7 +78,7 @@ function test_setup_logging() {
   fi
 
   # Capture all logs.
-  kail > ${ARTIFACTS}/k8s.log-$(basename ${E2E_SCRIPT}).txt &
+  kail > "${ARTIFACTS}"/k8s.log-"$(basename "${E2E_SCRIPT}")".txt &
   local kail_pid=$!
   # Clean up kail so it doesn't interfere with job shutting down
   add_trap "kill $kail_pid || true" EXIT
@@ -102,30 +100,30 @@ function download_knative() {
   component_repo=$1
   component_name=$2
   # Go the directory to download the source code of knative
-  cd ${KNATIVE_DIR}
+  cd "${KNATIVE_DIR}" || exit
   # Download the source code of knative
   git clone "https://github.com/${component_repo}.git" "${component_name}"
-  cd "${component_name}"
+  cd "${component_name}" || exit
   local branch=$3
   if [ -n "${branch}" ] ; then
-    git fetch origin ${branch}:${branch}
-    git checkout ${branch}
+    git fetch origin "${branch}":"${branch}"
+    git checkout "${branch}"
   fi
-  cd ${OPERATOR_DIR}
+  cd "${OPERATOR_DIR}" || exit
 }
 
 # Install Istio.
 function install_istio() {
   echo ">> Installing Istio"
   curl -sL https://istio.io/downloadIstioctl | sh -
-  $HOME/.istioctl/bin/istioctl install -y
+  "$HOME"/.istioctl/bin/istioctl install -y
 }
 
 function create_namespace() {
   echo ">> Creating test namespaces for knative serving and eventing"
   # All the custom resources and Knative Serving resources are created under this TEST_NAMESPACE.
-  kubectl get ns ${TEST_NAMESPACE} || kubectl create namespace ${TEST_NAMESPACE}
-  kubectl get ns ${TEST_EVENTING_NAMESPACE} || kubectl create namespace ${TEST_EVENTING_NAMESPACE}
+  kubectl get ns "${TEST_NAMESPACE}" || kubectl create namespace "${TEST_NAMESPACE}"
+  kubectl get ns "${TEST_EVENTING_NAMESPACE}" || kubectl create namespace "${TEST_EVENTING_NAMESPACE}"
 }
 
 function download_latest_release() {
@@ -143,17 +141,17 @@ function download_nightly_artifacts() {
   if [ "${version_exists}" == "no" ]; then
     header "Download the nightly build as the target version for Knative ${component}"
     knative_version_dir=${OPERATOR_DIR}/cmd/operator/kodata/knative-${component}/${TARGET_RELEASE_VERSION}
-    mkdir ${knative_version_dir}
-    for artifact in "${array[@]}";
-      do
-        ((counter=counter+1))
-        wget ${linkprefix}/${artifact} -O ${knative_version_dir}/${counter}-${artifact}
-      done
+    mkdir "${knative_version_dir}"
+    for artifact in "${array[@]}"; do
+      ((counter = counter + 1))
+      wget "${linkprefix}"/"${artifact}" -O "${knative_version_dir}"/${counter}-"${artifact}"
+    done
+
     if [ "${component}" == "serving" ]; then
       # Download the latest net-istio into the ingress directory.
       ingress_version_dir=${OPERATOR_DIR}/cmd/operator/kodata/ingress/${TARGET_RELEASE_VERSION}/istio
-      mkdir -p ${ingress_version_dir}
-      wget https://storage.googleapis.com/knative-nightly/net-istio/latest/net-istio.yaml -O ${ingress_version_dir}/net-istio.yaml
+      mkdir -p "${ingress_version_dir}"
+      wget https://storage.googleapis.com/knative-nightly/net-istio/latest/net-istio.yaml -O "${ingress_version_dir}"/net-istio.yaml
     fi
   fi
 }
@@ -163,11 +161,11 @@ function install_operator() {
   if is_ingress_class istio; then
     install_istio || fail_test "Istio installation failed"
   fi
-  cd ${OPERATOR_DIR}
+  cd "${OPERATOR_DIR}" || exit
   download_latest_release
   header "Installing Knative operator"
   # Deploy the operator
-  ko apply ${KO_FLAGS} -f config/
+  ko apply "${KO_FLAGS}" -f config/
   wait_until_pods_running default || fail_test "Operator did not come up"
 }
 
@@ -175,17 +173,17 @@ function install_operator() {
 function knative_teardown() {
   echo ">> Uninstalling Knative serving"
   echo ">> Bringing down Serving"
-  kubectl delete -n $TEST_NAMESPACE KnativeServing --all
+  kubectl delete -n "$TEST_NAMESPACE" KnativeServing --all
   echo ">> Bringing down Eventing"
-  kubectl delete -n $TEST_NAMESPACE KnativeEventing --all
+  kubectl delete -n "$TEST_NAMESPACE" KnativeEventing --all
   echo ">> Bringing down Istio"
-  $HOME/.istioctl/bin/istioctl x uninstall --purge
+  "$HOME"/.istioctl/bin/istioctl x uninstall --purge
   kubectl delete --ignore-not-found=true clusterrolebinding cluster-admin-binding
   echo ">> Bringing down Operator"
   ko delete --ignore-not-found=true -f config/ || return 1
   echo ">> Removing test namespaces"
-  kubectl delete all --all --ignore-not-found --now --timeout 60s -n $TEST_NAMESPACE
-  kubectl delete --ignore-not-found --now --timeout 300s namespace $TEST_NAMESPACE
+  kubectl delete all --all --ignore-not-found --now --timeout 60s -n "$TEST_NAMESPACE"
+  kubectl delete --ignore-not-found --now --timeout 300s namespace "$TEST_NAMESPACE"
 }
 
 function wait_for_file() {
@@ -306,7 +304,7 @@ function if_version_exists() {
   version=$1
   component=$2
   knative_dir=${OPERATOR_DIR}/cmd/operator/kodata/${component}
-  versions=$(ls ${knative_dir})
+  versions=$(ls "${knative_dir}")
   for eachversion in ${versions}
   do
     if [[ "${eachversion}" == ${version}* ]]; then

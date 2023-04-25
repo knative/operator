@@ -151,8 +151,8 @@ function download_nightly_artifacts() {
       done
     if [ "${component}" == "serving" ]; then
       # Download the latest net-istio into the ingress directory.
-      ingress_version_dir=${OPERATOR_DIR}/cmd/operator/kodata/ingress/${TARGET_RELEASE_VERSION}
-      mkdir ${ingress_version_dir}
+      ingress_version_dir=${OPERATOR_DIR}/cmd/operator/kodata/ingress/${TARGET_RELEASE_VERSION}/istio
+      mkdir -p ${ingress_version_dir}
       wget https://storage.googleapis.com/knative-nightly/net-istio/latest/net-istio.yaml -O ${ingress_version_dir}/net-istio.yaml
     fi
   fi

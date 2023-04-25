@@ -304,7 +304,9 @@ func targetManifestPath(instance base.KComponent) string {
 	return manifestPath
 }
 
-func targetManifestPathArray(instance base.KComponent) []string {
+// TargetManifestPathArray returns an array of strings, which include all the paths of the
+// Serving or Eventing manifests.
+func TargetManifestPathArray(instance base.KComponent) []string {
 	targetMPath := targetManifestPath(instance)
 	manifestPaths := []string{targetMPath}
 	if len(instance.GetSpec().GetAdditionalManifests()) > 0 {

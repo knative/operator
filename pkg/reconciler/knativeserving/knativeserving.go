@@ -35,6 +35,7 @@ import (
 	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
 	"knative.dev/operator/pkg/reconciler/knativeserving/security"
+	"knative.dev/operator/pkg/reconciler/manifests"
 )
 
 // Reconciler implements controller.Reconciler for Knativeserving resources.
@@ -121,7 +122,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
 		r.transform,
-		common.Install,
+		manifests.Install,
 		common.CheckDeployments,
 		common.DeleteObsoleteResources(ctx, ks, r.installed),
 	}

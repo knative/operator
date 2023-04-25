@@ -267,3 +267,81 @@ func TestAppendTargetSources(t *testing.T) {
 		})
 	}
 }
+
+func TestGetSourcePath(t *testing.T) {
+	os.Setenv(common.KoEnvKey, "testdata/kodata")
+	defer os.Unsetenv(common.KoEnvKey)
+
+	tests := []struct {
+		name               string
+		version            string
+		instance           eventingv1beta1.KnativeEventing
+		expectedSourcePath string
+	}{{
+		name:    "Available Amazon SQS, Redis, Ceph, Couchdb and GitHub as the target sources",
+		version: "0.22.1",
+		instance: eventingv1beta1.KnativeEventing{
+			Spec: eventingv1beta1.KnativeEventingSpec{
+				CommonSpec: base.CommonSpec{
+					Version: "0.22",
+				},
+				Source: &eventingv1beta1.SourceConfigs{
+					Ceph: base.CephSourceConfiguration{
+						Enabled: true,
+					},
+					Github: base.GithubSourceConfiguration{
+						Enabled: true,
+					},
+					Redis: base.RedisSourceConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expectedSourcePath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/ceph" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/github" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/redis",
+	}, {
+		name:    "Available GitLab, Kafka, Rabbitmq and Prometheus as the target sources",
+		version: "0.22.1",
+		instance: eventingv1beta1.KnativeEventing{
+			Spec: eventingv1beta1.KnativeEventingSpec{
+				CommonSpec: base.CommonSpec{
+					Version: "0.22",
+				},
+				Source: &eventingv1beta1.SourceConfigs{
+					Kafka: base.KafkaSourceConfiguration{
+						Enabled: true,
+					},
+					Gitlab: base.GitlabSourceConfiguration{
+						Enabled: true,
+					},
+					Rabbitmq: base.RabbitmqSourceConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expectedSourcePath: os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/gitlab" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/kafka" + common.COMMA +
+			os.Getenv(common.KoEnvKey) + "/eventing-source/0.22/rabbitmq",
+	}, {
+		name:    "No source is enabled",
+		version: "0.23.0",
+		instance: eventingv1beta1.KnativeEventing{
+			Spec: eventingv1beta1.KnativeEventingSpec{
+				CommonSpec: base.CommonSpec{
+					Version: "0.23",
+				},
+			},
+		},
+		expectedSourcePath: "",
+	}}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := GetSourcePath(tt.version, &tt.instance)
+			util.AssertEqual(t, path, tt.expectedSourcePath)
+		})
+	}
+}

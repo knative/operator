@@ -65,7 +65,9 @@ func getAllSourcePath(version string) string {
 	return strings.Join(urls, common.COMMA)
 }
 
-func getSourcePath(version string, ke *v1beta1.KnativeEventing) string {
+// GetSourcePath returns the path of Eventing Source manifests, selected by the
+// Eventing CR.
+func GetSourcePath(version string, ke *v1beta1.KnativeEventing) string {
 	if ke.Spec.Source == nil {
 		// If no eventing source is defined, return an empty string.
 		return ""
@@ -111,7 +113,7 @@ func getSourcePath(version string, ke *v1beta1.KnativeEventing) string {
 // AppendTargetSources appends the manifests of the eventing sources to be installed
 func AppendTargetSources(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	version := common.TargetVersion(instance)
-	sourcePath := getSourcePath(version, convertToKE(instance))
+	sourcePath := GetSourcePath(version, ConvertToKE(instance))
 	m, err := getSource(manifest, sourcePath)
 	if err == nil {
 		*manifest = manifest.Append(m)
@@ -143,7 +145,7 @@ func AppendAllSources(ctx context.Context, manifest *mf.Manifest, instance base.
 	return nil
 }
 
-func convertToKE(instance base.KComponent) *v1beta1.KnativeEventing {
+func ConvertToKE(instance base.KComponent) *v1beta1.KnativeEventing {
 	ke := &v1beta1.KnativeEventing{}
 	switch instance := instance.(type) {
 	case *v1beta1.KnativeEventing:

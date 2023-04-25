@@ -72,6 +72,14 @@ func ImageTransform(registry *base.Registry, log *zap.SugaredLogger) mf.Transfor
 
 			obj = ds
 			podSpec = &ds.Spec.Template.Spec
+		case "StatefulSet":
+			ss := &appsv1.StatefulSet{}
+			if err := scheme.Scheme.Convert(u, ss, nil); err != nil {
+				return fmt.Errorf("failed to convert Unstructured to StatefulSet: %w", err)
+			}
+
+			obj = ss
+			podSpec = &ss.Spec.Template.Spec
 		case "Job":
 			job := &batchv1.Job{}
 			if err := scheme.Scheme.Convert(u, job, nil); err != nil {
@@ -85,14 +93,18 @@ func ImageTransform(registry *base.Registry, log *zap.SugaredLogger) mf.Transfor
 			return nil
 		}
 
-		log.Debugw("Updating", "name", obj.GetName(), "registry", registry)
+		objName := obj.GetName()
+		if objName == "" {
+			objName = obj.GetGenerateName()
+		}
+		log.Debugw("Updating", "name", objName, "registry", registry)
 
 		containers := podSpec.Containers
 		for i := range containers {
 			container := &containers[i]
 
 			// Replace direct image YAML references.
-			if image, ok := registry.Override[obj.GetName()+delimiter+container.Name]; ok {
+			if image, ok := registry.Override[objName+delimiter+container.Name]; ok {
 				container.Image = image
 			} else if image, ok := registry.Override[container.Name]; ok {
 				container.Image = image

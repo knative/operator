@@ -78,25 +78,22 @@ func TestExtensions(t *testing.T) {
 			if ext != nil {
 				transformers := ext.Transformers(nil)
 				if len(transformers) != test.length {
-					t.Errorf("Unexpected transformers length. Expected %d, got %d", test.length, len(transformers))
+					t.Error("Unexpected result")
 				}
-				if err := ext.Reconcile(context.TODO(), nil); err != nil {
-					t.Errorf("Extensions reconcile failed. error: %v", err)
+				if ext.Reconcile(context.TODO(), nil) != nil {
+					t.Error("Unexpected result")
 				}
 				if test.length == 1 {
 					manifests, err := test.platform.Manifests(nil)
 					if err != nil {
-						t.Errorf("Extensions manifests failed. error: %v", err)
-					}
-					if len(manifests) == 0 {
-						t.Fatal("manifests is empty")
+						t.Error("Unexpected result")
 					}
 					if err := Transform(context.TODO(), &manifests[0], &v1beta1.KnativeServing{}, transformers...); err != nil {
-						t.Errorf("Transform failed. error: %v", err)
+						t.Error("Unexpected result")
 					}
 					for _, r := range manifests[0].Resources() {
 						if r.GetNamespace() != string(ext.(TestExtension)) {
-							t.Logf("Expected namespace: %s, got: %s", string(ext.(TestExtension)), r.GetNamespace())
+							t.Error("Unexpected result")
 						}
 					}
 				}

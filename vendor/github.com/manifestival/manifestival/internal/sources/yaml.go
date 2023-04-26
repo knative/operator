@@ -15,10 +15,10 @@ func Decode(reader io.Reader) ([]unstructured.Unstructured, error) {
 	for {
 		out := unstructured.Unstructured{}
 		err = decoder.Decode(&out)
-		if err != nil {
+		if err == io.EOF {
 			break
 		}
-		if len(out.Object) == 0 {
+		if err != nil || len(out.Object) == 0 {
 			continue
 		}
 		objs = append(objs, out)

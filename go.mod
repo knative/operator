@@ -8,7 +8,7 @@ require (
 	github.com/google/go-github/v33 v33.0.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/manifestival/client-go-client v0.5.0
-	github.com/manifestival/manifestival v0.7.2
+	github.com/manifestival/manifestival v0.7.1
 	go.uber.org/zap v1.21.0
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.6.0

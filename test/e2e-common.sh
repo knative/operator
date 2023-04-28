@@ -128,7 +128,6 @@ function download_latest_release() {
 function download_nightly_artifacts() {
   array=("$@")
   component=${array[0]}
-  unset array[0]
   counter=0
   linkprefix="https://storage.googleapis.com/knative-nightly/${component}/latest"
   version_exists=$(if_version_exists "${TARGET_RELEASE_VERSION}" "knative-${component}")
@@ -136,11 +135,10 @@ function download_nightly_artifacts() {
     header "Download the nightly build as the target version for Knative ${component}"
     knative_version_dir=${OPERATOR_DIR}/cmd/operator/kodata/knative-${component}/${TARGET_RELEASE_VERSION}
     mkdir "${knative_version_dir}"
-    for artifact in "${array[@]}";
-      do
-        ((counter=counter+1))
-        wget "${linkprefix}"/"${artifact}" -O "${knative_version_dir}"/${counter}-"${artifact}"
-      done
+    for artifact in "${array[@]:1}"; do
+      ((counter=counter+1))
+      wget "${linkprefix}"/"${artifact}" -O "${knative_version_dir}"/${counter}-"${artifact}"
+    done
     if [ "${component}" == "serving" ]; then
       # Download the latest net-istio into the ingress directory.
       ingress_version_dir=${OPERATOR_DIR}/cmd/operator/kodata/ingress/${TARGET_RELEASE_VERSION}/istio

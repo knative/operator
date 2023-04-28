@@ -110,14 +110,14 @@ function download_knative() {
 function install_istio() {
   echo ">> Installing Istio"
   curl -sL https://istio.io/downloadIstioctl | sh -
-  $HOME/.istioctl/bin/istioctl install -y
+  "$HOME"/.istioctl/bin/istioctl install -y
 }
 
 function create_namespace() {
   echo ">> Creating test namespaces for knative serving and eventing"
   # All the custom resources and Knative Serving resources are created under this TEST_NAMESPACE.
-  kubectl get ns ${TEST_NAMESPACE} || kubectl create namespace ${TEST_NAMESPACE}
-  kubectl get ns ${TEST_EVENTING_NAMESPACE} || kubectl create namespace ${TEST_EVENTING_NAMESPACE}
+  kubectl get ns "${TEST_NAMESPACE}" || kubectl create namespace "${TEST_NAMESPACE}"
+  kubectl get ns "${TEST_EVENTING_NAMESPACE}" || kubectl create namespace "${TEST_EVENTING_NAMESPACE}"
 }
 
 function download_latest_release() {
@@ -131,21 +131,21 @@ function download_nightly_artifacts() {
   unset array[0]
   counter=0
   linkprefix="https://storage.googleapis.com/knative-nightly/${component}/latest"
-  version_exists=$(if_version_exists ${TARGET_RELEASE_VERSION} "knative-${component}")
+  version_exists=$(if_version_exists "${TARGET_RELEASE_VERSION}" "knative-${component}")
   if [ "${version_exists}" == "no" ]; then
     header "Download the nightly build as the target version for Knative ${component}"
     knative_version_dir=${OPERATOR_DIR}/cmd/operator/kodata/knative-${component}/${TARGET_RELEASE_VERSION}
-    mkdir ${knative_version_dir}
+    mkdir "${knative_version_dir}"
     for artifact in "${array[@]}";
       do
         ((counter=counter+1))
-        wget ${linkprefix}/${artifact} -O ${knative_version_dir}/${counter}-${artifact}
+        wget "${linkprefix}"/"${artifact}" -O "${knative_version_dir}"/${counter}-"${artifact}"
       done
     if [ "${component}" == "serving" ]; then
       # Download the latest net-istio into the ingress directory.
       ingress_version_dir=${OPERATOR_DIR}/cmd/operator/kodata/ingress/${TARGET_RELEASE_VERSION}/istio
-      mkdir -p ${ingress_version_dir}
-      wget https://storage.googleapis.com/knative-nightly/net-istio/latest/net-istio.yaml -O ${ingress_version_dir}/net-istio.yaml
+      mkdir -p "${ingress_version_dir}"
+      wget https://storage.googleapis.com/knative-nightly/net-istio/latest/net-istio.yaml -O "${ingress_version_dir}"/net-istio.yaml
     fi
   fi
 }
@@ -155,11 +155,11 @@ function install_operator() {
   if is_ingress_class istio; then
     install_istio || fail_test "Istio installation failed"
   fi
-  cd ${OPERATOR_DIR}
+  cd "${OPERATOR_DIR}" || exit
   download_latest_release
   header "Installing Knative operator"
   # Deploy the operator
-  ko apply ${KO_FLAGS} -f config/
+  ko apply "${KO_FLAGS}" -f config/
   wait_until_pods_running default || fail_test "Operator did not come up"
 }
 
@@ -167,17 +167,17 @@ function install_operator() {
 function knative_teardown() {
   echo ">> Uninstalling Knative serving"
   echo ">> Bringing down Serving"
-  kubectl delete -n $TEST_NAMESPACE KnativeServing --all
+  kubectl delete -n "$TEST_NAMESPACE" KnativeServing --all
   echo ">> Bringing down Eventing"
-  kubectl delete -n $TEST_NAMESPACE KnativeEventing --all
+  kubectl delete -n "$TEST_NAMESPACE" KnativeEventing --all
   echo ">> Bringing down Istio"
-  $HOME/.istioctl/bin/istioctl x uninstall --purge
+  "$HOME"/.istioctl/bin/istioctl x uninstall --purge
   kubectl delete --ignore-not-found=true clusterrolebinding cluster-admin-binding
   echo ">> Bringing down Operator"
   ko delete --ignore-not-found=true -f config/ || return 1
   echo ">> Removing test namespaces"
-  kubectl delete all --all --ignore-not-found --now --timeout 60s -n $TEST_NAMESPACE
-  kubectl delete --ignore-not-found --now --timeout 300s namespace $TEST_NAMESPACE
+  kubectl delete all --all --ignore-not-found --now --timeout 60s -n "$TEST_NAMESPACE"
+  kubectl delete --ignore-not-found --now --timeout 300s namespace "$TEST_NAMESPACE"
 }
 
 function wait_for_file() {
@@ -210,8 +210,8 @@ function install_previous_operator_release() {
 
 function install_previous_knative() {
   header "Create the custom resources for Knative of the previous version"
-  create_knative_serving ${PREVIOUS_SERVING_RELEASE_VERSION}
-  create_knative_eventing ${PREVIOUS_EVENTING_RELEASE_VERSION}
+  create_knative_serving "${PREVIOUS_SERVING_RELEASE_VERSION}"
+  create_knative_eventing "${PREVIOUS_EVENTING_RELEASE_VERSION}"
 }
 
 function create_knative_serving() {
@@ -298,7 +298,7 @@ function if_version_exists() {
   version=$1
   component=$2
   knative_dir=${OPERATOR_DIR}/cmd/operator/kodata/${component}
-  versions=$(ls ${knative_dir})
+  versions=$(ls "${knative_dir}")
   for eachversion in ${versions}
   do
     if [[ "${eachversion}" == ${version}* ]]; then

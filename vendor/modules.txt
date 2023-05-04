@@ -1210,7 +1210,7 @@ k8s.io/utils/trace
 ## explicit; go 1.18
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.37.1-0.20230503104255-7a90c46b4c70
+# knative.dev/eventing v0.37.1-0.20230504060656-59cfb6db7e7b
 ## explicit; go 1.19
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1398,7 +1398,7 @@ knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates
 knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/resourcesemantics/conversion
-# knative.dev/serving v0.37.1-0.20230503191555-f27ba4eef4ab
+# knative.dev/serving v0.37.1-0.20230504120258-9778f2d98957
 ## explicit; go 1.18
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

@@ -102,18 +102,7 @@ func InstalledManifest(instance base.KComponent) (mf.Manifest, error) {
 	if len(paths) == 0 {
 		return mf.Manifest{}, nil
 	}
-	manifest, err := FetchManifest(paths[0])
-	if err != nil {
-		return manifest, err
-	}
-	for i := 1; i < len(paths); i++ {
-		m, er := FetchManifest(paths[i])
-		if er != nil {
-			return manifest, er
-		}
-		manifest = manifest.Append(m)
-	}
-	return manifest, err
+	return FetchManifestFromArray(paths)
 }
 
 // IsVersionValidMigrationEligible returns the bool indicate whether the target version is valid and the installed
@@ -240,6 +229,23 @@ func FetchManifest(path string) (mf.Manifest, error) {
 		cache[path] = result
 	}
 	return result, err
+}
+
+// FetchManifestFromArray returns the manifest by either getting it from the cache, or reading them from the path.
+// The manifest is saved in the cache, if it is not available.
+func FetchManifestFromArray(paths []string) (mf.Manifest, error) {
+	manifest, err := FetchManifest(paths[0])
+	if err != nil {
+		return manifest, err
+	}
+	for i := 1; i < len(paths); i++ {
+		m, er := FetchManifest(paths[i])
+		if er != nil {
+			return manifest, er
+		}
+		manifest = manifest.Append(m)
+	}
+	return manifest, err
 }
 
 // fetchManifestFromPath returns the manifest by reading them from the path, and saves them in the cache.

@@ -229,10 +229,13 @@ func TestDeleteObsoleteResources(t *testing.T) {
 			t.Error(err)
 		}
 	}
-	deleteObsoleteResources := DeleteObsoleteResources(context.TODO(), &v1beta1.KnativeServing{},
-		func(context.Context, base.KComponent) (*mf.Manifest, error) {
-			return &manifest, nil
-		})
+	deleteObsoleteResources := DeleteObsoleteResources(context.TODO(), &v1beta1.KnativeServing{
+		Status: v1beta1.KnativeServingStatus{
+			Manifests: []string{"testdata/manifest.yaml"},
+		},
+	}, func(context.Context, base.KComponent) (*mf.Manifest, error) {
+		return &manifest, nil
+	})
 	nocms := manifest.Filter(mf.Not(mf.ByKind("ConfigMap")))
 	deleteObsoleteResources(context.TODO(), &nocms, nil)
 	// Now verify all the ConfigMaps are gone

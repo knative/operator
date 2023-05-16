@@ -18,7 +18,6 @@ package common
 
 import (
 	"context"
-	"strings"
 
 	mf "github.com/manifestival/manifestival"
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -100,10 +99,8 @@ type ManifestFetcher func(ctx context.Context, instance base.KComponent) (*mf.Ma
 // manifest is captured in a closure before any stage might mutate the
 // instance status, e.g. Install.
 func DeleteObsoleteResources(ctx context.Context, instance base.KComponent, fetch ManifestFetcher) Stage {
-	version := TargetVersion(instance)
-	if version == instance.GetStatus().GetVersion() && len(instance.GetSpec().GetAdditionalManifests()) == 0 &&
-		len(instance.GetSpec().GetManifests()) == 0 &&
-		targetManifestPath(instance) == strings.Join(installedManifestPath(version, instance), COMMA) {
+	preManifests := instance.GetStatus().GetManifests()
+	if len(preManifests) == 0 {
 		return NoOp
 	}
 	logger := logging.FromContext(ctx)

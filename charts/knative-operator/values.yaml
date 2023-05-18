@@ -1,0 +1,8 @@
+knative-operator:
+  knative-operator:
+    image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
+    tag: v1.10.1
+  operator-webhook:
+    image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
+    tag: v1.10.1
+  kubernetes_min_version: v1.24.0

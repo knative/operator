@@ -502,12 +502,6 @@ golang.org/x/sys/windows/registry
 golang.org/x/term
 # golang.org/x/text v0.7.0
 ## explicit; go 1.17
-golang.org/x/text/cases
-golang.org/x/text/internal
-golang.org/x/text/internal/language
-golang.org/x/text/internal/language/compact
-golang.org/x/text/internal/tag
-golang.org/x/text/language
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
@@ -1210,7 +1204,7 @@ k8s.io/utils/trace
 ## explicit; go 1.18
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.37.1-0.20230517125212-fc5befbd309b
+# knative.dev/eventing v0.37.1-0.20230518094712-4b9fdefe36a3
 ## explicit; go 1.19
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1318,7 +1312,7 @@ knative.dev/networking/pkg/http/probe
 knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/k8s
-# knative.dev/pkg v0.0.0-20230502134655-db8a35330281
+# knative.dev/pkg v0.0.0-20230518105712-dfb4bf04635d
 ## explicit; go 1.18
 knative.dev/pkg/apiextensions/storageversion
 knative.dev/pkg/apiextensions/storageversion/cmd/migrate

@@ -82,7 +82,7 @@ spec:
         - name: operator-webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: "{{ .Values.knative-operator.operator-webhook.image }}:{{ .Values.knative-operator.operator-webhook.tag }}"
+          image: "{{ .Values.knative_operator.operator_webhook.image }}:{{ .Values.knative_operator.operator_webhook.tag }}"
           resources:
             requests:
               cpu: 100m
@@ -111,6 +111,8 @@ spec:
               value: operator-webhook-certs
             - name: METRICS_DOMAIN
               value: knative.dev/operator
+            - name: KUBERNETES_MIN_VERSION
+              value: "{{ .Values.knative_operator.kubernetes_min_version }}"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -4587,7 +4589,6 @@ data:
     #   PodIP         string  // IP of the pod hosting the revision
     # }
     #
-    logging.request-log-template: '{"httpRequest": {"requestMethod": "{{.Request.Method}}", "requestUrl": "{{js .Request.RequestURI}}", "requestSize": "{{.Request.ContentLength}}", "status": {{.Response.Code}}, "responseSize": "{{.Response.Size}}", "userAgent": "{{js .Request.UserAgent}}", "remoteIp": "{{js .Request.RemoteAddr}}", "serverIp": "{{.Revision.PodIP}}", "referer": "{{js .Request.Referer}}", "latency": "{{.Response.Latency}}s", "protocol": "{{.Request.Proto}}"}, "traceId": "{{index .Request.Header "X-B3-Traceid"}}"}'
 
     # metrics.backend-destination field specifies the system metrics destination.
     # It supports either prometheus (the default) or stackdriver.
@@ -4654,7 +4655,7 @@ spec:
       serviceAccountName: knative-operator
       containers:
         - name: knative-operator
-          image: "{{ .Values.knative-operator.knative-operator.image }}:{{ .Values.knative-operator.knative-operator.tag }}"
+          image: "{{ .Values.knative_operator.knative_operator.image }}:{{ .Values.knative_operator.knative_operator.tag }}"
           imagePullPolicy: IfNotPresent
           env:
             - name: POD_NAME
@@ -4671,6 +4672,8 @@ spec:
               value: config-logging
             - name: CONFIG_OBSERVABILITY_NAME
               value: config-observability
+            - name: KUBERNETES_MIN_VERSION
+              value: "{{ .Values.knative_operator.kubernetes_min_version }}"
           ports:
             - name: metrics
               containerPort: 9090

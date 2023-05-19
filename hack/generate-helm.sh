@@ -31,7 +31,7 @@ wget https://github.com/knative/operator/releases/download/knative-v${VERSION}/o
 
 # Replace the namespace and images with the heml parameters
 sed -i.bak 's/namespace: default/namespace: "{{ .Release.Namespace }}"/g' ${TARGET_DIR}/templates/operator.yaml
-sed -i.bak 's/image: gcr.io\/knative-releases\/knative.dev\/operator\/cmd\/operator.*/image: "{{ .Values.knative-operator.knative-operator.image }}:{{ .Values.knative-operator.knative-operator.tag }}"/g' ${TARGET_DIR}/templates/operator.yaml
-sed -i.bak 's/image: gcr.io\/knative-releases\/knative.dev\/operator\/cmd\/webhook.*/image: "{{ .Values.knative-operator.operator-webhook.image }}:{{ .Values.knative-operator.operator-webhook.tag }}"/g' ${TARGET_DIR}/templates/operator.yaml
+sed -i.bak 's/image: gcr.io\/knative-releases\/knative.dev\/operator\/cmd\/operator.*/image: "{{ .Values.knative_operator.knative_operator.image }}:{{ .Values.knative_operator.knative_operator.tag }}"/g' ${TARGET_DIR}/templates/operator.yaml
+sed -i.bak 's/image: gcr.io\/knative-releases\/knative.dev\/operator\/cmd\/webhook.*/image: "{{ .Values.knative_operator.operator_webhook.image }}:{{ .Values.knative_operator.operator_webhook.tag }}"/g' ${TARGET_DIR}/templates/operator.yaml
 
 rm ${TARGET_DIR}/templates/operator.yaml.bak

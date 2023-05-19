@@ -84,7 +84,7 @@ spec:
           env:
             ...
             - name: KUBERNETES_MIN_VERSION
-              value: "{{ .Values.knative-operator.kubernetes_min_version }}"
+              value: "{{ .Values.knative_operator.kubernetes_min_version }}"
             ...      
 ```
 
@@ -105,8 +105,9 @@ spec:
           env:
             ...
             - name: KUBERNETES_MIN_VERSION
-              value: "{{ .Values.knative-operator.kubernetes_min_version }}"
+              value: "{{ .Values.knative_operator.kubernetes_min_version }}"
             ...      
 ```
 
-You 
+You need to remove the line containing `logging.request-log-template:`, because the value of this key contains `{{ }}` in the example,
+which leads to the error of `executing "knative-operator/templates/operator.yaml" at <.Request.Method>: nil pointer evaluating interface {}.Method`.

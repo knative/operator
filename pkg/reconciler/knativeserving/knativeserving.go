@@ -146,6 +146,13 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 
+// installedTransform mutates the namespace of all installed resources
+func (r *Reconciler) installedTransform(ctx context.Context, manifest *mf.Manifest, comp base.KComponent) error {
+	instance := comp.(*v1beta1.KnativeServing)
+	extra := []mf.Transformer{ingress.IngressServiceTransform(instance)}
+	return common.InstalledTransform(manifest, instance, extra...)
+}
+
 func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
 	paths := instance.GetStatus().GetManifests()
 	installed, err := common.FetchManifestFromArray(paths)
@@ -153,7 +160,7 @@ func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*
 		return &installed, err
 	}
 	installed = r.manifest.Append(installed)
-	stages := common.Stages{r.transform}
+	stages := common.Stages{r.installedTransform}
 	err = stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }

@@ -49,7 +49,7 @@ func gatewayTransform(instance *servingv1beta1.KnativeServing, log *zap.SugaredL
 					return err
 				}
 			}
-			// TODO: cluster-local-gateway was removed since v0.20 https://github.com/knative-sandbox/net-istio/commit/058432d749435ef1fc61aa2b1fd048d0c75460ee
+			// TODO: cluster-local-gateway was removed since v0.20 https://github.com/knative-extension/net-istio/commit/058432d749435ef1fc61aa2b1fd048d0c75460ee
 			// Reomove it once operator stops v0.20 support.
 			if u.GetName() == "cluster-local-gateway" || u.GetName() == "knative-local-gateway" {
 				if err := updateIstioGateway(localGateway(instance), gateway, log); err != nil {

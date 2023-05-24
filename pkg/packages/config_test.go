@@ -151,7 +151,7 @@ func TestSource_OrgRepo(t *testing.T) {
 		repo string
 	}{
 		{"knative/test", "knative", "test"},
-		{"knative-sandbox/test-more", "knative-sandbox", "test-more"},
+		{"knative-extension/test-more", "knative-extension", "test-more"},
 		{"unexpected/extra/slash", "unexpected", "extra/slash"},
 	}
 	for _, tt := range tests {

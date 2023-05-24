@@ -4337,7 +4337,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   # Do not drop -ctrl-ca suffix as control-protocol requires it.
-  # https://github.com/knative-sandbox/control-protocol/blob/main/pkg/certificates/reconciler/controller.go
+  # https://github.com/knative-extension/control-protocol/blob/main/pkg/certificates/reconciler/controller.go
   name: serving-certs-ctrl-ca
   namespace: knative-serving
 
@@ -4829,7 +4829,7 @@ data:
     # The freezer service endpoint that queue-proxy calls when its traffic drops to zero or
     # scales up from zero.
     #
-    # Freezer service is available at: https://github.com/knative-sandbox/container-freezer
+    # Freezer service is available at: https://github.com/knative-extension/container-freezer
     # or users may write their own service.
     #
     # The value will need to include both the host and the port that will be accessed.

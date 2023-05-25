@@ -84,21 +84,29 @@ func TestTransformKourierManifest(t *testing.T) {
 		expServiceType:           "LoadBalancer",
 		expServiceLoadBalancerIP: "1.2.3.4",
 	}, {
+		name:                     "Use ServiceLoadBalancerIP with unsupported service type",
+		instance:                 servingInstance(servingNamespace, "ClusterIP", "", "1.2.3.4"),
+		expNamespace:             servingNamespace,
+		expConfigMapName:         kourierDefaultVolumeName,
+		expServiceType:           "ClusterIP",
+		expServiceLoadBalancerIP: "1.2.3.4",
+		expError:                 fmt.Errorf("cannot configure LoadBalancerIP for service type \"ClusterIP\""),
+	}, {
 		name:                     "Use unsupported service type",
 		instance:                 servingInstance(servingNamespace, "ExternalName", "", ""),
 		expNamespace:             servingNamespace,
 		expServiceType:           "ExternalName",
 		expConfigMapName:         kourierDefaultVolumeName,
-		expError:                 fmt.Errorf("unsupported service type \"ExternalName\""),
 		expServiceLoadBalancerIP: "",
+		expError:                 fmt.Errorf("unsupported service type \"ExternalName\""),
 	}, {
 		name:                     "Use unknown service type",
 		instance:                 servingInstance(servingNamespace, "Foo", "", ""),
 		expNamespace:             servingNamespace,
 		expServiceType:           "Foo",
 		expConfigMapName:         kourierDefaultVolumeName,
-		expError:                 fmt.Errorf("unknown service type \"Foo\""),
 		expServiceLoadBalancerIP: "",
+		expError:                 fmt.Errorf("unknown service type \"Foo\""),
 	}}
 
 	for _, tt := range tests {
@@ -109,12 +117,12 @@ func TestTransformKourierManifest(t *testing.T) {
 				t.Fatalf("Failed to read manifest: %v", err)
 			}
 
-			manifest, err = manifest.Transform(replaceGWNamespace())
+			manifest, err = manifest.Transform(replaceGatewayNamespace())
 			if err != nil {
 				t.Fatalf("Failed to transform manifest: %v", err)
 			}
 
-			manifest, err = manifest.Transform(configureGWServiceType(tt.instance))
+			manifest, err = manifest.Transform(configureGatewayService(tt.instance))
 			if err != nil {
 				util.AssertEqual(t, err.Error(), tt.expError.Error())
 			} else {
@@ -122,11 +130,6 @@ func TestTransformKourierManifest(t *testing.T) {
 			}
 
 			manifest, err = manifest.Transform(configureBootstrapConfigMap(tt.instance))
-			if err != nil {
-				t.Fatalf("Failed to transform manifest: %v", err)
-			}
-
-			manifest, err = manifest.Transform(configureGWServiceLoadBalancerIP(tt.instance))
 			if err != nil {
 				t.Fatalf("Failed to transform manifest: %v", err)
 			}

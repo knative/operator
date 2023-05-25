@@ -40,16 +40,15 @@ var kourierControllerDeploymentNames = sets.NewString("3scale-kourier-control", 
 
 func kourierTransformers(ctx context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
 	return []mf.Transformer{
-		replaceGWNamespace(),
-		configureGWServiceType(instance),
-		configureGWServiceLoadBalancerIP(instance),
+		replaceGatewayNamespace(),
+		configureGatewayService(instance),
 		configureBootstrapConfigMap(instance),
 	}
 }
 
-// replaceGWNamespace replace the environment variable KOURIER_GATEWAY_NAMESPACE with the
+// replaceGatewayNamespace replace the environment variable KOURIER_GATEWAY_NAMESPACE with the
 // namespace of the deployment its set on.
-func replaceGWNamespace() mf.Transformer {
+func replaceGatewayNamespace() mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" && kourierControllerDeploymentNames.Has(u.GetName()) {
 			deployment := &appsv1.Deployment{}
@@ -75,19 +74,19 @@ func replaceGWNamespace() mf.Transformer {
 	}
 }
 
-// configureGWServiceType configures Kourier GW's service type such as ClusterIP, LoadBalancer and NodePort.
-func configureGWServiceType(instance *v1beta1.KnativeServing) mf.Transformer {
+func configureGatewayService(instance *v1beta1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName {
-			if instance.Spec.Ingress.Kourier.ServiceType == "" {
-				// Do nothing if ServiceType is not configured.
-				return nil
-			}
-			svc := &v1.Service{}
-			if err := scheme.Scheme.Convert(u, svc, nil); err != nil {
-				return err
-			}
+		if !(u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName) {
+			return nil
+		}
 
+		svc := &v1.Service{}
+		if err := scheme.Scheme.Convert(u, svc, nil); err != nil {
+			return err
+		}
+
+		// First configure the Service Type.
+		if instance.Spec.Ingress.Kourier.ServiceType != "" {
 			serviceType := instance.Spec.Ingress.Kourier.ServiceType
 			switch serviceType {
 			case v1.ServiceTypeClusterIP, v1.ServiceTypeNodePort, v1.ServiceTypeLoadBalancer:
@@ -97,34 +96,18 @@ func configureGWServiceType(instance *v1beta1.KnativeServing) mf.Transformer {
 			default:
 				return fmt.Errorf("unknown service type %q", serviceType)
 			}
-
-			if err := scheme.Scheme.Convert(svc, u, nil); err != nil {
-				return err
-			}
 		}
-		return nil
-	}
-}
 
-// configureGWServiceLoadBalancerIP configures Kourier GW's service loadBalancerIP.
-func configureGWServiceLoadBalancerIP(instance *v1beta1.KnativeServing) mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		if u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName {
-			if instance.Spec.Ingress.Kourier.ServiceLoadBalancerIP == "" {
-				// Do nothing if ServiceLoadBalancerIP is not configured.
-				return nil
+		// Then configure LoadBalancerIP if set.
+		if instance.Spec.Ingress.Kourier.ServiceLoadBalancerIP != "" {
+			if svc.Spec.Type != v1.ServiceTypeLoadBalancer {
+				return fmt.Errorf("cannot configure LoadBalancerIP for service type %q", svc.Spec.Type)
 			}
-			svc := &v1.Service{}
-			if err := scheme.Scheme.Convert(u, svc, nil); err != nil {
-				return err
-			}
-
 			svc.Spec.LoadBalancerIP = instance.Spec.Ingress.Kourier.ServiceLoadBalancerIP
-			if err := scheme.Scheme.Convert(svc, u, nil); err != nil {
-				return err
-			}
 		}
-		return nil
+
+		// Return any conversion error or nil
+		return scheme.Scheme.Convert(svc, u, nil)
 	}
 }
 

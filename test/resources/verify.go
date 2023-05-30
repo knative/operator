@@ -286,15 +286,24 @@ func AssertKEOperatorCRReadyStatus(t *testing.T, clients *test.Clients, names te
 
 // VerifyHADeployments verify whether all the deployments has scaled up.
 func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.ResourceNames) {
-	ks, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
+	err := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+		ks, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("KnativeServing %q failed to get: %v", names.KnativeServing, err)
+		}
+		var two int32 = 2
+		ks.Spec.HighAvailability = &base.HighAvailability{Replicas: &two}
+		_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
+		if err != nil {
+			t.Logf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
+			t.Logf("Retrying...")
+			return false, nil
+		}
+		return true, nil
+	})
+
 	if err != nil {
-		t.Fatalf("KnativeServing %q failed to get: %v", names.KnativeServing, err)
-	}
-	var two int32 = 2
-	ks.Spec.HighAvailability = &base.HighAvailability{Replicas: &two}
-	_, err = clients.KnativeServing().Update(context.TODO(), ks, metav1.UpdateOptions{})
-	if err != nil {
-		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
+		t.Fatal("Timed out updating the HA on KnativeServing", err)
 	}
 
 	err = wait.PollImmediate(Interval, Timeout, func() (bool, error) {
@@ -315,11 +324,11 @@ func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.Resourc
 		return true, nil
 	})
 	if err != nil {
-		t.Fatal("Timed out waiting on KnativeServing to delete", err)
+		t.Fatal("Timed out waiting on KnativeServing to update the deployments", err)
 	}
 
 	// Get KnativeServing CR again to avoid "the object has been modified" error.
-	ks, err = clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
+	ks, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to get: %v", names.KnativeServing, err)
 	}

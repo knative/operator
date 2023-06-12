@@ -42,7 +42,7 @@ type KourierIngressConfiguration struct {
 	ServiceType v1.ServiceType `json:"service-type,omitempty"`
 
 	// ServiceLoadBalancerIP specifies the service load balancer IP.
-	ServiceLoadBalancerIP string `json:"service-loadBalancerIP,omitempty"`
+	ServiceLoadBalancerIP string `json:"service-load-balancer-ip,omitempty"`
 
 	// BootstrapConfigmapName specifies the ConfigMap name which contains envoy bootstrap.
 	BootstrapConfigmapName string `json:"bootstrap-configmap,omitempty"`

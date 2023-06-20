@@ -82,7 +82,7 @@ func TestCommonTransformers(t *testing.T) {
 	}
 }
 
-func TestInstalledTransform(t *testing.T) {
+func TestInjectNamespace(t *testing.T) {
 	component := &v1beta1.KnativeEventing{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "test-ns",
@@ -94,7 +94,7 @@ func TestInstalledTransform(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to generate manifest: %v", err)
 	}
-	if err := InstalledTransform(&manifest, component); err != nil {
+	if err := InjectNamespace(&manifest, component); err != nil {
 		t.Fatalf("Failed to transform manifest: %v", err)
 	}
 	resource := &manifest.Resources()[0]

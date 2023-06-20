@@ -57,8 +57,8 @@ func Transform(ctx context.Context, manifest *mf.Manifest, instance base.KCompon
 	return nil
 }
 
-// InstalledTransform will mutate the namespace of all installed resources
-func InstalledTransform(manifest *mf.Manifest, instance base.KComponent, extra ...mf.Transformer) error {
+// InjectNamespace will mutate the namespace of all installed resources
+func InjectNamespace(manifest *mf.Manifest, instance base.KComponent, extra ...mf.Transformer) error {
 	transformers := []mf.Transformer{
 		mf.InjectNamespace(instance.GetNamespace()),
 	}

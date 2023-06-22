@@ -20,6 +20,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,6 +61,14 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 				if override.Replicas != nil {
 					ss.Spec.Replicas = override.Replicas
 				}
+			}
+			if u.GetKind() == "Job" && u.GetGenerateName() == override.Name {
+				ss := &batchv1.Job{}
+				if err := scheme.Scheme.Convert(u, ss, nil); err != nil {
+					return err
+				}
+				obj = ss
+				ps = &ss.Spec.Template
 			}
 
 			if obj == nil {

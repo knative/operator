@@ -30,7 +30,7 @@ spec:
   template:
     metadata:
       annotations:
-        cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
         sidecar.istio.io/inject: "false"
       labels:
         app: operator-webhook

@@ -951,12 +951,12 @@ func TestJobOverridesTransform(t *testing.T) {
 			}
 			resources := actual.Filter(mf.ByKind("Job")).Resources()
 			util.AssertEqual(t, len(resources), 1)
-			ss := &batchv1.Job{}
-			if err = scheme.Scheme.Convert(&resources[0], ss, nil); err != nil {
+			job := &batchv1.Job{}
+			if err = scheme.Scheme.Convert(&resources[0], job, nil); err != nil {
 				t.Fatalf("Failed to convert unstructured to deployment: %v", err)
 			}
-			util.AssertDeepEqual(t, ss.Spec.Template.Spec.Tolerations, test.Expected.expTolerations)
-			util.AssertDeepEqual(t, ss.Spec.Template.Spec.NodeSelector, test.Expected.expNodeSelector)
+			util.AssertDeepEqual(t, job.Spec.Template.Spec.Tolerations, test.Expected.expTolerations)
+			util.AssertDeepEqual(t, job.Spec.Template.Spec.NodeSelector, test.Expected.expNodeSelector)
 		})
 	}
 }

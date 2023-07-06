@@ -63,12 +63,12 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 				}
 			}
 			if u.GetKind() == "Job" && u.GetGenerateName() == override.Name {
-				ss := &batchv1.Job{}
-				if err := scheme.Scheme.Convert(u, ss, nil); err != nil {
+				job := &batchv1.Job{}
+				if err := scheme.Scheme.Convert(u, job, nil); err != nil {
 					return err
 				}
-				obj = ss
-				ps = &ss.Spec.Template
+				obj = job
+				ps = &job.Spec.Template
 			}
 
 			if obj == nil {

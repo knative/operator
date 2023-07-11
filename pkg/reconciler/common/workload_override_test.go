@@ -24,6 +24,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"google.golang.org/api/googleapi"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -53,6 +54,11 @@ type expDeployments struct {
 	expLivenessProbe             *v1.Probe
 	expHostNetwork               *bool
 	expDNSPolicy                 *corev1.DNSPolicy
+}
+
+type expJobs struct {
+	expNodeSelector map[string]string
+	expTolerations  []corev1.Toleration
 }
 
 func TestComponentsTransform(t *testing.T) {
@@ -893,6 +899,64 @@ func TestStatefulSetTransform(t *testing.T) {
 					t.Errorf("\n    Name: %s\n  Expect: %v\n  Actual: %v", containers[i].Name, expected, containers[i].Resources)
 				}
 			}
+		})
+	}
+}
+
+func TestJobOverridesTransform(t *testing.T) {
+	tests := []struct {
+		Input    servingv1beta1.KnativeServing
+		Expected expJobs
+	}{{
+		Input: servingv1beta1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "job-NodeSelector-Tolerations",
+			},
+			Spec: servingv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Version: test.OperatorFlags.PreviousEventingVersion,
+					Workloads: []base.WorkloadOverride{
+						{
+							Name:         "storage-version-migration-serving-",
+							NodeSelector: map[string]string{"env": "dev"},
+							Tolerations: []corev1.Toleration{{
+								Key:      corev1.TaintNodeNotReady,
+								Operator: corev1.TolerationOpExists,
+								Effect:   corev1.TaintEffectNoSchedule,
+							}},
+						},
+					},
+				},
+			},
+		},
+		Expected: expJobs{
+			expNodeSelector: map[string]string{"env": "dev"},
+			expTolerations: []corev1.Toleration{{
+				Key:      corev1.TaintNodeNotReady,
+				Operator: corev1.TolerationOpExists,
+				Effect:   corev1.TaintEffectNoSchedule,
+			}},
+		},
+	}}
+
+	for _, test := range tests {
+		t.Run(test.Input.Name, func(t *testing.T) {
+			manifest, err := mf.NewManifest("testdata/manifest.yaml")
+			if err != nil {
+				t.Fatalf("Failed to create manifest: %v", err)
+			}
+			actual, err := manifest.Transform(OverridesTransform(test.Input.GetSpec().GetWorkloadOverrides(), log))
+			if err != nil {
+				t.Fatalf("Failed to transform manifest: %v", err)
+			}
+			resources := actual.Filter(mf.ByKind("Job")).Resources()
+			util.AssertEqual(t, len(resources), 1)
+			job := &batchv1.Job{}
+			if err = scheme.Scheme.Convert(&resources[0], job, nil); err != nil {
+				t.Fatalf("Failed to convert unstructured to deployment: %v", err)
+			}
+			util.AssertDeepEqual(t, job.Spec.Template.Spec.Tolerations, test.Expected.expTolerations)
+			util.AssertDeepEqual(t, job.Spec.Template.Spec.NodeSelector, test.Expected.expNodeSelector)
 		})
 	}
 }

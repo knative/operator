@@ -81,3 +81,26 @@ func TestCommonTransformers(t *testing.T) {
 		t.Fatalf("Unexpected ownerRef: %s", cmp.Diff(ownerRef, wantOwnerRef))
 	}
 }
+
+func TestInjectNamespace(t *testing.T) {
+	component := &v1beta1.KnativeEventing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "test-ns",
+			Name:      "test-name",
+		},
+	}
+	in := []unstructured.Unstructured{*NamespacedResource("test/v1", "TestCR", "another-ns", "test-resource")}
+	manifest, err := mf.ManifestFrom(mf.Slice(in))
+	if err != nil {
+		t.Fatalf("Failed to generate manifest: %v", err)
+	}
+	if err := InjectNamespace(&manifest, component); err != nil {
+		t.Fatalf("Failed to transform manifest: %v", err)
+	}
+	resource := &manifest.Resources()[0]
+
+	// Verify namespace is carried over.
+	if got, want := resource.GetNamespace(), component.GetNamespace(); got != want {
+		t.Fatalf("GetNamespace() = %s, want %s", got, want)
+	}
+}

@@ -139,7 +139,12 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 		kec.ReplicasEnvVarsTransform(manifest.Client),
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)
-	return common.Transform(ctx, manifest, instance, extra...)
+	return common.Transform(ctx, manifest, instance)
+}
+
+// injectNamespace mutates the namespace of all installed resources
+func (r *Reconciler) injectNamespace(ctx context.Context, manifest *mf.Manifest, comp base.KComponent) error {
+	return common.InjectNamespace(manifest, comp)
 }
 
 func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
@@ -150,7 +155,10 @@ func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*
 		return &installed, err
 	}
 	installed = r.manifest.Append(installed)
-	stages := common.Stages{r.transform}
+
+	// Per the manifests, that have been installed in the cluster, we only need to inject the correct namespace
+	// in the stages.
+	stages := common.Stages{r.injectNamespace}
 	err = stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }

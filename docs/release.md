@@ -110,4 +110,21 @@ spec:
 ```
 
 You need to remove the line containing `logging.request-log-template:`, because the value of this key contains `{{ }}` in the example,
-which leads to the error of `executing "knative-operator/templates/operator.yaml" at <.Request.Method>: nil pointer evaluating interface {}.Method`.
+which leads to the error of `executing "knative-operator/templates/operator.yaml" at <.Request.Method>: nil pointer evaluating interface {}.Method`
+for the command `helm install` to install the charts.
+
+To package the charts into a .tgz artifact. Go to the directory `charts` in a terminal, and run the `helm package` command:
+```shell
+cd charts
+helm package knative-operator
+```
+
+You will generate a file named `knative-operator-{version}.tgz`, under the directory `charts`. `{version}` is the version
+of Knative Operator.
+
+You can install the charts by running the command:
+```shell
+helm install knative-operator ./knative-operator-{version}.tgz
+```
+
+Replace `{version}` with the correct version for your artifact.

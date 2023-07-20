@@ -27,9 +27,15 @@ readonly TARGET_DIR="charts/knative-operator"
 mkdir -p ${TARGET_DIR}/templates
 
 # Download the released yaml file to the target directory, based on the specified version.
-wget https://github.com/knative/operator/releases/download/knative-v${VERSION}/operator.yaml -O ${TARGET_DIR}/templates/operator.yaml
+#wget https://github.com/knative/operator/releases/download/knative-v${VERSION}/operator.yaml -O ${TARGET_DIR}/templates/operator.yaml
 
-# Replace the namespace and images with the heml parameters
+echo "" > ${TARGET_DIR}/templates/operator.yaml
+for filename in config/*.yaml; do
+  cat $filename >> ${TARGET_DIR}/templates/operator.yaml
+  echo -e "\n---" >> ${TARGET_DIR}/templates/operator.yaml
+done
+
+# Replace the namespace and images with the helm parameters
 sed -i.bak 's/namespace: default/namespace: "{{ .Release.Namespace }}"/g' ${TARGET_DIR}/templates/operator.yaml
 sed -i.bak 's/image: gcr.io\/knative-releases\/knative.dev\/operator\/cmd\/operator.*/image: "{{ .Values.knative_operator.knative_operator.image }}:{{ .Values.knative_operator.knative_operator.tag }}"/g' ${TARGET_DIR}/templates/operator.yaml
 sed -i.bak 's/image: gcr.io\/knative-releases\/knative.dev\/operator\/cmd\/webhook.*/image: "{{ .Values.knative_operator.operator_webhook.image }}:{{ .Values.knative_operator.operator_webhook.tag }}"/g' ${TARGET_DIR}/templates/operator.yaml

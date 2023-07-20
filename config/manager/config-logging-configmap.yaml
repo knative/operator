@@ -19,7 +19,7 @@ metadata:
   namespace: default
   labels:
     app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 data:
   _example: |
     ################################

@@ -19,7 +19,7 @@ metadata:
   name: knative-operator-webhook
   labels:
     app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 rules:
   # For manipulating certs into secrets.
   - apiGroups:
@@ -40,7 +40,7 @@ metadata:
   name: knative-operator-webhook
   labels:
     app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:

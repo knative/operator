@@ -18,7 +18,6 @@ metadata:
   namespace: default
   name: knative-operator-webhook
   labels:
-    eventing.knative.dev/release: devel
     app.kubernetes.io/version: devel
     app.kubernetes.io/part-of: knative-operator
 rules:
@@ -40,7 +39,6 @@ kind: ClusterRole
 metadata:
   name: knative-operator-webhook
   labels:
-    eventing.knative.dev/release: devel
     app.kubernetes.io/version: devel
     app.kubernetes.io/part-of: knative-operator
 rules:

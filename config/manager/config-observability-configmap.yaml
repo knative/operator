@@ -18,7 +18,6 @@ metadata:
   name: config-observability
   namespace: default
   labels:
-    operator.knative.dev/release: devel
     app.kubernetes.io/version: devel
     app.kubernetes.io/part-of: knative-operator
 data:

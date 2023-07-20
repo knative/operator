@@ -54,6 +54,8 @@ spec:
               value: config-logging
             - name: CONFIG_OBSERVABILITY_NAME
               value: config-observability
+            - name: KUBERNETES_MIN_VERSION
+              value: ""
           ports:
             - name: metrics
               containerPort: 9090

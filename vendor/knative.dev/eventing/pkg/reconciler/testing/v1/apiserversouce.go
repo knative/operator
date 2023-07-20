@@ -23,13 +23,12 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"knative.dev/pkg/apis"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
-	"knative.dev/pkg/kmeta"
-
 	apisources "knative.dev/eventing/pkg/apis/sources"
 	v1 "knative.dev/eventing/pkg/apis/sources/v1"
 	"knative.dev/eventing/pkg/reconciler/testing"
+	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/kmeta"
 )
 
 // ApiServerSourceOption enables further configuration of a v1 ApiServer.
@@ -67,7 +66,7 @@ func WithApiServerSourceSinkNotFound(s *v1.ApiServerSource) {
 
 func WithApiServerSourceSink(uri *apis.URL) ApiServerSourceOption {
 	return func(s *v1.ApiServerSource) {
-		s.Status.MarkSink(&duckv1.Addressable{URL: uri})
+		s.Status.MarkSink(uri)
 	}
 }
 

@@ -21,8 +21,6 @@ import (
 
 	"knative.dev/pkg/apis"
 	v1 "knative.dev/pkg/apis/duck/v1"
-
-	eventingduck "knative.dev/eventing/pkg/apis/duck/v1"
 )
 
 const (
@@ -83,7 +81,6 @@ func (bs *BrokerStatus) SetAddress(url *apis.URL) {
 
 	if url != nil {
 		bs.GetConditionSet().Manage(bs).MarkTrue(BrokerConditionAddressable)
-		bs.AddressStatus.Address.Name = &url.Scheme
 	} else {
 		bs.GetConditionSet().Manage(bs).MarkFalse(BrokerConditionAddressable, "nil URL", "URL is nil")
 	}
@@ -106,17 +103,17 @@ func (bs *BrokerStatus) InitializeConditions() {
 	bs.GetConditionSet().Manage(bs).InitializeConditions()
 }
 
-func (bs *BrokerStatus) MarkDeadLetterSinkResolvedSucceeded(deadLetterSink eventingduck.DeliveryStatus) {
-	bs.DeliveryStatus = deadLetterSink
+func (bs *BrokerStatus) MarkDeadLetterSinkResolvedSucceeded(deadLetterSinkURI *apis.URL) {
+	bs.DeadLetterSinkURI = deadLetterSinkURI
 	bs.GetConditionSet().Manage(bs).MarkTrue(BrokerConditionDeadLetterSinkResolved)
 }
 
 func (bs *BrokerStatus) MarkDeadLetterSinkNotConfigured() {
-	bs.DeliveryStatus = eventingduck.DeliveryStatus{}
+	bs.DeadLetterSinkURI = nil
 	bs.GetConditionSet().Manage(bs).MarkTrueWithReason(BrokerConditionDeadLetterSinkResolved, "DeadLetterSinkNotConfigured", "No dead letter sink is configured.")
 }
 
 func (bs *BrokerStatus) MarkDeadLetterSinkResolvedFailed(reason, messageFormat string, messageA ...interface{}) {
-	bs.DeliveryStatus = eventingduck.DeliveryStatus{}
+	bs.DeadLetterSinkURI = nil
 	bs.GetConditionSet().Manage(bs).MarkFalse(BrokerConditionDeadLetterSinkResolved, reason, messageFormat, messageA...)
 }

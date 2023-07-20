@@ -24,11 +24,11 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	duckv1 "knative.dev/pkg/apis/duck/v1"
-
 	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1"
 	eventingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
 	messagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
+	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 // ChannelOption enables further configuration of a Channel.
@@ -121,9 +121,9 @@ func WithChannelNoAddress() ChannelOption {
 	}
 }
 
-func WithChannelAddress(addr *duckv1.Addressable) ChannelOption {
+func WithChannelAddress(hostname string) ChannelOption {
 	return func(c *eventingv1.Channel) {
-		c.Status.SetAddress(addr)
+		c.Status.SetAddress(&duckv1.Addressable{URL: apis.HTTP(hostname)})
 	}
 }
 
@@ -147,9 +147,9 @@ func WithChannelSubscriberStatuses(subscriberStatuses []eventingduckv1.Subscribe
 	}
 }
 
-func WithChannelStatusDLS(ds eventingduckv1.DeliveryStatus) ChannelOption {
+func WithChannelStatusDLSURI(dlsURI *apis.URL) ChannelOption {
 	return func(c *eventingv1.Channel) {
-		c.Status.MarkDeadLetterSinkResolvedSucceeded(ds)
+		c.Status.MarkDeadLetterSinkResolvedSucceeded(dlsURI)
 	}
 }
 

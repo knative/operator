@@ -8,7 +8,7 @@ require (
 	github.com/google/go-github/v33 v33.0.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/manifestival/client-go-client v0.5.0
-	github.com/manifestival/manifestival v0.7.1
+	github.com/manifestival/manifestival v0.7.2
 	go.uber.org/zap v1.21.0
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.9.0
@@ -22,10 +22,10 @@ require (
 	k8s.io/code-generator v0.26.5
 	k8s.io/utils v0.0.0-20221108210102-8e77b1f39fe2
 	knative.dev/caching v0.0.0-20230718155311-24ff72399d90
-	knative.dev/eventing v0.37.1-0.20230720121212-a13eebe803bf
+	knative.dev/eventing v0.37.1
 	knative.dev/hack v0.0.0-20230712131415-ddae80293c43
 	knative.dev/pkg v0.0.0-20230718152110-aef227e72ead
-	knative.dev/serving v0.37.1-0.20230713131514-294cb9c08b37
+	knative.dev/serving v0.37.2
 	sigs.k8s.io/yaml v1.3.0
 )
 

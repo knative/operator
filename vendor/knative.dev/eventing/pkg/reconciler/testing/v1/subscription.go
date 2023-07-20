@@ -25,11 +25,11 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	duckv1 "knative.dev/pkg/apis/duck/v1"
-
 	eventingduckv1 "knative.dev/eventing/pkg/apis/duck/v1"
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	v1 "knative.dev/eventing/pkg/apis/messaging/v1"
+	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 // SubscriptionOption enables further configuration of a Subscription.
@@ -201,32 +201,30 @@ func WithSubscriptionDeliveryRef(gvk metav1.GroupVersionKind, name, namespace st
 	}
 }
 
-func WithSubscriptionPhysicalSubscriptionSubscriber(subscriber *duckv1.Addressable) SubscriptionOption {
+func WithSubscriptionPhysicalSubscriptionSubscriber(uri *apis.URL) SubscriptionOption {
 	return func(s *v1.Subscription) {
-		if subscriber == nil {
-			panic(errors.New("nil subscriber"))
-		}
-		s.Status.PhysicalSubscription.SubscriberURI = subscriber.URL
-		s.Status.PhysicalSubscription.SubscriberCACerts = subscriber.CACerts
-	}
-}
-
-func WithSubscriptionPhysicalSubscriptionReply(reply *duckv1.Addressable) SubscriptionOption {
-	return func(s *v1.Subscription) {
-		if reply == nil {
-			panic(errors.New("nil reply"))
-		}
-		s.Status.PhysicalSubscription.ReplyURI = reply.URL
-		s.Status.PhysicalSubscription.ReplyCACerts = reply.CACerts
-	}
-}
-
-func WithSubscriptionDeadLetterSink(dls *duckv1.Addressable) SubscriptionOption {
-	return func(s *v1.Subscription) {
-		if dls == nil {
+		if uri == nil {
 			panic(errors.New("nil URI"))
 		}
-		s.Status.PhysicalSubscription.DeliveryStatus = eventingduckv1.NewDeliveryStatusFromAddressable(dls)
+		s.Status.PhysicalSubscription.SubscriberURI = uri
+	}
+}
+
+func WithSubscriptionPhysicalSubscriptionReply(uri *apis.URL) SubscriptionOption {
+	return func(s *v1.Subscription) {
+		if uri == nil {
+			panic(errors.New("nil URI"))
+		}
+		s.Status.PhysicalSubscription.ReplyURI = uri
+	}
+}
+
+func WithSubscriptionDeadLetterSinkURI(uri *apis.URL) SubscriptionOption {
+	return func(s *v1.Subscription) {
+		if uri == nil {
+			panic(errors.New("nil URI"))
+		}
+		s.Status.PhysicalSubscription.DeadLetterSinkURI = uri
 	}
 }
 

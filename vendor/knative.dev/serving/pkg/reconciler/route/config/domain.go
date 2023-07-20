@@ -31,12 +31,9 @@ import (
 const (
 	// DomainConfigName is the config map name for the domain configuration.
 	DomainConfigName = "config-domain"
-)
-
-var (
 	// DefaultDomain holds the domain that Route's live under by default
 	// when no label selector-based options apply.
-	DefaultDomain = "svc." + network.GetClusterDomainName()
+	DefaultDomain = "svc.cluster.local"
 )
 
 // LabelSelector represents map of {key,value} pairs. A single {key,value} in the

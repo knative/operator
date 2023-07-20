@@ -18,10 +18,8 @@ metadata:
   name: knative-operator
   namespace: default
   labels:
-    operator.knative.dev/release: devel
     app.kubernetes.io/name: knative-operator
     app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
 spec:
   replicas: 1
   selector:
@@ -35,7 +33,6 @@ spec:
         name: knative-operator
         app.kubernetes.io/name: knative-operator
         app.kubernetes.io/version: devel
-        app.kubernetes.io/part-of: knative-operator
     spec:
       serviceAccountName: knative-operator
       containers:

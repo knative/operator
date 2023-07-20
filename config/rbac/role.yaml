@@ -17,9 +17,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-operator
   labels:
-    operator.knative.dev/release: devel
     app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 rules:
 - apiGroups:
   - operator.knative.dev
@@ -260,9 +259,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-eventing-operator
   labels:
-    operator.knative.dev/release: devel
     app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 rules:
   - apiGroups:
       - operator.knative.dev

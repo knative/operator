@@ -18,9 +18,8 @@ metadata:
   namespace: default
   name: knative-operator-webhook
   labels:
-    eventing.knative.dev/release: devel
     app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 rules:
   # For manipulating certs into secrets.
   - apiGroups:
@@ -40,9 +39,8 @@ kind: ClusterRole
 metadata:
   name: knative-operator-webhook
   labels:
-    eventing.knative.dev/release: devel
     app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:

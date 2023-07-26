@@ -7,3 +7,4 @@ keywords:
   - knative-operator
 sources:
   - https://github.com/knative/operator
+kubeVersion: ">=1.24.0-0"

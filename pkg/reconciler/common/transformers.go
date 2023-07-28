@@ -15,10 +15,10 @@ package common
 
 import (
 	"context"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	mf "github.com/manifestival/manifestival"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/pkg/logging"
 
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -43,7 +43,9 @@ func transformers(ctx context.Context, obj base.KComponent) []mf.Transformer {
 
 func injectOwner(owner mf.Owner) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		u.SetOwnerReferences([]v1.OwnerReference{*v1.NewControllerRef(owner, owner.GroupVersionKind())})
+		if u.GetNamespace() != "" {
+			u.SetOwnerReferences([]v1.OwnerReference{*v1.NewControllerRef(owner, owner.GroupVersionKind())})
+		}
 		return nil
 	}
 }

@@ -18,10 +18,20 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-VERSION=1.10.1
+# Set the version and tag in Chart.yaml and values.yaml
+VERSION=v1.10.1
+if [[ -n "${TAG:-}" ]]; then
+  VERSION=${TAG}
+fi
+
+# Copy the base file and directories into the directory charts
+rm -rf charts
+cp -R config/charts charts
 
 # The directory used to save the helm templates.
-readonly TARGET_DIR="charts/knative-operator"
+readonly CHARTS_DIR="charts"
+readonly NAME="knative-operator"
+readonly TARGET_DIR="${CHARTS_DIR}/${NAME}"
 
 # Create the directory, if it does not exist.
 mkdir -p ${TARGET_DIR}/templates
@@ -39,5 +49,15 @@ sed -i.bak 's/image: ko:\/\/knative.dev\/operator\/cmd\/operator/image: "{{ .Val
 sed -i.bak 's/image: ko:\/\/knative.dev\/operator\/cmd\/webhook/image: "{{ .Values.knative_operator.operator_webhook.image }}:{{ .Values.knative_operator.operator_webhook.tag }}"/g' ${TARGET_DIR}/templates/operator.yaml
 sed -i.bak 's/operator.knative.dev\/release: devel/operator.knative.dev\/release: "v{{ .Chart.Version }}"/g' ${TARGET_DIR}/templates/operator.yaml
 sed -i.bak 's/app.kubernetes.io\/version: devel/app.kubernetes.io\/version: "{{ .Chart.Version }}"/g' ${TARGET_DIR}/templates/operator.yaml
+sed -i.bak 's/value: ""/value: "{{ .Values.knative_operator.kubernetes_min_version }}"/g' ${TARGET_DIR}/templates/operator.yaml
 
 rm ${TARGET_DIR}/templates/operator.yaml.bak
+
+sed -i.bak "s/{{ version }}/${VERSION:1}/g" ${TARGET_DIR}/Chart.yaml
+sed -i.bak "s/{{ tag }}/${VERSION}/g" ${TARGET_DIR}/values.yaml
+
+rm ${TARGET_DIR}/Chart.yaml.bak
+rm ${TARGET_DIR}/values.yaml.bak
+
+cd ${CHARTS_DIR}
+helm package knative-operator

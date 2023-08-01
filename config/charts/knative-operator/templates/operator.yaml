@@ -19,10 +19,9 @@ metadata:
   name: operator-webhook-certs
   namespace: "{{ .Release.Namespace }}"
   labels:
-    app.kubernetes.io/component: webhook
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
+    app.kubernetes.io/component: operator-webhook
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 # The data is populated at install time.
 
 ---
@@ -46,7 +45,6 @@ metadata:
   name: operator-webhook
   namespace: "{{ .Release.Namespace }}"
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/component: operator-webhook
     app.kubernetes.io/version: "{{ .Chart.Version }}"
     app.kubernetes.io/name: knative-operator
@@ -62,7 +60,6 @@ spec:
       labels:
         app: operator-webhook
         role: operator-webhook
-        operator.knative.dev/release: "v{{ .Chart.Version }}"
         app.kubernetes.io/component: operator-webhook
         app.kubernetes.io/version: "{{ .Chart.Version }}"
         app.kubernetes.io/name: knative-operator
@@ -115,7 +112,8 @@ spec:
 
         - name: METRICS_DOMAIN
           value: knative.dev/operator
-
+        - name: KUBERNETES_MIN_VERSION
+          value: "{{ .Values.knative_operator.kubernetes_min_version }}"
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -175,7 +173,6 @@ kind: Service
 metadata:
   labels:
     role: operator-webhook
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/component: operator-webhook
     app.kubernetes.io/version: "{{ .Chart.Version }}"
     app.kubernetes.io/name: knative-operator
@@ -216,9 +213,8 @@ kind: CustomResourceDefinition
 metadata:
   name: knativeeventings.operator.knative.dev
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 spec:
   group: operator.knative.dev
   versions:
@@ -2584,9 +2580,8 @@ kind: CustomResourceDefinition
 metadata:
   name: knativeservings.operator.knative.dev
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 spec:
   group: operator.knative.dev
   versions:
@@ -5029,9 +5024,8 @@ kind: ClusterRole
 metadata:
   name: knative-serving-operator-aggregated
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 aggregationRule:
   clusterRoleSelectors:
 # This (along with escalate below) allows the Operator to pick up any
@@ -5046,9 +5040,8 @@ kind: ClusterRole
 metadata:
   name: knative-serving-operator-aggregated-stable
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 aggregationRule:
   clusterRoleSelectors:
     # This (along with escalate below) allows the Operator to pick up any
@@ -5063,9 +5056,8 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-operator-aggregated
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 aggregationRule:
   clusterRoleSelectors:
     # This (along with escalate below) allows the Operator to pick up any
@@ -5080,9 +5072,8 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-operator-aggregated-stable
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 aggregationRule:
   clusterRoleSelectors:
     # This (along with escalate below) allows the Operator to pick up any
@@ -5112,9 +5103,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-operator
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 rules:
 - apiGroups:
   - operator.knative.dev
@@ -5355,9 +5345,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-eventing-operator
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 rules:
   - apiGroups:
       - operator.knative.dev
@@ -5735,9 +5724,8 @@ metadata:
   name: knative-operator
   namespace: "{{ .Release.Namespace }}"
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 
 ---
 # Copyright 2020 The Knative Authors
@@ -5760,9 +5748,8 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-serving-operator
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -5778,9 +5765,8 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-operator
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -5811,9 +5797,8 @@ metadata:
   namespace: "{{ .Release.Namespace }}"
   name: knative-operator-webhook
   labels:
-    eventing.knative.dev/release: devel
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 rules:
   # For manipulating certs into secrets.
   - apiGroups:
@@ -5833,9 +5818,8 @@ kind: ClusterRole
 metadata:
   name: knative-operator-webhook
   labels:
-    eventing.knative.dev/release: devel
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:
@@ -5932,9 +5916,8 @@ metadata:
   name: operator-webhook
   namespace: "{{ .Release.Namespace }}"
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 
 ---
 # Copyright 2022 The Knative Authors
@@ -5957,9 +5940,8 @@ metadata:
   namespace: "{{ .Release.Namespace }}"
   name: operator-webhook
   labels:
-    eventing.knative.dev/release: devel
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 subjects:
   - kind: ServiceAccount
     name: operator-webhook
@@ -5974,9 +5956,8 @@ kind: ClusterRoleBinding
 metadata:
   name: operator-webhook
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -6006,9 +5987,8 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-serving-operator-aggregated
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -6023,9 +6003,8 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-serving-operator-aggregated-stable
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -6040,9 +6019,8 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-operator-aggregated
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -6057,9 +6035,8 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-operator-aggregated-stable
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -6090,9 +6067,8 @@ metadata:
   name: config-logging
   namespace: "{{ .Release.Namespace }}"
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 data:
   _example: |
     ################################
@@ -6154,9 +6130,8 @@ metadata:
   name: config-observability
   namespace: "{{ .Release.Namespace }}"
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 data:
   _example: |
     ################################
@@ -6185,34 +6160,6 @@ data:
     # access to Kibana after setting up kubectl proxy.
     logging.revision-url-template: |
       http://localhost:8001/api/v1/namespaces/knative-monitoring/services/kibana-logging/proxy/app/kibana#/discover?_a=(query:(match:(kubernetes.labels.serving-knative-dev%2FrevisionUID:(query:'${REVISION_UID}',type:phrase))))
-
-    # If non-empty, this enables queue proxy writing request logs to stdout.
-    # The value determines the shape of the request logs and it must be a valid go text/template.
-    # It is important to keep this as a single line. Multiple lines are parsed as separate entities
-    # by most collection agents and will split the request logs into multiple records.
-    #
-    # The following fields and functions are available to the template:
-    #
-    # Request: An http.Request (see https://golang.org/pkg/net/http/#Request)
-    # representing an HTTP request received by the server.
-    #
-    # Response:
-    # struct {
-    #   Code    int       // HTTP status code (see https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml)
-    #   Size    int       // An int representing the size of the response.
-    #   Latency float64   // A float64 representing the latency of the response in seconds.
-    # }
-    #
-    # Revision:
-    # struct {
-    #   Name          string  // Knative revision name
-    #   Namespace     string  // Knative revision namespace
-    #   Service       string  // Knative service name
-    #   Configuration string  // Knative configuration name
-    #   PodName       string  // Name of the pod hosting the revision
-    #   PodIP         string  // IP of the pod hosting the revision
-    # }
-    #
 
     # metrics.backend-destination field specifies the system metrics destination.
     # It supports either prometheus (the default) or stackdriver.
@@ -6257,10 +6204,8 @@ metadata:
   name: knative-operator
   namespace: "{{ .Release.Namespace }}"
   labels:
-    operator.knative.dev/release: "v{{ .Chart.Version }}"
     app.kubernetes.io/name: knative-operator
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/part-of: knative-operator
 spec:
   replicas: 1
   selector:
@@ -6274,7 +6219,6 @@ spec:
         name: knative-operator
         app.kubernetes.io/name: knative-operator
         app.kubernetes.io/version: "{{ .Chart.Version }}"
-        app.kubernetes.io/part-of: knative-operator
     spec:
       serviceAccountName: knative-operator
       containers:
@@ -6296,6 +6240,8 @@ spec:
               value: config-logging
             - name: CONFIG_OBSERVABILITY_NAME
               value: config-observability
+            - name: KUBERNETES_MIN_VERSION
+              value: "{{ .Values.knative_operator.kubernetes_min_version }}"
           ports:
             - name: metrics
               containerPort: 9090

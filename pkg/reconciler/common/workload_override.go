@@ -174,7 +174,8 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 	if len(override.ReadinessProbes) > 0 {
 		containers := ps.Spec.Containers
 		for i := range containers {
-			if override := findProbeOverride(override.ReadinessProbes, containers[i].Name); override != nil {
+			override := findProbeOverride(override.ReadinessProbes, containers[i].Name)
+			if override != nil {
 				overrideProbe := &v1.Probe{
 					InitialDelaySeconds:           override.InitialDelaySeconds,
 					TimeoutSeconds:                override.TimeoutSeconds,
@@ -182,6 +183,11 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 					SuccessThreshold:              override.SuccessThreshold,
 					FailureThreshold:              override.FailureThreshold,
 					TerminationGracePeriodSeconds: override.TerminationGracePeriodSeconds,
+				}
+				if *overrideProbe == (v1.Probe{}) {
+					//  Disable probe when users explicitly set the empty overrideProbe.
+					containers[i].ReadinessProbe = nil
+					continue
 				}
 				if containers[i].ReadinessProbe == nil {
 					containers[i].ReadinessProbe = overrideProbe
@@ -203,6 +209,11 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 					SuccessThreshold:              override.SuccessThreshold,
 					FailureThreshold:              override.FailureThreshold,
 					TerminationGracePeriodSeconds: override.TerminationGracePeriodSeconds,
+				}
+				if *overrideProbe == (v1.Probe{}) {
+					//  Disable probe when users explicitly set the empty overrideProbe.
+					containers[i].ReadinessProbe = nil
+					continue
 				}
 				if containers[i].LivenessProbe == nil {
 					containers[i].LivenessProbe = overrideProbe

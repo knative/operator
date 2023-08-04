@@ -1255,7 +1255,7 @@ k8s.io/utils/trace
 ## explicit; go 1.18
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.38.1-0.20230803121621-8a90e4021b1c
+# knative.dev/eventing v0.38.1-0.20230803151922-0fd9aa16ec1e
 ## explicit; go 1.19
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1344,7 +1344,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/forwarder
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/hack v0.0.0-20230802014852-338500eed425
+# knative.dev/hack v0.0.0-20230803220206-d7fde305c59f
 ## explicit; go 1.18
 knative.dev/hack
 knative.dev/hack/shell
@@ -1443,7 +1443,7 @@ knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates
 knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/resourcesemantics/conversion
-# knative.dev/serving v0.38.1-0.20230803123621-2a3f9ccfafca
+# knative.dev/serving v0.38.1-0.20230803165821-8ea1cb621ae9
 ## explicit; go 1.18
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

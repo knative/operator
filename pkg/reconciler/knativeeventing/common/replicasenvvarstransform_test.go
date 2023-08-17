@@ -63,6 +63,10 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
                   value: ''
                 - name: K_LOGGING_CONFIG_1
                   value: 'overwrite'
+                - name: K_TRACING_CONFIG
+                  value: 'to be overwritten'
+                - name: NAMESPACE
+                  value: 'to be overwritten'
   existing:
     apiVersion: apps/v1
     kind: Deployment
@@ -88,6 +92,10 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
                   value: 'old'
                 - name: K_LOGGING_CONFIG_1
                   value: 'old'
+                - name: K_TRACING_CONFIG
+                  value: 'old'
+                - name: NAMESPACE
+                  value: 'old'
   expected:
     apiVersion: apps/v1
     kind: Deployment
@@ -110,6 +118,10 @@ func TestPingsourceMTAadapterTransform(t *testing.T) {
                 - name: K_METRICS_CONFIG
                   value: 'old'
                 - name: K_LOGGING_CONFIG
+                  value: 'old'
+                - name: K_TRACING_CONFIG
+                  value: 'old'
+                - name: NAMESPACE
                   value: 'old'
                 - name: K_LOGGING_CONFIG_1
                   value: 'overwrite'

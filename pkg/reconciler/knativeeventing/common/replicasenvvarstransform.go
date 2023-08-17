@@ -30,7 +30,7 @@ import (
 
 var (
 	envVarNames = sets.NewString(system.NamespaceEnvKey, "K_METRICS_CONFIG", "K_LOGGING_CONFIG",
-		"K_LEADER_ELECTION_CONFIG", "K_NO_SHUTDOWN_AFTER", "K_SINK_TIMEOUT")
+		"K_LEADER_ELECTION_CONFIG", "K_NO_SHUTDOWN_AFTER", "K_SINK_TIMEOUT", "K_TRACING_CONFIG", "NAMESPACE")
 )
 
 type unstructuredGetter interface {

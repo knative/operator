@@ -186,7 +186,7 @@ func verifyGatewayServiceLoadBalancerIP(t *testing.T, u *unstructured.Unstructur
 		err := scheme.Scheme.Convert(u, svc, nil)
 		util.AssertEqual(t, err, nil)
 		svcLoadBalancerIP := svc.Spec.LoadBalancerIP
-		util.AssertDeepEqual(t, string(svcLoadBalancerIP), expServiceLoadBalancerIP)
+		util.AssertDeepEqual(t, svcLoadBalancerIP, expServiceLoadBalancerIP)
 	}
 }
 

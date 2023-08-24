@@ -6,14 +6,14 @@ require (
 	github.com/go-logr/zapr v1.2.2
 	github.com/google/go-cmp v0.5.9
 	github.com/google/go-github/v33 v33.0.0
-	github.com/hashicorp/golang-lru v0.5.4
+	github.com/hashicorp/golang-lru v1.0.2
 	github.com/manifestival/client-go-client v0.5.0
 	github.com/manifestival/manifestival v0.7.2
-	go.uber.org/zap v1.24.0
+	go.uber.org/zap v1.25.0
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.12.0
 	golang.org/x/oauth2 v0.11.0
-	google.golang.org/api v0.136.0
+	google.golang.org/api v0.138.0
 	istio.io/api v0.0.0-20220420164308-b6a03a9e477e
 	istio.io/client-go v1.13.3
 	k8s.io/api v0.26.5
@@ -21,11 +21,11 @@ require (
 	k8s.io/client-go v0.26.5
 	k8s.io/code-generator v0.26.5
 	k8s.io/utils v0.0.0-20221108210102-8e77b1f39fe2
-	knative.dev/caching v0.0.0-20230816124641-fb5eab7e73c3
-	knative.dev/eventing v0.38.1-0.20230815095940-29ac3eee64a4
-	knative.dev/hack v0.0.0-20230815012940-044c02b7a447
-	knative.dev/pkg v0.0.0-20230815132840-4f651e092853
-	knative.dev/serving v0.38.1-0.20230816124843-8d290855cc81
+	knative.dev/caching v0.0.0-20230822003854-eb3243f87fff
+	knative.dev/eventing v0.38.1-0.20230822134255-a2e2aa3d515d
+	knative.dev/hack v0.0.0-20230818155117-9cc05a31e8c0
+	knative.dev/pkg v0.0.0-20230821102121-81e4ee140363
+	knative.dev/serving v0.38.1-0.20230823180656-90046c381ddc
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -34,7 +34,7 @@ require (
 	cloud.google.com/go/compute v1.23.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.1 // indirect
-	cloud.google.com/go/storage v1.31.0 // indirect
+	cloud.google.com/go/storage v1.32.0 // indirect
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
 	contrib.go.opencensus.io/exporter/prometheus v0.4.2 // indirect
 	contrib.go.opencensus.io/exporter/zipkin v0.1.2 // indirect
@@ -48,7 +48,7 @@ require (
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr v1.4.10 // indirect
 	github.com/aws/aws-sdk-go v1.36.1 // indirect
-	github.com/benbjohnson/clock v1.1.0 // indirect
+	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
@@ -74,7 +74,7 @@ require (
 	github.com/google/go-containerregistry v0.13.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/google/s2a-go v0.1.4 // indirect
+	github.com/google/s2a-go v0.1.5 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/google/wire v0.4.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.5 // indirect
@@ -114,8 +114,8 @@ require (
 	github.com/wavesoftware/go-ensure v1.0.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	go.uber.org/automaxprocs v1.4.0 // indirect
-	go.uber.org/multierr v1.8.0 // indirect
+	go.uber.org/automaxprocs v1.5.3 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
@@ -139,7 +139,7 @@ require (
 	k8s.io/gengo v0.0.0-20221011193443-fad74ee6edd9 // indirect
 	k8s.io/klog/v2 v2.80.2-0.20221028030830-9ae4992afb54 // indirect
 	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
-	knative.dev/networking v0.0.0-20230810114838-1632591af357 // indirect
+	knative.dev/networking v0.0.0-20230822003854-1d7920d27b9e // indirect
 	sigs.k8s.io/controller-runtime v0.7.2 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect

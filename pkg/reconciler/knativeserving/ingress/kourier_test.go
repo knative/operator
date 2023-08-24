@@ -116,6 +116,22 @@ func TestTransformKourierManifest(t *testing.T) {
 		expNodePortsHTTP:  30001,
 		expNodePortsHTTPS: 30002,
 		expConfigMapName:  kourierDefaultVolumeName,
+	}, {
+		name:              "Use NodePort service type with unset HTTP Port",
+		instance:          servingInstanceNodePorts(servingNamespace, "", 0, 30002),
+		expNamespace:      servingNamespace,
+		expServiceType:    "NodePort",
+		expNodePortsHTTP:  0,
+		expNodePortsHTTPS: 30002,
+		expConfigMapName:  kourierDefaultVolumeName,
+	}, {
+		name:              "Use NodePort service type with unset HTTPS Port",
+		instance:          servingInstanceNodePorts(servingNamespace, "", 30001, 0),
+		expNamespace:      servingNamespace,
+		expServiceType:    "NodePort",
+		expNodePortsHTTP:  30001,
+		expNodePortsHTTPS: 0,
+		expConfigMapName:  kourierDefaultVolumeName,
 	}}
 
 	for _, tt := range tests {

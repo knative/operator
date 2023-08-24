@@ -64,8 +64,8 @@ func servingInstanceNodePorts(ns string, bootstrapConfigmapName string, httpPort
 					Enabled:                true,
 					ServiceType:            "NodePort",
 					BootstrapConfigmapName: bootstrapConfigmapName,
-					HttpPort:               httpPort,
-					HttpsPort:              httpsPort,
+					HTTPPort:               httpPort,
+					HTTPSPort:              httpsPort,
 				},
 			},
 		},
@@ -79,8 +79,8 @@ func TestTransformKourierManifest(t *testing.T) {
 		expNamespace      string
 		expServiceType    string
 		expConfigMapName  string
-		expNodePortsHttp  int32
-		expNodePortsHttps int32
+		expNodePortsHTTP  int32
+		expNodePortsHTTPS int32
 		expError          error
 	}{{
 		name:             "Replaces Kourier Gateway Namespace, ServiceType and bootstrap cm",
@@ -113,8 +113,8 @@ func TestTransformKourierManifest(t *testing.T) {
 		instance:          servingInstanceNodePorts(servingNamespace, "", 30001, 30002),
 		expNamespace:      servingNamespace,
 		expServiceType:    "NodePort",
-		expNodePortsHttp:  30001,
-		expNodePortsHttps: 30002,
+		expNodePortsHTTP:  30001,
+		expNodePortsHTTPS: 30002,
 		expConfigMapName:  kourierDefaultVolumeName,
 	}}
 
@@ -146,15 +146,15 @@ func TestTransformKourierManifest(t *testing.T) {
 			for _, u := range manifest.Resources() {
 				verifyControllerNamespace(t, &u, tt.expNamespace)
 				verifyGatewayServiceType(t, &u, tt.expServiceType)
-				verifyGatewayServiceTypeNodePortHttp(t, &u, tt.expNodePortsHttp)
-				verifyGatewayServiceTypeNodePortHttps(t, &u, tt.expNodePortsHttps)
+				verifyGatewayServiceTypeNodePortHTTP(t, &u, tt.expNodePortsHTTP)
+				verifyGatewayServiceTypeNodePortHTTPS(t, &u, tt.expNodePortsHTTPS)
 				verifyBootstrapVolumeName(t, &u, tt.expConfigMapName)
 			}
 		})
 	}
 }
 
-func verifyGatewayServiceTypeNodePortHttp(t *testing.T, u *unstructured.Unstructured, expHttpPort int32) {
+func verifyGatewayServiceTypeNodePortHTTP(t *testing.T, u *unstructured.Unstructured, expHTTPPort int32) {
 	if u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName {
 		svc := &v1.Service{}
 		err := scheme.Scheme.Convert(u, svc, nil)
@@ -166,11 +166,11 @@ func verifyGatewayServiceTypeNodePortHttp(t *testing.T, u *unstructured.Unstruct
 				resultPort = port.NodePort
 			}
 		}
-		util.AssertDeepEqual(t, resultPort, expHttpPort)
+		util.AssertDeepEqual(t, resultPort, expHTTPPort)
 	}
 }
 
-func verifyGatewayServiceTypeNodePortHttps(t *testing.T, u *unstructured.Unstructured, expHttpsPort int32) {
+func verifyGatewayServiceTypeNodePortHTTPS(t *testing.T, u *unstructured.Unstructured, expHTTPSPort int32) {
 	if u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName {
 		svc := &v1.Service{}
 		err := scheme.Scheme.Convert(u, svc, nil)
@@ -182,7 +182,7 @@ func verifyGatewayServiceTypeNodePortHttps(t *testing.T, u *unstructured.Unstruc
 				resultPort = port.NodePort
 			}
 		}
-		util.AssertDeepEqual(t, resultPort, expHttpsPort)
+		util.AssertDeepEqual(t, resultPort, expHTTPSPort)
 	}
 }
 

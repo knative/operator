@@ -93,7 +93,7 @@ func configureGWServiceType(instance *v1beta1.KnativeServing) mf.Transformer {
 				svc.Spec.Type = serviceType
 			case v1.ServiceTypeNodePort:
 				svc.Spec.Type = serviceType
-				if instance.Spec.Ingress.Kourier.HttpPort > 0 || instance.Spec.Ingress.Kourier.HttpsPort > 0 {
+				if instance.Spec.Ingress.Kourier.HTTPPort > 0 || instance.Spec.Ingress.Kourier.HTTPSPort > 0 {
 					configureGWServiceTypeNodePort(instance, svc)
 				}
 			case v1.ServiceTypeExternalName:
@@ -147,9 +147,9 @@ func configureBootstrapConfigMap(instance *v1beta1.KnativeServing) mf.Transforme
 func configureGWServiceTypeNodePort(instance *v1beta1.KnativeServing, svc *v1.Service) {
 	for i, v := range svc.Spec.Ports {
 		if v.Name != "https" {
-			v.NodePort = instance.Spec.Ingress.Kourier.HttpPort
+			v.NodePort = instance.Spec.Ingress.Kourier.HTTPPort
 		} else {
-			v.NodePort = instance.Spec.Ingress.Kourier.HttpsPort
+			v.NodePort = instance.Spec.Ingress.Kourier.HTTPSPort
 		}
 		svc.Spec.Ports[i] = v
 	}

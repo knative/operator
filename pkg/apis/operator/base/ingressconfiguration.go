@@ -41,11 +41,11 @@ type KourierIngressConfiguration struct {
 	// ServiceType specifies the service type for kourier gateway.
 	ServiceType v1.ServiceType `json:"service-type,omitempty"`
 
-	// HttpPort specifies the port used in case of ServiceType = "NodePort" for http traffic
-	HttpPort int32 `json:"http-port,omitempty"`
+	// HTTPPort specifies the port used in case of ServiceType = "NodePort" for http traffic
+	HTTPPort int32 `json:"http-port,omitempty"`
 
-	// HttpsPort specifies the port used in case of ServiceType = "NodePort" for https (encrypted) traffic
-	HttpsPort int32 `json:"https-port,omitempty"`
+	// HTTPSPort specifies the port used in case of ServiceType = "NodePort" for https (encrypted) traffic
+	HTTPSPort int32 `json:"https-port,omitempty"`
 
 	// BootstrapConfigmapName specifies the ConfigMap name which contains envoy bootstrap.
 	BootstrapConfigmapName string `json:"bootstrap-configmap,omitempty"`

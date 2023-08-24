@@ -2312,6 +2312,10 @@ spec:
                         type: string
                       bootstrap-configmap:
                         type: string
+                      http-port:
+                        type: integer
+                      https-port:
+                        type: integer
                     type: object
                 type: object
               security:

@@ -52,14 +52,36 @@ func servingInstance(ns string, serviceType v1.ServiceType, bootstrapConfigmapNa
 	}
 }
 
+func servingInstanceNodePorts(ns string, bootstrapConfigmapName string, httpPort int32, httpsPort int32) *servingv1beta1.KnativeServing {
+	return &servingv1beta1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-instance",
+			Namespace: ns,
+		},
+		Spec: servingv1beta1.KnativeServingSpec{
+			Ingress: &servingv1beta1.IngressConfigs{
+				Kourier: base.KourierIngressConfiguration{
+					Enabled:                true,
+					ServiceType:            "NodePort",
+					BootstrapConfigmapName: bootstrapConfigmapName,
+					HTTPPort:               httpPort,
+					HTTPSPort:              httpsPort,
+				},
+			},
+		},
+	}
+}
+
 func TestTransformKourierManifest(t *testing.T) {
 	tests := []struct {
-		name             string
-		instance         *servingv1beta1.KnativeServing
-		expNamespace     string
-		expServiceType   string
-		expConfigMapName string
-		expError         error
+		name              string
+		instance          *servingv1beta1.KnativeServing
+		expNamespace      string
+		expServiceType    string
+		expConfigMapName  string
+		expNodePortsHTTP  int32
+		expNodePortsHTTPS int32
+		expError          error
 	}{{
 		name:             "Replaces Kourier Gateway Namespace, ServiceType and bootstrap cm",
 		instance:         servingInstance(servingNamespace, "ClusterIP", "my-bootstrap"),
@@ -86,6 +108,30 @@ func TestTransformKourierManifest(t *testing.T) {
 		expServiceType:   "Foo",
 		expConfigMapName: kourierDefaultVolumeName,
 		expError:         fmt.Errorf("unknown service type \"Foo\""),
+	}, {
+		name:              "Use NodePort service type",
+		instance:          servingInstanceNodePorts(servingNamespace, "", 30001, 30002),
+		expNamespace:      servingNamespace,
+		expServiceType:    "NodePort",
+		expNodePortsHTTP:  30001,
+		expNodePortsHTTPS: 30002,
+		expConfigMapName:  kourierDefaultVolumeName,
+	}, {
+		name:              "Use NodePort service type with unset HTTP Port",
+		instance:          servingInstanceNodePorts(servingNamespace, "", 0, 30002),
+		expNamespace:      servingNamespace,
+		expServiceType:    "NodePort",
+		expNodePortsHTTP:  0,
+		expNodePortsHTTPS: 30002,
+		expConfigMapName:  kourierDefaultVolumeName,
+	}, {
+		name:              "Use NodePort service type with unset HTTPS Port",
+		instance:          servingInstanceNodePorts(servingNamespace, "", 30001, 0),
+		expNamespace:      servingNamespace,
+		expServiceType:    "NodePort",
+		expNodePortsHTTP:  30001,
+		expNodePortsHTTPS: 0,
+		expConfigMapName:  kourierDefaultVolumeName,
 	}}
 
 	for _, tt := range tests {
@@ -116,9 +162,43 @@ func TestTransformKourierManifest(t *testing.T) {
 			for _, u := range manifest.Resources() {
 				verifyControllerNamespace(t, &u, tt.expNamespace)
 				verifyGatewayServiceType(t, &u, tt.expServiceType)
+				verifyGatewayServiceTypeNodePortHTTP(t, &u, tt.expNodePortsHTTP)
+				verifyGatewayServiceTypeNodePortHTTPS(t, &u, tt.expNodePortsHTTPS)
 				verifyBootstrapVolumeName(t, &u, tt.expConfigMapName)
 			}
 		})
+	}
+}
+
+func verifyGatewayServiceTypeNodePortHTTP(t *testing.T, u *unstructured.Unstructured, expHTTPPort int32) {
+	if u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName {
+		svc := &v1.Service{}
+		err := scheme.Scheme.Convert(u, svc, nil)
+		util.AssertEqual(t, err, nil)
+		svcPorts := svc.Spec.Ports
+		var resultPort int32
+		for _, port := range svcPorts {
+			if port.Name != "https" {
+				resultPort = port.NodePort
+			}
+		}
+		util.AssertDeepEqual(t, resultPort, expHTTPPort)
+	}
+}
+
+func verifyGatewayServiceTypeNodePortHTTPS(t *testing.T, u *unstructured.Unstructured, expHTTPSPort int32) {
+	if u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName {
+		svc := &v1.Service{}
+		err := scheme.Scheme.Convert(u, svc, nil)
+		util.AssertEqual(t, err, nil)
+		svcPorts := svc.Spec.Ports
+		var resultPort int32
+		for _, port := range svcPorts {
+			if port.Name == "https" {
+				resultPort = port.NodePort
+			}
+		}
+		util.AssertDeepEqual(t, resultPort, expHTTPSPort)
 	}
 }
 

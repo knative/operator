@@ -267,6 +267,14 @@ func TestResourceTransform(t *testing.T) {
 			util.AssertEqual(t, err, nil)
 			util.AssertDeepEqual(t, jobGenerated.Spec.Template.Spec.Containers, tt.expected)
 
+			// test for job with generated name and name
+			unstructuredJobGeneratedName := util.MakeUnstructured(t, makeJobNameGeneratedName(tt.name+"non-generated", tt.name, podSpec))
+			transform(&unstructuredJobGeneratedName)
+			jobGeneratedName := &batchv1.Job{}
+			err = scheme.Scheme.Convert(&unstructuredJobGeneratedName, jobGeneratedName, nil)
+			util.AssertEqual(t, err, nil)
+			util.AssertDeepEqual(t, jobGeneratedName.Spec.Template.Spec.Containers, tt.expected)
+
 			// test for statefulset
 			unstructuredStatefulSet := util.MakeUnstructured(t, makeStatefulSet(tt.name, podSpec))
 			transform(&unstructuredStatefulSet)
@@ -454,6 +462,23 @@ func makeStatefulSet(name string, podSpec corev1.PodSpec) *appsv1.StatefulSet {
 			Name: name,
 		},
 		Spec: appsv1.StatefulSetSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: podSpec,
+			},
+		},
+	}
+}
+
+func makeJobNameGeneratedName(name, genaredtedName string, podSpec corev1.PodSpec) *batchv1.Job {
+	return &batchv1.Job{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "Job",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:         name,
+			GenerateName: genaredtedName,
+		},
+		Spec: batchv1.JobSpec{
 			Template: corev1.PodTemplateSpec{
 				Spec: podSpec,
 			},

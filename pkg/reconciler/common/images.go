@@ -94,7 +94,7 @@ func ImageTransform(registry *base.Registry, log *zap.SugaredLogger) mf.Transfor
 		}
 
 		objName := obj.GetName()
-		if objName == "" {
+		if obj.GetGenerateName() != "" {
 			objName = obj.GetGenerateName()
 		}
 		log.Debugw("Updating", "name", objName, "registry", registry)

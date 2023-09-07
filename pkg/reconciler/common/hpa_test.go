@@ -64,6 +64,11 @@ func TestHpaTransform(t *testing.T) {
 	}
 }
 
+func TestGetHPAName(t *testing.T) {
+	util.AssertEqual(t, getHPAName("mt-broker-ingress"), "broker-ingress-hpa")
+	util.AssertEqual(t, getHPAName("activator"), "activator")
+}
+
 func makeUnstructuredHPA(t *testing.T, name string, minReplicas, maxReplicas int32) *unstructured.Unstructured {
 	hpa := &v2beta1.HorizontalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{

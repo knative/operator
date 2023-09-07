@@ -75,7 +75,7 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 				ps = &job.Spec.Template
 			}
 
-			if u.GetKind() == "HorizontalPodAutoscaler" && u.GetName() == override.Name && override.Replicas != nil {
+			if u.GetKind() == "HorizontalPodAutoscaler" && override.Replicas != nil && u.GetName() == getHPAName(override.Name) {
 				overrideReplicas := int64(*override.Replicas)
 				if err := hpaTransform(u, overrideReplicas); err != nil {
 					return err

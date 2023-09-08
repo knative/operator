@@ -154,7 +154,7 @@ func TestComponentsTransform(t *testing.T) {
 			expDNSPolicy:   nil,
 		}},
 	}, {
-		name: "no replicas in deployment override, use global replicas",
+		name: "no replicas in workload override, use global replicas",
 		override: []base.WorkloadOverride{
 			{Name: "controller"},
 		},
@@ -551,7 +551,7 @@ func TestComponentsTransform(t *testing.T) {
 			},
 		}},
 	}, {
-		name: "neither replicas in deployment override nor global replicas",
+		name: "neither replicas in workload override nor global replicas",
 		override: []base.WorkloadOverride{
 			{Name: "controller"},
 		},

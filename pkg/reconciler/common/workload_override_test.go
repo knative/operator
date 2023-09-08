@@ -154,7 +154,7 @@ func TestComponentsTransform(t *testing.T) {
 			expDNSPolicy:   nil,
 		}},
 	}, {
-		name: "no replicas in deploymentoverride, use global replicas",
+		name: "no replicas in deployment override, use global replicas",
 		override: []base.WorkloadOverride{
 			{Name: "controller"},
 		},
@@ -720,7 +720,42 @@ func TestComponentsTransform(t *testing.T) {
 			},
 		},
 	}, {
-		name: "HPA activator override minReplicas",
+		name: "activator HPA no override",
+		expDeployment: map[string]expDeployments{
+			"activator": {
+				expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+				expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
+				expAnnotations:         nil,
+				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
+				expReplicas:            0, // if hpa is used, this should never be set
+			},
+		},
+		expHorizontalPodAutoscaler: map[string]expHorizontalPodAutoscalers{
+			"activator": {
+				expMinReplicas: 1,  // defined in manifest.yaml
+				expMaxReplicas: 20, // defined in manifest.yaml
+			},
+		},
+	}, {
+		name:           "activator HPA global replicas override",
+		globalReplicas: 10,
+		expDeployment: map[string]expDeployments{
+			"activator": {
+				expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+				expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
+				expAnnotations:         nil,
+				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
+				expReplicas:            0, // if hpa is used, this should never be set
+			},
+		},
+		expHorizontalPodAutoscaler: map[string]expHorizontalPodAutoscalers{
+			"activator": {
+				expMinReplicas: 10,
+				expMaxReplicas: 29, // in manifest.yaml maxReplicas=20 +9 (difference between existing min and overwritten min)
+			},
+		},
+	}, {
+		name: "activator HPA workload override",
 		override: []base.WorkloadOverride{
 			{
 				Name:     "activator",
@@ -733,7 +768,31 @@ func TestComponentsTransform(t *testing.T) {
 				expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
 				expAnnotations:         nil,
 				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
-				expReplicas:            0,
+				expReplicas:            0, // if hpa is used, this should never be set
+			},
+		},
+		expHorizontalPodAutoscaler: map[string]expHorizontalPodAutoscalers{
+			"activator": {
+				expMinReplicas: four,
+				expMaxReplicas: 23, // in manifest.yaml maxReplicas=20 +3 (difference between existing min and overwritten min)
+			},
+		},
+	}, {
+		name:           "activator HPA global and workload override",
+		globalReplicas: 10,
+		override: []base.WorkloadOverride{
+			{
+				Name:     "activator",
+				Replicas: &four,
+			},
+		},
+		expDeployment: map[string]expDeployments{
+			"activator": {
+				expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+				expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
+				expAnnotations:         nil,
+				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
+				expReplicas:            0, // if hpa is used, this should never be set
 			},
 		},
 		expHorizontalPodAutoscaler: map[string]expHorizontalPodAutoscalers{

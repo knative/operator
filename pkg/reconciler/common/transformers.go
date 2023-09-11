@@ -17,6 +17,8 @@ import (
 	"context"
 
 	mf "github.com/manifestival/manifestival"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/pkg/logging"
 
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -26,16 +28,25 @@ import (
 func transformers(ctx context.Context, obj base.KComponent) []mf.Transformer {
 	logger := logging.FromContext(ctx)
 	return []mf.Transformer{
-		mf.InjectOwner(obj),
+		injectOwner(obj),
 		mf.InjectNamespace(obj.GetNamespace()),
-		JobTransform(obj),
 		HighAvailabilityTransform(obj, logger),
 		ImageTransform(obj.GetSpec().GetRegistry(), logger),
+		JobTransform(obj),
 		ConfigMapTransform(obj.GetSpec().GetConfig(), logger),
 		ResourceRequirementsTransform(obj, logger),
 		OverridesTransform(obj.GetSpec().GetWorkloadOverrides(), logger),
 		ServicesTransform(obj, logger),
 		PodDisruptionBudgetsTransform(obj, logger),
+	}
+}
+
+func injectOwner(owner mf.Owner) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetNamespace() != "" {
+			u.SetOwnerReferences([]v1.OwnerReference{*v1.NewControllerRef(owner, owner.GroupVersionKind())})
+		}
+		return nil
 	}
 }
 
@@ -48,6 +59,21 @@ func Transform(ctx context.Context, manifest *mf.Manifest, instance base.KCompon
 	transformers := transformers(ctx, instance)
 	transformers = append(transformers, extra...)
 
+	m, err := manifest.Transform(transformers...)
+	if err != nil {
+		instance.GetStatus().MarkInstallFailed(err.Error())
+		return err
+	}
+	*manifest = m
+	return nil
+}
+
+// InjectNamespace will mutate the namespace of all installed resources
+func InjectNamespace(manifest *mf.Manifest, instance base.KComponent, extra ...mf.Transformer) error {
+	transformers := []mf.Transformer{
+		mf.InjectNamespace(instance.GetNamespace()),
+	}
+	transformers = append(transformers, extra...)
 	m, err := manifest.Transform(transformers...)
 	if err != nil {
 		instance.GetStatus().MarkInstallFailed(err.Error())

@@ -146,6 +146,13 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 
+// injectNamespace mutates the namespace of all installed resources
+func (r *Reconciler) injectNamespace(ctx context.Context, manifest *mf.Manifest, comp base.KComponent) error {
+	instance := comp.(*v1beta1.KnativeServing)
+	extra := []mf.Transformer{ingress.IngressServiceTransform(instance)}
+	return common.InjectNamespace(manifest, instance, extra...)
+}
+
 func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
 	paths := instance.GetStatus().GetManifests()
 	installed, err := common.FetchManifestFromArray(paths)
@@ -153,7 +160,10 @@ func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*
 		return &installed, err
 	}
 	installed = r.manifest.Append(installed)
-	stages := common.Stages{r.transform}
+
+	// Per the manifests, that have been installed in the cluster, we only need to inject the correct namespace
+	// in the stages.
+	stages := common.Stages{r.injectNamespace}
 	err = stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }

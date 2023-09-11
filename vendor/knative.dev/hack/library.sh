@@ -46,7 +46,7 @@ readonly REPO_ROOT_DIR
 function __resolveRepoName() {
   local repoName
   repoName="$(basename "${1:-$(git rev-parse --show-toplevel)}")"
-  repoName="${repoName#knative-sandbox-}" # Remove knative-sandbox- prefix if any
+  repoName="${repoName#knative-extensions-}" # Remove knative-extensions- prefix if any
   repoName="${repoName#knative-}" # Remove knative- prefix if any
   echo "${repoName}"
 }
@@ -657,7 +657,7 @@ function foreach_go_module() {
       echo "Command '${cmd}' failed in module $gomod_dir: $failed" >&2
       return $failed
     fi
-  done < <(go_run knative.dev/test-infra/tools/modscope@latest ls -p)
+  done < <(go_run knative.dev/toolbox/modscope@latest ls -p)
 }
 
 # Update go deps.
@@ -709,7 +709,7 @@ function __go_update_deps_for_module() {
     else
       group "Upgrading to release ${RELEASE}"
     fi
-    FLOATING_DEPS+=( $(go_run knative.dev/test-infra/buoy@latest float ./go.mod "${buoyArgs[@]}") )
+    FLOATING_DEPS+=( $(go_run knative.dev/toolbox/buoy@latest float ./go.mod "${buoyArgs[@]}") )
     if [[ ${#FLOATING_DEPS[@]} > 0 ]]; then
       echo "Floating deps to ${FLOATING_DEPS[@]}"
       go get -d ${FLOATING_DEPS[@]}
@@ -718,18 +718,23 @@ function __go_update_deps_for_module() {
     fi
   fi
 
-  group "Go mod tidy and vendor"
+  group "Go mod tidy"
 
   # Prune modules.
-  local orig_pipefail_opt=$(shopt -p -o pipefail)
+  local orig_pipefail_opt
+  orig_pipefail_opt=$(shopt -p -o pipefail)
   set -o pipefail
   go mod tidy 2>&1 | grep -v "ignoring symlink" || true
-  go mod vendor 2>&1 |  grep -v "ignoring symlink" || true
+  if [[ "${FORCE_VENDOR:-false}" == "true" ]] || [ -d vendor ]; then
+    group "Go mod vendor"
+    go mod vendor 2>&1 |  grep -v "ignoring symlink" || true
+  fi
   eval "$orig_pipefail_opt"
 
-  if ! [ -d vendor ]; then
+  if ! [[ "${FORCE_VENDOR:-false}" == "true" ]] && ! [ -d vendor ]; then
     return 0
   fi
+
   group "Removing unwanted vendor files"
 
   # Remove unwanted vendor files
@@ -754,7 +759,7 @@ function __go_update_deps_for_module() {
 # Intended to be used like:
 #   export MODULE_NAME=$(go_mod_module_name)
 function go_mod_module_name() {
-  go_run knative.dev/test-infra/tools/modscope@latest current
+  go_run knative.dev/toolbox/modscope@latest current
 }
 
 # Return a GOPATH to a temp directory. Works around the out-of-GOPATH issues

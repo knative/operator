@@ -18,7 +18,6 @@ metadata:
   name: operator-webhook
   namespace: default
   labels:
-    operator.knative.dev/release: devel
     app.kubernetes.io/component: operator-webhook
     app.kubernetes.io/version: devel
     app.kubernetes.io/name: knative-operator
@@ -30,12 +29,10 @@ spec:
   template:
     metadata:
       annotations:
-        cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
         sidecar.istio.io/inject: "false"
       labels:
         app: operator-webhook
         role: operator-webhook
-        operator.knative.dev/release: devel
         app.kubernetes.io/component: operator-webhook
         app.kubernetes.io/version: devel
         app.kubernetes.io/name: knative-operator
@@ -88,7 +85,8 @@ spec:
 
         - name: METRICS_DOMAIN
           value: knative.dev/operator
-
+        - name: KUBERNETES_MIN_VERSION
+          value: ""
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

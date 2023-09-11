@@ -55,3 +55,76 @@ The process to publish a version on [OperatorHub](https://operatorhub.io/operato
 - Create a PR will all the changes above an submit to the repository `k8s-operatorhub/community-operators`.
 
 Once the PR is reviewed and merged, Knative Operator of the new version is published in [Operatorhub.io](https://operatorhub.io/operator/knative-operator).
+
+## Release the Helm chart
+
+Open the file `hack/generate-helm.sh`, set the variable `VERSION` to the version of the Knative Operator, e.g. `VERSION=1.10.1`.
+
+Open a terminal, go to the home directory of the Knative Operator repository. Run the script:
+```shell
+./hack/generate-helm.sh
+```
+
+This script will generate the templates at `charts/knative-operator/templates/operator.yaml`. There are two deployment
+resources in this template: `knative-operator` and `operator-webhook`. Make sure you add the following environment variables
+into the containers of these two deployments as below:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knative-operator
+  ...
+spec:
+  template:
+    spec:
+      containers:
+        - name: knative-operator
+        ...
+          env:
+            ...
+            - name: KUBERNETES_MIN_VERSION
+              value: "{{ .Values.knative_operator.kubernetes_min_version }}"
+            ...      
+```
+
+and
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: operator-webhook
+  ...
+spec:
+  template:
+    spec:
+      containers:
+        - name: operator-webhook
+        ...
+          env:
+            ...
+            - name: KUBERNETES_MIN_VERSION
+              value: "{{ .Values.knative_operator.kubernetes_min_version }}"
+            ...      
+```
+
+You need to remove the line containing `logging.request-log-template:`, because the value of this key contains `{{ }}` in the example,
+which leads to the error of `executing "knative-operator/templates/operator.yaml" at <.Request.Method>: nil pointer evaluating interface {}.Method`
+for the command `helm install` to install the charts.
+
+To package the charts into a .tgz artifact. Go to the directory `charts` in a terminal, and run the `helm package` command:
+```shell
+cd charts
+helm package knative-operator
+```
+
+You will generate a file named `knative-operator-{version}.tgz`, under the directory `charts`. `{version}` is the version
+of Knative Operator.
+
+You can install the charts by running the command:
+```shell
+helm install knative-operator ./knative-operator-{version}.tgz
+```
+
+Replace `{version}` with the correct version for your artifact.

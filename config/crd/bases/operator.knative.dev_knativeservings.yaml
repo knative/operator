@@ -17,9 +17,8 @@ kind: CustomResourceDefinition
 metadata:
   name: knativeservings.operator.knative.dev
   labels:
-    operator.knative.dev/release: devel
     app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 spec:
   group: operator.knative.dev
   versions:
@@ -2315,6 +2314,10 @@ spec:
                         type: string
                       bootstrap-configmap:
                         type: string
+                      http-port:
+                        type: integer
+                      https-port:
+                        type: integer
                     type: object
                 type: object
               security:

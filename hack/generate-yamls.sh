@@ -53,7 +53,7 @@ rm -fr ${YAML_OUTPUT_DIR}/*.yaml
 readonly OPERATOR_YAML=${YAML_OUTPUT_DIR}/operator.yaml
 
 if [[ -n "${TAG:-}" ]]; then
-  LABEL_YAML_CMD=(sed -e "s|operator.knative.dev/release: devel|operator.knative.dev/release: \"${TAG}\"|" -e "s|app.kubernetes.io/version: devel|app.kubernetes.io/version: \"${TAG:1}\"|")
+  LABEL_YAML_CMD=(sed -e "s|app.kubernetes.io/version: devel|app.kubernetes.io/version: \"${TAG:1}\"|")
 else
   LABEL_YAML_CMD=(cat)
 fi
@@ -81,6 +81,10 @@ if [ -d "${YAML_REPO_ROOT}/config/post-install" ]; then
 fi
 
 echo "All manifests generated"
+
+./hack/generate-helm.sh
+HELM_CHARTS=${YAML_REPO_ROOT}/charts/knative-operator-${TAG:1}.tgz
+all_yamls+=(${HELM_CHARTS})
 
 for yaml in "${!all_yamls[@]}"; do
   echo "${all_yamls[${yaml}]}" >> ${YAML_LIST_FILE}

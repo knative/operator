@@ -1,0 +1,9 @@
+apiVersion: v1
+name: knative-operator
+version: {{ version }}
+description: Helm chart for deploying Knative Operator
+keywords:
+  - knative
+  - knative-operator
+sources:
+  - https://github.com/knative/operator

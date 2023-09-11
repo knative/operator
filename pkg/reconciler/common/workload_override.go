@@ -20,6 +20,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,6 +61,14 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 				if override.Replicas != nil {
 					ss.Spec.Replicas = override.Replicas
 				}
+			}
+			if u.GetKind() == "Job" && u.GetGenerateName() == override.Name {
+				job := &batchv1.Job{}
+				if err := scheme.Scheme.Convert(u, job, nil); err != nil {
+					return err
+				}
+				obj = job
+				ps = &job.Spec.Template
 			}
 
 			if obj == nil {
@@ -165,7 +174,8 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 	if len(override.ReadinessProbes) > 0 {
 		containers := ps.Spec.Containers
 		for i := range containers {
-			if override := findProbeOverride(override.ReadinessProbes, containers[i].Name); override != nil {
+			override := findProbeOverride(override.ReadinessProbes, containers[i].Name)
+			if override != nil {
 				overrideProbe := &v1.Probe{
 					InitialDelaySeconds:           override.InitialDelaySeconds,
 					TimeoutSeconds:                override.TimeoutSeconds,
@@ -173,6 +183,11 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 					SuccessThreshold:              override.SuccessThreshold,
 					FailureThreshold:              override.FailureThreshold,
 					TerminationGracePeriodSeconds: override.TerminationGracePeriodSeconds,
+				}
+				if *overrideProbe == (v1.Probe{}) {
+					//  Disable probe when users explicitly set the empty overrideProbe.
+					containers[i].ReadinessProbe = nil
+					continue
 				}
 				if containers[i].ReadinessProbe == nil {
 					containers[i].ReadinessProbe = overrideProbe
@@ -194,6 +209,11 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 					SuccessThreshold:              override.SuccessThreshold,
 					FailureThreshold:              override.FailureThreshold,
 					TerminationGracePeriodSeconds: override.TerminationGracePeriodSeconds,
+				}
+				if *overrideProbe == (v1.Probe{}) {
+					//  Disable probe when users explicitly set the empty overrideProbe.
+					containers[i].ReadinessProbe = nil
+					continue
 				}
 				if containers[i].LivenessProbe == nil {
 					containers[i].LivenessProbe = overrideProbe

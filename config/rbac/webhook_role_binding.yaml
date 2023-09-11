@@ -18,9 +18,8 @@ metadata:
   namespace: default
   name: operator-webhook
   labels:
-    eventing.knative.dev/release: devel
     app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 subjects:
   - kind: ServiceAccount
     name: operator-webhook
@@ -35,9 +34,8 @@ kind: ClusterRoleBinding
 metadata:
   name: operator-webhook
   labels:
-    operator.knative.dev/release: devel
     app.kubernetes.io/version: devel
-    app.kubernetes.io/part-of: knative-operator
+    app.kubernetes.io/name: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

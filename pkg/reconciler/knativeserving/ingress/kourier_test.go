@@ -75,21 +75,21 @@ func servingInstanceNodePorts(ns string, bootstrapConfigmapName string, httpPort
 
 func TestTransformKourierManifest(t *testing.T) {
 	tests := []struct {
-		name              string
-		instance          *servingv1beta1.KnativeServing
-		expNamespace      string
-		expServiceType    string
-    expServiceLoadBalancerIP string
-		expConfigMapName  string
-		expNodePortsHTTP  int32
-		expNodePortsHTTPS int32
-		expError          error
+		name                     string
+		instance                 *servingv1beta1.KnativeServing
+		expNamespace             string
+		expServiceType           string
+		expServiceLoadBalancerIP string
+		expConfigMapName         string
+		expNodePortsHTTP         int32
+		expNodePortsHTTPS        int32
+		expError                 error
 	}{{
-		name:                     "Replaces Kourier Gateway Namespace, ServiceType and bootstrap cm",
-		instance:                 servingInstance(servingNamespace, "ClusterIP", "my-bootstrap", ""),
-		expNamespace:             servingNamespace,
-		expConfigMapName:         "my-bootstrap",
-		expServiceType:           "ClusterIP",
+		name:             "Replaces Kourier Gateway Namespace, ServiceType and bootstrap cm",
+		instance:         servingInstance(servingNamespace, "ClusterIP", "my-bootstrap", ""),
+		expNamespace:     servingNamespace,
+		expConfigMapName: "my-bootstrap",
+		expServiceType:   "ClusterIP",
 	}, {
 		name:                     "Use Kourier default service type",
 		instance:                 servingInstance(servingNamespace, "" /* empty service type */, "", ""),
@@ -114,7 +114,7 @@ func TestTransformKourierManifest(t *testing.T) {
 		expError:                 fmt.Errorf("cannot configure LoadBalancerIP for service type \"ClusterIP\""),
 	}, {
 		name:             "Use unknown service type",
-		instance:         servingInstance(servingNamespace, "Foo", ""),
+		instance:         servingInstance(servingNamespace, "Foo", "", ""),
 		expNamespace:     servingNamespace,
 		expServiceType:   "Foo",
 		expConfigMapName: kourierDefaultVolumeName,

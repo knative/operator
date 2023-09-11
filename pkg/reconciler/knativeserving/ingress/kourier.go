@@ -93,9 +93,6 @@ func configureGatewayService(instance *v1beta1.KnativeServing) mf.Transformer {
 				svc.Spec.Type = serviceType
 			case v1.ServiceTypeNodePort:
 				svc.Spec.Type = serviceType
-				if instance.Spec.Ingress.Kourier.HTTPPort > 0 || instance.Spec.Ingress.Kourier.HTTPSPort > 0 {
-					configureGWServiceTypeNodePort(instance, svc)
-				}
 			case v1.ServiceTypeExternalName:
 				return fmt.Errorf("unsupported service type %q", serviceType)
 			default:
@@ -103,12 +100,20 @@ func configureGatewayService(instance *v1beta1.KnativeServing) mf.Transformer {
 			}
 		}
 
-		// Then configure LoadBalancerIP if set.
+		// Configure LoadBalancerIP if set.
 		if instance.Spec.Ingress.Kourier.ServiceLoadBalancerIP != "" {
 			if svc.Spec.Type != v1.ServiceTypeLoadBalancer {
 				return fmt.Errorf("cannot configure LoadBalancerIP for service type %q", svc.Spec.Type)
 			}
 			svc.Spec.LoadBalancerIP = instance.Spec.Ingress.Kourier.ServiceLoadBalancerIP
+		}
+
+		// Configure HTTPPort/HTTPSPort if set.
+		if instance.Spec.Ingress.Kourier.HTTPPort > 0 || instance.Spec.Ingress.Kourier.HTTPSPort > 0 {
+			if svc.Spec.Type != v1.ServiceTypeNodePort {
+				return fmt.Errorf("cannot configure HTTP(S)Port for service type %q", svc.Spec.Type)
+			}
+			configureGatewayServiceTypeNodePort(instance, svc)
 		}
 
 		// Return any conversion error or nil
@@ -150,7 +155,7 @@ func configureBootstrapConfigMap(instance *v1beta1.KnativeServing) mf.Transforme
 	}
 }
 
-func configureGWServiceTypeNodePort(instance *v1beta1.KnativeServing, svc *v1.Service) {
+func configureGatewayServiceTypeNodePort(instance *v1beta1.KnativeServing, svc *v1.Service) {
 	for i, v := range svc.Spec.Ports {
 		if v.Name != "https" && instance.Spec.Ingress.Kourier.HTTPPort > 0 {
 			v.NodePort = instance.Spec.Ingress.Kourier.HTTPPort

@@ -24,6 +24,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"google.golang.org/api/googleapi"
 	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -55,16 +56,22 @@ type expDeployments struct {
 	expDNSPolicy                 *corev1.DNSPolicy
 }
 
+type expHorizontalPodAutoscalers struct {
+	expMinReplicas int32
+	expMaxReplicas int32
+}
+
 func TestComponentsTransform(t *testing.T) {
 	var four int32 = 4
 	var five int32 = 5
 	var defaultDnsPolicy = corev1.DNSPolicy("")
-	var dnsClusterFirstWithHostNet corev1.DNSPolicy = corev1.DNSClusterFirstWithHostNet
+	var dnsClusterFirstWithHostNet = corev1.DNSClusterFirstWithHostNet
 	tests := []struct {
-		name           string
-		override       []base.WorkloadOverride
-		globalReplicas int32
-		expDeployment  map[string]expDeployments
+		name                       string
+		override                   []base.WorkloadOverride
+		globalReplicas             int32
+		expDeployment              map[string]expDeployments
+		expHorizontalPodAutoscaler map[string]expHorizontalPodAutoscalers
 	}{{
 		name:     "no override",
 		override: nil,
@@ -141,7 +148,7 @@ func TestComponentsTransform(t *testing.T) {
 			expDNSPolicy:   nil,
 		}},
 	}, {
-		name: "no replicas in deploymentoverride, use global replicas",
+		name: "no replicas in workload override, use global replicas",
 		override: []base.WorkloadOverride{
 			{Name: "controller"},
 		},
@@ -545,7 +552,7 @@ func TestComponentsTransform(t *testing.T) {
 			},
 		}},
 	}, {
-		name: "neither replicas in deploymentoverride nor global replicas",
+		name: "neither replicas in workload override nor global replicas",
 		override: []base.WorkloadOverride{
 			{Name: "controller"},
 		},
@@ -673,7 +680,7 @@ func TestComponentsTransform(t *testing.T) {
 				expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "webhook", "role": "webhook", "e": "f"},
 				expAnnotations:         map[string]string{"g": "h"},
 				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false", "g": "h"},
-				expReplicas:            4,
+				expReplicas:            0,
 				expNodeSelector:        map[string]string{"env": "prod"},
 				expTopologySpreadConstraints: []corev1.TopologySpreadConstraint{{
 					MaxSkew:           1,
@@ -704,6 +711,88 @@ func TestComponentsTransform(t *testing.T) {
 				},
 				expHostNetwork: googleapi.Bool(true),
 				expDNSPolicy:   &dnsClusterFirstWithHostNet,
+			},
+		},
+	}, {
+		name: "activator HPA no override",
+		expDeployment: map[string]expDeployments{
+			"activator": {
+				expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+				expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
+				expAnnotations:         nil,
+				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
+				expReplicas:            0, // if hpa is used, this should never be set
+			},
+		},
+		expHorizontalPodAutoscaler: map[string]expHorizontalPodAutoscalers{
+			"activator": {
+				expMinReplicas: 1,  // defined in manifest.yaml
+				expMaxReplicas: 20, // defined in manifest.yaml
+			},
+		},
+	}, {
+		name:           "activator HPA global replicas override",
+		globalReplicas: 10,
+		expDeployment: map[string]expDeployments{
+			"activator": {
+				expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+				expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
+				expAnnotations:         nil,
+				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
+				expReplicas:            0, // if hpa is used, this should never be set
+			},
+		},
+		expHorizontalPodAutoscaler: map[string]expHorizontalPodAutoscalers{
+			"activator": {
+				expMinReplicas: 10,
+				expMaxReplicas: 29, // in manifest.yaml maxReplicas=20 +9 (difference between existing min and overwritten min)
+			},
+		},
+	}, {
+		name: "activator HPA workload override",
+		override: []base.WorkloadOverride{
+			{
+				Name:     "activator",
+				Replicas: &four,
+			},
+		},
+		expDeployment: map[string]expDeployments{
+			"activator": {
+				expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+				expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
+				expAnnotations:         nil,
+				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
+				expReplicas:            0, // if hpa is used, this should never be set
+			},
+		},
+		expHorizontalPodAutoscaler: map[string]expHorizontalPodAutoscalers{
+			"activator": {
+				expMinReplicas: four,
+				expMaxReplicas: 23, // in manifest.yaml maxReplicas=20 +3 (difference between existing min and overwritten min)
+			},
+		},
+	}, {
+		name:           "activator HPA global and workload override",
+		globalReplicas: 10,
+		override: []base.WorkloadOverride{
+			{
+				Name:     "activator",
+				Replicas: &four,
+			},
+		},
+		expDeployment: map[string]expDeployments{
+			"activator": {
+				expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+				expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
+				expAnnotations:         nil,
+				expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
+				expReplicas:            0, // if hpa is used, this should never be set
+			},
+		},
+		expHorizontalPodAutoscaler: map[string]expHorizontalPodAutoscalers{
+			"activator": {
+				expMinReplicas: four,
+				expMaxReplicas: 23, // in manifest.yaml maxReplicas=20 +3 (difference between existing min and overwritten min)
 			},
 		},
 	}}
@@ -740,8 +829,7 @@ func TestComponentsTransform(t *testing.T) {
 			for key, ks := range kss {
 				t.Run(key, func(t *testing.T) {
 
-					//manifest, err = manifest.Transform(OverridesTransform(ks, log), HighAvailabilityTransform(ks, log))
-					manifest, err = manifest.Transform(HighAvailabilityTransform(ks, log), OverridesTransform(ks.GetSpec().GetWorkloadOverrides(), log))
+					manifest, err = manifest.Transform(HighAvailabilityTransform(ks), OverridesTransform(ks.GetSpec().GetWorkloadOverrides(), log))
 					if err != nil {
 						t.Fatalf("Failed to transform manifest: %v", err)
 					}
@@ -798,12 +886,12 @@ func TestComponentsTransform(t *testing.T) {
 								}
 								r, l := getProbes(got.Spec.Template.Spec.Containers, expName)
 								if d.expReadinessProbe != nil {
-									if diff := cmp.Diff(*r, (*d.expReadinessProbe)); diff != "" {
+									if diff := cmp.Diff(*r, *d.expReadinessProbe); diff != "" {
 										t.Fatalf("Unexpected readiness probe in pod template: %v", diff)
 									}
 								}
 								if d.expLivenessProbe != nil {
-									if diff := cmp.Diff(*l, (*d.expLivenessProbe)); diff != "" {
+									if diff := cmp.Diff(*l, *d.expLivenessProbe); diff != "" {
 										t.Fatalf("Unexpected liveness probe in pod template: %v", diff)
 									}
 								}
@@ -820,6 +908,29 @@ func TestComponentsTransform(t *testing.T) {
 								}
 								if diff := cmp.Diff(&got.Spec.Template.Spec.DNSPolicy, dnsPolicy); diff != "" {
 									t.Fatalf("Unexpected dnsPolicy: %v", diff)
+								}
+							}
+						}
+					}
+
+					for expName, d := range test.expHorizontalPodAutoscaler {
+						for _, u := range manifest.Resources() {
+							if u.GetKind() == "HorizontalPodAutoscaler" && u.GetName() == expName {
+								got := &v2beta1.HorizontalPodAutoscaler{}
+								if err := scheme.Scheme.Convert(&u, got, nil); err != nil {
+									t.Fatalf("Failed to convert unstructured to deployment: %v", err)
+								}
+
+								minReplicas := int32(0)
+								if got.Spec.MinReplicas != nil {
+									minReplicas = *got.Spec.MinReplicas
+								}
+								if diff := cmp.Diff(minReplicas, d.expMinReplicas); diff != "" {
+									t.Fatalf("Unexpected minReplicas: %v", diff)
+								}
+
+								if diff := cmp.Diff(got.Spec.MaxReplicas, d.expMaxReplicas); diff != "" {
+									t.Fatalf("Unexpected maxReplicas: %v", diff)
 								}
 							}
 						}

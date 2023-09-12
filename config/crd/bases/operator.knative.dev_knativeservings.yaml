@@ -2310,6 +2310,8 @@ spec:
                         type: boolean
                       service-type:
                         type: string
+                      service-load-balancer-ip:
+                        type: string
                       bootstrap-configmap:
                         type: string
                       http-port:

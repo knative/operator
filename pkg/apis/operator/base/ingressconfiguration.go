@@ -41,6 +41,9 @@ type KourierIngressConfiguration struct {
 	// ServiceType specifies the service type for kourier gateway.
 	ServiceType v1.ServiceType `json:"service-type,omitempty"`
 
+	// ServiceLoadBalancerIP specifies the service load balancer IP.
+	ServiceLoadBalancerIP string `json:"service-load-balancer-ip,omitempty"`
+
 	// HTTPPort specifies the port used in case of ServiceType = "NodePort" for http traffic
 	HTTPPort int32 `json:"http-port,omitempty"`
 

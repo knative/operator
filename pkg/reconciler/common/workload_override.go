@@ -47,7 +47,9 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 				}
 				obj = deployment
 				ps = &deployment.Spec.Template
-				if override.Replicas != nil {
+
+				// Do not set replicas, if this resource is controlled by a HPA
+				if override.Replicas != nil && !hasHorizontalPodAutoscaler(override.Name) {
 					deployment.Spec.Replicas = override.Replicas
 				}
 			}
@@ -58,7 +60,9 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 				}
 				obj = ss
 				ps = &ss.Spec.Template
-				if override.Replicas != nil {
+
+				// Do not set replicas, if this resource is controlled by a HPA
+				if override.Replicas != nil && !hasHorizontalPodAutoscaler(override.Name) {
 					ss.Spec.Replicas = override.Replicas
 				}
 			}
@@ -69,6 +73,13 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 				}
 				obj = job
 				ps = &job.Spec.Template
+			}
+
+			if u.GetKind() == "HorizontalPodAutoscaler" && override.Replicas != nil && u.GetName() == getHPAName(override.Name) {
+				overrideReplicas := int64(*override.Replicas)
+				if err := hpaTransform(u, overrideReplicas); err != nil {
+					return err
+				}
 			}
 
 			if obj == nil {

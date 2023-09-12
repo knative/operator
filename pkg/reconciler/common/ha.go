@@ -18,32 +18,21 @@ package common
 
 import (
 	mf "github.com/manifestival/manifestival"
-	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"knative.dev/operator/pkg/apis/operator/base"
 )
 
-func haUnSupported(obj base.KComponent) sets.String {
+func haUnSupported(name string) bool {
 	return sets.NewString(
 		"pingsource-mt-adapter",
-	)
-}
-
-// When Deployment has HPA, the replicas should be controlled by HPA's minReplicas instead of operator.
-// Hence, skip changing the spec.replicas in deployment directory for these Deployments.
-func hasHorizontalPodAutoscaler(obj base.KComponent) sets.String {
-	return sets.NewString(
-		"webhook",
-		"activator",
-		"3scale-kourier-gateway",
-	)
+	).Has(name)
 }
 
 // HighAvailabilityTransform mutates configmaps and replicacounts of certain
 // controllers when HA control plane is specified.
-func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transformer {
+func HighAvailabilityTransform(obj base.KComponent) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Use spec.deployments.replicas for the deployment instead of spec.high-availability.
 		for _, override := range obj.GetSpec().GetWorkloadOverrides() {
@@ -61,39 +50,14 @@ func HighAvailabilityTransform(obj base.KComponent, log *zap.SugaredLogger) mf.T
 		replicas := int64(*ha.Replicas)
 
 		// Transform deployments that support HA.
-		if u.GetKind() == "Deployment" && !haUnSupported(obj).Has(u.GetName()) && !hasHorizontalPodAutoscaler(obj).Has(u.GetName()) {
+		if u.GetKind() == "Deployment" && !haUnSupported(u.GetName()) && !hasHorizontalPodAutoscaler(u.GetName()) {
 			if err := unstructured.SetNestedField(u.Object, replicas, "spec", "replicas"); err != nil {
 				return err
 			}
 		}
 
 		if u.GetKind() == "HorizontalPodAutoscaler" {
-			min, _, err := unstructured.NestedInt64(u.Object, "spec", "minReplicas")
-			if err != nil {
-				return err
-			}
-			// Do nothing if the HPA ships with even more replicas out of the box.
-			if min >= replicas {
-				return nil
-			}
-
-			if err := unstructured.SetNestedField(u.Object, replicas, "spec", "minReplicas"); err != nil {
-				return err
-			}
-
-			max, found, err := unstructured.NestedInt64(u.Object, "spec", "maxReplicas")
-			if err != nil {
-				return err
-			}
-
-			// Do nothing if maxReplicas is not defined.
-			if !found {
-				return nil
-			}
-
-			// Increase maxReplicas to the amount that we increased,
-			// because we need to avoid minReplicas > maxReplicas happenning.
-			if err := unstructured.SetNestedField(u.Object, max+(replicas-min), "spec", "maxReplicas"); err != nil {
+			if err := hpaTransform(u, replicas); err != nil {
 				return err
 			}
 		}

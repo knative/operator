@@ -969,6 +969,15 @@ spec:
               value: knative.dev/eventing
             - name: WEBHOOK_NAME
               value: github-webhook
+          resources:
+            requests:
+              # taken from serving.
+              cpu: 20m
+              memory: 20Mi
+            limits:
+              # taken from serving.
+              cpu: 200m
+              memory: 200Mi
           ports:
             - containerPort: 9090
               name: metrics

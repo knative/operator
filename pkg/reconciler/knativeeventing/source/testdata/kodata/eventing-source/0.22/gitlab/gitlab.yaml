@@ -962,6 +962,15 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+          resources:
+            requests:
+              # taken from serving.
+              cpu: 20m
+              memory: 20Mi
+            limits:
+              # taken from serving.
+              cpu: 200m
+              memory: 200Mi
           ports:
             - containerPort: 9090
               name: metrics

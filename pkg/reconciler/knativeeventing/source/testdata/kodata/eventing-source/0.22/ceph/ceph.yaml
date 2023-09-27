@@ -468,6 +468,9 @@ spec:
             requests:
               cpu: 100m
               memory: 100Mi
+            limits:
+              cpu: 500m
+              memory: 500Mi
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:
@@ -635,6 +638,13 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 500m
+              memory: 500Mi
           ports:
             - containerPort: 9090
               name: metrics

@@ -23,7 +23,6 @@ import (
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
@@ -36,9 +35,9 @@ type FakeKnativeServings struct {
 	ns   string
 }
 
-var knativeservingsResource = schema.GroupVersionResource{Group: "operator.knative.dev", Version: "v1beta1", Resource: "knativeservings"}
+var knativeservingsResource = v1beta1.SchemeGroupVersion.WithResource("knativeservings")
 
-var knativeservingsKind = schema.GroupVersionKind{Group: "operator.knative.dev", Version: "v1beta1", Kind: "KnativeServing"}
+var knativeservingsKind = v1beta1.SchemeGroupVersion.WithKind("KnativeServing")
 
 // Get takes name of the knativeServing, and returns the corresponding knativeServing object, and an error if there is any.
 func (c *FakeKnativeServings) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.KnativeServing, err error) {

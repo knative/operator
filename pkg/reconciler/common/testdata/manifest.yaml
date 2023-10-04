@@ -959,7 +959,7 @@ data:
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: activator
@@ -2814,22 +2814,6 @@ spec:
               containerPort: 9090
             - name: profiling
               containerPort: 8008
-
----
-apiVersion: policy/v1beta1
-kind: PodDisruptionBudget
-metadata:
-  name: activator-pdb
-  namespace: knative-serving
-  labels:
-    app.kubernetes.io/component: activator
-    app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.0.0"
-spec:
-  minAvailable: 80%
-  selector:
-    matchLabels:
-      app: activator
 
 ---
 apiVersion: policy/v1

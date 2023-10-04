@@ -19,7 +19,7 @@ package common
 import (
 	"testing"
 
-	"k8s.io/api/autoscaling/v2beta1"
+	v2 "k8s.io/api/autoscaling/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -70,11 +70,11 @@ func TestGetHPAName(t *testing.T) {
 }
 
 func makeUnstructuredHPA(t *testing.T, name string, minReplicas, maxReplicas int32) *unstructured.Unstructured {
-	hpa := &v2beta1.HorizontalPodAutoscaler{
+	hpa := &v2.HorizontalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
-		Spec: v2beta1.HorizontalPodAutoscalerSpec{
+		Spec: v2.HorizontalPodAutoscalerSpec{
 			MinReplicas: &minReplicas,
 			MaxReplicas: maxReplicas,
 		},

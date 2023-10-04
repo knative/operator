@@ -803,7 +803,7 @@ spec:
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: autoscaling/v2beta2
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: eventing-webhook
@@ -826,7 +826,7 @@ spec:
           averageUtilization: 100
 ---
 # Webhook PDB.
-apiVersion: policy/v1beta1
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: eventing-webhook

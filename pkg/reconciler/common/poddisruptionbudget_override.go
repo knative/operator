@@ -20,7 +20,6 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	policyv1 "k8s.io/api/policy/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -41,24 +40,13 @@ func PodDisruptionBudgetsTransform(obj base.KComponent, log *zap.SugaredLogger) 
 					return nil
 				}
 
-				if u.GetAPIVersion() == "policy/v1beta1" {
-					podDisruptionBudget := &policyv1beta1.PodDisruptionBudget{}
-					if err := scheme.Scheme.Convert(u, podDisruptionBudget, nil); err != nil {
-						return err
-					}
-					podDisruptionBudget.Spec.MinAvailable = override.MinAvailable
-					if err := scheme.Scheme.Convert(podDisruptionBudget, u, nil); err != nil {
-						return err
-					}
-				} else {
-					podDisruptionBudget := &policyv1.PodDisruptionBudget{}
-					if err := scheme.Scheme.Convert(u, podDisruptionBudget, nil); err != nil {
-						return err
-					}
-					podDisruptionBudget.Spec.MinAvailable = override.MinAvailable
-					if err := scheme.Scheme.Convert(podDisruptionBudget, u, nil); err != nil {
-						return err
-					}
+				podDisruptionBudget := &policyv1.PodDisruptionBudget{}
+				if err := scheme.Scheme.Convert(u, podDisruptionBudget, nil); err != nil {
+					return err
+				}
+				podDisruptionBudget.Spec.MinAvailable = override.MinAvailable
+				if err := scheme.Scheme.Convert(podDisruptionBudget, u, nil); err != nil {
+					return err
 				}
 
 				// Avoid superfluous updates from converted zero defaults

@@ -24,7 +24,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"google.golang.org/api/googleapi"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/autoscaling/v2beta1"
+	v2 "k8s.io/api/autoscaling/v2"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
@@ -915,7 +915,7 @@ func TestComponentsTransform(t *testing.T) {
 					for expName, d := range test.expHorizontalPodAutoscaler {
 						for _, u := range manifest.Resources() {
 							if u.GetKind() == "HorizontalPodAutoscaler" && u.GetName() == expName {
-								got := &v2beta1.HorizontalPodAutoscaler{}
+								got := &v2.HorizontalPodAutoscaler{}
 								if err := scheme.Scheme.Convert(&u, got, nil); err != nil {
 									t.Fatalf("Failed to convert unstructured to deployment: %v", err)
 								}

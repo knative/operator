@@ -53,7 +53,6 @@ knative-eventing:
       - "heartbeats.yaml"
       - "recordevents.yaml"
       - "websocket-source.yaml"
-      - "eventing-tls-networking.yaml"
     # Eventing packaging has evolved in non-standard ways over the last few releases.
     overrides:
       v0.18:

@@ -19,6 +19,7 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/eventing/pkg/apis/feature"
 
@@ -33,11 +34,11 @@ func (r *Reconciler) handleTLSResources(ctx context.Context, manifests *mf.Manif
 		return nil
 	}
 
-	tlsResourcesPred := mf.All(byGroup("cert-manager.io"), mf.Any(mf.ByKind("Certificate"), mf.ByKind("Issuer")))
+	tlsResourcesPred := byGroup("cert-manager.io")
 
 	// Delete TLS resources (if present)
 	toBeDeleted := manifests.Filter(tlsResourcesPred)
-	if err := toBeDeleted.Delete(mf.IgnoreNotFound(true)); err != nil {
+	if err := toBeDeleted.Delete(mf.IgnoreNotFound(true)); err != nil && !meta.IsNoMatchError(err) {
 		return fmt.Errorf("failed to delete TLS resources: %v", err)
 	}
 

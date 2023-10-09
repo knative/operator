@@ -616,3 +616,18 @@ rules:
       - deployments
     verbs:
       - deletecollection
+
+  # Eventing TLS
+  - apiGroups:
+      - "cert-manager.io"
+    resources:
+      - certificates
+      - issuers
+    verbs:
+      - create
+      - delete
+      - update
+      - list
+      - get
+      - watch
+

@@ -140,7 +140,7 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 		kec.ReplicasEnvVarsTransform(manifest.Client),
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)
-	return common.Transform(ctx, manifest, instance)
+	return common.Transform(ctx, manifest, instance, extra...)
 }
 
 // injectNamespace mutates the namespace of all installed resources

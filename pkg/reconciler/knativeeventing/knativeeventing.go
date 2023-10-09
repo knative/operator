@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	mf "github.com/manifestival/manifestival"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
@@ -90,9 +91,27 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 		return nil
 	}
 
-	if err = common.Uninstall(manifest); err != nil {
+	// For optional resources like cert-manager's Certificates and Issuers, we don't want to fail
+	// finalization when such operator is not installed, so we split the resources in
+	// - optional resources (TLS resources, etc)
+	// - resources (core k8s resources)
+	//
+	// Then, we delete `resources` first and after we delete optional resources while also ignoring
+	// errors returned when such operators are not installed.
+
+	optionalResourcesPred := mf.Any(tlsResourcesPred)
+
+	optionalResources := manifest.Filter(optionalResourcesPred)
+	resources := manifest.Filter(mf.Not(optionalResourcesPred))
+
+	if err = common.Uninstall(&resources); err != nil {
 		logger.Error("Failed to finalize platform resources", err)
 	}
+
+	if err := common.Uninstall(&optionalResources); err != nil && !meta.IsNoMatchError(err) {
+		logger.Error("Failed to finalize platform resources", err)
+	}
+
 	return nil
 }
 

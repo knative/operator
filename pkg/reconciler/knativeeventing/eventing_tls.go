@@ -30,14 +30,16 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
+var (
+	tlsResourcesPred = byGroup("cert-manager.io")
+)
+
 func (r *Reconciler) handleTLSResources(ctx context.Context, manifests *mf.Manifest, comp base.KComponent) error {
 	instance := comp.(*v1beta1.KnativeEventing)
 
 	if isTLSEnabled(instance) {
 		return nil
 	}
-
-	tlsResourcesPred := byGroup("cert-manager.io")
 
 	// Delete TLS resources (if present)
 	toBeDeleted := manifests.Filter(tlsResourcesPred)

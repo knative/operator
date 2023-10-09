@@ -22,9 +22,10 @@ import (
 	"strings"
 
 	mf "github.com/manifestival/manifestival"
+	"knative.dev/pkg/logging"
+
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
-	"knative.dev/pkg/logging"
 )
 
 var (
@@ -73,11 +74,11 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponen
 
 // Uninstall removes all resources except CRDs, which are never deleted automatically.
 func Uninstall(manifest *mf.Manifest) error {
-	if err := manifest.Filter(mf.NoCRDs, mf.Not(mf.Any(role, rolebinding))).Delete(); err != nil {
+	if err := manifest.Filter(mf.NoCRDs, mf.Not(mf.Any(role, rolebinding))).Delete(mf.IgnoreNotFound(true)); err != nil {
 		return fmt.Errorf("failed to remove non-crd/non-rbac resources: %w", err)
 	}
 	// Delete Roles last, as they may be useful for human operators to clean up.
-	if err := manifest.Filter(mf.Any(role, rolebinding)).Delete(); err != nil {
+	if err := manifest.Filter(mf.Any(role, rolebinding)).Delete(mf.IgnoreNotFound(true)); err != nil {
 		return fmt.Errorf("failed to remove rbac: %w", err)
 	}
 	return nil

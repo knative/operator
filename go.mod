@@ -12,8 +12,8 @@ require (
 	go.uber.org/zap v1.26.0
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.12.0
-	golang.org/x/oauth2 v0.12.0
-	google.golang.org/api v0.143.0
+	golang.org/x/oauth2 v0.13.0
+	google.golang.org/api v0.145.0
 	istio.io/api v0.0.0-20220420164308-b6a03a9e477e
 	istio.io/client-go v1.13.3
 	k8s.io/api v0.27.6
@@ -21,11 +21,11 @@ require (
 	k8s.io/client-go v0.27.6
 	k8s.io/code-generator v0.27.6
 	k8s.io/utils v0.0.0-20230209194617-a36077c30491
-	knative.dev/caching v0.0.0-20231006131800-b6ff195c42da
-	knative.dev/eventing v0.38.1-0.20231010054644-ba02f4aac285
-	knative.dev/hack v0.0.0-20231006131420-158898889ae8
-	knative.dev/pkg v0.0.0-20231010131048-cd747e24644b
-	knative.dev/serving v0.38.1-0.20231010124254-6b44b870ccb0
+	knative.dev/caching v0.0.0-20231011063744-ceca0ce6cd18
+	knative.dev/eventing v0.38.1-0.20231011142145-da0fba3c161a
+	knative.dev/hack v0.0.0-20231010131532-fc76874b28c6
+	knative.dev/pkg v0.0.0-20231011202506-948f5f57818a
+	knative.dev/serving v0.38.1-0.20231011210335-6703812f1314
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -109,17 +109,17 @@ require (
 	github.com/rs/dnscache v0.0.0-20211102005908-e0241e321417 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.8.1 // indirect
-	github.com/tsenart/vegeta/v12 v12.11.0 // indirect
+	github.com/tsenart/vegeta/v12 v12.11.1 // indirect
 	github.com/wavesoftware/go-ensure v1.0.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/automaxprocs v1.5.3 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	golang.org/x/crypto v0.13.0 // indirect
-	golang.org/x/net v0.15.0 // indirect
-	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
-	golang.org/x/term v0.12.0 // indirect
+	golang.org/x/crypto v0.14.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/sync v0.4.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.13.0 // indirect
@@ -138,7 +138,7 @@ require (
 	k8s.io/gengo v0.0.0-20221011193443-fad74ee6edd9 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
-	knative.dev/networking v0.0.0-20231006133103-cf57a576247c // indirect
+	knative.dev/networking v0.0.0-20231010132642-13dbe2012208 // indirect
 	sigs.k8s.io/controller-runtime v0.7.2 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect

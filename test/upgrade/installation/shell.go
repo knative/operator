@@ -17,8 +17,10 @@ limitations under the License.
 package installation
 
 import (
-	"knative.dev/hack/shell"
+	"testing"
+
 	pkgupgrade "knative.dev/pkg/test/upgrade"
+	"knative.dev/pkg/test/upgrade/shell"
 )
 
 // Base installs Operator with Knative Serving and Eventing from the previous stable release.
@@ -39,20 +41,18 @@ func PreviousRelease() pkgupgrade.Operation {
 func install(installName, shellFunc string) pkgupgrade.Operation {
 	return pkgupgrade.NewOperation(installName, func(c pkgupgrade.Context) {
 		c.Log.Info("Running shell function: ", shellFunc)
-		if err := callShellFunction(shellFunc); err != nil {
+		if err := callShellFunction(shellFunc, c.T); err != nil {
 			c.T.Error(err)
 		}
 	})
 }
 
-func callShellFunction(funcName string) error {
+func callShellFunction(funcName string, t *testing.T) error {
 	loc, err := shell.NewProjectLocation("../../..")
 	if err != nil {
 		return err
 	}
-	exec := shell.NewExecutor(shell.ExecutorConfig{
-		ProjectLocation: loc,
-	})
+	exec := shell.NewExecutor(t, loc)
 	fn := shell.Function{
 		Script: shell.Script{
 			Label:      funcName,

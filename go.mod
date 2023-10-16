@@ -11,7 +11,7 @@ require (
 	github.com/manifestival/manifestival v0.7.2
 	go.uber.org/zap v1.26.0
 	gocloud.dev v0.22.0
-	golang.org/x/mod v0.12.0
+	golang.org/x/mod v0.13.0
 	golang.org/x/oauth2 v0.13.0
 	google.golang.org/api v0.145.0
 	istio.io/api v0.0.0-20220420164308-b6a03a9e477e
@@ -24,7 +24,7 @@ require (
 	knative.dev/caching v0.0.0-20231011063744-ceca0ce6cd18
 	knative.dev/eventing v0.38.1-0.20231011142145-da0fba3c161a
 	knative.dev/hack v0.0.0-20231010131532-fc76874b28c6
-	knative.dev/pkg v0.0.0-20231011202506-948f5f57818a
+	knative.dev/pkg v0.0.0-20231016085036-3262b2bd73ed
 	knative.dev/serving v0.38.1-0.20231011210335-6703812f1314
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -122,7 +122,7 @@ require (
 	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.13.0 // indirect
+	golang.org/x/tools v0.14.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect

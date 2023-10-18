@@ -201,7 +201,7 @@ kind: ClusterRole
 metadata:
   name: redis-webhook
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.0"
+    contrib.eventing.knative.dev/release: "v1.11.1"
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:
@@ -656,7 +656,7 @@ metadata:
   name: redis-controller-manager
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.0"
+    contrib.eventing.knative.dev/release: "v1.11.1"
     control-plane: redis-controller-manager
 spec:
   selector:
@@ -669,7 +669,7 @@ spec:
     spec:
       serviceAccountName: redis-controller-manager
       containers:
-        - image: gcr.io/knative-releases/knative.dev/eventing-redis/cmd/source/controller@sha256:39a87846fc8f422eed7030e9ca0716b2a964cd503356a54d2ab42481fd0c35d3
+        - image: gcr.io/knative-releases/knative.dev/eventing-redis/cmd/source/controller@sha256:bed2342af217b86f2c317207b78cacdd5a530f56f249585806a57f17e4ca6918
           name: manager
           env:
             - name: SYSTEM_NAMESPACE
@@ -685,7 +685,7 @@ spec:
             - name: CONFIG_LEADERELECTION_NAME
               value: config-leader-election-redis
             - name: STREAMSOURCE_RA_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing-redis/cmd/source/receive_adapter@sha256:a6f628dbb0d0f92d4f77299f370ff0676459a9c276e2c0a4b7af96afd9ecd531
+              value: gcr.io/knative-releases/knative.dev/eventing-redis/cmd/source/receive_adapter@sha256:f3cb3488bca5bb9a2a1886f8e508181292d9087fdd5dae78712183b190062348
             - name: CONFIG_REDIS_NUMCONSUMERS
               value: config-redis
             - name: SECRET_TLS_TLSCERTIFICATE
@@ -713,7 +713,7 @@ metadata:
   name: config-leader-election-redis
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.0"
+    contrib.eventing.knative.dev/release: "v1.11.1"
 data:
   # An inactive but valid configuration follows; see example.
   resourceLock: "leases"

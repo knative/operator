@@ -22,7 +22,7 @@ metadata:
     app.kubernetes.io/component: controller
 data:
   # This overrides the configmap produced by knative serving
-  queue-sidecar-image: gcr.io/knative-releases/knative.dev/security-guard/cmd/queue@sha256:dfe0021c490a9c74098b239af8cdc049920cddd1a5136faa01c61c6b8290604d
-  queue-sidecar-tokens: guard-service
+  queue-sidecar-image: gcr.io/knative-releases/knative.dev/security-guard/cmd/queue@sha256:5fba9ccbf72e0ea0f7ddda923f4f737c876825e04afd1d37178323954aa1948c
+  queue-sidecar-token-audiences: guard-service
 
 ---

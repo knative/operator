@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  labels:
+    mc.bloomberg.com/dolly: resourcequotas
+  name: platform-quota--ds-dev
+  namespace: s-e2e
+  resourceVersion: "334623282"
+  uid: eec94ed5-c061-428d-9c23-b09afa18ab6e
+spec:
+  hard:
+    limits.cpu: "40"
+    limits.memory: 320Gi
+    requests.cpu: "40"
+    requests.memory: 320Gi
+    requests.nvidia.com/gpu: "0"
+  scopeSelector:
+    matchExpressions:
+    - operator: In
+      scopeName: PriorityClass
+      values:
+      - ds-dev
+

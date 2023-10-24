@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-features
+  namespace: knative-eventing
+  labels:
+    eventing.knative.dev/release: "v1.7.8"
+    knative.dev/config-propagation: original
+    knative.dev/config-category: eventing
+    app.kubernetes.io/version: "1.7.8"
+    app.kubernetes.io/name: knative-eventing
+data:
+  # ALPHA feature: The kreference-group allows you to use the Group field in KReferences.
+  # For more details: https://github.com/knative/eventing/issues/5086
+  kreference-group: "disabled"
+  # ALPHA feature: The delivery-retryafter allows you to use the RetryAfter field in DeliverySpec.
+  # For more details: https://github.com/knative/eventing/issues/5811
+  delivery-retryafter: "disabled"
+  # BETA feature: The delivery-timeout allows you to use the Timeout field in DeliverySpec.
+  # For more details: https://github.com/knative/eventing/issues/5148
+  delivery-timeout: "enabled"
+  # ALPHA feature: The kreference-mapping allows you to map kreference onto templated URI
+  # For more details: https://github.com/knative/eventing/issues/5593
+  kreference-mapping: "disabled"
+  # BETA feature: The subscriber-strict flag force subscriptions to define a subscriber
+  # For more details: https://github.com/knative/eventing/issues/5756
+  strict-subscriber: "enabled"
+  # ALPHA feature: The new-trigger-filters flag allows you to use the new `filters` field
+  # in Trigger objects with its rich filtering capabilities.
+  # For more details: https://github.com/knative/eventing/issues/5204
+  new-trigger-filters: "disabled"
+

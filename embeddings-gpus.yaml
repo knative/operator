@@ -1,0 +1,38 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: inference-embeddings-gpu
+  annotations:
+    identities.bloomberg.com/bcs: kserve-workshop
+  namespace: s-dsplatform
+spec:
+  predictor:
+    minReplicas: 1
+    maxReplicas: 1
+    containers:
+    - name: kserve-container
+      image: 
+artifactory.inf.bloomberg.com/dspuser/s-nlpplatform/libnlpserver-gpu:latest
+      command:
+      - python
+      - -m
+      - bloomberg.ai.libnlpserver
+      env:
+      - name: STORAGE_URI
+        value: 
+s3://libnlp-data/pretrained_contextual_models/bb-bnbfw-sup-simcse-embedding-roberta-large-cased-en/
+      args:
+      - --model_recipes
+      - 
+http://s3.dev.obdc.bcs.bloomberg.com/clustering-and-ranking/inference_example/inference_supsimcse_libnlpserver_gpu.nlp
+      - --model_name
+      - inference-embeddings-gpu
+      resources:
+        requests:
+          cpu: "1"
+          nvidia.com/gpu: "1"
+          memory: "16Gi"
+        limits:
+          cpu: "1"
+          nvidia.com/gpu: "1"
+          memory: "16Gi"

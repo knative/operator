@@ -1,0 +1,34 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: libnlp-test-new-1
+  namespace: s-dsplatform
+  annotations:
+    lambda.bloomberg.com/kafkaEventSourceBootstrapServer: kf-dsinfra-readtest.kafka.dev.query.bms.bloomberg.com:9092
+    lambda.bloomberg.com/kafkaEventSourceTopics: kf-dsinfra-readtest
+    autoscaling.knative.dev/target: "200"
+spec:
+  predictor:
+    minReplicas: 1
+    containers:
+      - name: kserve-container
+        image: artifactory.inf.bloomberg.com/dspuser/s-nlpplatform/libnlpserver:b14.20220214.205830
+        command:
+          - python
+          - -m
+          - bloomberg.ai.libnlpserver
+        args:
+          - --model_recipes
+          - libnlp:recipes/LangId_v7.nlp
+          - libnlp:recipes/Token_v1.nlp
+          - --model_name
+          - libnlpserver-example
+
+        resources:
+          requests:
+            cpu: "1"
+            memory: "4Gi"
+
+          limits:
+            cpu: "1"
+            memory: "4Gi"

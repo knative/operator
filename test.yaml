@@ -1,0 +1,93 @@
+apiVersion: serving.knative.dev/v1
+kind: Configuration
+metadata:
+  annotations:
+    serving.knative.dev/creator: system:serviceaccount:kserve:kserve-controller-manager
+    serving.knative.dev/lastModifier: system:serviceaccount:kserve:kserve-controller-manager
+    serving.knative.dev/routes: ltris-bms-dev-080-predictor-default
+  creationTimestamp: "2023-07-24T19:45:46Z"
+  generation: 1
+  labels:
+    app: bms-discovery
+    app.kubernetes.io/managed-by: deployment-manager
+    component: predictor
+    dna.bloomberg.com/application-name: ltris-performance
+    ds.bloomberg.com/dolly: dolly
+    prqs.bloomberg.com/prqs-number: "0"
+    serving.knative.dev/service: ltris-bms-dev-080-predictor-default
+    serving.knative.dev/serviceUID: ed0b1af0-98ee-4dc6-95b1-aa3d691d7a73
+    serving.kserve.io/inferenceservice: ltris-bms-dev-080
+  name: ltris-bms-dev-080-predictor-default
+  namespace: s-search
+  ownerReferences:
+    - apiVersion: serving.knative.dev/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Service
+      name: ltris-bms-dev-080-predictor-default
+      uid: ed0b1af0-98ee-4dc6-95b1-aa3d691d7a73
+  resourceVersion: "2332429292"
+  uid: 3975fa25-794b-44d8-9873-0fb7f43dfb44
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
+        autoscaling.knative.dev/max-scale: "3"
+        autoscaling.knative.dev/min-scale: "3"
+        autoscaling.knative.dev/target: "5"
+        autoscaling.knative.dev/targetBurstCapacity: "0"
+        bms-discovery.host: "true"
+        bms-discovery.http-check: "true"
+        bms-discovery.http-check.endpoint: v1/models/ltris-bms-dev-080
+        bms-discovery.http-check.timeout: "600"
+        dna.bloomberg.com/alert: '{"matchReason":"InferenceServiceNotReady","actions":{"drqs":{"drqsType":"BF",
+          "drqsGroup": 1437, "pwhoId": 3261188, "remediationPlan": "please check this
+          README page https://bbgithub.dev.bloomberg.com/disco/search-ltr/tree/master/inference#faqs
+          to find instructions or answers on how to solve the issues." }}}'
+        dna.bloomberg.com/application-id: bri:si:compute:managed-compute-application:ltris-performance
+        dna.bloomberg.com/federation-strategy: None
+        dna.bloomberg.com/platform-id: bri:si:compute:managed-compute-platform:dsp
+        dna.bloomberg.com/resource-id: bri:si:dsp:inference-service:dsp-dev:ds-pw-dev04:s-search:ltris-bms-dev-080
+        dna.bloomberg.com/tier: bri:si:dsp:managed-compute-tier:dsp-dev
+        ds.bloomberg.com.genericresource/last-applied: |
+          {"apiVersion":"serving.kserve.io/v1beta1","kind":"InferenceService","metadata":{"annotations":{"bms-discovery.host":"true","bms-discovery.http-check":"true","bms-discovery.http-check.endpoint":"v1/models/ltris-bms-dev-080","bms-discovery.http-check.timeout":"600","dna.bloomberg.com/alert":"{\"matchReason\":\"InferenceServiceNotReady\",\"actions\":{\"drqs\":{\"drqsType\":\"BF\", \"drqsGroup\": 1437, \"pwhoId\": 3261188, \"remediationPlan\": \"please check this README page https://bbgithub.dev.bloomberg.com/disco/search-ltr/tree/master/inference#faqs to find instructions or answers on how to solve the issues.\" }}}","dna.bloomberg.com/application-id":"bri:si:compute:managed-compute-application:ltris-performance","dna.bloomberg.com/federation-strategy":"None","dna.bloomberg.com/platform-id":"bri:si:compute:managed-compute-platform:dsp","dna.bloomberg.com/resource-id":"bri:si:dsp:inference-service:dsp-dev:ds-pw-dev04:s-search:ltris-bms-dev-080","dna.bloomberg.com/tier":"bri:si:dsp:managed-compute-tier:dsp-dev","identities.bloomberg.com/https":"bcos-secret-dev"},"labels":{"app":"bms-discovery","app.kubernetes.io/managed-by":"deployment-manager","dna.bloomberg.com/application-name":"ltris-performance","ds.bloomberg.com/dolly":"dolly","prqs.bloomberg.com/prqs-number":"0"},"name":"ltris-bms-dev-080","namespace":"s-search"},"spec":{"predictor":{"maxReplicas":3,"minReplicas":3,"sklearn":{"image":"artifactory.inf.bloomberg.com/ds/ext/registry-1.docker.io/kserve/lgbserver:v0.8.0","name":"kserve-container","protocolVersion":"v1","resources":{"limits":{"cpu":"1","memory":"2Gi"},"requests":{"cpu":"1","memory":"2Gi"}},"storageUri":"https://bcos.dev.blpprofessional.com:8443/v1/solrgen/search_ltr_models/08_01_till_11_01_ablation_top_trial_3.zip"}}}}
+        identities.bloomberg.com/https: bcos-secret-dev
+        identities.bloomberg.com/initContainerNames: storage-initializer
+        internal.serving.kserve.io/storage-initializer-sourceuri: https://bcos.dev.blpprofessional.com:8443/v1/solrgen/search_ltr_models/08_01_till_11_01_ablation_top_trial_3.zip
+        prometheus.io/port: "9091"
+        prometheus.io/scrape: "true"
+        prometheus.kserve.io/path: /metrics
+        prometheus.kserve.io/port: "8080"
+        sidecar.istio.io/inject: "false"
+      creationTimestamp: null
+      labels:
+        app: bms-discovery
+        app.kubernetes.io/managed-by: deployment-manager
+        component: predictor
+        dna.bloomberg.com/application-name: ltris-performance
+        ds.bloomberg.com/dolly: dolly
+        prqs.bloomberg.com/prqs-number: "0"
+        serving.kserve.io/inferenceservice: ltris-bms-dev-080
+    spec:
+      containerConcurrency: 0
+      containers:
+        - args:
+            - --model_name=ltris-bms-dev-080
+            - --model_dir=/mnt/models
+            - --http_port=8080
+          image: artifactory.inf.bloomberg.com/ds/ext/registry-1.docker.io/kserve/lgbserver:v0.8.0
+          name: kserve-container
+          readinessProbe:
+            successThreshold: 1
+            tcpSocket:
+              port: 0
+          resources:
+            limits:
+              cpu: "1"
+              memory: 2Gi
+            requests:
+              cpu: "1"
+              memory: 2Gi
+      enableServiceLinks: false
+      timeoutSeconds: 300

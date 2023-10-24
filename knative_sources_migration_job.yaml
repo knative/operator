@@ -1,0 +1,113 @@
+# Copyright 2023 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-source-post-install-job-role
+rules:
+  # Storage version upgrader needs to be able to patch CRDs.
+  - apiGroups:
+      - "apiextensions.k8s.io"
+    resources:
+      - "customresourcedefinitions"
+      - "customresourcedefinitions/status"
+    verbs:
+      - "get"
+      - "list"
+      - "update"
+      - "patch"
+      - "watch"
+  - apiGroups:
+      - "bindings.knative.dev"
+    resources:
+      - "kafkabindings"
+    verbs:
+      - "get"
+      - "list"
+      - "create"
+      - "update"
+      - "delete"
+      - "patch"
+      - "watch"
+  - apiGroups:
+      - "sources.knative.dev"
+    resources:
+      - "kafkasources"
+    verbs:
+      - "get"
+      - "list"
+      - "create"
+      - "update"
+      - "delete"
+      - "patch"
+      - "watch"
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: knative-source-post-install-job
+  namespace: knative-eventing
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-source-post-install-job-role-binding
+subjects:
+  - kind: ServiceAccount
+    name: knative-source-post-install-job
+    namespace: knative-eventing
+roleRef:
+  kind: ClusterRole
+  name: knative-source-post-install-job-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: knative-source-storage-version-migration
+  namespace: knative-eventing
+  labels:
+    app: "storage-version-migration"
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: "storage-version-migration"
+    spec:
+      serviceAccountName: knative-source-post-install-job
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate:latest
+          args:
+            - "kafkabindings.bindings.knative.dev"
+            - "kafkasources.sources.knative.dev"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 1000m
+              memory: 1000Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+---

@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: knative-eventing
+  labels:
+    eventing.knative.dev/release: "v1.7.8"
+    app.kubernetes.io/version: "1.7.8"
+    app.kubernetes.io/name: knative-eventing
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: addressable-resolver
+  labels:
+    eventing.knative.dev/release: "v1.7.8"
+    app.kubernetes.io/name: knative-eventing
+aggregationRule:
+  clusterRoleSelectors:
+    - matchLabels:
+        duck.knative.dev/addressable: "true"
+rules: [] # Rules are automatically filled in by the controller manager.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: podspecable-binding
+  labels:
+    eventing.knative.dev/release: "v1.7.8"
+    app.kubernetes.io/name: knative-eventing
+aggregationRule:
+  clusterRoleSelectors:
+  - matchLabels:
+      duck.knative.dev/podspecable: "true"
+rules: [] # Rules are automatically filled in by the controller manager.

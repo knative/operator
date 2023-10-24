@@ -1,0 +1,25 @@
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+  name: huggingface-tgi
+  namespace: s-res-un
+spec:
+  containers:
+    - args:
+        - --model-id
+        - /mnt/models
+      image: artprod.dev.bloomberg.com/ds/ext/ghcr.io/huggingface/text-generation-inference:0.9
+      name: kserve-container
+      ports:
+        - containerPort: 8080
+          protocol: TCP
+      resources:
+        limits:
+          cpu: "1"
+          memory: 2Gi
+        requests:
+          cpu: "1"
+          memory: 2Gi
+  supportedModelFormats:
+    - autoSelect: true
+      name: huggingface

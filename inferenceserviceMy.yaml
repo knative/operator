@@ -1,0 +1,33 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: demo-triton-transformer
+  namespace: default
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: pytorch
+      name: ""
+      resources: {}
+      runtime: kserve-tritonserver
+      storageUri: s3://kserve-workshop/models/triton/
+  transformer:
+    containers:
+      - args:
+          - --model_name
+          - text-classification
+          - --protocol
+          - v2
+        command:
+          - python
+          - text_transformer.py
+        image: artifactory.inf.bloomberg.com/dspuser/s-dsplatform/kserve-workshop-transformer
+        name: kserve-container
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: "1"
+            memory: 2Gi

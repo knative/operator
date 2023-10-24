@@ -1,0 +1,30 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: libnlp-3-for-label-tests       # Update name, do not use the same name as this example
+  annotations:
+    lambda.bloomberg.com/kafkaEventSourceTopics: kf-kafkasource-test-1
+    lambda.bloomberg.com/kafkaEventSourceBootstrapServer: kf-kafkasource-test-1.kafka.dev.query.bms.bloomberg.com:9092
+    lambda.bloomberg.com/kafkaEventSourceMode: async
+spec:
+  predictor:
+    containers:
+      - args:
+          - --model_recipe
+          - libnlp:recipes/Chunk_mixed_ct1_v1.nlp
+          - --model_name
+          - libnlp     # Use your choosen name above in metadata section
+        command:
+          - python
+          - -m
+          - bloomberg.ai.libnlpserver
+        image: artifactory.inf.bloomberg.com/dspuser/s-nlpplatform/libnlpserver:b2.20210714.143009
+        name: kserve-container
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: "1"
+            memory: 2Gi
+    minReplicas: 1

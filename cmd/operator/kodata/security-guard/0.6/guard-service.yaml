@@ -23,7 +23,7 @@ spec:
             optional: true
       containers:
         - name: guard-service
-          image: gcr.io/knative-releases/knative.dev/security-guard/cmd/guard-service@sha256:38a509fd58f8c58f9aaf5770d6cdf19c16e49a98f54f7b2c62cfc13eacfba845
+          image: gcr.io/knative-releases/knative.dev/security-guard/cmd/guard-service@sha256:50be20a50350e356b3712a8d65ec3d0856454701300f9361aad72c4fe16d476a
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /secrets

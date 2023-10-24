@@ -8,7 +8,7 @@ metadata:
     networking.knative.dev/ingress-provider: contour
     app.kubernetes.io/component: net-contour
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.11.2"
+    app.kubernetes.io/version: "1.11.3"
     serving.knative.dev/controller: "true"
 rules:
   - apiGroups: ["projectcontour.io"]
@@ -38,7 +38,7 @@ metadata:
     networking.knative.dev/ingress-provider: contour
     app.kubernetes.io/component: net-contour
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.11.2"
+    app.kubernetes.io/version: "1.11.3"
 data:
   _example: |
     ################################
@@ -95,7 +95,7 @@ metadata:
     networking.knative.dev/ingress-provider: contour
     app.kubernetes.io/component: net-contour
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.11.2"
+    app.kubernetes.io/version: "1.11.3"
 spec:
   replicas: 1
   selector:
@@ -107,14 +107,14 @@ spec:
         app: net-contour-controller
         app.kubernetes.io/component: net-contour
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "1.11.2"
+        app.kubernetes.io/version: "1.11.3"
     spec:
       serviceAccountName: controller
       containers:
         - name: controller
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:47900b73edb09f3842c6e8173c3b766362f0415888662b0dff5031592153e7dd
+          image: gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:276f4616a978671cea4a842fa163d3f6931ab20b17713282b58a1efafa0e7027
           resources:
             requests:
               cpu: 40m
@@ -158,7 +158,7 @@ metadata:
     networking.knative.dev/ingress-provider: contour
     app.kubernetes.io/component: net-contour
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.11.2"
+    app.kubernetes.io/version: "1.11.3"
 spec:
   delegations:
     - secretName: knative-serving-certs

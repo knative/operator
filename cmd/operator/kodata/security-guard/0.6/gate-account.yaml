@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: guardian-service
+  name: guardian-reader
   labels:
     rbac.authorization.k8s.io/guardian: 'true'
 rules:
@@ -13,10 +13,6 @@ rules:
       - get
       - list
       - watch
-      - create
-      - update
-      - patch
-      - delete
   - apiGroups:
       - ""
     resources:
@@ -25,38 +21,22 @@ rules:
       - get
       - list
       - watch
-      - create
-      - update
-      - patch
-      - delete
-  - apiGroups:
-      - authentication.k8s.io
-    resources:
-      - tokenreviews
-    verbs:
-      - create
-  - apiGroups:
-      - ""
-    resources:
-      - pods
-    verbs:
-      - get
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: guard-service-account
+  name: guardian-reader
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: guardian-admin
+  name: guardian-reader
 subjects:
   - kind: ServiceAccount
-    name: guard-service-account
+    name: guardian-reader
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: guardian-service
+  kind: Role
+  name: guardian-reader
 
 ---

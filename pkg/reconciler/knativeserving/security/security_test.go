@@ -52,7 +52,7 @@ func TestAppendTargetSecurityGuard(t *testing.T) {
 				},
 			},
 		},
-		expectedSecurityPath: os.Getenv(common.KoEnvKey) + "/security-guard/0.5",
+		expectedSecurityPath: os.Getenv(common.KoEnvKey) + "/security-guard/0.6",
 		expectedErr:          nil,
 	}, {
 		name: "Available target security guard with disabled option",
@@ -110,7 +110,7 @@ func TestAppendTargetSecurityGuard(t *testing.T) {
 				},
 			},
 		},
-		expectedSecurityPath: os.Getenv(common.KoEnvKey) + "/security-guard/0.5",
+		expectedSecurityPath: os.Getenv(common.KoEnvKey) + "/security-guard/0.6",
 		expectedErr:          nil,
 	}}
 

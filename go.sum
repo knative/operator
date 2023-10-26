@@ -1389,13 +1389,8 @@ k8s.io/utils v0.0.0-20210819203725-bdf08cb9a70a/go.mod h1:jPW/WVKK9YHAvNhRxK0md/
 k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 k8s.io/utils v0.0.0-20230209194617-a36077c30491 h1:r0BAOLElQnnFhE/ApUsg3iHdVYYPBjNSSOMowRZxxsY=
 k8s.io/utils v0.0.0-20230209194617-a36077c30491/go.mod h1:OLgZIPagt7ERELqWJFomSt595RzquPNLL48iOWgYOg0=
-<<<<<<< HEAD
 knative.dev/caching v0.0.0-20231017130712-54d0758671ef h1:92Gn5HUcgMJ78mbSpkCfUxrCTHHZSnvjURk0YRCbUqo=
 knative.dev/caching v0.0.0-20231017130712-54d0758671ef/go.mod h1:plGN+mIBKRtVxZ0vQeZ3Gt02RIaj0niwIMnQNkQHycw=
-=======
-knative.dev/caching v0.0.0-20231023174851-e3e39c3f4bff h1:4vWbQsnE8nv9ugK/DpwDCZSiaMIUJ7NW0XCh0d8hXGw=
-knative.dev/caching v0.0.0-20231023174851-e3e39c3f4bff/go.mod h1:oih9hU4xTM6wi16Wha7eSnk52MB7uDvMhC0C+g4hVrQ=
->>>>>>> 3be888c5 (Sync up the manifests for 1.12)
 knative.dev/eventing v0.39.0 h1:UlP5sSfxUzsFvdDF+T22EYoaz9LdITcha1oF898kLFw=
 knative.dev/eventing v0.39.0/go.mod h1:MlEiEcHALqZnu0OFMuWdJfjBzM7HlSJfk8pQbTcIy4o=
 knative.dev/hack v0.0.0-20231016131700-2c938d4918da h1:xy+fvuz2LDOMsZ5UwXRaMF70NYUs9fsG+EF5/ierYBg=

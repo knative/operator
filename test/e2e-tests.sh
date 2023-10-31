@@ -41,6 +41,11 @@ failed=0
 # Run tests serially in the mesh and https scenarios.
 E2E_TEST_FLAGS="${TEST_OPTIONS}"
 
+function use_resolvable_domain() {
+  # Temporarily turning off sslip.io tests, as DNS errors aren't always retried.
+  echo "false"
+}
+
 if [ -z "${E2E_TEST_FLAGS}" ]; then
   E2E_TEST_FLAGS="-resolvabledomain=$(use_resolvable_domain) -ingress-class=${INGRESS_CLASS}"
 

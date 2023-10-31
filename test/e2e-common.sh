@@ -88,7 +88,23 @@ function test_setup_logging() {
 
 # Generic test setup. Used by the common test scripts.
 function test_setup() {
-  test_setup_logging
+  download_knative "knative/serving" serving "${KNATIVE_REPO_BRANCH}"
+  cd ${KNATIVE_DIR}/serving
+  echo ">> Setting up logging..."
+
+  # Install kail if needed.
+  if ! which kail > /dev/null; then
+    bash <( curl -sfL https://raw.githubusercontent.com/boz/kail/master/godownloader.sh) -b "$GOPATH/bin"
+  fi
+
+  # Capture all logs.
+  kail > "${ARTIFACTS}/k8s.log-$(basename "${E2E_SCRIPT}").txt" &
+  local kail_pid=$!
+  # Clean up kail so it doesn't interfere with job shutting down
+  add_trap "kill $kail_pid || true" EXIT
+
+  echo ">> Uploading test images..."
+  ${KNATIVE_DIR}/serving/test/upload-test-images.sh || return 1
 }
 
 # Download the repository of Knative. The purpose of this function is to download the source code of

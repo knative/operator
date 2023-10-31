@@ -36,14 +36,24 @@ function knative_setup() {
 # Skip installing istio as an add-on
 initialize $@ --skip-istio-addon
 
-# If we got this far, the operator installed Knative Serving
-header "Running tests for Knative Operator"
 failed=0
 
-# Run the integration tests
-go_test_e2e -timeout=20m ./test/e2e || failed=1
+# Run tests serially in the mesh and https scenarios.
+E2E_TEST_FLAGS="${TEST_OPTIONS}"
 
-# Require that tests succeeded.
-(( failed )) && fail_test
+if [ -z "${E2E_TEST_FLAGS}" ]; then
+  E2E_TEST_FLAGS="-resolvabledomain=$(use_resolvable_domain) -ingress-class=${INGRESS_CLASS}"
+
+  # Drop testing alpha and beta features with the Gateway API
+  if [[ "${INGRESS_CLASS}" != *"gateway-api"* ]]; then
+    E2E_TEST_FLAGS+=" -enable-alpha -enable-beta"
+  fi
+fi
+
+cd ${KNATIVE_DIR}/"serving"
+kubectl apply -f test/config/cluster-resources.yaml
+go_test_e2e -timeout=30m \
+  ./test/e2e \
+  ${E2E_TEST_FLAGS} || failed=1
 
 success

@@ -21,12 +21,12 @@ require (
 	k8s.io/client-go v0.27.6
 	k8s.io/code-generator v0.27.6
 	k8s.io/utils v0.0.0-20230209194617-a36077c30491
-	knative.dev/caching v0.0.0-20231023174851-e3e39c3f4bff
-	knative.dev/eventing v0.39.1-0.20231031062004-5ed1b7a582d0
+	knative.dev/caching v0.0.0-20231101191025-c6425778e5ba
+	knative.dev/eventing v0.39.1-0.20231031154321-c8f4624d395a
 	knative.dev/hack v0.0.0-20231025074238-d4af42e9b222
-	knative.dev/pkg v0.0.0-20231023152443-b7a62c0b7003
-	knative.dev/serving v0.39.1-0.20231030071350-fd8f4611eba0
-	sigs.k8s.io/yaml v1.3.0
+	knative.dev/pkg v0.0.0-20231102061027-a6c730fd81f7
+	knative.dev/serving v0.39.1-0.20231102120927-f59f053535ae
+	sigs.k8s.io/yaml v1.4.0
 )
 
 require (
@@ -74,7 +74,7 @@ require (
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
-	github.com/google/uuid v1.3.1 // indirect
+	github.com/google/uuid v1.4.0 // indirect
 	github.com/google/wire v0.4.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect

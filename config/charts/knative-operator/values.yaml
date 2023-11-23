@@ -3,8 +3,8 @@ namespaceOverride: ""
 knative_operator:
   knative_operator:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
-    tag: {{ tag }}
+    tag: v1.10.1
   operator_webhook:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
-    tag: {{ tag }}
+    tag: v1.10.1
   kubernetes_min_version: v1.25.0

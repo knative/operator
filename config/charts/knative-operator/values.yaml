@@ -1,3 +1,5 @@
+namespaceOverride: ""
+
 knative_operator:
   knative_operator:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/operator

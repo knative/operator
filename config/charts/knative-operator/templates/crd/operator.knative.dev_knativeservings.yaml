@@ -2444,5 +2444,5 @@ spec:
       clientConfig:
         service:
           name: operator-webhook
-          namespace: default
+          namespace: {{ include "knativeOperator.namespace" . }}
           path: /resource-conversion

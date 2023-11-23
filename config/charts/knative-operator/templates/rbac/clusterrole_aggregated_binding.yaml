@@ -26,7 +26,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: knative-operator
-  namespace: default
+  namespace: {{ include "knativeOperator.namespace" . }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -42,7 +42,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: knative-operator
-    namespace: default
+    namespace: {{ include "knativeOperator.namespace" . }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -58,7 +58,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: knative-operator
-  namespace: default
+  namespace: {{ include "knativeOperator.namespace" . }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -74,4 +74,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: knative-operator
-    namespace: default
+    namespace: {{ include "knativeOperator.namespace" . }}

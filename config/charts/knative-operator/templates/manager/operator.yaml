@@ -37,7 +37,7 @@ spec:
       serviceAccountName: knative-operator
       containers:
         - name: knative-operator
-          image: ko://knative.dev/operator/cmd/operator
+          image: "{{ .Values.knative_operator.knative_operator.image }}:{{ .Values.knative_operator.knative_operator.tag }}"
           imagePullPolicy: IfNotPresent
           env:
             - name: POD_NAME

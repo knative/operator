@@ -86,7 +86,7 @@ spec:
         - name: METRICS_DOMAIN
           value: knative.dev/operator
         - name: KUBERNETES_MIN_VERSION
-          value: ""
+          value: "{{ .Values.knative_operator.kubernetes_min_version }}"
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

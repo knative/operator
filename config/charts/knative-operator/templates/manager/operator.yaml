@@ -55,7 +55,7 @@ spec:
             - name: CONFIG_OBSERVABILITY_NAME
               value: config-observability
             - name: KUBERNETES_MIN_VERSION
-              value: ""
+              value: "{{ .Values.knative_operator.kubernetes_min_version }}"
           ports:
             - name: metrics
               containerPort: 9090

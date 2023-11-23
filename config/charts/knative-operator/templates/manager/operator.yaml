@@ -19,7 +19,7 @@ metadata:
   namespace: {{ include "knativeOperator.namespace" . }}
   labels:
     app.kubernetes.io/name: knative-operator
-    app.kubernetes.io/version: devel
+    app.kubernetes.io/version: "{{ .Chart.Version }}"
 spec:
   replicas: 1
   selector:
@@ -32,7 +32,7 @@ spec:
       labels:
         name: knative-operator
         app.kubernetes.io/name: knative-operator
-        app.kubernetes.io/version: devel
+        app.kubernetes.io/version: "{{ .Chart.Version }}"
     spec:
       serviceAccountName: knative-operator
       containers:

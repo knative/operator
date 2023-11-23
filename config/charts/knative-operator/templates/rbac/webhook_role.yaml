@@ -13,28 +13,6 @@
 # limitations under the License.
 
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  namespace: {{ include "knativeOperator.namespace" . }}
-  name: knative-operator-webhook
-  labels:
-    app.kubernetes.io/version: "{{ .Chart.Version }}"
-    app.kubernetes.io/name: knative-operator
-rules:
-  # For manipulating certs into secrets.
-  - apiGroups:
-      - ""
-    resources:
-      - "secrets"
-    verbs:
-      - "get"
-      - "create"
-      - "update"
-      - "list"
-      - "watch"
-      - "patch"
----
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: knative-operator-webhook
@@ -115,3 +93,25 @@ rules:
   - apiGroups: ["apiextensions.k8s.io"]
     resources: ["customresourcedefinitions"]
     verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: {{ include "knativeOperator.namespace" . }}
+  name: knative-operator-webhook
+  labels:
+    app.kubernetes.io/version: "{{ .Chart.Version }}"
+    app.kubernetes.io/name: knative-operator
+rules:
+  # For manipulating certs into secrets.
+  - apiGroups:
+      - ""
+    resources:
+      - "secrets"
+    verbs:
+      - "get"
+      - "create"
+      - "update"
+      - "list"
+      - "watch"
+      - "patch"

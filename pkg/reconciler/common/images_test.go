@@ -21,7 +21,6 @@ import (
 
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	caching "knative.dev/caching/pkg/apis/caching/v1alpha1"
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -244,7 +243,7 @@ func TestResourceTransform(t *testing.T) {
 			util.AssertDeepEqual(t, deployment.Spec.Template.Spec.Containers, tt.expected)
 
 			// test for daemonSet
-			unstructuredDaemonSet := util.MakeUnstructured(t, makeDaemonSet(tt.name, podSpec))
+			unstructuredDaemonSet := util.MakeUnstructured(t, util.MakeDaemonSet(tt.name, podSpec))
 			transform(&unstructuredDaemonSet)
 			daemonSet := &appsv1.DaemonSet{}
 			err = scheme.Scheme.Convert(&unstructuredDaemonSet, daemonSet, nil)
@@ -252,7 +251,7 @@ func TestResourceTransform(t *testing.T) {
 			util.AssertDeepEqual(t, daemonSet.Spec.Template.Spec.Containers, tt.expected)
 
 			// test for job
-			unstructuredJob := util.MakeUnstructured(t, makeJob(tt.name, podSpec))
+			unstructuredJob := util.MakeUnstructured(t, util.MakeJob(tt.name, podSpec))
 			transform(&unstructuredJob)
 			job := &batchv1.Job{}
 			err = scheme.Scheme.Convert(&unstructuredJob, job, nil)
@@ -260,7 +259,7 @@ func TestResourceTransform(t *testing.T) {
 			util.AssertDeepEqual(t, job.Spec.Template.Spec.Containers, tt.expected)
 
 			// test for job with generated name
-			unstructuredJobGenerated := util.MakeUnstructured(t, makeJobGenerated(tt.name, podSpec))
+			unstructuredJobGenerated := util.MakeUnstructured(t, util.MakeJobGenerated(tt.name, podSpec))
 			transform(&unstructuredJobGenerated)
 			jobGenerated := &batchv1.Job{}
 			err = scheme.Scheme.Convert(&unstructuredJobGenerated, jobGenerated, nil)
@@ -268,7 +267,7 @@ func TestResourceTransform(t *testing.T) {
 			util.AssertDeepEqual(t, jobGenerated.Spec.Template.Spec.Containers, tt.expected)
 
 			// test for job with generated name and name
-			unstructuredJobGeneratedName := util.MakeUnstructured(t, makeJobNameGeneratedName(tt.name+"non-generated", tt.name, podSpec))
+			unstructuredJobGeneratedName := util.MakeUnstructured(t, util.MakeJobNameGeneratedName(tt.name+"non-generated", tt.name, podSpec))
 			transform(&unstructuredJobGeneratedName)
 			jobGeneratedName := &batchv1.Job{}
 			err = scheme.Scheme.Convert(&unstructuredJobGeneratedName, jobGeneratedName, nil)
@@ -276,7 +275,7 @@ func TestResourceTransform(t *testing.T) {
 			util.AssertDeepEqual(t, jobGeneratedName.Spec.Template.Spec.Containers, tt.expected)
 
 			// test for statefulset
-			unstructuredStatefulSet := util.MakeUnstructured(t, makeStatefulSet(tt.name, podSpec))
+			unstructuredStatefulSet := util.MakeUnstructured(t, util.MakeStatefulSet(tt.name, podSpec))
 			transform(&unstructuredStatefulSet)
 			statefulSet := &appsv1.StatefulSet{}
 			err = scheme.Scheme.Convert(&unstructuredStatefulSet, statefulSet, nil)
@@ -346,7 +345,7 @@ func TestImageTransform(t *testing.T) {
 		},
 	}} {
 		t.Run(tt.name, func(t *testing.T) {
-			unstructuredImage := util.MakeUnstructured(t, makeImage(tt.name, tt.in))
+			unstructuredImage := util.MakeUnstructured(t, util.MakeImage(tt.name, tt.in))
 			instance := &v1beta1.KnativeServing{
 				Spec: v1beta1.KnativeServingSpec{
 					CommonSpec: base.CommonSpec{
@@ -418,7 +417,7 @@ func TestImagePullSecrets(t *testing.T) {
 			util.AssertEqual(t, err, nil)
 			util.AssertDeepEqual(t, deployment.Spec.Template.Spec.ImagePullSecrets, tt.expectedSecrets)
 
-			unstructuredDaemonSet := util.MakeUnstructured(t, makeDaemonSet(tt.name, podSpec))
+			unstructuredDaemonSet := util.MakeUnstructured(t, util.MakeDaemonSet(tt.name, podSpec))
 			daemonSetTransform := ImageTransform(&tt.registry, log)
 			daemonSetTransform(&unstructuredDaemonSet)
 			daemonSet := &appsv1.DaemonSet{}
@@ -426,7 +425,7 @@ func TestImagePullSecrets(t *testing.T) {
 			util.AssertEqual(t, err, nil)
 			util.AssertDeepEqual(t, daemonSet.Spec.Template.Spec.ImagePullSecrets, tt.expectedSecrets)
 
-			unstructuredStatefulSet := util.MakeUnstructured(t, makeStatefulSet(tt.name, podSpec))
+			unstructuredStatefulSet := util.MakeUnstructured(t, util.MakeStatefulSet(tt.name, podSpec))
 			statefulSetTransform := ImageTransform(&tt.registry, log)
 			statefulSetTransform(&unstructuredStatefulSet)
 			statefulSet := &appsv1.StatefulSet{}
@@ -434,101 +433,5 @@ func TestImagePullSecrets(t *testing.T) {
 			util.AssertEqual(t, err, nil)
 			util.AssertDeepEqual(t, statefulSet.Spec.Template.Spec.ImagePullSecrets, tt.expectedSecrets)
 		})
-	}
-}
-
-func makeDaemonSet(name string, podSpec corev1.PodSpec) *appsv1.DaemonSet {
-	return &appsv1.DaemonSet{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "DaemonSet",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-		Spec: appsv1.DaemonSetSpec{
-			Template: corev1.PodTemplateSpec{
-				Spec: podSpec,
-			},
-		},
-	}
-}
-
-func makeStatefulSet(name string, podSpec corev1.PodSpec) *appsv1.StatefulSet {
-	return &appsv1.StatefulSet{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "StatefulSet",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-		Spec: appsv1.StatefulSetSpec{
-			Template: corev1.PodTemplateSpec{
-				Spec: podSpec,
-			},
-		},
-	}
-}
-
-func makeJobNameGeneratedName(name, genaredtedName string, podSpec corev1.PodSpec) *batchv1.Job {
-	return &batchv1.Job{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "Job",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:         name,
-			GenerateName: genaredtedName,
-		},
-		Spec: batchv1.JobSpec{
-			Template: corev1.PodTemplateSpec{
-				Spec: podSpec,
-			},
-		},
-	}
-}
-
-func makeJob(name string, podSpec corev1.PodSpec) *batchv1.Job {
-	return &batchv1.Job{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "Job",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-		Spec: batchv1.JobSpec{
-			Template: corev1.PodTemplateSpec{
-				Spec: podSpec,
-			},
-		},
-	}
-}
-
-func makeJobGenerated(name string, podSpec corev1.PodSpec) *batchv1.Job {
-	return &batchv1.Job{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "Job",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: name,
-		},
-		Spec: batchv1.JobSpec{
-			Template: corev1.PodTemplateSpec{
-				Spec: podSpec,
-			},
-		},
-	}
-}
-
-func makeImage(name, image string) *caching.Image {
-	return &caching.Image{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "caching.internal.knative.dev/v1alpha1",
-			Kind:       "Image",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-		Spec: caching.ImageSpec{
-			Image: image,
-		},
 	}
 }

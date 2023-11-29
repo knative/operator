@@ -20,6 +20,9 @@ import (
 	"reflect"
 	"testing"
 
+	batchv1 "k8s.io/api/batch/v1"
+	caching "knative.dev/caching/pkg/apis/caching/v1alpha1"
+
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -57,6 +60,86 @@ func MakeDaemonSet(name string, podSpec corev1.PodSpec) *appsv1.DaemonSet {
 			Template: corev1.PodTemplateSpec{
 				Spec: podSpec,
 			},
+		},
+	}
+}
+
+func MakeStatefulSet(name string, podSpec corev1.PodSpec) *appsv1.StatefulSet {
+	return &appsv1.StatefulSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "StatefulSet",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: appsv1.StatefulSetSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: podSpec,
+			},
+		},
+	}
+}
+
+func MakeJobNameGeneratedName(name, genaredtedName string, podSpec corev1.PodSpec) *batchv1.Job {
+	return &batchv1.Job{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "Job",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:         name,
+			GenerateName: genaredtedName,
+		},
+		Spec: batchv1.JobSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: podSpec,
+			},
+		},
+	}
+}
+
+func MakeJob(name string, podSpec corev1.PodSpec) *batchv1.Job {
+	return &batchv1.Job{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "Job",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: batchv1.JobSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: podSpec,
+			},
+		},
+	}
+}
+
+func MakeJobGenerated(name string, podSpec corev1.PodSpec) *batchv1.Job {
+	return &batchv1.Job{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "Job",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			GenerateName: name,
+		},
+		Spec: batchv1.JobSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: podSpec,
+			},
+		},
+	}
+}
+
+func MakeImage(name, image string) *caching.Image {
+	return &caching.Image{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "caching.internal.knative.dev/v1alpha1",
+			Kind:       "Image",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: caching.ImageSpec{
+			Image: image,
 		},
 	}
 }

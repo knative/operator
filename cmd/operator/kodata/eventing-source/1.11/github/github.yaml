@@ -17,7 +17,7 @@ kind: Namespace
 metadata:
   name: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -40,7 +40,7 @@ metadata:
   name: github-controller-manager
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -63,7 +63,7 @@ metadata:
   name: github-webhook
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 
 ---
 # Copyright 2019 The Knative Authors
@@ -85,7 +85,7 @@ kind: ClusterRole
 metadata:
   name: eventing-sources-github-controller
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 rules:
   # Sources admin
   - apiGroups:
@@ -204,7 +204,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-github-addressable-resolver
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 subjects:
   - kind: ServiceAccount
     name: github-controller-manager
@@ -236,7 +236,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-github-controller
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 subjects:
   - kind: ServiceAccount
     name: github-controller-manager
@@ -266,7 +266,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-github-podspecable-binding
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 subjects:
   - kind: ServiceAccount
     name: github-webhook
@@ -296,7 +296,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-github-webhook
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 subjects:
   - kind: ServiceAccount
     name: github-webhook
@@ -326,7 +326,7 @@ kind: ClusterRole
 metadata:
   name: github-webhook
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 rules:
   # Sources admin
   - apiGroups:
@@ -473,7 +473,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
     duck.knative.dev/binding: "true"
     knative.dev/crd-install: "true"
   name: githubbindings.bindings.knative.dev
@@ -526,7 +526,7 @@ kind: CustomResourceDefinition
 metadata:
   name: githubsources.sources.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -791,7 +791,7 @@ metadata:
   name: github-controller
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
     control-plane: github-controller-manager
 spec:
   selector:
@@ -821,7 +821,7 @@ metadata:
   name: github-controller-manager
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
     control-plane: github-controller-manager
 spec:
   selector:
@@ -834,7 +834,7 @@ spec:
     spec:
       serviceAccountName: github-controller-manager
       containers:
-        - image: gcr.io/knative-releases/knative.dev/eventing-github/cmd/controller@sha256:06c098c6f242e5b609ea2363c9bcec800fb347eb289c62ca7f55badc369319a0
+        - image: gcr.io/knative-releases/knative.dev/eventing-github/cmd/controller@sha256:1889a01ef091a4fcaafb3dbca593869cf52adc94c487872b751ea30070d6698d
           name: manager
           env:
             - name: SYSTEM_NAMESPACE
@@ -850,7 +850,7 @@ spec:
             - name: METRICS_DOMAIN
               value: knative.dev/sources
             - name: GH_RA_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing-github/cmd/receive_adapter@sha256:f307dd9f2d8a3874bf112188d5d0fb3c33b61a2171828ba20313063c6615d239
+              value: gcr.io/knative-releases/knative.dev/eventing-github/cmd/receive_adapter@sha256:1a6e2470a77d6a021c96d22eb1bf39a3b10c6b1d7a83da1495839bd6df2f5309
           resources:
             requests:
               cpu: 100m
@@ -880,7 +880,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.github.sources.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 webhooks:
   - admissionReviewVersions:
       - v1beta1
@@ -897,7 +897,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.github.sources.knative.dev
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 webhooks:
   - admissionReviewVersions:
       - v1beta1
@@ -932,7 +932,7 @@ metadata:
   name: github-webhook-certs
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 # The data is populated at install time.
 
 ---
@@ -956,7 +956,7 @@ metadata:
   name: github-webhook
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 spec:
   replicas: 1
   selector:
@@ -973,7 +973,7 @@ spec:
       containers:
         - name: github-webhook
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing-github/cmd/webhook@sha256:e85a91b6f9fcfe73e9f9276ce9bf12d3c90d4bd0ae5b8f6a3bdb8b8dcec05c37
+          image: gcr.io/knative-releases/knative.dev/eventing-github/cmd/webhook@sha256:120c7908c1cc2377f5dcb3e91813a70ebe3b3059fa01bbe010df1409a58d5938
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:
@@ -1037,7 +1037,7 @@ metadata:
   name: config-leader-election-github
   namespace: knative-sources
   labels:
-    contrib.eventing.knative.dev/release: "v1.11.2"
+    contrib.eventing.knative.dev/release: "v1.11.3"
 data:
   # An inactive but valid configuration follows; see example.
   resourceLock: "leases"

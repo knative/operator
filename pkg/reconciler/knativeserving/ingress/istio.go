@@ -18,10 +18,11 @@ package ingress
 
 import (
 	"context"
+	"strings"
 
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
-	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	istionetworkingv1beta "istio.io/client-go/pkg/apis/networking/v1beta1"
 	"istio.io/client-go/pkg/clientset/versioned/scheme"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -38,9 +39,19 @@ func istioTransformers(ctx context.Context, instance *v1beta1.KnativeServing) []
 func gatewayTransform(instance *servingv1beta1.KnativeServing, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Update the deployment with the new registry and tag
-		if u.GetAPIVersion() == "networking.istio.io/v1alpha3" && u.GetKind() == "Gateway" {
-			gateway := &istionetworkingv1alpha3.Gateway{}
-			if err := scheme.Scheme.Convert(u, gateway, nil); err != nil {
+		if u.GetKind() == "Gateway" {
+			if !strings.HasPrefix(u.GetAPIVersion(), "networking.istio.io/") {
+				return nil
+			}
+			beta := true
+			if strings.HasSuffix(u.GetAPIVersion(), "v1alpha3") {
+				u.SetAPIVersion("networking.istio.io/v1beta1")
+				beta = false
+			}
+
+			gateway := &istionetworkingv1beta.Gateway{}
+			err := scheme.Scheme.Convert(u, gateway, nil)
+			if err != nil {
 				return err
 			}
 
@@ -50,7 +61,7 @@ func gatewayTransform(instance *servingv1beta1.KnativeServing, log *zap.SugaredL
 				}
 			}
 			// TODO: cluster-local-gateway was removed since v0.20 https://github.com/knative-extensions/net-istio/commit/058432d749435ef1fc61aa2b1fd048d0c75460ee
-			// Reomove it once operator stops v0.20 support.
+			// Remove it once operator stops v0.20 support.
 			if u.GetName() == "cluster-local-gateway" || u.GetName() == "knative-local-gateway" {
 				if err := updateIstioGateway(localGateway(instance), gateway, log); err != nil {
 					return err
@@ -59,6 +70,10 @@ func gatewayTransform(instance *servingv1beta1.KnativeServing, log *zap.SugaredL
 
 			if err := scheme.Scheme.Convert(gateway, u, nil); err != nil {
 				return err
+			}
+
+			if !beta {
+				u.SetAPIVersion("networking.istio.io/v1alpha3")
 			}
 		}
 		return nil
@@ -79,7 +94,7 @@ func localGateway(instance *servingv1beta1.KnativeServing) *base.IstioGatewayOve
 	return nil
 }
 
-func updateIstioGateway(override *base.IstioGatewayOverride, gateway *istionetworkingv1alpha3.Gateway, log *zap.SugaredLogger) error {
+func updateIstioGateway(override *base.IstioGatewayOverride, gateway *istionetworkingv1beta.Gateway, log *zap.SugaredLogger) error {
 	if override != nil && len(override.Selector) > 0 {
 		log.Debugw("Updating Gateway", "name", gateway.GetName(), "gatewayOverrides", override)
 		gateway.Spec.Selector = override.Selector

@@ -17,7 +17,7 @@ limitations under the License.
 package base
 
 import (
-	istiov1alpha3 "istio.io/api/networking/v1alpha3"
+	istiov1beta1 "istio.io/api/networking/v1beta1"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -56,5 +56,5 @@ type IstioGatewayOverride struct {
 	Selector map[string]string `json:"selector,omitempty"`
 
 	// A list of server specifications.
-	Servers []*istiov1alpha3.Server `json:"servers,omitempty"`
+	Servers []*istiov1beta1.Server `json:"servers,omitempty"`
 }

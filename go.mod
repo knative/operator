@@ -6,6 +6,7 @@ require (
 	github.com/go-logr/zapr v1.2.2
 	github.com/google/go-cmp v0.5.9
 	github.com/google/go-github/v33 v33.0.0
+	github.com/hashicorp/golang-lru v0.5.4
 	github.com/manifestival/client-go-client v0.5.0
 	github.com/manifestival/manifestival v0.7.2
 	go.uber.org/zap v1.21.0
@@ -80,7 +81,6 @@ require (
 	github.com/googleapis/gax-go/v2 v2.9.1 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3 // indirect
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/influxdata/tdigest v0.0.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect

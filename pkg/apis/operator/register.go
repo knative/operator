@@ -37,7 +37,7 @@ var (
 		Group:    GroupName,
 		Resource: "knativeservings",
 	}
-	// KnativeServingResource respresents a Knative Serving
+	// KnativeEventingResource respresents a Knative Serving
 	KnativeEventingResource = schema.GroupResource{
 		Group:    GroupName,
 		Resource: "knativeeventings",

@@ -42,7 +42,7 @@ import (
 type Reconciler struct {
 	// kubeClientSet allows us to talk to the k8s for core APIs
 	kubeClientSet kubernetes.Interface
-	// kubeClientSet allows us to talk to the k8s for operator APIs
+	// operatorClientSet allows us to talk to the k8s for operator APIs
 	operatorClientSet clientset.Interface
 	// manifest is empty, but with a valid client and logger. all
 	// manifests are immutable, and any created during reconcile are

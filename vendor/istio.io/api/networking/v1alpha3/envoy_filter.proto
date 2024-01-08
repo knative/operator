@@ -14,7 +14,6 @@
 
 syntax = "proto3";
 
-import "google/api/field_behavior.proto";
 import "google/protobuf/struct.proto";
 import "networking/v1alpha3/sidecar.proto";
 
@@ -83,9 +82,10 @@ import "networking/v1alpha3/sidecar.proto";
 //       operation: INSERT_BEFORE
 //       value:
 //         # This is the full filter config including the name and typed_config section.
-//         name: "envoy.config.filter.network.custom_protocol"
+//         name: "envoy.extensions.filters.network.mongo_proxy"
 //         typed_config:
-//          ...
+//           "@type": "type.googleapis.com/envoy.extensions.filters.network.mongo_proxy.v3.MongoProxy"
+//           ...
 //   - applyTo: NETWORK_FILTER # http connection manager is a filter in Envoy
 //     match:
 //       # context omitted so that this applies to both sidecars and gateways
@@ -138,19 +138,20 @@ import "networking/v1alpha3/sidecar.proto";
 //        name: envoy.filters.http.lua
 //        typed_config:
 //           "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua"
-//           inlineCode: |
-//             function envoy_on_request(request_handle)
-//               -- Make an HTTP call to an upstream host with the following headers, body, and timeout.
-//               local headers, body = request_handle:httpCall(
-//                "lua_cluster",
-//                {
-//                 [":method"] = "POST",
-//                 [":path"] = "/acl",
-//                 [":authority"] = "internal.org.net"
-//                },
-//               "authorize call",
-//               5000)
-//             end
+//           defaultSourceCode:
+//             inlineString: |
+//               function envoy_on_request(request_handle)
+//                 -- Make an HTTP call to an upstream host with the following headers, body, and timeout.
+//                 local headers, body = request_handle:httpCall(
+//                  "lua_cluster",
+//                  {
+//                   [":method"] = "POST",
+//                   [":path"] = "/acl",
+//                   [":authority"] = "internal.org.net"
+//                  },
+//                 "authorize call",
+//                 5000)
+//               end
 //   # The second patch adds the cluster that is referenced by the lua code
 //   # cds match is omitted as a new cluster is being added
 //   - applyTo: CLUSTER
@@ -211,7 +212,7 @@ import "networking/v1alpha3/sidecar.proto";
 //
 // The following example inserts an attributegen filter
 // that produces `istio_operationId` attribute which is consumed
-// by the istio.stats fiter. `filterClass: STATS` encodes this dependency.
+// by the istio.stats filter. `filterClass: STATS` encodes this dependency.
 //
 //
 // ```yaml
@@ -328,7 +329,7 @@ import "networking/v1alpha3/sidecar.proto";
 //   # and the binary configuration. It should come before the next patch that applies it.
 //   # This resource is visible to all proxies in the namespace "myns". It is possible to provide
 //   # multiple definitions for the same name "my-wasm-extension" in multiple namespaces. We recommend that:
-//   # - if overriding is desired, then the root level definition can be overriden per namespace with REPLACE.
+//   # - if overriding is desired, then the root level definition can be overridden per namespace with REPLACE.
 //   # - if overriding is not desired, then the name should be qualified with the namespace "myns/my-wasm-extension",
 //   #   to avoid accidental name collisions.
 //   - applyTo: EXTENSION_CONFIG
@@ -404,6 +405,30 @@ import "networking/v1alpha3/sidecar.proto";
 //                   local:
 //                     filename: "/etc/envoy_filter_http_wasm_example.wasm"
 // ```
+//
+// The following example inserts an `envoy.filters.listener.proxy_protocol` listener filter before the `envoy.filters.listener.tls_inspector`.
+//
+// ```yaml
+// apiVersion: networking.istio.io/v1alpha3
+// kind: EnvoyFilter
+// metadata:
+//   name: listener-filter-example
+//   namespace: myns
+// spec:
+//   configPatches:
+//   - applyTo: LISTENER_FILTER
+//     match:
+//       context: SIDECAR_INBOUND # will match inbound listeners in all sidecars
+//       listener:
+//         portNumber: 15006
+//         listenerFilter: "envoy.filters.listener.tls_inspector"
+//     patch:
+//       operation: INSERT_BEFORE
+//       value:
+//         # This is the full filter config including the name and typed_config section.
+//         name: "envoy.filters.listener.proxy_protocol"
+//         typed_config:
+//           "@type": "type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol"
 package istio.networking.v1alpha3;
 
 option go_package = "istio.io/api/networking/v1alpha3";
@@ -472,6 +497,9 @@ message EnvoyFilter {
 
     // Applies the patch to bootstrap configuration.
     BOOTSTRAP = 10;
+
+    // Applies the patch to the listener filter.
+    LISTENER_FILTER = 11;
   };
 
   // PatchContext selects a class of configurations based on the
@@ -692,6 +720,10 @@ message EnvoyFilter {
     // listener.
     FilterChainMatch filter_chain = 3;
 
+    // Match a specific listener filter. If specified, the
+    // patch will be applied to the listener filter.
+    string listener_filter = 5;
+
     // Match a specific listener by its name. The listeners generated
     // by Pilot are typically named as IP:Port.
     string name = 4;
@@ -772,7 +804,7 @@ message EnvoyFilter {
 
     // FilterClass determines the filter insertion point in the filter chain
     // relative to the filters implicitly inserted by the control plane.
-    // It is used in conjuction with the `ADD` operation.
+    // It is used in conjunction with the `ADD` operation.
     // This is the preferred insertion mechanism for adding filters over
     // the `INSERT_*` operations since those operations rely on potentially unstable
     // filter names.
@@ -845,16 +877,14 @@ message EnvoyFilter {
   // Criteria used to select the specific set of pods/VMs on which
   // this patch configuration should be applied. If omitted, the set
   // of patches in this configuration will be applied to all workload
-  // instances in the same namespace.  If omitted, the `EnvoyFilter`
-  // patches will be applied to all workloads in the same
-  // namespace. If the `EnvoyFilter` is present in the config root
-  // namespace, it will be applied to all applicable workloads in any
-  // namespace.
+  // instances in the same namespace. If the `EnvoyFilter` is present
+  // in the config root namespace, it will be applied to all applicable
+  // workloads in any namespace.
   WorkloadSelector workload_selector = 3;
 
   // One or more patches with match conditions.
-  repeated EnvoyConfigObjectPatch config_patches = 4 [(google.api.field_behavior) = REQUIRED];
- 
+  repeated EnvoyConfigObjectPatch config_patches = 4;
+
   // Priority defines the order in which patch sets are applied within a context.
   // When one patch depends on another patch, the order of patch application
   // is significant. The API provides two primary ways to order patches.
@@ -865,7 +895,7 @@ message EnvoyFilter {
   // The default value for priority is 0 and the range is [ min-int32, max-int32 ].
   // A patch set with a negative priority is processed before the default. A patch
   // set with a positive priority is processed after the default.
-  // 
+  //
   // It is recommended to start with priority values that are multiples of 10
   // to leave room for further insertion.
   //

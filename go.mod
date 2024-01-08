@@ -16,11 +16,11 @@ require (
 	google.golang.org/api v0.151.0
 	istio.io/api v1.20.1
 	istio.io/client-go v1.20.1
-	k8s.io/api v0.27.6
-	k8s.io/apimachinery v0.27.6
-	k8s.io/client-go v0.27.6
-	k8s.io/code-generator v0.27.6
-	k8s.io/utils v0.0.0-20230209194617-a36077c30491
+	k8s.io/api v0.28.2
+	k8s.io/apimachinery v0.28.2
+	k8s.io/client-go v0.28.2
+	k8s.io/code-generator v0.28.5
+	k8s.io/utils v0.0.0-20230406110748-d93618cff8a2
 	knative.dev/caching v0.0.0-20231129014048-3fefe85d37a2
 	knative.dev/eventing v0.39.1-0.20231129013341-f3e07c261961
 	knative.dev/hack v0.0.0-20231129013717-94f0ccfbab2d
@@ -57,19 +57,19 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.13.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
-	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
+	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.7.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
-	github.com/go-openapi/jsonreference v0.20.1 // indirect
+	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/google/gnostic v0.6.9 // indirect
+	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/go-containerregistry v0.13.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -108,7 +108,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rs/dnscache v0.0.0-20211102005908-e0241e321417 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/testify v1.8.1 // indirect
+	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/tsenart/vegeta/v12 v12.11.1 // indirect
 	github.com/wavesoftware/go-ensure v1.0.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
@@ -136,10 +136,10 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.27.6 // indirect
 	k8s.io/gengo v0.0.0-20221011193443-fad74ee6edd9 // indirect
-	k8s.io/klog/v2 v2.90.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
+	k8s.io/klog/v2 v2.100.1 // indirect
+	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 	knative.dev/networking v0.0.0-20231123185844-bb18aab9ae99 // indirect
 	sigs.k8s.io/controller-runtime v0.7.2 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.3.0 // indirect
 )

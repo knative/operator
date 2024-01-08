@@ -15,6 +15,8 @@
 syntax = "proto3";
 
 import "type/v1beta1/selector.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/duration.proto";
 import "google/protobuf/wrappers.proto";
 
 // $schema: istio.telemetry.v1alpha1.Telemetry
@@ -172,12 +174,12 @@ import "google/protobuf/wrappers.proto";
 //         response_code:
 //           operation: REMOVE
 //     - match:
-//         metric: REQUEST_BYTES
+//         metric: REQUEST_SIZE
 //       tagOverrides:
 //         response_code:
 //           operation: REMOVE
 //     - match:
-//         metric: RESPONSE_BYTES
+//         metric: RESPONSE_SIZE
 //       tagOverrides:
 //         response_code:
 //           operation: REMOVE
@@ -195,11 +197,10 @@ import "google/protobuf/wrappers.proto";
 //   accessLogging:
 //   - providers:
 //     - name: envoy
-//     # By default, this turns on access logging (no need to set `disabled:
-//     false`). # Unspecified `disabled` will be treated as `disabled: false`,
-//     except in # cases where a parent configuration has marked as `disabled:
-//     true`. In # those cases, `disabled: false` must be set explicitly to
-//     override.
+//     # By default, this turns on access logging (no need to set `disabled: false`).
+//     # Unspecified `disabled` will be treated as `disabled: false`, except in
+//     # cases where a parent configuration has marked as `disabled: true`. In
+//     # those cases, `disabled: false` must be set explicitly to override.
 // ```
 //
 // Policy to disable access logging for the `foo` namespace:
@@ -247,7 +248,20 @@ message Telemetry {
   // Optional. The selector decides where to apply the Telemetry policy.
   // If not set, the Telemetry policy will be applied to all workloads in the
   // same namespace as the Telemetry policy.
+  //
+  // At most, only one of the selector or targetRef can be set for a given policy.
   istio.type.v1beta1.WorkloadSelector selector = 1;
+
+  // Optional. The targetRef specifies the gateway the policy should be 
+  // applied to. The targeted resource specified will determine which 
+  // workloads the telemetry policy applies to. The targeted resource
+  // must be a k8s gateway. The resource must be in the same namespace as
+  // the Telemetry policy.
+  //
+  // If not set, the policy is applied as defined by the selector.
+  // At most, only one of the selector or targetRef can be set for a given policy.
+  // Waypoint proxies will not respect selectors even if they match.
+  istio.type.v1beta1.PolicyTargetReference targetRef = 5;
 
   // Optional. Tracing configures the tracing behavior for all
   // selected workloads.
@@ -286,7 +300,7 @@ message Tracing {
 
   // Optional. Name of provider(s) to use for span reporting. If a provider is
   // not specified, the [default tracing
-  // provider][istio.mesh.v1alpha1.MeshConfig.default_providers.tracing] will be
+  // provider](https://istio.io/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig-DefaultProviders) will be
   // used. NOTE: At the moment, only a single provider can be specified in a
   // given Tracing rule.
   repeated ProviderRef providers = 2;
@@ -369,7 +383,7 @@ message Tracing {
 // targeted customization.
 message ProviderRef {
   // Required. Name of Telemetry provider in MeshConfig.
-  string name = 1;
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 // Metrics defines the workload-level overrides for metrics generation behavior
@@ -378,7 +392,7 @@ message ProviderRef {
 message Metrics {
   // Optional. Name of providers to which this configuration should apply.
   // If a provider is not specified, the [default metrics
-  // provider][istio.mesh.v1alpha1.MeshConfig.default_providers.metrics] will be
+  // provider](https://istio.io/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig-DefaultProviders) will be
   // used.
   repeated ProviderRef providers = 1;
 
@@ -396,6 +410,11 @@ message Metrics {
   // a best practice to list any universal overrides first, with tailored
   // overrides following them.
   repeated MetricsOverrides overrides = 2;
+  
+  // Optional. Reporting interval allows configuration of the time between calls out to for metrics reporting.
+  // This currently only supports TCP metrics but we may use this for long duration HTTP streams in the future.
+  // The default duration is `5s`.
+  google.protobuf.Duration reporting_interval = 3;
 }
 
 // WorkloadMode allows selection of the role of the underlying workload in
@@ -623,7 +642,7 @@ message AccessLogging {
 
   // Optional. Name of providers to which this configuration should apply.
   // If a provider is not specified, the [default logging
-  // provider][istio.mesh.v1alpha1.MeshConfig.default_providers.] will be used.
+  // provider](https://istio.io/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig-DefaultProviders) will be used.
   repeated ProviderRef providers = 1;
 
   // Controls logging. If set to true, no access logs will be generated for
@@ -641,6 +660,7 @@ message AccessLogging {
     //
     // - `response.code >= 400`
     // - `connection.mtls && request.url_path.contains('v1beta3')`
+    // - `!has(request.useragent) || !(request.useragent.startsWith("Amazon-Route53-Health-Check-Service"))`
     string expression = 1;
   }
 

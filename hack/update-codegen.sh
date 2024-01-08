@@ -36,7 +36,7 @@ group "Kubernetes Codegen"
 # --output-base    because this script should also be able to run inside the vendor dir of
 #                  k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
-${CODEGEN_PKG}/generate-groups.sh "deepcopy,client,informer,lister" \
+${CODEGEN_PKG}/kube_codegen.sh "deepcopy,client,informer,lister" \
   knative.dev/operator/pkg/client knative.dev/operator/pkg/apis \
   "operator:v1beta1" \
   --go-header-file "${boilerplate}"

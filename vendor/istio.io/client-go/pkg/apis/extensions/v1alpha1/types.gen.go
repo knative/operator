@@ -35,6 +35,7 @@ import (
 // +cue-gen:WasmPlugin:annotations:helm.sh/resource-policy=keep
 // +cue-gen:WasmPlugin:labels:app=istio-pilot,chart=istio,heritage=Tiller,release=istio
 // +cue-gen:WasmPlugin:subresource:status
+// +cue-gen:WasmPlugin:spec:required
 // +cue-gen:WasmPlugin:scope:Namespaced
 // +cue-gen:WasmPlugin:resource:categories=istio-io,extensions-istio-io
 // +cue-gen:WasmPlugin:preserveUnknownFields:pluginConfig
@@ -69,5 +70,5 @@ type WasmPluginList struct {
 	v1.TypeMeta `json:",inline"`
 	// +optional
 	v1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items       []WasmPlugin `json:"items" protobuf:"bytes,2,rep,name=items"`
+	Items       []*WasmPlugin `json:"items" protobuf:"bytes,2,rep,name=items"`
 }

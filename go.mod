@@ -2,8 +2,6 @@ module knative.dev/operator
 
 go 1.21
 
-toolchain go1.21.4
-
 require (
 	github.com/go-logr/zapr v1.2.2
 	github.com/google/go-cmp v0.6.0
@@ -16,8 +14,8 @@ require (
 	golang.org/x/mod v0.14.0
 	golang.org/x/oauth2 v0.14.0
 	google.golang.org/api v0.151.0
-	istio.io/api v0.0.0-20220420164308-b6a03a9e477e
-	istio.io/client-go v1.13.3
+	istio.io/api v1.20.1
+	istio.io/client-go v1.20.1
 	k8s.io/api v0.27.6
 	k8s.io/apimachinery v0.27.6
 	k8s.io/client-go v0.27.6

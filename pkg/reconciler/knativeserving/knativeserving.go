@@ -155,6 +155,9 @@ func (r *Reconciler) injectNamespace(ctx context.Context, manifest *mf.Manifest,
 
 func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*mf.Manifest, error) {
 	paths := instance.GetStatus().GetManifests()
+	if len(paths) == 0 {
+		return nil, nil
+	}
 	installed, err := common.FetchManifestFromArray(paths)
 	if err != nil {
 		return &installed, err

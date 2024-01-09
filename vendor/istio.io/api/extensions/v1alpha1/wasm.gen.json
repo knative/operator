@@ -40,7 +40,7 @@
         ]
       },
       "istio.extensions.v1alpha1.PullPolicy": {
-        "description": "The pull behaviour to be applied when fetching an OCI image, mirroring K8s behaviour.",
+        "description": "The pull behaviour to be applied when fetching a Wam module, mirroring K8s behaviour.",
         "type": "string",
         "enum": [
           "UNSPECIFIED_POLICY",
@@ -84,7 +84,7 @@
             "type": "string"
           },
           "verificationKey": {
-            "description": "Public key that will be used to verify signatures of signed OCI images or Wasm modules. Must be supplied in PEM format.",
+            "description": "Public key that will be used to verify signatures of signed OCI images or Wasm modules.",
             "type": "string"
           },
           "pluginConfig": {
@@ -105,8 +105,51 @@
           },
           "vmConfig": {
             "$ref": "#/components/schemas/istio.extensions.v1alpha1.VmConfig"
+          },
+          "match": {
+            "description": "Specifies the criteria to determine which traffic is passed to WasmPlugin. If a traffic satisfies any of TrafficSelectors, the traffic passes the WasmPlugin.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/istio.extensions.v1alpha1.WasmPlugin.TrafficSelector"
+            }
           }
         }
+      },
+      "istio.extensions.v1alpha1.WasmPlugin.TrafficSelector": {
+        "description": "TrafficSelector provides a mechanism to select a specific traffic flow for which this Wasm Plugin will be enabled. When all the sub conditions in the TrafficSelector are satisfied, the traffic will be selected.",
+        "type": "object",
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/istio.type.v1beta1.WorkloadMode"
+          },
+          "ports": {
+            "description": "Criteria for selecting traffic by their destination port. More specifically, for the outbound traffic, the destination port would be the port of the target service. On the other hand, for the inbound traffic, the destiation port is the port bound by the server process in the same Pod.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/istio.type.v1beta1.PortSelector"
+            }
+          }
+        }
+      },
+      "istio.type.v1beta1.PortSelector": {
+        "description": "PortSelector is the criteria for specifying if a policy can be applied to a listener having a specific port.",
+        "type": "object",
+        "properties": {
+          "number": {
+            "description": "Port number",
+            "type": "integer"
+          }
+        }
+      },
+      "istio.type.v1beta1.WorkloadMode": {
+        "description": "WorkloadMode allows selection of the role of the underlying workload in network traffic. A workload is considered as acting as a SERVER if it is the destination of the traffic (that is, traffic direction, from the perspective of the workload is *inbound*). If the workload is the source of the network traffic, it is considered to be in CLIENT mode (traffic is *outbound* from the workload).",
+        "type": "string",
+        "enum": [
+          "UNDEFINED",
+          "CLIENT",
+          "SERVER",
+          "CLIENT_AND_SERVER"
+        ]
       },
       "istio.type.v1beta1.WorkloadSelector": {
         "description": "WorkloadSelector specifies the criteria used to determine if a policy can be applied to a proxy. The matching criteria includes the metadata associated with a proxy, workload instance info such as labels attached to the pod/VM, or any other info that the proxy provides to Istio during the initial handshake. If multiple conditions are specified, all conditions need to match in order for the workload instance to be selected. Currently, only label based selection mechanism is supported.",

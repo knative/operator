@@ -35,10 +35,12 @@ import (
 // +cue-gen:Telemetry:scope:Namespaced
 // +cue-gen:Telemetry:resource:categories=istio-io,telemetry-istio-io,shortNames=telemetry,plural=telemetries
 // +cue-gen:Telemetry:preserveUnknownFields:false
-// +cue-gen:Telemetry:printerColumn:name=Age,type=date,JSONPath=.metadata.creationTimestamp,description="CreationTimestamp is a timestamp
-// representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations.
-// Clients may not set this value. It is represented in RFC3339 form and is in UTC.
-// Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata"
+// +cue-gen:Telemetry:printerColumn:name=Age,type=date,JSONPath=.metadata.creationTimestamp,description="CreationTimestamp
+// is a timestamp representing the server time when this object was created. It
+// is not guaranteed to be set in happens-before order across separate
+// operations. Clients may not set this value. It is represented in RFC3339 form
+// and is in UTC. Populated by the system. Read-only. Null for lists. More info:
+// https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata"
 // -->
 //
 // <!-- go code generation tags
@@ -66,5 +68,5 @@ type TelemetryList struct {
 	v1.TypeMeta `json:",inline"`
 	// +optional
 	v1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Items       []Telemetry `json:"items" protobuf:"bytes,2,rep,name=items"`
+	Items       []*Telemetry `json:"items" protobuf:"bytes,2,rep,name=items"`
 }

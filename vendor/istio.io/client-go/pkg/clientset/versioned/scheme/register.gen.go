@@ -20,6 +20,7 @@ import (
 	extensionsv1alpha1 "istio.io/client-go/pkg/apis/extensions/v1alpha1"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	networkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
+	securityv1 "istio.io/client-go/pkg/apis/security/v1"
 	securityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	telemetryv1alpha1 "istio.io/client-go/pkg/apis/telemetry/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,20 +38,21 @@ var localSchemeBuilder = runtime.SchemeBuilder{
 	networkingv1alpha3.AddToScheme,
 	networkingv1beta1.AddToScheme,
 	securityv1beta1.AddToScheme,
+	securityv1.AddToScheme,
 	telemetryv1alpha1.AddToScheme,
 }
 
 // AddToScheme adds all types of this clientset into the given scheme. This allows composition
 // of clientsets, like in:
 //
-//   import (
-//     "k8s.io/client-go/kubernetes"
-//     clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-//     aggregatorclientsetscheme "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset/scheme"
-//   )
+//	import (
+//	  "k8s.io/client-go/kubernetes"
+//	  clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+//	  aggregatorclientsetscheme "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset/scheme"
+//	)
 //
-//   kclientset, _ := kubernetes.NewForConfig(c)
-//   _ = aggregatorclientsetscheme.AddToScheme(clientsetscheme.Scheme)
+//	kclientset, _ := kubernetes.NewForConfig(c)
+//	_ = aggregatorclientsetscheme.AddToScheme(clientsetscheme.Scheme)
 //
 // After this, RawExtensions in Kubernetes types will serialize kube-aggregator types
 // correctly.

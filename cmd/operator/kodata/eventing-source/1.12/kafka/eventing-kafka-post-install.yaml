@@ -16,7 +16,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
+    app.kubernetes.io/version: "15ebc559011b54963dbef6cced830556d863497d"
 rules: []
 
 ---
@@ -39,7 +39,7 @@ metadata:
   name: knative-kafka-controller-post-install
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
+    app.kubernetes.io/version: "15ebc559011b54963dbef6cced830556d863497d"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -61,7 +61,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
+    app.kubernetes.io/version: "15ebc559011b54963dbef6cced830556d863497d"
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
   - apiGroups:
@@ -144,14 +144,14 @@ metadata:
   name: knative-kafka-storage-version-migrator
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
+    app.kubernetes.io/version: "15ebc559011b54963dbef6cced830556d863497d"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
+    app.kubernetes.io/version: "15ebc559011b54963dbef6cced830556d863497d"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-storage-version-migrator
@@ -180,7 +180,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
+    app.kubernetes.io/version: "15ebc559011b54963dbef6cced830556d863497d"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-controller-post-install
@@ -212,7 +212,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-controller-post-install
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
+    app.kubernetes.io/version: "15ebc559011b54963dbef6cced830556d863497d"
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -220,7 +220,7 @@ spec:
     metadata:
       labels:
         app: kafka-controller-post-install
-        app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
+        app.kubernetes.io/version: "15ebc559011b54963dbef6cced830556d863497d"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -228,7 +228,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: post-install
-          image: gcr.io/knative-releases/knative.dev/eventing-kafka-broker/control-plane/cmd/post-install@sha256:ad6b504d6b343e9d7723c3987bbcacf3fd1a405bf342a351f3fc232576161126
+          image: gcr.io/knative-releases/knative.dev/eventing-kafka-broker/control-plane/cmd/post-install@sha256:d22ab5ecc372325d9132cf1c740c44e7c75b525d751a9cd20e011fe43be1fa7c
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:
@@ -268,7 +268,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: "knative-kafka-storage-version-migrator"
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
+    app.kubernetes.io/version: "15ebc559011b54963dbef6cced830556d863497d"
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -276,312 +276,7 @@ spec:
     metadata:
       labels:
         app: "knative-kafka-storage-version-migrator"
-        app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
-      annotations:
-        sidecar.istio.io/inject: "false"
-    spec:
-      serviceAccountName: knative-kafka-storage-version-migrator
-      restartPolicy: OnFailure
-      containers:
-        - name: migrate
-          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:3a5a5f0ef04fa95f11097f017b3b894ad33f5575bafa89713d1e62e40826ebce
-          env:
-            - name: IGNORE_NOT_FOUND
-              value: "true"
-          args:
-            - "kafkasources.sources.knative.dev"
-            - "kafkachannels.messaging.knative.dev"
-            - "kafkasinks.eventing.knative.dev"
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-
----
-# Copyright 2022 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: knative-kafka-controller-post-install
-  labels:
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
-rules: []
-
----
-# Copyright 2022 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: knative-kafka-controller-post-install
-  namespace: knative-eventing
-  labels:
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: knative-kafka-storage-version-migrator
-  labels:
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
-rules:
-  # Storage version upgrader needs to be able to patch CRDs.
-  - apiGroups:
-      - "apiextensions.k8s.io"
-    resources:
-      - "customresourcedefinitions"
-      - "customresourcedefinitions/status"
-    verbs:
-      - "get"
-      - "list"
-      - "update"
-      - "patch"
-      - "watch"
-  # Our own resources we care about.
-  - apiGroups:
-      - "sources.knative.dev"
-    resources:
-      - "kafkasources"
-      - "kafkasources/finalizers"
-      - "kafkasources/status"
-    verbs:
-      - "get"
-      - "list"
-      - "create"
-      - "update"
-      - "patch"
-      - "watch"
-  - apiGroups:
-      - "messaging.knative.dev"
-    resources:
-      - "kafkachannels"
-      - "kafkachannels/finalizers"
-      - "kafkachannels/status"
-    verbs:
-      - "get"
-      - "list"
-      - "create"
-      - "update"
-      - "patch"
-      - "watch"
-  - apiGroups:
-      - "eventing.knative.dev"
-    resources:
-      - "kafkasinks"
-      - "kafkasinks/finalizers"
-      - "kafkasinks/status"
-    verbs:
-      - "get"
-      - "list"
-      - "create"
-      - "update"
-      - "patch"
-      - "watch"
-  - apiGroups:
-      - ""
-    resources:
-      - "namespaces"
-    verbs:
-      - "get"
-      - "list"
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: knative-kafka-storage-version-migrator
-  namespace: knative-eventing
-  labels:
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: knative-kafka-storage-version-migrator
-  labels:
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
-subjects:
-  - kind: ServiceAccount
-    name: knative-kafka-storage-version-migrator
-    namespace: knative-eventing
-roleRef:
-  kind: ClusterRole
-  name: knative-kafka-storage-version-migrator
-  apiGroup: rbac.authorization.k8s.io
-
----
-# Copyright 2022 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: knative-kafka-controller-post-install
-  labels:
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
-subjects:
-  - kind: ServiceAccount
-    name: knative-kafka-controller-post-install
-    namespace: knative-eventing
-roleRef:
-  kind: ClusterRole
-  name: knative-kafka-controller-post-install
-  apiGroup: rbac.authorization.k8s.io
-
----
-# Copyright 2022 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: kafka-controller-post-install
-  namespace: knative-eventing
-  labels:
-    app: kafka-controller-post-install
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
-spec:
-  ttlSecondsAfterFinished: 600
-  backoffLimit: 10
-  template:
-    metadata:
-      labels:
-        app: kafka-controller-post-install
-        app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
-      annotations:
-        sidecar.istio.io/inject: "false"
-    spec:
-      serviceAccountName: knative-kafka-controller-post-install
-      restartPolicy: OnFailure
-      containers:
-        - name: post-install
-          image: gcr.io/knative-releases/knative.dev/eventing-kafka-broker/control-plane/cmd/post-install@sha256:ad6b504d6b343e9d7723c3987bbcacf3fd1a405bf342a351f3fc232576161126
-          env:
-            - name: SYSTEM_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: CHANNEL_GENERAL_CONFIG_MAP_NAME
-              value: kafka-channel-config
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: knative-kafka-storage-version-migrator
-  namespace: knative-eventing
-  labels:
-    app: "knative-kafka-storage-version-migrator"
-    app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
-spec:
-  ttlSecondsAfterFinished: 600
-  backoffLimit: 10
-  template:
-    metadata:
-      labels:
-        app: "knative-kafka-storage-version-migrator"
-        app.kubernetes.io/version: "1bb8f64f0769538adb92faf4e5db54d3c2f7bf57"
+        app.kubernetes.io/version: "15ebc559011b54963dbef6cced830556d863497d"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:

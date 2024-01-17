@@ -31,7 +31,7 @@ import (
 )
 
 var (
-	tlsResourcesPred = byGroup("cert-manager.io")
+	tlsResourcesPred = mf.Any(byGroup("cert-manager.io"), byGroup("trust.cert-manager.io"))
 )
 
 func (r *Reconciler) handleTLSResources(ctx context.Context, manifests *mf.Manifest, comp base.KComponent) error {

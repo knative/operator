@@ -13,7 +13,7 @@ require (
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.14.0
 	golang.org/x/oauth2 v0.16.0
-	google.golang.org/api v0.159.0
+	google.golang.org/api v0.161.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
 	istio.io/client-go v1.18.7
 	k8s.io/api v0.28.5
@@ -24,7 +24,7 @@ require (
 	knative.dev/caching v0.0.0-20240201014243-ff20e3e05fa1
 	knative.dev/eventing v0.40.1-0.20240202144010-469d0ac85e86
 	knative.dev/hack v0.0.0-20240201013652-f3881d90c189
-	knative.dev/pkg v0.0.0-20240201013110-e85c3cf6d5f1
+	knative.dev/pkg v0.0.0-20240205092023-4104e4237f6a
 	knative.dev/serving v0.40.1-0.20240202140043-24bc968e64ba
 	sigs.k8s.io/yaml v1.4.0
 )

@@ -2261,6 +2261,17 @@ spec:
                                       format: string
                                       type: string
                                   type: object
+                                tls:
+                                  properties:  
+                                    mode:
+                                      description: TLS mode can be SIMPLE, MUTUAL, ISTIO_MUTUAL.
+                                      format: string
+                                      type: string
+                                    credentialName:
+                                      description: TLS certificate name.
+                                      format: string
+                                      type: string                                      
+                                  type: object                                    
                               type: object
                             type: array
                         type: object
@@ -2299,6 +2310,17 @@ spec:
                                       format: string
                                       type: string
                                   type: object
+                                tls:
+                                  properties:  
+                                    mode:
+                                      description: TLS mode can be SIMPLE, MUTUAL, ISTIO_MUTUAL.
+                                      format: string
+                                      type: string
+                                    credentialName:
+                                      description: TLS certificate name.
+                                      format: string
+                                      type: string                                      
+                                  type: object                                
                               type: object
                             type: array
                         type: object

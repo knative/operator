@@ -134,12 +134,11 @@ aliases:
   - psschwei
   - skonto
   serving-reviewers:
-  - KauzClay
-  - krsna-m
+  - izabelacg
   - retocode
   - skonto
   serving-triage:
-  - KauzClay
+  - izabelacg
   - retocode
   - skonto
   serving-wg-leads:

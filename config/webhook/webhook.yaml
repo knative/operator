@@ -86,7 +86,7 @@ spec:
         - name: METRICS_DOMAIN
           value: knative.dev/operator
         - name: KUBERNETES_MIN_VERSION
-          value: ""
+          value: "1.24.0"
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

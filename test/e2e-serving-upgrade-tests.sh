@@ -74,7 +74,7 @@ function create_test_namespace_serving() {
 }
 
 # Skip installing istio as an add-on.
-initialize "$@" --skip-istio-addon
+initialize --cluster-version=1.28 "$@" --skip-istio-addon
 
 TIMEOUT=30m
 

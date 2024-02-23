@@ -30,6 +30,7 @@ You can install the Knative Operator from the source code using the
    ```
    NAME               READY   UP-TO-DATE   AVAILABLE   AGE
    knative-operator   1/1     1            1           17m
+   operator-webhook   1/1     1            1           17m
    ```
 
 1. Check the log via the command:

@@ -36,9 +36,9 @@ export GO111MODULE=auto
 source "$(dirname "${BASH_SOURCE[0]}")/e2e-common.sh"
 
 # Skip installing istio as an add-on.
-initialize --cluster-version=1.28 "$@" --skip-istio-addon
+initialize --cluster-version=${K8S_CLUSTER_VERSION} "$@" --skip-istio-addon
 
-TIMEOUT=30m
+TIMEOUT=${TIMEOUT_CI}
 
 header "Running upgrade tests"
 

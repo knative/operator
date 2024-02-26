@@ -34,7 +34,7 @@ function knative_setup() {
 }
 
 # Skip installing istio as an add-on
-initialize --cluster-version=1.28 $@ --skip-istio-addon
+initialize --cluster-version=${K8S_CLUSTER_VERSION} $@ --skip-istio-addon
 
 # If we got this far, the operator installed Knative Serving
 header "Running tests for Knative Operator"

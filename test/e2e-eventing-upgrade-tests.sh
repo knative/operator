@@ -85,7 +85,7 @@ function test_setup() {
 # Skip installing istio as an add-on.
 initialize "$@" --skip-istio-addon
 
-TIMEOUT=30m
+TIMEOUT=${TIMEOUT_CI}
 
 header "Running upgrade tests"
 

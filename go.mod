@@ -9,11 +9,11 @@ require (
 	github.com/hashicorp/golang-lru v1.0.2
 	github.com/manifestival/client-go-client v0.5.0
 	github.com/manifestival/manifestival v0.7.2
-	go.uber.org/zap v1.26.0
+	go.uber.org/zap v1.27.0
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.15.0
 	golang.org/x/oauth2 v0.17.0
-	google.golang.org/api v0.165.0
+	google.golang.org/api v0.167.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
 	istio.io/client-go v1.18.7
 	k8s.io/api v0.29.2
@@ -21,17 +21,17 @@ require (
 	k8s.io/client-go v0.29.2
 	k8s.io/code-generator v0.29.2
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
-	knative.dev/caching v0.0.0-20240223150330-674b31b90ffe
-	knative.dev/eventing v0.40.1-0.20240224235417-f1c731235e9b
+	knative.dev/caching v0.0.0-20240226153936-94c62a45c233
+	knative.dev/eventing v0.40.1-0.20240226210712-1160b459345e
 	knative.dev/hack v0.0.0-20240222141347-5f0998e65262
-	knative.dev/pkg v0.0.0-20240223210832-c97b60928c4b
-	knative.dev/serving v0.40.1-0.20240225151853-c171daa603da
+	knative.dev/pkg v0.0.0-20240227021706-97fb318ab987
+	knative.dev/serving v0.40.1-0.20240227120932-21c2d43f4228
 	sigs.k8s.io/yaml v1.4.0
 )
 
 require (
 	cloud.google.com/go v0.112.0 // indirect
-	cloud.google.com/go/compute v1.23.3 // indirect
+	cloud.google.com/go/compute v1.23.4 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.6 // indirect
 	cloud.google.com/go/storage v1.38.0 // indirect
@@ -79,7 +79,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/google/wire v0.4.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
-	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
+	github.com/googleapis/gax-go/v2 v2.12.1 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
@@ -101,7 +101,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.18.0 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
-	github.com/prometheus/common v0.47.0 // indirect
+	github.com/prometheus/common v0.48.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/prometheus/statsd_exporter v0.22.7 // indirect
 	github.com/rickb777/date v1.13.0 // indirect
@@ -113,8 +113,8 @@ require (
 	github.com/tsenart/vegeta/v12 v12.11.1 // indirect
 	github.com/wavesoftware/go-ensure v1.0.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.47.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.47.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.48.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.48.0 // indirect
 	go.opentelemetry.io/otel v1.23.0 // indirect
 	go.opentelemetry.io/otel/metric v1.23.0 // indirect
 	go.opentelemetry.io/otel/trace v1.23.0 // indirect
@@ -132,10 +132,10 @@ require (
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
-	google.golang.org/genproto v0.0.0-20240125205218-1f4bbc51befe // indirect
+	google.golang.org/genproto v0.0.0-20240205150955-31a09d347014 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240205150955-31a09d347014 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240205150955-31a09d347014 // indirect
-	google.golang.org/grpc v1.61.1 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240213162025-012b6fc9bca9 // indirect
+	google.golang.org/grpc v1.62.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
@@ -144,7 +144,7 @@ require (
 	k8s.io/gengo v0.0.0-20240129211411-f967bbeff4b4 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
-	knative.dev/networking v0.0.0-20240222232909-1fbbbf9dc890 // indirect
+	knative.dev/networking v0.0.0-20240226064029-ff6307826d4c // indirect
 	sigs.k8s.io/controller-runtime v0.7.2 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect

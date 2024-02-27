@@ -31,7 +31,7 @@
 # project $PROJECT_ID, start knative in it, run the tests and delete the
 # cluster.
 
-export GO111MODULE=auto
+export GO111MODULE=on
 
 source "$(dirname "${BASH_SOURCE[0]}")/e2e-common.sh"
 

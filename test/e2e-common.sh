@@ -38,6 +38,7 @@ export TEST_RESOURCE="knative"
 export TEST_EVENTING_MONITORING_NAMESPACE="knative-monitoring"
 export KO_FLAGS="${KO_FLAGS:-}"
 export INGRESS_CLASS=${INGRESS_CLASS:-istio.ingress.networking.knative.dev}
+export TIMEOUT_CI=30m
 
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_SERVING_REPO_BRANCH.
 GENERATE_SERVING_YAML=0

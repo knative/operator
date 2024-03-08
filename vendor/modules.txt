@@ -128,7 +128,7 @@ github.com/census-instrumentation/opencensus-proto/gen-go/trace/v1
 # github.com/cespare/xxhash/v2 v2.2.0
 ## explicit; go 1.11
 github.com/cespare/xxhash/v2
-# github.com/cloudevents/sdk-go/sql/v2 v2.15.1
+# github.com/cloudevents/sdk-go/sql/v2 v2.15.2
 ## explicit; go 1.18
 github.com/cloudevents/sdk-go/sql/v2
 github.com/cloudevents/sdk-go/sql/v2/expression
@@ -137,7 +137,7 @@ github.com/cloudevents/sdk-go/sql/v2/gen
 github.com/cloudevents/sdk-go/sql/v2/parser
 github.com/cloudevents/sdk-go/sql/v2/runtime
 github.com/cloudevents/sdk-go/sql/v2/utils
-# github.com/cloudevents/sdk-go/v2 v2.15.1
+# github.com/cloudevents/sdk-go/v2 v2.15.2
 ## explicit; go 1.18
 github.com/cloudevents/sdk-go/v2
 github.com/cloudevents/sdk-go/v2/binding
@@ -1307,11 +1307,11 @@ k8s.io/utils/pointer
 k8s.io/utils/ptr
 k8s.io/utils/strings/slices
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20240304224341-46ce5842ea82
+# knative.dev/caching v0.0.0-20240307145143-56b8a1329498
 ## explicit; go 1.21
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.40.1-0.20240305192810-95996a0d6621
+# knative.dev/eventing v0.40.1-0.20240308124856-6f944bf4c7a9
 ## explicit; go 1.21
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1507,7 +1507,7 @@ knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates
 knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/resourcesemantics/conversion
-# knative.dev/serving v0.40.1-0.20240305220907-72f91e5a74a5
+# knative.dev/serving v0.40.1-0.20240307131623-5fdffbad9c26
 ## explicit; go 1.21
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

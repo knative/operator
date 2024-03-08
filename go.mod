@@ -21,11 +21,11 @@ require (
 	k8s.io/client-go v0.29.2
 	k8s.io/code-generator v0.29.2
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
-	knative.dev/caching v0.0.0-20240304224341-46ce5842ea82
-	knative.dev/eventing v0.40.1-0.20240305192810-95996a0d6621
+	knative.dev/caching v0.0.0-20240307145143-56b8a1329498
+	knative.dev/eventing v0.40.1-0.20240308124856-6f944bf4c7a9
 	knative.dev/hack v0.0.0-20240302114326-e6dedc74dc47
 	knative.dev/pkg v0.0.0-20240305144923-6b13f01ae5f7
-	knative.dev/serving v0.40.1-0.20240305220907-72f91e5a74a5
+	knative.dev/serving v0.40.1-0.20240307131623-5fdffbad9c26
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -53,8 +53,8 @@ require (
 	github.com/blendle/zapdriver v1.3.1 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/cloudevents/sdk-go/sql/v2 v2.15.1 // indirect
-	github.com/cloudevents/sdk-go/v2 v2.15.1 // indirect
+	github.com/cloudevents/sdk-go/sql/v2 v2.15.2 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.15.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect

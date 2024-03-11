@@ -620,6 +620,7 @@ rules:
   # Eventing TLS
   - apiGroups:
       - "cert-manager.io"
+      - "trust.cert-manager.io"
     resources:
       - certificates
       - issuers

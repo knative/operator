@@ -60,9 +60,9 @@ func EventingCRPostUpgradeTests() pkgupgrade.Operation {
 	})
 }
 
-// EventingTimeoutForUpgrade adds a timeout for Knative Eventing to complete the upgrade for readiness.
-func EventingTimeoutForUpgrade() pkgupgrade.Operation {
-	return pkgupgrade.NewOperation("EventingTimeoutForUpgrade", func(c pkgupgrade.Context) {
+// EventingTimeoutForUpDowngrade adds a timeout for Knative Eventing to complete the upgrade for readiness.
+func EventingTimeoutForUpDowngrade() pkgupgrade.Operation {
+	return pkgupgrade.NewOperation("EventingTimeoutForUpDowngrade", func(c pkgupgrade.Context) {
 		// Operator has the issue making sure all deployments are ready before running the postupgrade
 		// tests, especially when spec.version is set to latest. Before figuring out the optimal approach,
 		// we add a timeout of 20 seconds here to make sure all the deployments are up and running for the

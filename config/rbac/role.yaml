@@ -623,6 +623,7 @@ rules:
     resources:
       - certificates
       - issuers
+      - clusterissuers
     verbs:
       - create
       - delete
@@ -630,4 +631,14 @@ rules:
       - list
       - get
       - watch
-
+  - apiGroups:
+      - "trust.cert-manager.io"
+    resources:
+      - bundles
+    verbs:
+      - create
+      - delete
+      - update
+      - list
+      - get
+      - watch

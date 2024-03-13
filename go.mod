@@ -23,9 +23,9 @@ require (
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
 	knative.dev/caching v0.0.0-20240312014556-d38838e915f0
 	knative.dev/eventing v0.40.1-0.20240312170432-bbb9051e9fd0
-	knative.dev/hack v0.0.0-20240302114326-e6dedc74dc47
+	knative.dev/hack v0.0.0-20240313135155-b9f6bf0b323b
 	knative.dev/pkg v0.0.0-20240311204931-2c15a6fd07af
-	knative.dev/serving v0.40.1-0.20240312204407-a194cb210d5e
+	knative.dev/serving v0.40.1-0.20240313081515-0c8f4f3bc355
 	sigs.k8s.io/yaml v1.4.0
 )
 

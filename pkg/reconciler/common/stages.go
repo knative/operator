@@ -18,10 +18,14 @@ package common
 
 import (
 	"context"
+	"fmt"
 
 	mf "github.com/manifestival/manifestival"
-	"knative.dev/operator/pkg/apis/operator/base"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/pkg/logging"
+
+	"knative.dev/operator/pkg/apis/operator/base"
 )
 
 // Stage represents a step in the reconcile process
@@ -110,6 +114,12 @@ func DeleteObsoleteResources(ctx context.Context, instance base.KComponent, fetc
 		return NoOp
 	}
 	return func(_ context.Context, manifest *mf.Manifest, _ base.KComponent) error {
-		return installed.Filter(mf.NoCRDs, mf.Not(mf.In(*manifest))).Delete()
+		for _, r := range installed.Filter(mf.NoCRDs, mf.Not(mf.In(*manifest))).Resources() {
+			m, _ := mf.ManifestFrom(mf.Slice([]unstructured.Unstructured{r}), mf.UseClient(manifest.Client))
+			if err := m.Delete(); err != nil && !meta.IsNoMatchError(err) {
+				return fmt.Errorf("failed to delete obsolete resources: %w", err)
+			}
+		}
+		return nil
 	}
 }

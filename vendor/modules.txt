@@ -1409,7 +1409,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/forwarder
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/hack v0.0.0-20240302114326-e6dedc74dc47
+# knative.dev/hack v0.0.0-20240313135155-b9f6bf0b323b
 ## explicit; go 1.18
 knative.dev/hack
 # knative.dev/networking v0.0.0-20240311132944-3252e63e3239
@@ -1510,7 +1510,7 @@ knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates
 knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/resourcesemantics/conversion
-# knative.dev/serving v0.40.1-0.20240312204407-a194cb210d5e
+# knative.dev/serving v0.40.1-0.20240313081515-0c8f4f3bc355
 ## explicit; go 1.21
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

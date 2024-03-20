@@ -13,7 +13,7 @@ require (
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.16.0
 	golang.org/x/oauth2 v0.18.0
-	google.golang.org/api v0.169.0
+	google.golang.org/api v0.170.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
 	istio.io/client-go v1.18.7
 	k8s.io/api v0.29.2
@@ -21,20 +21,20 @@ require (
 	k8s.io/client-go v0.29.2
 	k8s.io/code-generator v0.29.2
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
-	knative.dev/caching v0.0.0-20240313151103-e05a25d26a18
-	knative.dev/eventing v0.40.1-0.20240315095424-06043341299e
-	knative.dev/hack v0.0.0-20240313135155-b9f6bf0b323b
-	knative.dev/pkg v0.0.0-20240313155908-adefab46f5e5
-	knative.dev/serving v0.40.1-0.20240315100431-d0529c2c459a
+	knative.dev/caching v0.0.0-20240318013651-77a703a3ca00
+	knative.dev/eventing v0.40.1-0.20240319181853-292e29c78e4e
+	knative.dev/hack v0.0.0-20240318013248-424e75ed769a
+	knative.dev/pkg v0.0.0-20240318073042-db6f3b074e8c
+	knative.dev/serving v0.40.1-0.20240319163957-ba3f983855bc
 	sigs.k8s.io/yaml v1.4.0
 )
 
 require (
-	cloud.google.com/go v0.112.0 // indirect
+	cloud.google.com/go v0.112.1 // indirect
 	cloud.google.com/go/compute v1.24.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.6 // indirect
-	cloud.google.com/go/storage v1.39.0 // indirect
+	cloud.google.com/go/storage v1.39.1 // indirect
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
 	contrib.go.opencensus.io/exporter/prometheus v0.4.2 // indirect
 	contrib.go.opencensus.io/exporter/zipkin v0.1.2 // indirect
@@ -70,7 +70,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/go-containerregistry v0.13.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
@@ -133,9 +133,9 @@ require (
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20240213162025-012b6fc9bca9 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240221002015-b0ce06bbee7c // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240304161311-37d4d3c04a78 // indirect
-	google.golang.org/grpc v1.62.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240304161311-37d4d3c04a78 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240311132316-a219d84964c2 // indirect
+	google.golang.org/grpc v1.62.1 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
@@ -144,7 +144,7 @@ require (
 	k8s.io/gengo v0.0.0-20240129211411-f967bbeff4b4 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
-	knative.dev/networking v0.0.0-20240312031421-3594f84d0be5 // indirect
+	knative.dev/networking v0.0.0-20240318013937-e1796e7a59fb // indirect
 	sigs.k8s.io/controller-runtime v0.7.2 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect

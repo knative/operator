@@ -1309,11 +1309,11 @@ k8s.io/utils/pointer
 k8s.io/utils/ptr
 k8s.io/utils/strings/slices
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20240318013651-77a703a3ca00
+# knative.dev/caching v0.0.0-20240321000746-20da666b9fd5
 ## explicit; go 1.21
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.40.1-0.20240319181853-292e29c78e4e
+# knative.dev/eventing v0.40.1-0.20240320151248-2aa8985d582b
 ## explicit; go 1.21
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck

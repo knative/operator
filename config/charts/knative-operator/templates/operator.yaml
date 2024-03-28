@@ -6245,5 +6245,12 @@ spec:
           ports:
             - name: metrics
               containerPort: 9090
+          resources:
+            requests:
+              memory: 32Mi
+              cpu: 20m
+            limits:
+              memory: 100Mi
+              cpu: 50m
 
 ---

@@ -1,5 +1,4 @@
----
-# Copyright 2020 The Knative Authors
+# Copyright 2022 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +13,26 @@
 # limitations under the License.
 
 apiVersion: v1
-kind: ServiceAccount
+kind: Service
 metadata:
-  name: knative-operator
-  namespace: default
   labels:
-    app.kubernetes.io/version: devel
+    role: operator-webhook
+    app.kubernetes.io/component: operator-webhook
+    app.kubernetes.io/version: "{{ .Chart.Version }}"
     app.kubernetes.io/name: knative-operator
+  name: operator-webhook
+  namespace: {{ include "knativeOperator.namespace" . }}
+spec:
+  ports:
+    # Define metrics and profiling for them to be accessible within service meshes.
+    - name: http-metrics
+      port: 9090
+      targetPort: 9090
+    - name: http-profiling
+      port: 8008
+      targetPort: 8008
+    - name: https-webhook
+      port: 443
+      targetPort: 8443
+  selector:
+    role: operator-webhook

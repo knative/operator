@@ -1,4 +1,3 @@
----
 # Copyright 2021 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +17,7 @@ kind: CustomResourceDefinition
 metadata:
   name: knativeservings.operator.knative.dev
   labels:
-    app.kubernetes.io/version: devel
+    app.kubernetes.io/version: "{{ .Chart.Version }}"
     app.kubernetes.io/name: knative-operator
 spec:
   group: operator.knative.dev
@@ -2262,17 +2261,6 @@ spec:
                                       format: string
                                       type: string
                                   type: object
-                                tls:
-                                  properties:  
-                                    mode:
-                                      description: TLS mode can be SIMPLE, MUTUAL, ISTIO_MUTUAL.
-                                      format: string
-                                      type: string
-                                    credentialName:
-                                      description: TLS certificate name.
-                                      format: string
-                                      type: string                                      
-                                  type: object                                    
                               type: object
                             type: array
                         type: object
@@ -2311,17 +2299,6 @@ spec:
                                       format: string
                                       type: string
                                   type: object
-                                tls:
-                                  properties:  
-                                    mode:
-                                      description: TLS mode can be SIMPLE, MUTUAL, ISTIO_MUTUAL.
-                                      format: string
-                                      type: string
-                                    credentialName:
-                                      description: TLS certificate name.
-                                      format: string
-                                      type: string                                      
-                                  type: object                                
                               type: object
                             type: array
                         type: object
@@ -2467,5 +2444,5 @@ spec:
       clientConfig:
         service:
           name: operator-webhook
-          namespace: default
+          namespace: {{ include "knativeOperator.namespace" . }}
           path: /resource-conversion

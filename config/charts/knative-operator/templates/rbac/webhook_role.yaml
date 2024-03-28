@@ -1,4 +1,3 @@
----
 # Copyright 2022 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +17,7 @@ kind: ClusterRole
 metadata:
   name: knative-operator-webhook
   labels:
-    app.kubernetes.io/version: devel
+    app.kubernetes.io/version: "{{ .Chart.Version }}"
     app.kubernetes.io/name: knative-operator
 rules:
   # For watching logging configuration and getting certs.
@@ -98,10 +97,10 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  namespace: default
+  namespace: {{ include "knativeOperator.namespace" . }}
   name: knative-operator-webhook
   labels:
-    app.kubernetes.io/version: devel
+    app.kubernetes.io/version: "{{ .Chart.Version }}"
     app.kubernetes.io/name: knative-operator
 rules:
   # For manipulating certs into secrets.

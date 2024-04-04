@@ -17,6 +17,8 @@ limitations under the License.
 package common
 
 import (
+	"fmt"
+
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	policyv1 "k8s.io/api/policy/v1"
@@ -30,21 +32,27 @@ import (
 // PodDisruptionBudgetsTransform transforms PodDisruptionBudgets based on the configuration in `spec.podDisruptionBudgets`.
 func PodDisruptionBudgetsTransform(obj base.KComponent, log *zap.SugaredLogger) mf.Transformer {
 	overrides := obj.GetSpec().GetPodDisruptionBudgetOverride()
+
 	if overrides == nil {
 		return nil
 	}
 	return func(u *unstructured.Unstructured) error {
 		for _, override := range overrides {
 			if u.GetKind() == "PodDisruptionBudget" && u.GetName() == override.Name {
-				if override.MinAvailable == nil {
+				if override.MinAvailable == nil && override.MaxUnavailable == nil {
 					return nil
+				} else if override.MinAvailable != nil && override.MaxUnavailable != nil {
+					return fmt.Errorf("both minAvailable and maxUnavailable are set for PodDisruptionBudget %s", override.Name)
 				}
 
 				podDisruptionBudget := &policyv1.PodDisruptionBudget{}
 				if err := scheme.Scheme.Convert(u, podDisruptionBudget, nil); err != nil {
 					return err
 				}
+
 				podDisruptionBudget.Spec.MinAvailable = override.MinAvailable
+				podDisruptionBudget.Spec.MaxUnavailable = override.MaxUnavailable
+
 				if err := scheme.Scheme.Convert(podDisruptionBudget, u, nil); err != nil {
 					return err
 				}

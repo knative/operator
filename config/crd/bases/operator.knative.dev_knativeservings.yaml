@@ -2212,6 +2212,12 @@ spec:
                         - type: string
                       description: An eviction is allowed if at least "minAvailable" pods selected by "selector" will still be available after the eviction, i.e. even in the absence of the evicted pod.  So for example you can prevent all voluntary evictions by specifying "100%".
                       x-kubernetes-int-or-string: true
+                    maxUnavailable:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      description: 	An eviction is allowed if at most "maxUnavailable" pods selected by "selector" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with "minAvailable".
+                      x-kubernetes-int-or-string: true
               ingress:
                 description: The ingress configuration for Knative Serving
                 properties:
@@ -2262,7 +2268,7 @@ spec:
                                       type: string
                                   type: object
                                 tls:
-                                  properties:  
+                                  properties:
                                     mode:
                                       description: TLS mode can be SIMPLE, MUTUAL, ISTIO_MUTUAL.
                                       format: string
@@ -2270,8 +2276,8 @@ spec:
                                     credentialName:
                                       description: TLS certificate name.
                                       format: string
-                                      type: string                                      
-                                  type: object                                    
+                                      type: string
+                                  type: object
                               type: object
                             type: array
                         type: object
@@ -2311,7 +2317,7 @@ spec:
                                       type: string
                                   type: object
                                 tls:
-                                  properties:  
+                                  properties:
                                     mode:
                                       description: TLS mode can be SIMPLE, MUTUAL, ISTIO_MUTUAL.
                                       format: string
@@ -2319,8 +2325,8 @@ spec:
                                     credentialName:
                                       description: TLS certificate name.
                                       format: string
-                                      type: string                                      
-                                  type: object                                
+                                      type: string
+                                  type: object
                               type: object
                             type: array
                         type: object

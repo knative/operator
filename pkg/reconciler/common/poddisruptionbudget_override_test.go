@@ -17,6 +17,7 @@ limitations under the License.
 package common
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -24,6 +25,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
+	util "knative.dev/operator/pkg/reconciler/common/testing"
 
 	"knative.dev/operator/pkg/apis/operator/base"
 	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -31,10 +33,12 @@ import (
 
 func TestPodDisruptionBudgetsTransformV1(t *testing.T) {
 	tests := []struct {
-		name            string
-		testName        string
-		overrides       []base.PodDisruptionBudgetOverride
-		expMinAvailable *intstr.IntOrString
+		name              string
+		testName          string
+		overrides         []base.PodDisruptionBudgetOverride
+		expMinAvailable   *intstr.IntOrString
+		expMaxUnavailable *intstr.IntOrString
+		expectedError     error
 	}{{
 		name:     "simple override",
 		testName: "activator-pdb-1",
@@ -47,23 +51,57 @@ func TestPodDisruptionBudgetsTransformV1(t *testing.T) {
 			},
 		},
 		expMinAvailable: &intstr.IntOrString{StrVal: "50%", Type: intstr.String},
+		expectedError:   nil,
 	}, {
-		name:            "no override",
-		overrides:       nil,
-		testName:        "activator-pdb-1",
-		expMinAvailable: &intstr.IntOrString{StrVal: "80%", Type: intstr.String},
+		name:              "no override",
+		overrides:         nil,
+		testName:          "activator-pdb-1",
+		expMinAvailable:   &intstr.IntOrString{StrVal: "80%", Type: intstr.String},
+		expMaxUnavailable: nil,
+		expectedError:     nil,
 	}, {
-		name:     "override with no MinVailable",
+		name:     "override with no MinVailable or MaxUnavailable",
 		testName: "activator-pdb-1",
 		overrides: []base.PodDisruptionBudgetOverride{
 			{
 				Name: "activator-pdb-1",
 				PodDisruptionBudgetSpec: policyv1.PodDisruptionBudgetSpec{
-					MinAvailable: nil,
+					MinAvailable:   nil,
+					MaxUnavailable: nil,
 				},
 			},
 		},
-		expMinAvailable: &intstr.IntOrString{StrVal: "80%", Type: intstr.String},
+		expMinAvailable:   &intstr.IntOrString{StrVal: "80%", Type: intstr.String},
+		expMaxUnavailable: nil,
+	}, {
+		name:     "override with maxUnavailable and minAvailable",
+		testName: "activator-pdb-1",
+		overrides: []base.PodDisruptionBudgetOverride{
+			{
+				Name: "activator-pdb-1",
+				PodDisruptionBudgetSpec: policyv1.PodDisruptionBudgetSpec{
+					MinAvailable:   &intstr.IntOrString{StrVal: "50%", Type: intstr.String},
+					MaxUnavailable: &intstr.IntOrString{StrVal: "50%", Type: intstr.String},
+				},
+			},
+		},
+		expMinAvailable:   nil,
+		expMaxUnavailable: nil,
+		expectedError:     fmt.Errorf("both minAvailable and maxUnavailable are set for PodDisruptionBudget %s", "activator-pdb-1"),
+	}, {
+		name:     "override with maxUnavailable",
+		testName: "activator-pdb-1",
+		overrides: []base.PodDisruptionBudgetOverride{
+			{
+				Name: "activator-pdb-1",
+				PodDisruptionBudgetSpec: policyv1.PodDisruptionBudgetSpec{
+					MaxUnavailable: &intstr.IntOrString{StrVal: "50%", Type: intstr.String},
+				},
+			},
+		},
+		expMinAvailable:   nil,
+		expMaxUnavailable: &intstr.IntOrString{StrVal: "50%", Type: intstr.String},
+		expectedError:     nil,
 	}}
 
 	for _, test := range tests {
@@ -83,7 +121,8 @@ func TestPodDisruptionBudgetsTransformV1(t *testing.T) {
 
 			manifest, err = manifest.Transform(PodDisruptionBudgetsTransform(ks, log))
 			if err != nil {
-				t.Fatalf("Failed to transform manifest: %v", err)
+				util.AssertEqual(t, err.Error(), test.expectedError.Error())
+				util.AssertEqual(t, len(manifest.Resources()), 0)
 			}
 
 			if test.overrides == nil {
@@ -109,9 +148,27 @@ func TestPodDisruptionBudgetsTransformV1(t *testing.T) {
 							t.Fatalf("Failed to convert unstructured to PodDisruptionBudget: %v", err)
 						}
 
-						if diff := cmp.Diff(*got.Spec.MinAvailable, *test.expMinAvailable); diff != "" {
-							t.Fatalf("Unexpected minAvailable: %v", diff)
+						if test.expMinAvailable == nil {
+							if got.Spec.MinAvailable != nil {
+								t.Fatalf("Unexpected minAvailable: %v", got.Spec.MinAvailable)
+							}
+						} else {
+							if diff := cmp.Diff(*got.Spec.MinAvailable, *test.expMinAvailable); diff != "" {
+								t.Fatalf("Unexpected minAvailable: %v", diff)
+							}
 						}
+
+						if test.expMaxUnavailable == nil {
+							if got.Spec.MaxUnavailable != nil {
+								t.Fatalf("Unexpected maxUnavailable: %v", got.Spec.MaxUnavailable)
+							}
+						} else {
+
+							if diff := cmp.Diff(*got.Spec.MaxUnavailable, *test.expMaxUnavailable); diff != "" {
+								t.Fatalf("Unexpected maxUnavailable: %v", diff)
+							}
+						}
+
 					}
 				}
 			}

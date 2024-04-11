@@ -56,6 +56,13 @@ spec:
               value: config-observability
             - name: KUBERNETES_MIN_VERSION
               value: ""
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 100m
+              memory: 100Mi
           ports:
             - name: metrics
               containerPort: 9090

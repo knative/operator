@@ -30,6 +30,7 @@ readonly KNATIVE_REPO_BRANCH="${PULL_BASE_REF}"
 # This environment variable TEST_NAMESPACE defines the namespace to install Knative Serving.
 export TEST_NAMESPACE="${TEST_NAMESPACE:-knative-operator-testing}"
 export SYSTEM_NAMESPACE=${TEST_NAMESPACE}
+export TEST_OPERATOR_NAMESPACE="knative-operator"
 # This environment variable TEST_EVENTING_NAMESPACE defines the namespace to install Knative Eventing.
 # It is different from the namespace to install Knative Serving.
 # We will use only one namespace, when Knative supports both components can coexist under one namespace.
@@ -126,6 +127,8 @@ function install_istio() {
 }
 
 function create_namespace() {
+  echo ">> Creating test namespaces for knative operator"
+  kubectl get ns ${TEST_OPERATOR_NAMESPACE} || kubectl create namespace ${TEST_OPERATOR_NAMESPACE}
   echo ">> Creating test namespaces for knative serving and eventing"
   # All the custom resources and Knative Serving resources are created under this TEST_NAMESPACE.
   kubectl get ns ${TEST_NAMESPACE} || kubectl create namespace ${TEST_NAMESPACE}
@@ -172,7 +175,7 @@ function install_operator() {
   header "Installing Knative operator"
   # Deploy the operator
   ko apply ${KO_FLAGS} -f config/
-  wait_until_pods_running default || fail_test "Operator did not come up"
+  wait_until_pods_running ${TEST_OPERATOR_NAMESPACE} || fail_test "Operator did not come up"
 }
 
 # Uninstalls Knative Serving from the current cluster.

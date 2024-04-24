@@ -16,7 +16,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: operator-webhook
-  namespace: default
+  namespace: knative-operator
   labels:
     app.kubernetes.io/component: operator-webhook
     app.kubernetes.io/version: devel

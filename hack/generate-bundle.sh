@@ -44,7 +44,7 @@ readonly NS_REPLACE_FILES=(knativeeventings.operator.knative.dev.crd.yaml knativ
  knative-serving-operator-aggregated-stable_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml knative-serving-operator-aggregated_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml
  knative-eventing-operator-aggregated-stable_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml knative-eventing-operator-aggregated_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml)
 for FILE in ${NS_REPLACE_FILES[@]}; do
-  sed -i.bak "s/namespace: default/namespace: operators/" bundle/manifests/${FILE}
+  sed -i.bak "s/namespace: knative-operator/namespace: operators/" bundle/manifests/${FILE}
 done
 
 # Replace the images

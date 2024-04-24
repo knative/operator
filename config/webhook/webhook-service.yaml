@@ -21,7 +21,7 @@ metadata:
     app.kubernetes.io/version: devel
     app.kubernetes.io/name: knative-operator
   name: operator-webhook
-  namespace: default
+  namespace: knative-operator
 spec:
   ports:
     # Define metrics and profiling for them to be accessible within service meshes.

@@ -22,6 +22,7 @@ rm -rf new_config
 mkdir new_config
 
 helm template knative-operator config/charts/knative-operator \
+    -n knative-operator \
     --set knative_operator.kubernetes_min_version="" \
     >knative-operator-default.yaml
 

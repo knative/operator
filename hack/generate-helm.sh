@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 # Set the version and tag in Chart.yaml and values.yaml
-VERSION=v1.10.1
+VERSION=v1.14.0
 if [[ -n "${TAG:-}" ]]; then
   VERSION=${TAG}
 fi
@@ -44,7 +44,6 @@ for filename in config/*.yaml; do
 done
 
 # Replace the namespace and images with the helm parameters
-sed -i.bak 's/namespace: knative-operator/namespace: "{{ .Release.Namespace }}"/g' ${TARGET_DIR}/templates/operator.yaml
 sed -i.bak 's/image: ko:\/\/knative.dev\/operator\/cmd\/operator/image: "{{ .Values.knative_operator.knative_operator.image }}:{{ .Values.knative_operator.knative_operator.tag }}"/g' ${TARGET_DIR}/templates/operator.yaml
 sed -i.bak 's/image: ko:\/\/knative.dev\/operator\/cmd\/webhook/image: "{{ .Values.knative_operator.operator_webhook.image }}:{{ .Values.knative_operator.operator_webhook.tag }}"/g' ${TARGET_DIR}/templates/operator.yaml
 sed -i.bak 's/operator.knative.dev\/release: devel/operator.knative.dev\/release: "v{{ .Chart.Version }}"/g' ${TARGET_DIR}/templates/operator.yaml

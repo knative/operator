@@ -7,6 +7,7 @@
 [![Slack Status](https://img.shields.io/badge/slack-join_chat-white.svg?logo=slack&style=social)](https://knative.slack.com)
 [![codecov](https://codecov.io/gh/knative/operator/branch/main/graph/badge.svg)](https://codecov.io/gh/knative/operator)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5913/badge)](https://bestpractices.coreinfrastructure.org/projects/5913)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fknative%2Foperator.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fknative%2Foperator?ref=badge_shield)
 
 The Knative Operator defines custom resources for the
 [Knative](https://knative.dev/) components, including serving and eventing, enabling users to configure, install,
@@ -28,3 +29,7 @@ For documentation on using Knative Operator, see the
 If you are interested in contributing, see [CONTRIBUTING.md](./CONTRIBUTING.md)
 and [DEVELOPMENT.md](./DEVELOPMENT.md). For a list of help wanted issues across 
 Knative, take a look at [CLOTRIBUTOR](https://clotributor.dev/search?project=knative&page=1).
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fknative%2Foperator.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fknative%2Foperator?ref=badge_large)

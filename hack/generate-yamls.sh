@@ -83,7 +83,7 @@ fi
 echo "All manifests generated"
 
 ./hack/generate-helm.sh
-HELM_CHARTS=${YAML_REPO_ROOT}/charts/knative-operator-${TAG:1}.tgz
+HELM_CHARTS=${YAML_REPO_ROOT}/charts/knative-operator-${TAG}.tgz
 all_yamls+=(${HELM_CHARTS})
 
 for yaml in "${!all_yamls[@]}"; do

@@ -83,7 +83,11 @@ fi
 echo "All manifests generated"
 
 ./hack/generate-helm.sh
+GENERATED_CHARTS=${YAML_REPO_ROOT}/charts/knative-operator-${TAG:1}.tgz
 HELM_CHARTS=${YAML_REPO_ROOT}/charts/knative-operator-${TAG}.tgz
+
+# Copy the Helm Charts into the target location
+cp ${GENERATED_CHARTS} ${HELM_CHARTS}
 all_yamls+=(${HELM_CHARTS})
 
 for yaml in "${!all_yamls[@]}"; do

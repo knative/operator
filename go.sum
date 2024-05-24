@@ -1367,8 +1367,8 @@ knative.dev/networking v0.0.0-20240516132600-507209b2bf6f h1:+K321QB+dTAArNPHRfh
 knative.dev/networking v0.0.0-20240516132600-507209b2bf6f/go.mod h1:bKoqFoKxbixmcRyN8LKt4ye+tyZ/NNw2xmcyFU03lsM=
 knative.dev/pkg v0.0.0-20240521083825-99e1685a7997 h1:MN/u8ivos957WdihUjKfFw1Qv9HZ3+pe4TOwdYQiB2Q=
 knative.dev/pkg v0.0.0-20240521083825-99e1685a7997/go.mod h1:GHFUP1wtD/bR/c02QADqaAK3odDJh1ddBMvXhq/goy8=
-knative.dev/serving v0.41.1-0.20240523083825-60c003b38eed h1:TRCHa6kvSKYQKAmOSmL+tbk8UKKN43TlwNzBWLQHgWA=
-knative.dev/serving v0.41.1-0.20240523083825-60c003b38eed/go.mod h1:O9ZmWNdd2yzvLW//zfMgcD0jz9FzL4B+CRxf+DXNM08=
+knative.dev/serving v0.41.1-0.20240523234049-ab5c1a0fc1eb h1:whMa2qyF9ZXrLGBlJ/hciFjtZRg2dxHA/JQ5wXJs3MQ=
+knative.dev/serving v0.41.1-0.20240523234049-ab5c1a0fc1eb/go.mod h1:O9ZmWNdd2yzvLW//zfMgcD0jz9FzL4B+CRxf+DXNM08=
 nhooyr.io/websocket v1.8.6/go.mod h1:B70DZP8IakI65RVQ51MsWP/8jndNma26DVA/nFSCgW0=
 pgregory.net/rapid v1.1.0 h1:CMa0sjHSru3puNx+J0MIAuiiEV4N0qj8/cMWGBBCsjw=
 pgregory.net/rapid v1.1.0/go.mod h1:PY5XlDGj0+V1FCq0o192FdRhpKHGTRIWBgqjDBTrq04=

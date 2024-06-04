@@ -13,7 +13,7 @@ require (
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.17.0
 	golang.org/x/oauth2 v0.20.0
-	google.golang.org/api v0.181.0
+	google.golang.org/api v0.182.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
 	istio.io/client-go v1.18.7
 	k8s.io/api v0.29.2
@@ -21,17 +21,17 @@ require (
 	k8s.io/client-go v0.29.2
 	k8s.io/code-generator v0.29.2
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
-	knative.dev/caching v0.0.0-20240530052547-16402967a78f
-	knative.dev/eventing v0.41.1-0.20240530202412-a58c1352db05
+	knative.dev/caching v0.0.0-20240603132637-bb31986d9396
+	knative.dev/eventing v0.41.1-0.20240603163018-3ee2400189c1
 	knative.dev/hack v0.0.0-20240529131459-3b6d6441e7ea
-	knative.dev/pkg v0.0.0-20240529181700-7d52a43448b2
-	knative.dev/serving v0.41.1-0.20240531084853-0ddd15e2ba1a
+	knative.dev/pkg v0.0.0-20240603145758-fce44ead15bd
+	knative.dev/serving v0.41.1-0.20240603213049-2fd8465334ec
 	sigs.k8s.io/yaml v1.4.0
 )
 
 require (
-	cloud.google.com/go v0.113.0 // indirect
-	cloud.google.com/go/auth v0.4.1 // indirect
+	cloud.google.com/go v0.114.0 // indirect
+	cloud.google.com/go/auth v0.4.2 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.2 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	cloud.google.com/go/iam v1.1.8 // indirect
@@ -133,8 +133,8 @@ require (
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20240401170217-c3f982113cda // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240506185236-b8a5c65736ae // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240513163218-0867130af1f8 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240513163218-0867130af1f8 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240521202816-d264139d666e // indirect
 	google.golang.org/grpc v1.64.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect

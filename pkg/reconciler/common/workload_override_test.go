@@ -529,7 +529,7 @@ func TestComponentsTransform(t *testing.T) {
 				InitialDelaySeconds: 12,
 			}}},
 	}, {
-		name: "empty probe drops probe",
+		name: "empty readiness probe drops probe",
 		override: []base.WorkloadOverride{
 			{
 				Name: "activator",
@@ -543,6 +543,28 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
 			expReplicas:            0,
 			expLivenessProbe: &v1.Probe{
+				ProbeHandler: v1.ProbeHandler{
+					HTTPGet: &v1.HTTPGetAction{
+						Port:        intstr.IntOrString{IntVal: 8012},
+						HTTPHeaders: []v1.HTTPHeader{{Name: "k-kubelet-probe", Value: "activator"}},
+					}},
+			},
+		}},
+	}, {
+		name: "empty liveness probe drops probe",
+		override: []base.WorkloadOverride{
+			{
+				Name: "activator",
+				LivenessProbes: []base.ProbesRequirementsOverride{{
+					Container: "activator",
+				}}},
+		},
+		expDeployment: map[string]expDeployments{"activator": {
+			expLabels:              map[string]string{"serving.knative.dev/release": "v0.13.0"},
+			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
+			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
+			expReplicas:            0,
+			expReadinessProbe: &v1.Probe{
 				ProbeHandler: v1.ProbeHandler{
 					HTTPGet: &v1.HTTPGetAction{
 						Port:        intstr.IntOrString{IntVal: 8012},

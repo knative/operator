@@ -223,7 +223,7 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 				}
 				if *overrideProbe == (v1.Probe{}) {
 					//  Disable probe when users explicitly set the empty overrideProbe.
-					containers[i].ReadinessProbe = nil
+					containers[i].LivenessProbe = nil
 					continue
 				}
 				if containers[i].LivenessProbe == nil {

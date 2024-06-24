@@ -33,8 +33,8 @@ cloud.google.com/go/iam/apiv1/iampb
 cloud.google.com/go/iam/credentials/apiv1
 cloud.google.com/go/iam/credentials/apiv1/credentialspb
 cloud.google.com/go/iam/internal
-# cloud.google.com/go/storage v1.41.0
-## explicit; go 1.19
+# cloud.google.com/go/storage v1.42.0
+## explicit; go 1.20
 cloud.google.com/go/storage
 cloud.google.com/go/storage/internal
 cloud.google.com/go/storage/internal/apiv2
@@ -641,7 +641,7 @@ google.golang.org/api/transport/http/internal/propagation
 google.golang.org/genproto/googleapis/iam/credentials/v1
 google.golang.org/genproto/googleapis/type/date
 google.golang.org/genproto/googleapis/type/expr
-# google.golang.org/genproto/googleapis/api v0.0.0-20240521202816-d264139d666e
+# google.golang.org/genproto/googleapis/api v0.0.0-20240604185151-ef581f913117
 ## explicit; go 1.20
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
@@ -1319,11 +1319,11 @@ k8s.io/utils/pointer
 k8s.io/utils/ptr
 k8s.io/utils/strings/slices
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20240610144728-23ec42b2186b
+# knative.dev/caching v0.0.0-20240619192417-52069666b596
 ## explicit; go 1.21
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.41.1-0.20240617131715-e298f32440e4
+# knative.dev/eventing v0.41.1-0.20240624104714-36c904a473c0
 ## explicit; go 1.21
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1451,8 +1451,8 @@ knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/ingress
 knative.dev/networking/pkg/k8s
-# knative.dev/pkg v0.0.0-20240614135239-339c22b8218c
-## explicit; go 1.21
+# knative.dev/pkg v0.0.0-20240621201938-fc0720b7a660
+## explicit; go 1.22
 knative.dev/pkg/apiextensions/storageversion
 knative.dev/pkg/apiextensions/storageversion/cmd/migrate
 knative.dev/pkg/apis
@@ -1508,8 +1508,8 @@ knative.dev/pkg/signals
 knative.dev/pkg/system
 knative.dev/pkg/system/testing
 knative.dev/pkg/test
+knative.dev/pkg/test/ci
 knative.dev/pkg/test/environment
-knative.dev/pkg/test/gcs
 knative.dev/pkg/test/helpers
 knative.dev/pkg/test/ingress
 knative.dev/pkg/test/logging
@@ -1533,8 +1533,8 @@ knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates
 knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/resourcesemantics/conversion
-# knative.dev/serving v0.41.1-0.20240619121213-408b284641f2
-## explicit; go 1.21
+# knative.dev/serving v0.41.1-0.20240624124043-6fa0f6df513a
+## explicit; go 1.22
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
 knative.dev/serving/pkg/apis/config

@@ -1,6 +1,6 @@
 module knative.dev/operator
 
-go 1.21
+go 1.22
 
 require (
 	github.com/go-logr/zapr v1.2.2
@@ -21,11 +21,11 @@ require (
 	k8s.io/client-go v0.29.2
 	k8s.io/code-generator v0.29.2
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
-	knative.dev/caching v0.0.0-20240610144728-23ec42b2186b
-	knative.dev/eventing v0.41.1-0.20240617131715-e298f32440e4
+	knative.dev/caching v0.0.0-20240619192417-52069666b596
+	knative.dev/eventing v0.41.1-0.20240624104714-36c904a473c0
 	knative.dev/hack v0.0.0-20240607132042-09143140a254
-	knative.dev/pkg v0.0.0-20240614135239-339c22b8218c
-	knative.dev/serving v0.41.1-0.20240619121213-408b284641f2
+	knative.dev/pkg v0.0.0-20240621201938-fc0720b7a660
+	knative.dev/serving v0.41.1-0.20240624124043-6fa0f6df513a
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -35,7 +35,7 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.2 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	cloud.google.com/go/iam v1.1.8 // indirect
-	cloud.google.com/go/storage v1.41.0 // indirect
+	cloud.google.com/go/storage v1.42.0 // indirect
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
 	contrib.go.opencensus.io/exporter/prometheus v0.4.2 // indirect
 	contrib.go.opencensus.io/exporter/zipkin v0.1.2 // indirect
@@ -133,7 +133,7 @@ require (
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20240528184218-531527333157 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240521202816-d264139d666e // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240604185151-ef581f913117 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
 	google.golang.org/grpc v1.64.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect

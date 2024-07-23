@@ -13,6 +13,7 @@ require (
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.19.0
 	golang.org/x/oauth2 v0.21.0
+	golang.org/x/sync v0.7.0
 	google.golang.org/api v0.183.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
 	istio.io/client-go v1.18.7
@@ -23,9 +24,9 @@ require (
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
 	knative.dev/caching v0.0.0-20240716132144-989f54c83776
 	knative.dev/eventing v0.41.1-0.20240723091907-c3baeda069fc
-	knative.dev/hack v0.0.0-20240704013904-b9799599afcf
+	knative.dev/hack v0.0.0-20240719133331-9c9eed6f6679
 	knative.dev/pkg v0.0.0-20240716082220-4355f0c73608
-	knative.dev/serving v0.41.1-0.20240722152628-34cef9880402
+	knative.dev/serving v0.42.0
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -124,7 +125,6 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.25.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/term v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect

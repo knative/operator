@@ -17,7 +17,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-post-install-job-role
   labels:
-    app.kubernetes.io/version: "1.11.6"
+    app.kubernetes.io/version: "1.13.8"
     app.kubernetes.io/name: knative-eventing
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
@@ -138,7 +138,7 @@ metadata:
   name: knative-eventing-post-install-job
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "1.11.6"
+    app.kubernetes.io/version: "1.13.8"
     app.kubernetes.io/name: knative-eventing
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -146,7 +146,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-post-install-job-role-binding
   labels:
-    app.kubernetes.io/version: "1.11.6"
+    app.kubernetes.io/version: "1.13.8"
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -181,7 +181,7 @@ metadata:
     app: "storage-version-migration-eventing"
     app.kubernetes.io/name: knative-eventing
     app.kubernetes.io/component: storage-version-migration-job
-    app.kubernetes.io/version: "1.11.6"
+    app.kubernetes.io/version: "1.13.8"
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -191,7 +191,7 @@ spec:
         app: "storage-version-migration-eventing"
         app.kubernetes.io/name: knative-eventing
         app.kubernetes.io/component: storage-version-migration-job
-        app.kubernetes.io/version: "1.11.6"
+        app.kubernetes.io/version: "1.13.8"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -199,7 +199,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:071c34e9eeee136468ac6574a9cb9bae80fd02e5c7486bcf455036de2a530459
+          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:da275ba50bfb5719ef5c18347f8f4c3e620ba97ece92fafc3bd612ab3c9f998e
           args:
             - "apiserversources.sources.knative.dev"
             - "brokers.eventing.knative.dev"

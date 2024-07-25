@@ -105,8 +105,6 @@ func TestRelease_String(t *testing.T) {
 }
 
 func Test_AssetSort(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
-
 	shuffled := make(assetList, len(orderedAssets))
 	copy(shuffled, orderedAssets)
 
@@ -127,8 +125,6 @@ func Test_AssetSort(t *testing.T) {
 }
 
 func Test_ReleaseSort(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
-
 	shuffled := make(releaseList, len(orderedReleases))
 	copy(shuffled, orderedReleases)
 

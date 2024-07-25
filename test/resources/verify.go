@@ -146,7 +146,7 @@ func verifyEmptyKey(t *testing.T, defaultsConfigKey string, defaultsConfigMapNam
 }
 
 func verifyEmptySpec(t *testing.T, loggingConfigMapName string, clients *test.Clients, names test.ResourceNames) {
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.TODO(), Interval, Timeout, true, func(context.Context) (bool, error) {
 		ks, errGet := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 		if errGet != nil {
 			t.Fatalf("Existing KS operator CR gone: %s", names.KnativeServing)
@@ -188,7 +188,7 @@ func DeleteAndVerifyDeployments(t *testing.T, clients *test.Clients, names test.
 		t.Fatalf("Failed to delete deployment %s/%s: %v", deployment.Namespace, deployment.Name, err)
 	}
 
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.TODO(), Interval, Timeout, true, func(context.Context) (bool, error) {
 		dep, err := clients.KubeClient.AppsV1().Deployments(deployment.Namespace).Get(context.TODO(), deployment.Name, metav1.GetOptions{})
 		if err != nil {
 			// If the deployment is not found, we continue to wait for the availability.
@@ -216,7 +216,7 @@ func KSOperatorCRDelete(t *testing.T, clients *test.Clients, names test.Resource
 	if err := clients.KnativeServing().Delete(context.TODO(), names.KnativeServing, metav1.DeleteOptions{}); err != nil {
 		t.Fatalf("KnativeServing %q failed to delete: %v", names.KnativeServing, err)
 	}
-	err := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	err := wait.PollUntilContextTimeout(context.TODO(), Interval, Timeout, true, func(context.Context) (bool, error) {
 		_, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 		if apierrs.IsNotFound(err) {
 			return true, nil
@@ -286,7 +286,7 @@ func AssertKEOperatorCRReadyStatus(t *testing.T, clients *test.Clients, names te
 
 // VerifyHADeployments verify whether all the deployments has scaled up.
 func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.ResourceNames) {
-	err := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	err := wait.PollUntilContextTimeout(context.TODO(), Interval, Timeout, true, func(context.Context) (bool, error) {
 		ks, err := clients.KnativeServing().Get(context.TODO(), names.KnativeServing, metav1.GetOptions{})
 		if err != nil {
 			t.Fatalf("KnativeServing %q failed to get: %v", names.KnativeServing, err)
@@ -306,7 +306,7 @@ func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.Resourc
 		t.Fatal("Timed out updating the HA on KnativeServing", err)
 	}
 
-	err = wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	err = wait.PollUntilContextTimeout(context.TODO(), Interval, Timeout, true, func(context.Context) (bool, error) {
 		deployments, err := clients.KubeClient.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			t.Fatalf("Failed to get any deployment under the namespace %q: %v", names.Namespace, err)
@@ -337,7 +337,7 @@ func VerifyHADeployments(t *testing.T, clients *test.Clients, names test.Resourc
 	if err != nil {
 		t.Fatalf("KnativeServing %q failed to update: %v", names.KnativeServing, err)
 	}
-	err = wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	err = wait.PollUntilContextTimeout(context.TODO(), Interval, Timeout, true, func(context.Context) (bool, error) {
 		deployments, err := clients.KubeClient.AppsV1().Deployments(names.Namespace).List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			t.Fatalf("Failed to get any deployment under the namespace %q: %v", names.Namespace, err)
@@ -376,7 +376,7 @@ func DeleteAndVerifyEventingDeployments(t *testing.T, clients *test.Clients, nam
 		t.Fatalf("Failed to delete deployment %s/%s: %v", deployment.Namespace, deployment.Name, err)
 	}
 
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.TODO(), Interval, Timeout, true, func(context.Context) (bool, error) {
 		dep, err := clients.KubeClient.AppsV1().Deployments(deployment.Namespace).Get(context.TODO(), deployment.Name, metav1.GetOptions{})
 		if err != nil {
 			// If the deployment is not found, we continue to wait for the availability.
@@ -404,7 +404,7 @@ func KEOperatorCRDelete(t *testing.T, clients *test.Clients, names test.Resource
 	if err := clients.KnativeEventing().Delete(context.TODO(), names.KnativeEventing, metav1.DeleteOptions{}); err != nil {
 		t.Fatalf("KnativeEventing %q failed to delete: %v", names.KnativeEventing, err)
 	}
-	err := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	err := wait.PollUntilContextTimeout(context.TODO(), Interval, Timeout, true, func(context.Context) (bool, error) {
 		_, err := clients.KnativeEventing().Get(context.TODO(), names.KnativeEventing, metav1.GetOptions{})
 		if apierrs.IsNotFound(err) {
 			return true, nil

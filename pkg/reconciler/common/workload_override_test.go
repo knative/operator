@@ -32,12 +32,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/utils/pointer"
 
 	"knative.dev/operator/pkg/apis/operator/base"
 	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 	"knative.dev/operator/test"
+	"knative.dev/pkg/ptr"
 )
 
 type expDeployments struct {
@@ -979,7 +979,7 @@ func TestStatefulSetTransform(t *testing.T) {
 					Workloads: []base.WorkloadOverride{
 						{
 							Name:     "kafka-source-dispatcher",
-							Replicas: pointer.Int32(3),
+							Replicas: ptr.Int32(3),
 							Resources: []base.ResourceRequirementsOverride{{
 								Container: "kafka-source-dispatcher",
 								ResourceRequirements: corev1.ResourceRequirements{

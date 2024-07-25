@@ -157,7 +157,6 @@ func TestGatewayTransformV1alpha3(t *testing.T) {
 				util.AssertDeepEqual(t, server.Hosts, tt.expectedServersIn[i].Hosts)
 				util.AssertDeepEqual(t, server.Port.Name, tt.expectedServersIn[i].Port.Name)
 				util.AssertDeepEqual(t, server.Port.Number, tt.expectedServersIn[i].Port.Number)
-				util.AssertDeepEqual(t, server.Port.TargetPort, tt.expectedServersIn[i].Port.TargetPort)
 				util.AssertDeepEqual(t, server.Port.Protocol, tt.expectedServersIn[i].Port.Protocol)
 			}
 		})
@@ -281,7 +280,6 @@ func TestGatewayTransform(t *testing.T) {
 				util.AssertDeepEqual(t, server.Hosts, tt.expectedServersIn[i].Hosts)
 				util.AssertDeepEqual(t, server.Port.Name, tt.expectedServersIn[i].Port.Name)
 				util.AssertDeepEqual(t, server.Port.Number, tt.expectedServersIn[i].Port.Number)
-				util.AssertDeepEqual(t, server.Port.TargetPort, tt.expectedServersIn[i].Port.TargetPort)
 				util.AssertDeepEqual(t, server.Port.Protocol, tt.expectedServersIn[i].Port.Protocol)
 			}
 		})

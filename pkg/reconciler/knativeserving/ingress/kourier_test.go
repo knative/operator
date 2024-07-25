@@ -259,11 +259,3 @@ func verifyGatewayServiceLoadBalancerIP(t *testing.T, u *unstructured.Unstructur
 		util.AssertDeepEqual(t, svcLoadBalancerIP, expServiceLoadBalancerIP)
 	}
 }
-
-// removeProviderLabels removes labels. This util is used for tests without provider label.
-func removeLabels() mf.Transformer {
-	return func(u *unstructured.Unstructured) error {
-		u.SetLabels(map[string]string{})
-		return nil
-	}
-}

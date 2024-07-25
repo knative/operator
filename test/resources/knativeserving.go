@@ -48,7 +48,7 @@ func WaitForKnativeServingState(clients servingv1beta1.KnativeServingInterface, 
 	defer span.End()
 
 	var lastState *v1beta1.KnativeServing
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.TODO(), Interval, Timeout, true, func(context.Context) (bool, error) {
 		state, err := clients.Get(context.TODO(), name, metav1.GetOptions{})
 		lastState = state
 		return inState(lastState, err)
@@ -80,7 +80,7 @@ func EnsureKnativeServingExists(clients servingv1beta1.KnativeServingInterface, 
 // WaitForConfigMap takes a condition function that evaluates ConfigMap data
 func WaitForConfigMap(name string, client kubernetes.Interface, fn func(map[string]string) bool) error {
 	ns, cm, _ := cache.SplitMetaNamespaceKey(name)
-	return wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	return wait.PollUntilContextTimeout(context.TODO(), Interval, Timeout, true, func(context.Context) (bool, error) {
 		cm, err := client.CoreV1().ConfigMaps(ns).Get(context.TODO(), cm, metav1.GetOptions{})
 		if err != nil {
 			return false, err

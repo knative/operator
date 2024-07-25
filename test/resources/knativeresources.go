@@ -59,7 +59,7 @@ func WaitForKnativeDeploymentState(clients *test.Clients, namespace string, vers
 	span := logging.GetEmitableSpan(context.Background(), fmt.Sprintf("WaitForKnativeDeploymentState/%s/%s", expectedDeployments, "KnativeDeploymentIsReady"))
 	defer span.End()
 
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), Interval, Timeout, true, func(context.Context) (bool, error) {
 		dpList, err := clients.KubeClient.AppsV1().Deployments(namespace).List(context.TODO(), metav1.ListOptions{})
 		return inState(dpList, expectedDeployments, version, existingVersion, err, logf)
 	})
@@ -202,7 +202,7 @@ func WaitForKnativeResourceState(clients *test.Clients, namespace string,
 	span := logging.GetEmitableSpan(context.Background(), fmt.Sprintf("WaitForKnativeResourceState/%s/%s", obsResources, "KnativeObsoleteResourceIsGone"))
 	defer span.End()
 
-	waitErr := wait.PollImmediate(Interval, Timeout, func() (bool, error) {
+	waitErr := wait.PollUntilContextTimeout(context.Background(), Interval, Timeout, true, func(context.Context) (bool, error) {
 		return inState(clients, namespace, obsResources, logf)
 	})
 

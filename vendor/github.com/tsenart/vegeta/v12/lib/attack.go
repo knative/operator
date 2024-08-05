@@ -28,6 +28,9 @@ type Attacker struct {
 	maxWorkers uint64
 	maxBody    int64
 	redirects  int
+	seqmu      sync.Mutex
+	seq        uint64
+	began      time.Time
 	chunked    bool
 }
 
@@ -272,6 +275,45 @@ func ProxyHeader(h http.Header) func(*Attacker) {
 	}
 }
 
+// ConnectTo returns a functional option which makes the attacker use the
+// passed in map to translate target addr:port pairs. When used with DNSCaching,
+// it must be used after it.
+func ConnectTo(addrMap map[string][]string) func(*Attacker) {
+	return func(a *Attacker) {
+		if len(addrMap) == 0 {
+			return
+		}
+
+		tr, ok := a.client.Transport.(*http.Transport)
+		if !ok {
+			return
+		}
+
+		dial := tr.DialContext
+		if dial == nil {
+			dial = a.dialer.DialContext
+		}
+
+		type roundRobin struct {
+			addrs []string
+			n     int
+		}
+
+		connectTo := make(map[string]*roundRobin, len(addrMap))
+		for k, v := range addrMap {
+			connectTo[k] = &roundRobin{addrs: v}
+		}
+
+		tr.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+			if cm, ok := connectTo[addr]; ok {
+				cm.n = (cm.n + 1) % len(cm.addrs)
+				addr = cm.addrs[cm.n]
+			}
+			return dial(ctx, network, addr)
+		}
+	}
+}
+
 // DNSCaching returns a functional option that enables DNS caching for
 // the given ttl. When ttl is zero cached entries will never expire.
 // When ttl is non-zero, this will start a refresh go-routine that updates
@@ -329,20 +371,7 @@ func DNSCaching(ttl time.Duration) func(*Attacker) {
 
 				rng.Shuffle(len(ips), func(i, j int) { ips[i], ips[j] = ips[j], ips[i] })
 
-				// In place filtering of ips to only include the first IPv4 and IPv6.
-				j := 0
-				for i := 0; i < len(ips) && j < 2; i++ {
-					ip := net.ParseIP(ips[i])
-					switch {
-					case len(ip) == net.IPv4len && (j == 0 || len(ips[j-1]) == net.IPv6len):
-						fallthrough
-					case len(ip) == net.IPv6len && (j == 0 || len(ips[j-1]) == net.IPv4len):
-						ips[j] = ips[i]
-						j++
-					}
-				}
-
-				ips = ips[:j]
+				ips = firstOfEachIPFamily(ips)
 
 				type result struct {
 					conn net.Conn
@@ -373,6 +402,33 @@ func DNSCaching(ttl time.Duration) func(*Attacker) {
 			}
 		}
 	}
+}
+
+// firstOfEachIPFamily returns the first IP of each IP family in the input slice.
+func firstOfEachIPFamily(ips []string) []string {
+	if len(ips) == 0 {
+		return ips
+	}
+
+	var (
+		lastV4 bool
+		each   = ips[:0]
+	)
+
+	for i := 0; i < len(ips) && len(each) < 2; i++ {
+		ip := net.ParseIP(ips[i])
+		if ip == nil {
+			continue
+		}
+
+		isV4 := ip.To4() != nil
+		if len(each) == 0 || isV4 != lastV4 {
+			each = append(each, ips[i])
+			lastV4 = isV4
+		}
+	}
+
+	return each
 }
 
 type attack struct {

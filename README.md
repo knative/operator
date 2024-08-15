@@ -14,6 +14,7 @@ upgrade and maintain these components over their lifecycle through a simple API.
 
 Details:
 
+
 - [Installation](https://knative.dev/docs/install/operator/knative-with-operators/)
 - [Serving Configuration](https://knative.dev/docs/install/operator/configuring-serving-cr/)
 - [Eventing Configuration](https://knative.dev/docs/install/operator/configuring-eventing-cr/)

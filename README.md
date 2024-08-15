@@ -21,6 +21,7 @@ Details:
 - [Development](docs/development.md)
 - [Release](docs/release.md)
 
+
 For documentation on using Knative Operator, see the
 [Knative operator section](https://knative.dev/docs/install/operator/knative-with-operators/) of the
 [Knative documentation site](https://www.knative.dev/docs).

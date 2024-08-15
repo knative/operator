@@ -1332,11 +1332,11 @@ k8s.io/utils/pointer
 k8s.io/utils/ptr
 k8s.io/utils/strings/slices
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20240812133420-93e6a0a5b46d
+# knative.dev/caching v0.0.0-20240815051508-3a2a1b64338c
 ## explicit; go 1.22.0
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.42.1-0.20240812175435-7a90257edb04
+# knative.dev/eventing v0.42.1-0.20240814151025-1123cfa0a497
 ## explicit; go 1.22.0
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck
@@ -1444,10 +1444,10 @@ knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/forwarder
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/hack v0.0.0-20240808014239-452e340cbb4b
+# knative.dev/hack v0.0.0-20240814130635-06f7aff93954
 ## explicit; go 1.21
 knative.dev/hack
-# knative.dev/networking v0.0.0-20240802083044-f1702380495f
+# knative.dev/networking v0.0.0-20240808015019-d4c57cd4a1b3
 ## explicit; go 1.22
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
@@ -1464,7 +1464,7 @@ knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/ingress
 knative.dev/networking/pkg/k8s
-# knative.dev/pkg v0.0.0-20240812053209-cd3311cbab65
+# knative.dev/pkg v0.0.0-20240815051656-89743d9bbf7c
 ## explicit; go 1.22.0
 knative.dev/pkg/apiextensions/storageversion
 knative.dev/pkg/apiextensions/storageversion/cmd/migrate
@@ -1546,8 +1546,8 @@ knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates
 knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/resourcesemantics/conversion
-# knative.dev/serving v0.42.1-0.20240812073246-64ac199eccfa
-## explicit; go 1.22
+# knative.dev/serving v0.42.1-0.20240815122103-25e5f486cf27
+## explicit; go 1.22.0
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
 knative.dev/serving/pkg/apis/config

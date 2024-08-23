@@ -2,7 +2,7 @@ knative_operator:
   knative_operator:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
     tag: {{ tag }}
-    securityContext:
+    containerSecurityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
       runAsNonRoot: true
@@ -16,7 +16,7 @@ knative_operator:
   operator_webhook:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
     tag: {{ tag }}
-    securityContext:
+    containerSecurityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
       runAsNonRoot: true

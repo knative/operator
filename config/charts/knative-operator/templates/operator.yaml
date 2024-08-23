@@ -83,6 +83,10 @@ spec:
               topologyKey: kubernetes.io/hostname
             weight: 100
 
+      {{- if and .Values.knative_operator.operator_webhook.securityContext }}
+      securityContext:
+        {{ toYaml .Values.knative_operator.operator_webhook.securityContext }}
+      {{- end }}
       serviceAccountName: operator-webhook
       containers:
       - name: operator-webhook
@@ -6322,6 +6326,10 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: knative-operator
+      {{- if and .Values.knative_operator.knative_operator.securityContext }}
+      securityContext:
+        {{ toYaml .Values.knative_operator.knative_operator.securityContext }}
+      {{- end }}
       containers:
         - name: knative-operator
           image: "{{ .Values.knative_operator.knative_operator.image }}:{{ .Values.knative_operator.knative_operator.tag }}"

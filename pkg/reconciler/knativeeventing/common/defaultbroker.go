@@ -69,7 +69,7 @@ func DefaultBrokerConfigMapTransform(instance *eventingv1beta1.KnativeEventing, 
 			if defaultBrokerClass == "" {
 				defaultBrokerClass = eventing.MTChannelBrokerClassValue
 			}
-			defaults.ClusterDefault.BrokerClass = defaultBrokerClass
+			defaults.ClusterDefaultConfig.DefaultBrokerClass = defaultBrokerClass
 
 			err = writeDefaultsToConfigMap(defaults, configMap, log)
 			if err != nil {

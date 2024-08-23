@@ -48,6 +48,10 @@ metadata:
     app.kubernetes.io/component: operator-webhook
     app.kubernetes.io/version: "{{ .Chart.Version }}"
     app.kubernetes.io/name: knative-operator
+  {{- if and .Values.knative_operator.operator_webhook.annotations }}
+  annotations:
+    {{ toYaml .Values.knative_operator.operator_webhook.annotations }}
+  {{- end }}
 spec:
   selector:
     matchLabels:
@@ -63,9 +67,9 @@ spec:
         app.kubernetes.io/component: operator-webhook
         app.kubernetes.io/version: "{{ .Chart.Version }}"
         app.kubernetes.io/name: knative-operator
-      {{- if and .Values.knative_operator.operator_webhook.annotations }}
+      {{- if and .Values.knative_operator.operator_webhook.podAnnotations }}
       annotations:
-        {{ toYaml .Values.knative_operator.operator_webhook.annotations }}
+        {{ toYaml .Values.knative_operator.operator_webhook.podAnnotations }}
       {{- end }}
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
@@ -6295,6 +6299,10 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-operator
     app.kubernetes.io/version: "{{ .Chart.Version }}"
+  {{- if and .Values.knative_operator.knative_operator.annotations }}
+  annotations:
+    {{ toYaml .Values.knative_operator.knative_operator.annotations }}
+  {{- end }}
 spec:
   replicas: 1
   selector:
@@ -6308,9 +6316,9 @@ spec:
         name: knative-operator
         app.kubernetes.io/name: knative-operator
         app.kubernetes.io/version: "{{ .Chart.Version }}"
-      {{- if and .Values.knative_operator.knative_operator.annotations }}
+      {{- if and .Values.knative_operator.knative_operator.podAnnotations }}
       annotations:
-        {{ toYaml .Values.knative_operator.knative_operator.annotations }}
+        {{ toYaml .Values.knative_operator.knative_operator.podAnnotations }}
       {{- end }}
     spec:
       serviceAccountName: knative-operator

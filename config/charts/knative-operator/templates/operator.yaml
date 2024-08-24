@@ -48,6 +48,10 @@ metadata:
     app.kubernetes.io/component: operator-webhook
     app.kubernetes.io/version: "{{ .Chart.Version }}"
     app.kubernetes.io/name: knative-operator
+  {{- if and .Values.knative_operator.operator_webhook.annotations }}
+  annotations:
+    {{ toYaml .Values.knative_operator.operator_webhook.annotations }}
+  {{- end }}
 spec:
   selector:
     matchLabels:
@@ -63,6 +67,10 @@ spec:
         app.kubernetes.io/component: operator-webhook
         app.kubernetes.io/version: "{{ .Chart.Version }}"
         app.kubernetes.io/name: knative-operator
+      {{- if and .Values.knative_operator.operator_webhook.podAnnotations }}
+      annotations:
+        {{ toYaml .Values.knative_operator.operator_webhook.podAnnotations }}
+      {{- end }}
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -74,14 +82,25 @@ spec:
                   app: operator-webhook
               topologyKey: kubernetes.io/hostname
             weight: 100
-
+      {{- if and .Values.knative_operator.operator_webhook.securityContext }}
+      securityContext:
+        {{ toYaml .Values.knative_operator.operator_webhook.securityContext }}
+      {{- end }}
       serviceAccountName: operator-webhook
       containers:
       - name: operator-webhook
         # This is the Go import path for the binary that is containerized
         # and substituted here.
         image: "{{ .Values.knative_operator.operator_webhook.image }}:{{ .Values.knative_operator.operator_webhook.tag }}"
-
+        {{- if and .Values.knative_operator.operator_webhook.resources }}
+        resources:
+          requests:
+            cpu: {{ .Values.knative_operator.operator_webhook.resources.requests.cpu }}
+            memory: {{ .Values.knative_operator.operator_webhook.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.knative_operator.operator_webhook.resources.limits.cpu }}
+            memory: {{ .Values.knative_operator.operator_webhook.resources.limits.memory }}
+        {{- else }}
         resources:
           requests:
             cpu: 100m
@@ -89,7 +108,7 @@ spec:
           limits:
             cpu: 500m
             memory: 500Mi
-
+        {{- end }}
         env:
         - name: POD_NAME
           valueFrom:
@@ -114,14 +133,23 @@ spec:
           value: knative.dev/operator
         - name: KUBERNETES_MIN_VERSION
           value: "{{ .Values.knative_operator.kubernetes_min_version }}"
+        {{- if and .Values.knative_operator.operator_webhook.containerSecurityContext }}
+        securityContext:
+          allowPrivilegeEscalation: {{ .Values.knative_operator.operator_webhook.containerSecurityContext.allowPrivilegeEscalation }}
+          readOnlyRootFilesystem: {{ .Values.knative_operator.operator_webhook.containerSecurityContext.readOnlyRootFilesystem }}
+          runAsNonRoot: {{ .Values.knative_operator.operator_webhook.containerSecurityContext.runAsNonRoot }}
+          capabilities:
+            drop:
+              - ALL
+        {{- else }}
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
           runAsNonRoot: true
           capabilities:
             drop:
-            - all
-
+            - ALL
+        {{- end }}
         ports:
         - name: metrics
           containerPort: 9090
@@ -2396,6 +2424,12 @@ spec:
                         - type: integer
                         - type: string
                       description: An eviction is allowed if at least "minAvailable" pods selected by "selector" will still be available after the eviction, i.e. even in the absence of the evicted pod.  So for example you can prevent all voluntary evictions by specifying "100%".
+                      x-kubernetes-int-or-string: true
+                    maxUnavailable:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      description: 	An eviction is allowed if at most "maxUnavailable" pods selected by "selector" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with "minAvailable".
                       x-kubernetes-int-or-string: true
               source:
                 description: The source configuration for Knative Eventing
@@ -4775,6 +4809,12 @@ spec:
                         - type: string
                       description: An eviction is allowed if at least "minAvailable" pods selected by "selector" will still be available after the eviction, i.e. even in the absence of the evicted pod.  So for example you can prevent all voluntary evictions by specifying "100%".
                       x-kubernetes-int-or-string: true
+                    maxUnavailable:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      description: 	An eviction is allowed if at most "maxUnavailable" pods selected by "selector" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with "minAvailable".
+                      x-kubernetes-int-or-string: true
               ingress:
                 description: The ingress configuration for Knative Serving
                 properties:
@@ -4824,6 +4864,17 @@ spec:
                                       format: string
                                       type: string
                                   type: object
+                                tls:
+                                  properties:
+                                    mode:
+                                      description: TLS mode can be SIMPLE, MUTUAL, ISTIO_MUTUAL.
+                                      format: string
+                                      type: string
+                                    credentialName:
+                                      description: TLS certificate name.
+                                      format: string
+                                      type: string
+                                  type: object
                               type: object
                             type: array
                         type: object
@@ -4862,6 +4913,17 @@ spec:
                                       format: string
                                       type: string
                                   type: object
+                                tls:
+                                  properties:
+                                    mode:
+                                      description: TLS mode can be SIMPLE, MUTUAL, ISTIO_MUTUAL.
+                                      format: string
+                                      type: string
+                                    credentialName:
+                                      description: TLS certificate name.
+                                      format: string
+                                      type: string
+                                  type: object
                               type: object
                             type: array
                         type: object
@@ -4873,8 +4935,14 @@ spec:
                         type: boolean
                       service-type:
                         type: string
+                      service-load-balancer-ip:
+                        type: string
                       bootstrap-configmap:
                         type: string
+                      http-port:
+                        type: integer
+                      https-port:
+                        type: integer
                     type: object
                 type: object
               security:
@@ -5580,6 +5648,8 @@ rules:
       - watch
       - update
       - patch
+      - create
+      - delete
   - apiGroups:
       - rbac.authorization.k8s.io
     resources:
@@ -5702,6 +5772,32 @@ rules:
       - deployments
     verbs:
       - deletecollection
+
+  # Eventing TLS
+  - apiGroups:
+      - "cert-manager.io"
+    resources:
+      - certificates
+      - issuers
+      - clusterissuers
+    verbs:
+      - create
+      - delete
+      - update
+      - list
+      - get
+      - watch
+  - apiGroups:
+      - "trust.cert-manager.io"
+    resources:
+      - bundles
+    verbs:
+      - create
+      - delete
+      - update
+      - list
+      - get
+      - watch
 
 ---
 # Copyright 2020 The Knative Authors
@@ -6206,6 +6302,10 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-operator
     app.kubernetes.io/version: "{{ .Chart.Version }}"
+  {{- if and .Values.knative_operator.knative_operator.annotations }}
+  annotations:
+    {{ toYaml .Values.knative_operator.knative_operator.annotations }}
+  {{- end }}
 spec:
   replicas: 1
   selector:
@@ -6219,12 +6319,29 @@ spec:
         name: knative-operator
         app.kubernetes.io/name: knative-operator
         app.kubernetes.io/version: "{{ .Chart.Version }}"
+      {{- if and .Values.knative_operator.knative_operator.podAnnotations }}
+      annotations:
+        {{ toYaml .Values.knative_operator.knative_operator.podAnnotations }}
+      {{- end }}
     spec:
       serviceAccountName: knative-operator
+      {{- if and .Values.knative_operator.knative_operator.securityContext }}
+      securityContext:
+        {{ toYaml .Values.knative_operator.knative_operator.securityContext }}
+      {{- end }}
       containers:
         - name: knative-operator
           image: "{{ .Values.knative_operator.knative_operator.image }}:{{ .Values.knative_operator.knative_operator.tag }}"
           imagePullPolicy: IfNotPresent
+          {{- if and .Values.knative_operator.knative_operator.resources }}
+          resources:
+            requests:
+              cpu: {{ .Values.knative_operator.knative_operator.resources.requests.cpu }}
+              memory: {{ .Values.knative_operator.knative_operator.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.knative_operator.knative_operator.resources.limits.cpu }}
+              memory: {{ .Values.knative_operator.knative_operator.resources.limits.memory }}
+          {{- end }}
           env:
             - name: POD_NAME
               valueFrom:
@@ -6242,6 +6359,15 @@ spec:
               value: config-observability
             - name: KUBERNETES_MIN_VERSION
               value: "{{ .Values.knative_operator.kubernetes_min_version }}"
+          {{- if and .Values.knative_operator.knative_operator.containerSecurityContext }}
+          securityContext:
+            allowPrivilegeEscalation: {{ .Values.knative_operator.knative_operator.containerSecurityContext.allowPrivilegeEscalation }}
+            readOnlyRootFilesystem: {{ .Values.knative_operator.knative_operator.containerSecurityContext.readOnlyRootFilesystem }}
+            runAsNonRoot: {{ .Values.knative_operator.knative_operator.containerSecurityContext.runAsNonRoot }}
+            capabilities:
+              drop:
+                - ALL
+          {{- end }}
           ports:
             - name: metrics
               containerPort: 9090

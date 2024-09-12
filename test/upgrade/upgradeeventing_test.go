@@ -20,28 +20,51 @@ limitations under the License.
 package upgrade
 
 import (
+	"slices"
 	"testing"
 
 	eventingupgrade "knative.dev/eventing/test/upgrade"
 	"knative.dev/operator/test/upgrade/installation"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
+	"knative.dev/reconciler-test/pkg/environment"
 )
 
+var global environment.GlobalEnvironment
+
 func TestEventingUpgrades(t *testing.T) {
+	g := eventingupgrade.FeatureGroupWithUpgradeTests{
+		// A feature that will run the same test post-upgrade and post-downgrade.
+		eventingupgrade.NewFeatureSmoke(eventingupgrade.InMemoryChannelFeature(global)),
+		// A feature that will be created pre-upgrade and verified/removed post-upgrade.
+		eventingupgrade.NewFeatureOnlyUpgrade(eventingupgrade.InMemoryChannelFeature(global)),
+		// A feature that will be created pre-upgrade, verified post-upgrade, verified and removed post-downgrade.
+		eventingupgrade.NewFeatureUpgradeDowngrade(eventingupgrade.InMemoryChannelFeature(global)),
+		// A feature that will be created post-upgrade, verified and removed post-downgrade.
+		eventingupgrade.NewFeatureOnlyDowngrade(eventingupgrade.InMemoryChannelFeature(global)),
+	}
+
 	suite := pkgupgrade.Suite{
 		Tests: pkgupgrade.Tests{
-			PreUpgrade: []pkgupgrade.Operation{
-				EventingCRPreUpgradeTests(),
-				eventingupgrade.PreUpgradeTest(),
-			},
-			PostUpgrade: append([]pkgupgrade.Operation{
-				EventingTimeoutForUpgrade(),
-				EventingCRPostUpgradeTests(),
-			}, eventingupgrade.PostUpgradeTests()...),
-			PostDowngrade: []pkgupgrade.Operation{
-				EventingCRPostDowngradeTests(),
-				eventingupgrade.PostDowngradeTest(),
-			},
+			PreUpgrade: slices.Concat(
+				[]pkgupgrade.Operation{
+					EventingCRPreUpgradeTests(),
+				},
+				g.PreUpgradeTests(),
+			),
+			PostUpgrade: slices.Concat(
+				[]pkgupgrade.Operation{
+					EventingTimeoutForUpgrade(),
+					EventingCRPostUpgradeTests(),
+					eventingupgrade.CRDPostUpgradeTest(),
+				},
+				g.PostUpgradeTests(),
+			),
+			PostDowngrade: slices.Concat(
+				[]pkgupgrade.Operation{
+					EventingCRPostDowngradeTests(),
+				},
+				g.PostDowngradeTests(),
+			),
 			Continual: []pkgupgrade.BackgroundOperation{
 				eventingupgrade.ContinualTest(),
 			},

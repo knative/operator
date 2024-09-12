@@ -20,11 +20,13 @@ limitations under the License.
 package upgrade
 
 import (
+	"log"
 	"slices"
 	"testing"
 
 	eventingupgrade "knative.dev/eventing/test/upgrade"
 	"knative.dev/operator/test/upgrade/installation"
+	pkgtest "knative.dev/pkg/test"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	"knative.dev/reconciler-test/pkg/environment"
 )
@@ -32,6 +34,19 @@ import (
 var global environment.GlobalEnvironment
 
 func TestEventingUpgrades(t *testing.T) {
+	restConfig, err := pkgtest.Flags.ClientConfig.GetRESTConfig()
+	if err != nil {
+		log.Fatal("Error building client config: ", err)
+	}
+
+	// Getting the rest config explicitly and passing it further will prevent re-initializing the flagset
+	// in NewStandardGlobalEnvironment(). The upgrade tests use knative.dev/pkg/test which initializes the
+	// flagset as well.
+	global = environment.NewStandardGlobalEnvironment(func(cfg environment.Configuration) environment.Configuration {
+		cfg.Config = restConfig
+		return cfg
+	})
+
 	g := eventingupgrade.FeatureGroupWithUpgradeTests{
 		// A feature that will run the same test post-upgrade and post-downgrade.
 		eventingupgrade.NewFeatureSmoke(eventingupgrade.InMemoryChannelFeature(global)),

@@ -147,6 +147,7 @@ github.com/cespare/xxhash/v2
 # github.com/cloudevents/conformance v0.2.0
 ## explicit; go 1.14
 github.com/cloudevents/conformance/pkg/event
+github.com/cloudevents/conformance/pkg/http
 # github.com/cloudevents/sdk-go/sql/v2 v2.15.2
 ## explicit; go 1.18
 github.com/cloudevents/sdk-go/sql/v2
@@ -1570,13 +1571,19 @@ knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/resourcesemantics/conversion
 # knative.dev/reconciler-test v0.0.0-20240910170818-bb4bca018fb3
 ## explicit; go 1.22.0
+knative.dev/reconciler-test/cmd/eventshub
 knative.dev/reconciler-test/pkg/environment
 knative.dev/reconciler-test/pkg/eventshub
 knative.dev/reconciler-test/pkg/eventshub/assert
 knative.dev/reconciler-test/pkg/eventshub/dropevents
 knative.dev/reconciler-test/pkg/eventshub/dropevents/dropeventsfibonacci
 knative.dev/reconciler-test/pkg/eventshub/dropevents/dropeventsfirst
+knative.dev/reconciler-test/pkg/eventshub/forwarder
+knative.dev/reconciler-test/pkg/eventshub/logger_vent
 knative.dev/reconciler-test/pkg/eventshub/rbac
+knative.dev/reconciler-test/pkg/eventshub/receiver
+knative.dev/reconciler-test/pkg/eventshub/recorder_vent
+knative.dev/reconciler-test/pkg/eventshub/sender
 knative.dev/reconciler-test/pkg/feature
 knative.dev/reconciler-test/pkg/images/file
 knative.dev/reconciler-test/pkg/images/ko

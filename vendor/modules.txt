@@ -148,6 +148,10 @@ github.com/cespare/xxhash/v2
 ## explicit; go 1.14
 github.com/cloudevents/conformance/pkg/event
 github.com/cloudevents/conformance/pkg/http
+# github.com/cloudevents/sdk-go/observability/opencensus/v2 v2.15.2
+## explicit; go 1.18
+github.com/cloudevents/sdk-go/observability/opencensus/v2/client
+github.com/cloudevents/sdk-go/observability/opencensus/v2/http
 # github.com/cloudevents/sdk-go/sql/v2 v2.15.2
 ## explicit; go 1.18
 github.com/cloudevents/sdk-go/sql/v2
@@ -172,6 +176,7 @@ github.com/cloudevents/sdk-go/v2/event/datacodec
 github.com/cloudevents/sdk-go/v2/event/datacodec/json
 github.com/cloudevents/sdk-go/v2/event/datacodec/text
 github.com/cloudevents/sdk-go/v2/event/datacodec/xml
+github.com/cloudevents/sdk-go/v2/observability
 github.com/cloudevents/sdk-go/v2/protocol
 github.com/cloudevents/sdk-go/v2/protocol/http
 github.com/cloudevents/sdk-go/v2/test
@@ -1363,6 +1368,7 @@ knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
 # knative.dev/eventing v0.42.1-0.20240911141024-c91a9d8a471d
 ## explicit; go 1.22.0
+knative.dev/eventing/cmd/heartbeats
 knative.dev/eventing/pkg/apis
 knative.dev/eventing/pkg/apis/config
 knative.dev/eventing/pkg/apis/duck

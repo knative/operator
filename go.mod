@@ -20,11 +20,11 @@ require (
 	k8s.io/apimachinery v0.30.3
 	k8s.io/client-go v0.30.3
 	k8s.io/code-generator v0.30.3
-	knative.dev/caching v0.0.0-20240815051508-3a2a1b64338c
-	knative.dev/eventing v0.42.1-0.20240906121836-8c22bf55ee0a
-	knative.dev/hack v0.0.0-20240904112633-9724320e463f
-	knative.dev/pkg v0.0.0-20240905103434-a1469cf54480
-	knative.dev/serving v0.42.1-0.20240906121735-b50a09e08cd2
+	knative.dev/caching v0.0.0-20240909014459-1bbe214d75e7
+	knative.dev/eventing v0.42.1-0.20240911141024-c91a9d8a471d
+	knative.dev/hack v0.0.0-20240909014011-fc6a8452af6d
+	knative.dev/pkg v0.0.0-20240912132815-3002873b449c
+	knative.dev/serving v0.42.1-0.20240913121933-63b0f86a6e5f
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -53,13 +53,16 @@ require (
 	github.com/blendle/zapdriver v1.3.1 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/cloudevents/conformance v0.2.0 // indirect
 	github.com/cloudevents/sdk-go/sql/v2 v2.15.2 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.15.2 // indirect
+	github.com/coreos/go-oidc/v3 v3.9.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
 	github.com/evanphx/json-patch v5.9.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.3 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
@@ -82,6 +85,8 @@ require (
 	github.com/googleapis/gax-go/v2 v2.12.4 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.21.0 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/influxdata/tdigest v0.0.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.1-0.20220621161143-b0104c826a24 // indirect
@@ -111,6 +116,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/tsenart/vegeta/v12 v12.12.0 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/wavesoftware/go-ensure v1.0.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0 // indirect
@@ -121,12 +127,12 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/automaxprocs v1.5.3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.26.0 // indirect
-	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/crypto v0.27.0 // indirect
+	golang.org/x/net v0.29.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.24.0 // indirect
-	golang.org/x/term v0.23.0 // indirect
-	golang.org/x/text v0.17.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/term v0.24.0 // indirect
+	golang.org/x/text v0.18.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 	golang.org/x/tools v0.24.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
@@ -134,7 +140,7 @@ require (
 	google.golang.org/genproto v0.0.0-20240528184218-531527333157 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240808171019-573a1156607a // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240808171019-573a1156607a // indirect
-	google.golang.org/grpc v1.65.0 // indirect
+	google.golang.org/grpc v1.66.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
@@ -146,7 +152,8 @@ require (
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240808142205-8e686545bdb8 // indirect
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8 // indirect
-	knative.dev/networking v0.0.0-20240815142417-37fdbdd0854b // indirect
+	knative.dev/networking v0.0.0-20240909015032-433920a35ef4 // indirect
+	knative.dev/reconciler-test v0.0.0-20240910170818-bb4bca018fb3 // indirect
 	sigs.k8s.io/controller-runtime v0.7.2 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect

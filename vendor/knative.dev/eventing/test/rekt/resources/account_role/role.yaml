@@ -1,0 +1,73 @@
+# Copyright 2021 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .name }}
+  namespace: {{ .namespace }}
+
+{{- /* only print the ClusterRole if there are any rules or a matchLabel */ -}}
+{{ if or .matchLabel .rules }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .role }}
+
+{{ if .matchLabel }}
+aggregationRule:
+  clusterRoleSelectors:
+    - matchLabels:
+        {{ .matchLabel }}: "true"
+{{ end }}
+
+{{ if .rules }}
+rules:
+  {{ range $_, $rule := .rules }}
+  - apiGroups:
+    {{ range $_, $apiGroup := $rule.apiGroups }}
+      - {{ $apiGroup }}
+    {{ end }}
+    resources:
+    {{ range $_, $resource := $rule.resources }}
+      - {{ $resource }}
+    {{ end }}
+    verbs:
+    {{ range $_, $verb := $rule.verbs }}
+      - {{ $verb }}
+    {{ end }}
+{{ end }}
+
+{{- /* If no rules defined, print empty rules array */ -}}
+{{ else }}
+rules: []
+{{ end }}
+
+{{ end }}
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .name }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .name }}
+    namespace: {{ .namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ .role }}
+  apiGroup: rbac.authorization.k8s.io
+

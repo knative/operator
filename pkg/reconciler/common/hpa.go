@@ -21,7 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-// When a Podspecable has HPA o, the replicas should be controlled by HPAs minReplicas instead of operator.
+// When a Podspecable has HPA or a custom autoscaling, the replicas should be controlled by it instead of operator.
 // Hence, skip changing the spec.replicas for these Podspecables.
 func hasHorizontalPodOrCustomAutoscaler(name string) bool {
 	return sets.NewString(

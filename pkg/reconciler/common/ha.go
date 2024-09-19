@@ -50,7 +50,7 @@ func HighAvailabilityTransform(obj base.KComponent) mf.Transformer {
 		replicas := int64(*ha.Replicas)
 
 		// Transform deployments that support HA.
-		if u.GetKind() == "Deployment" && !haUnSupported(u.GetName()) && !hasHorizontalPodAutoscaler(u.GetName()) {
+		if u.GetKind() == "Deployment" && !haUnSupported(u.GetName()) && !hasHorizontalPodOrCustomAutoscaler(u.GetName()) {
 			if err := unstructured.SetNestedField(u.Object, replicas, "spec", "replicas"); err != nil {
 				return err
 			}

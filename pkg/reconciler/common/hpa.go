@@ -33,6 +33,7 @@ func hasHorizontalPodOrCustomAutoscaler(name string) bool {
 		"mt-broker-filter",
 		"kafka-broker-dispatcher",
 		"kafka-source-dispatcher",
+		"kafka-channel-dispatcher",
 	).Has(name)
 }
 

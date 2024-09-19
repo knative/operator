@@ -20,12 +20,12 @@ require (
 	k8s.io/apimachinery v0.30.3
 	k8s.io/client-go v0.30.3
 	k8s.io/code-generator v0.30.3
-	knative.dev/caching v0.0.0-20240917105744-d1191d7426a6
-	knative.dev/eventing v0.42.1-0.20240917082247-e79f3b65893a
+	knative.dev/caching v0.0.0-20240917132721-b5ae36e21a38
+	knative.dev/eventing v0.42.1-0.20240918141338-17088813b4e0
 	knative.dev/hack v0.0.0-20240909014011-fc6a8452af6d
 	knative.dev/pkg v0.0.0-20240917091217-aaab500c26c4
 	knative.dev/reconciler-test v0.0.0-20240911144508-6372b7a0c4b1
-	knative.dev/serving v0.42.1-0.20240917122220-cc9b0605d421
+	knative.dev/serving v0.42.1-0.20240918151432-51d95f6220b2
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -85,7 +85,7 @@ require (
 	github.com/google/wire v0.4.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.4 // indirect
-	github.com/gorilla/websocket v1.5.1 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.21.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
@@ -154,7 +154,7 @@ require (
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240808142205-8e686545bdb8 // indirect
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8 // indirect
-	knative.dev/networking v0.0.0-20240912132036-ed319d7a8e69 // indirect
+	knative.dev/networking v0.0.0-20240916143514-6c832c6e62a9 // indirect
 	sigs.k8s.io/controller-runtime v0.7.2 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect

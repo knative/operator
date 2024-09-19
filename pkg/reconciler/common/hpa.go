@@ -21,9 +21,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-// When a Podspecable has HPA, the replicas should be controlled by HPAs minReplicas instead of operator.
+// When a Podspecable has HPA o, the replicas should be controlled by HPAs minReplicas instead of operator.
 // Hence, skip changing the spec.replicas for these Podspecables.
-func hasHorizontalPodAutoscaler(name string) bool {
+func hasHorizontalPodOrCustomAutoscaler(name string) bool {
 	return sets.NewString(
 		"webhook",
 		"activator",
@@ -31,6 +31,8 @@ func hasHorizontalPodAutoscaler(name string) bool {
 		"eventing-webhook",
 		"mt-broker-ingress",
 		"mt-broker-filter",
+		"kafka-broker-dispatcher",
+		"kafka-source-dispatcher",
 	).Has(name)
 }
 

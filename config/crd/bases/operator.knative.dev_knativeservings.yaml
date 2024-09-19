@@ -2268,6 +2268,13 @@ spec:
                                       type: string
                                   type: object
                                 tls:
+                                  nullable: true
+                                  oneOf:
+                                  - required:
+                                    - mode
+                                    - credentialName
+                                  - required:
+                                    - httpsRedirect
                                   properties:
                                     mode:
                                       description: TLS mode can be SIMPLE, MUTUAL, ISTIO_MUTUAL.
@@ -2277,6 +2284,11 @@ spec:
                                       description: TLS certificate name.
                                       format: string
                                       type: string
+                                    httpsRedirect:
+                                      description: If set to true, the load balancer will send a 301 redirect
+                                        to HTTPS for all HTTP requests. Should be used only for HTTP listener,
+                                        is mutually exclusive with all other TLS options.
+                                      type: boolean
                                   type: object
                               type: object
                             type: array
@@ -2317,6 +2329,13 @@ spec:
                                       type: string
                                   type: object
                                 tls:
+                                  nullable: true
+                                  oneOf:
+                                  - required:
+                                    - mode
+                                    - credentialName
+                                  - required:
+                                    - httpsRedirect
                                   properties:
                                     mode:
                                       description: TLS mode can be SIMPLE, MUTUAL, ISTIO_MUTUAL.
@@ -2326,6 +2345,11 @@ spec:
                                       description: TLS certificate name.
                                       format: string
                                       type: string
+                                    httpsRedirect:
+                                      description: If set to true, the load balancer will send a 301 redirect
+                                        to HTTPS for all HTTP requests. Should be used only for HTTP listener,
+                                        is mutually exclusive with all other TLS options.
+                                      type: boolean
                                   type: object
                               type: object
                             type: array

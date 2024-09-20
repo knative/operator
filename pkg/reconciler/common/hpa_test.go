@@ -40,6 +40,12 @@ func TestHpaTransform(t *testing.T) {
 		expected: makeUnstructuredDeployment(t, "not-a-hpa"),
 		err:      nil,
 	}, {
+		name:     "Kafka Dispatcher is custom autoscaler",
+		in:       makeUnstructuredDeployment(t, "kafka-source-dispatcher"),
+		replicas: 5,
+		expected: makeUnstructuredDeploymentReplicas(t, "kafka-source-dispatcher", 1),
+		err:      nil,
+	}, {
 		name:     "minReplicas same as override",
 		in:       makeUnstructuredHPA(t, "hpa", 1, 2),
 		replicas: 1,

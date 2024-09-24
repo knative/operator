@@ -28,14 +28,13 @@ spec:
       role: operator-webhook
   template:
     metadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
       labels:
         app: operator-webhook
         role: operator-webhook
         app.kubernetes.io/component: operator-webhook
         app.kubernetes.io/version: devel
         app.kubernetes.io/name: knative-operator
+        sidecar.istio.io/inject: "false"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:

@@ -55,14 +55,13 @@ spec:
       role: operator-webhook
   template:
     metadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
       labels:
         app: operator-webhook
         role: operator-webhook
         app.kubernetes.io/component: operator-webhook
         app.kubernetes.io/version: "{{ .Chart.Version }}"
         app.kubernetes.io/name: knative-operator
+        sidecar.istio.io/inject: "false"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -6213,12 +6212,11 @@ spec:
       name: knative-operator
   template:
     metadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
       labels:
         name: knative-operator
         app.kubernetes.io/name: knative-operator
         app.kubernetes.io/version: "{{ .Chart.Version }}"
+        sidecar.istio.io/inject: "false"
     spec:
       serviceAccountName: knative-operator
       containers:

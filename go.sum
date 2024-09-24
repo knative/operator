@@ -1403,8 +1403,8 @@ knative.dev/networking v0.0.0-20240917132712-faa7309552e6 h1:+l+pAA1zEyqo2690EcE
 knative.dev/networking v0.0.0-20240917132712-faa7309552e6/go.mod h1:hn1SBZE0+jQRFhYhSgtKWcVrQcGkxfNXMxNkO8+ykq4=
 knative.dev/pkg v0.0.0-20240923063442-aabe552ba5e6 h1:3x7jZIppPg3PYUPq+tMUdfW1BIz1Do7Y/gWopZZKfg8=
 knative.dev/pkg v0.0.0-20240923063442-aabe552ba5e6/go.mod h1:IQi7fVFvQa6UpNnSpzlAiNPMtTvIj4MHj4vSD/PulCE=
-knative.dev/reconciler-test v0.0.0-20240919063827-0cb8938be2e4 h1:64AsOs3D0kdTVC9eAtY7jbVh0BaCSZfTtMgIYaQWHgo=
-knative.dev/reconciler-test v0.0.0-20240919063827-0cb8938be2e4/go.mod h1:nXvaMk3Czw2mi5J4A3aQNRi9aEJPJh/SQJdSL/8qBFM=
+knative.dev/reconciler-test v0.0.0-20240924085229-13c0118a9d5c h1:X7k1ll3Ihv4cMhJ0vxKGo9Vv1hs5Qoer0RJKCDsXw5g=
+knative.dev/reconciler-test v0.0.0-20240924085229-13c0118a9d5c/go.mod h1:nXvaMk3Czw2mi5J4A3aQNRi9aEJPJh/SQJdSL/8qBFM=
 knative.dev/serving v0.42.1-0.20240923143026-59d17f1d93c7 h1:8YvIhKmnRwjehYDQfwx0Uwd6EY/c6I/SV8RiW/eKYFk=
 knative.dev/serving v0.42.1-0.20240923143026-59d17f1d93c7/go.mod h1:668vDBizUH/DL5Zn/OjhSw8MkPvcTgRX2J3V9LU2AOE=
 nhooyr.io/websocket v1.8.6/go.mod h1:B70DZP8IakI65RVQ51MsWP/8jndNma26DVA/nFSCgW0=

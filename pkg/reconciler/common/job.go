@@ -27,7 +27,7 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
-const istioAnnotationName = "sidecar.istio.io/inject"
+const istioLabelName = "sidecar.istio.io/inject"
 
 // JobTransform updates the job with the expected value for the key app in the label
 func JobTransform(obj base.KComponent) mf.Transformer {
@@ -48,7 +48,7 @@ func JobTransform(obj base.KComponent) mf.Transformer {
 				job.SetName(fmt.Sprintf("%s-%s-%s", job.GetName(), component, TargetVersion(obj)))
 			}
 
-			addIstioIgnoreAnnotation(job)
+			addIstioIgnoreLabels(job)
 			return scheme.Scheme.Convert(job, u, nil)
 		}
 
@@ -56,15 +56,15 @@ func JobTransform(obj base.KComponent) mf.Transformer {
 	}
 }
 
-func addIstioIgnoreAnnotation(job *batchv1.Job) {
-	annotations := job.Spec.Template.GetAnnotations()
-	if annotations == nil {
-		annotations = make(map[string]string)
+func addIstioIgnoreLabels(job *batchv1.Job) {
+	labels := job.Spec.Template.GetLabels()
+	if labels == nil {
+		labels = make(map[string]string)
 	}
 
-	istioAnnotation := annotations[istioAnnotationName]
-	if istioAnnotation == "" {
-		annotations[istioAnnotationName] = "false"
-		job.Spec.Template.SetAnnotations(annotations)
+	istioLabel := labels[istioLabelName]
+	if istioLabel == "" {
+		labels[istioLabelName] = "false"
+		job.Spec.Template.SetLabels(labels)
 	}
 }

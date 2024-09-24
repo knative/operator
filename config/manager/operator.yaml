@@ -27,12 +27,11 @@ spec:
       name: knative-operator
   template:
     metadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
       labels:
         name: knative-operator
         app.kubernetes.io/name: knative-operator
         app.kubernetes.io/version: devel
+        sidecar.istio.io/inject: "false"
     spec:
       serviceAccountName: knative-operator
       containers:

@@ -2708,13 +2708,13 @@ spec:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels:
+        app: networking-istio
+        serving.knative.dev/release: "v0.13.0"
         # This must be outside of the mesh to probe the gateways.
         # NOTE: this is allowed here and not elsewhere because
         # this is the Istio controller, and so it may be Istio-aware.
         sidecar.istio.io/inject: "false"
-      labels:
-        app: networking-istio
-        serving.knative.dev/release: "v0.13.0"
     spec:
       serviceAccountName: controller
       containers:
@@ -2769,13 +2769,13 @@ spec:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels:
+        app: net-istio-controller
+        serving.knative.dev/release: "v1.0.0"
         # This must be outside of the mesh to probe the gateways.
         # NOTE: this is allowed here and not elsewhere because
         # this is the Istio controller, and so it may be Istio-aware.
         sidecar.istio.io/inject: "false"
-      labels:
-        app: net-istio-controller
-        serving.knative.dev/release: "v1.0.0"
     spec:
       serviceAccountName: controller
       containers:
@@ -3018,13 +3018,12 @@ spec:
   backoffLimit: 10
   template:
     metadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
       labels:
         app: storage-version-migration-serving
         app.kubernetes.io/name: knative-serving
         app.kubernetes.io/component: storage-version-migration-job
         app.kubernetes.io/version: "1.10.2"
+        sidecar.istio.io/inject: "false"
     spec:
       serviceAccountName: controller
       restartPolicy: OnFailure

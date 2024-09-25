@@ -23,9 +23,9 @@ require (
 	knative.dev/caching v0.0.0-20240923134629-abecea6b8cbe
 	knative.dev/eventing v0.42.1-0.20240923135023-641cbb7dffe2
 	knative.dev/hack v0.0.0-20240909014011-fc6a8452af6d
-	knative.dev/pkg v0.0.0-20240923063442-aabe552ba5e6
-	knative.dev/reconciler-test v0.0.0-20240924085229-13c0118a9d5c
-	knative.dev/serving v0.42.1-0.20240923143026-59d17f1d93c7
+	knative.dev/pkg v0.0.0-20240924202102-28b58b842f1a
+	knative.dev/reconciler-test v0.0.0-20240924141745-1fee6baa20b7
+	knative.dev/serving v0.42.1-0.20240924143639-ca647283a822
 	sigs.k8s.io/yaml v1.4.0
 )
 

@@ -20,8 +20,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	mf "github.com/manifestival/manifestival"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -30,57 +31,90 @@ import (
 func TestNamespaceConfigurationTransform(t *testing.T) {
 	tests := []struct {
 		name           string
+		namespace      *corev1.Namespace
 		override       *base.NamespaceConfiguration
 		expLabels      map[string]string
 		expAnnotations map[string]string
 	}{{
-		name: "label override",
+		name: "Label override",
+		namespace: &corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "knative-serving",
+				Labels: map[string]string{
+					"istio-injection":             "enabled",
+					"serving.knative.dev/release": "v0.13.0",
+				},
+			},
+		},
 		override: &base.NamespaceConfiguration{
 			Labels: map[string]string{"a": "b"},
 		},
 		expLabels:      map[string]string{"a": "b", "istio-injection": "enabled", "serving.knative.dev/release": "v0.13.0"},
 		expAnnotations: nil,
 	}, {
-		name: "annotation override",
+		name: "Annotation override",
+		namespace: &corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "knative-serving",
+				Labels: map[string]string{
+					"istio-injection":             "enabled",
+					"serving.knative.dev/release": "v0.13.0",
+				},
+			},
+		},
 		override: &base.NamespaceConfiguration{
 			Annotations: map[string]string{"c": "d"},
 		},
 		expLabels:      map[string]string{"istio-injection": "enabled", "serving.knative.dev/release": "v0.13.0"},
 		expAnnotations: map[string]string{"c": "d"},
 	}, {
-		name:           "no override",
+		name: "No override",
+		namespace: &corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "knative-serving",
+				Labels: map[string]string{
+					"istio-injection":             "enabled",
+					"serving.knative.dev/release": "v0.13.0",
+				},
+			},
+		},
 		override:       nil,
 		expLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "istio-injection": "enabled"},
 		expAnnotations: nil,
+	}, {
+		name: "Override both labels and annotations",
+		namespace: &corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "knative-serving",
+			},
+		},
+		override: &base.NamespaceConfiguration{
+			Labels:      map[string]string{"c1": "d1", "j": "k"},
+			Annotations: map[string]string{"c": "d", "x": "y"},
+		},
+		expLabels:      map[string]string{"j": "k", "c1": "d1"},
+		expAnnotations: map[string]string{"x": "y", "c": "d"},
 	}}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			manifest, err := mf.NewManifest("testdata/manifest.yaml")
+			u := &unstructured.Unstructured{}
+			err := scheme.Scheme.Convert(test.namespace, u, nil)
 			if err != nil {
-				t.Fatalf("Failed to create manifest: %v", err)
+				t.Fatalf("Failed to convert namespace to unstructured: %v", err)
+			}
+			NamespaceConfigurationTransform(test.override)(u)
+			got := &corev1.Namespace{}
+			if err = scheme.Scheme.Convert(u, got, nil); err != nil {
+				t.Fatalf("Failed to convert unstructured to namespace: %v", err)
 			}
 
-			manifest, err = manifest.Transform(NamespaceConfigurationTransform(test.override))
-			if err != nil {
-				t.Fatalf("Failed to transform manifest: %v", err)
+			if diff := cmp.Diff(got.GetLabels(), test.expLabels); diff != "" {
+				t.Fatalf("Unexpected labels: %v", diff)
 			}
 
-			for _, u := range manifest.Resources() {
-				if u.GetKind() == "Namespace" {
-					got := &corev1.Namespace{}
-					if err = scheme.Scheme.Convert(&u, got, nil); err != nil {
-						t.Fatalf("Failed to convert unstructured to namespace: %v", err)
-					}
-
-					if diff := cmp.Diff(got.GetLabels(), test.expLabels); diff != "" {
-						t.Fatalf("Unexpected labels: %v", diff)
-					}
-
-					if diff := cmp.Diff(got.GetAnnotations(), test.expAnnotations); diff != "" {
-						t.Fatalf("Unexpected annotations: %v", diff)
-					}
-				}
+			if diff := cmp.Diff(got.GetAnnotations(), test.expAnnotations); diff != "" {
+				t.Fatalf("Unexpected annotations: %v", diff)
 			}
 		})
 	}

@@ -21,11 +21,11 @@ require (
 	k8s.io/client-go v0.30.3
 	k8s.io/code-generator v0.30.3
 	knative.dev/caching v0.0.0-20240923134629-abecea6b8cbe
-	knative.dev/eventing v0.42.1-0.20240923135023-641cbb7dffe2
+	knative.dev/eventing v0.42.1-0.20240926123447-e7fca7646f4a
 	knative.dev/hack v0.0.0-20240909014011-fc6a8452af6d
-	knative.dev/pkg v0.0.0-20240924202102-28b58b842f1a
-	knative.dev/reconciler-test v0.0.0-20240924141745-1fee6baa20b7
-	knative.dev/serving v0.42.1-0.20240924143639-ca647283a822
+	knative.dev/pkg v0.0.0-20240926013127-c4843b746d24
+	knative.dev/reconciler-test v0.0.0-20240926123451-87d857060042
+	knative.dev/serving v0.42.1-0.20240926173312-779761a6bf4c
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -154,7 +154,7 @@ require (
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240808142205-8e686545bdb8 // indirect
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8 // indirect
-	knative.dev/networking v0.0.0-20240917132712-faa7309552e6 // indirect
+	knative.dev/networking v0.0.0-20240925061159-939600981bda // indirect
 	sigs.k8s.io/controller-runtime v0.7.2 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect

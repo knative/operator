@@ -1142,6 +1142,20 @@ spec:
                             type: object
                         type: object
                       type: array
+              namespace:
+                description: A field of namespace name to override the labels and annotations
+                type: object
+                properties:
+                  labels:
+                    additionalProperties:
+                      type: string
+                    description: Labels overrides labels for the namespace and its template.
+                    type: object
+                  annotations:
+                    additionalProperties:
+                      type: string
+                    description: Annotations overrides labels for the namespace and its template.
+                    type: object
               deployments:
                 description: A mapping of deployment name to override
                 type: array

@@ -65,6 +65,9 @@ type KComponentSpec interface {
 	// GetAdditionalManifests gets the list of additional manifests, which should be installed
 	GetAdditionalManifests() []Manifest
 
+	// GetNamespaceConfiguration gets the labels and annotations for the namespace
+	GetNamespaceConfiguration() *NamespaceConfiguration
+
 	// GetHighAvailability returns means to set the number of desired replicas
 	GetHighAvailability() *HighAvailability
 
@@ -142,6 +145,10 @@ type CommonSpec struct {
 	// +optional
 	DeploymentOverride []WorkloadOverride `json:"deployments,omitempty"`
 
+	// NamespaceConfiguration overrides namespace configurations such as labels and annotations.
+	// +optional
+	NamespaceConfiguration *NamespaceConfiguration `json:"namespace,omitempty"`
+
 	// Workloads overrides workloads configurations such as resources and replicas.
 	// +optional
 	Workloads []WorkloadOverride `json:"workloads,omitempty"`
@@ -189,6 +196,11 @@ func (c *CommonSpec) GetResources() []ResourceRequirementsOverride {
 // GetVersion implements KComponentSpec.
 func (c *CommonSpec) GetVersion() string {
 	return c.Version
+}
+
+// GetNamespaceConfiguration implements KComponentSpec.
+func (c *CommonSpec) GetNamespaceConfiguration() *NamespaceConfiguration {
+	return c.NamespaceConfiguration
 }
 
 // GetManifests implements KComponentSpec.
@@ -245,6 +257,17 @@ type Registry struct {
 	// same namespace as the knative-serving deployments, and not the namespace of this resource.
 	// +optional
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
+}
+
+// NamespaceConfiguration defines the configurations of namespaces to override.
+type NamespaceConfiguration struct {
+	// Labels overrides labels for the namespace and its template.
+	// +optional
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// Annotations overrides labels for the namespace and its template.
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 // WorkloadOverride defines the configurations of deployments to override.

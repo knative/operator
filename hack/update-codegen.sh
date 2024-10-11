@@ -19,6 +19,7 @@ set -o nounset
 set -o pipefail
 
 source $(dirname $0)/../vendor/knative.dev/hack/codegen-library.sh
+source "${CODEGEN_PKG}/kube_codegen.sh"
 
 # If we run with -mod=vendor here, then generate-groups.sh looks for vendor files in the wrong place.
 export GOFLAGS=-mod=
@@ -32,14 +33,12 @@ group "Downloading releases"
 
 group "Kubernetes Codegen"
 
-# generate the code with:
-# --output-base    because this script should also be able to run inside the vendor dir of
-#                  k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir
-#                  instead of the $GOPATH directly. For normal projects this can be dropped.
-${CODEGEN_PKG}/generate-groups.sh "deepcopy,client,informer,lister" \
-  knative.dev/operator/pkg/client knative.dev/operator/pkg/apis \
-  "operator:v1beta1" \
-  --go-header-file "${boilerplate}"
+kube::codegen::gen_client \
+  --boilerplate "${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt" \
+  --output-dir "${REPO_ROOT_DIR}/pkg/client" \
+  --output-pkg "knative.dev/operator/pkg/client" \
+  --with-watch \
+  "${REPO_ROOT_DIR}/pkg/apis"
 
 group "Knative Codegen"
 
@@ -50,12 +49,9 @@ ${KNATIVE_CODEGEN_PKG}/hack/generate-knative.sh "injection" \
 
 group "Deepcopy Gen"
 
-# Depends on generate-groups.sh to install bin/deepcopy-gen
-${GOPATH}/bin/deepcopy-gen \
-  -O zz_generated.deepcopy \
-  --go-header-file "${boilerplate}" \
-  -i knative.dev/operator/pkg/apis/operator/base \
-  -i knative.dev/operator/pkg/apis/operator/v1beta1
+kube::codegen::gen_helpers \
+  --boilerplate "${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt" \
+  "${REPO_ROOT_DIR}/pkg/apis"
 
 group "Update deps post-codegen"
 

@@ -16,7 +16,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    app.kubernetes.io/version: "ea10ce65b2e14cc0f3cf491e43ed8e5509860a77"
+    app.kubernetes.io/version: "d1e6cb41e2fb2093c520974c3a7e7d1e53f19139"
 rules:
   # we need to be able to delete old deployments
   - apiGroups:
@@ -56,7 +56,7 @@ metadata:
   name: knative-kafka-controller-post-install
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "ea10ce65b2e14cc0f3cf491e43ed8e5509860a77"
+    app.kubernetes.io/version: "d1e6cb41e2fb2093c520974c3a7e7d1e53f19139"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -78,7 +78,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    app.kubernetes.io/version: "ea10ce65b2e14cc0f3cf491e43ed8e5509860a77"
+    app.kubernetes.io/version: "d1e6cb41e2fb2093c520974c3a7e7d1e53f19139"
 rules:
   # Storage version upgrader needs to be able to patch CRDs.
   - apiGroups:
@@ -161,14 +161,14 @@ metadata:
   name: knative-kafka-storage-version-migrator
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "ea10ce65b2e14cc0f3cf491e43ed8e5509860a77"
+    app.kubernetes.io/version: "d1e6cb41e2fb2093c520974c3a7e7d1e53f19139"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-storage-version-migrator
   labels:
-    app.kubernetes.io/version: "ea10ce65b2e14cc0f3cf491e43ed8e5509860a77"
+    app.kubernetes.io/version: "d1e6cb41e2fb2093c520974c3a7e7d1e53f19139"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-storage-version-migrator
@@ -197,7 +197,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-controller-post-install
   labels:
-    app.kubernetes.io/version: "ea10ce65b2e14cc0f3cf491e43ed8e5509860a77"
+    app.kubernetes.io/version: "d1e6cb41e2fb2093c520974c3a7e7d1e53f19139"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-controller-post-install
@@ -229,7 +229,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-controller-post-install
-    app.kubernetes.io/version: "ea10ce65b2e14cc0f3cf491e43ed8e5509860a77"
+    app.kubernetes.io/version: "d1e6cb41e2fb2093c520974c3a7e7d1e53f19139"
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -237,7 +237,7 @@ spec:
     metadata:
       labels:
         app: kafka-controller-post-install
-        app.kubernetes.io/version: "ea10ce65b2e14cc0f3cf491e43ed8e5509860a77"
+        app.kubernetes.io/version: "d1e6cb41e2fb2093c520974c3a7e7d1e53f19139"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -245,7 +245,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: post-install
-          image: gcr.io/knative-releases/knative.dev/eventing-kafka-broker/control-plane/cmd/post-install@sha256:6d10c7a82dcdb99142fba190e82162ba7730b1246d136bc619b395e35fcb11a4
+          image: gcr.io/knative-releases/knative.dev/eventing-kafka-broker/control-plane/cmd/post-install@sha256:c32b066dfe28980b310d0ee9249daa50cd041d88d3293e772c80f8acd1d7ff4c
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:
@@ -285,7 +285,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: "knative-kafka-storage-version-migrator"
-    app.kubernetes.io/version: "ea10ce65b2e14cc0f3cf491e43ed8e5509860a77"
+    app.kubernetes.io/version: "d1e6cb41e2fb2093c520974c3a7e7d1e53f19139"
 spec:
   ttlSecondsAfterFinished: 600
   backoffLimit: 10
@@ -293,7 +293,7 @@ spec:
     metadata:
       labels:
         app: "knative-kafka-storage-version-migrator"
-        app.kubernetes.io/version: "ea10ce65b2e14cc0f3cf491e43ed8e5509860a77"
+        app.kubernetes.io/version: "d1e6cb41e2fb2093c520974c3a7e7d1e53f19139"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -301,7 +301,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:78fff9620e188568472dc30d5dd277c2b2cb6a02cf9b84b5f73d1344d7498592
+          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:d0355caf37915aa7ff5e5a5a3120047d8dbe4e60d0c8c9722b6f171090097fdd
           env:
             - name: IGNORE_NOT_FOUND
               value: "true"

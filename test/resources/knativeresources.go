@@ -84,11 +84,15 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 	}
 
 	isStatusReady := func(status v1.DeploymentStatus) bool {
+		fmt.Println("the status is")
+		fmt.Println(status.Conditions)
 		for _, c := range status.Conditions {
 			if c.Type == v1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
+				fmt.Println("get true")
 				return true
 			}
 		}
+		fmt.Println("get false")
 		return false
 	}
 
@@ -111,12 +115,19 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 			}
 
 			if key == "app.kubernetes.io/version" || key == "serving.knative.dev/release" || key == "eventing.knative.dev/release" {
+				fmt.Println("find the key")
+				fmt.Println("val is")
+				fmt.Println(val)
+				fmt.Println("version")
+				fmt.Println(version)
 				if val == fmt.Sprintf("v%s", version) || val == version {
 					// When on of the following conditions is met:
 					// * spec.version is set to latest, but operator returns an actual semantic version
 					// * spec.version is set to a valid semantic version
 					// we need to verify the value of the key serving.knative.dev/release or eventing.knative.dev/release
 					// matches the version.
+					fmt.Println("checking the status for deploy")
+					fmt.Println(d.Name)
 					return isStatusReady(d.Status)
 				} else if version == common.LATEST_VERSION && version != existingVersion {
 					// If spec.version is set to latest and operator bundles a directory called latest, it is possible that the

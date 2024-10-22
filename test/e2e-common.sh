@@ -23,7 +23,7 @@ readonly PREVIOUS_SERVING_RELEASE_VERSION="1.15"
 readonly PREVIOUS_EVENTING_RELEASE_VERSION="1.15"
 # The target serving/eventing release to upgrade, installed by the operator. It can be a release available under
 # kodata or an incoming new release. This value should be in the semantic format of major.minor.
-readonly TARGET_RELEASE_VERSION="release-1.16"
+readonly TARGET_RELEASE_VERSION="1.16"
 # This is the branch name of knative repos, where we run the upgrade tests.
 readonly KNATIVE_REPO_BRANCH="release-1.16"
 # Namespaces used for tests

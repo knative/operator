@@ -33,8 +33,8 @@ cloud.google.com/go/iam/apiv1/iampb
 cloud.google.com/go/iam/credentials/apiv1
 cloud.google.com/go/iam/credentials/apiv1/credentialspb
 cloud.google.com/go/iam/internal
-# cloud.google.com/go/storage v1.42.0
-## explicit; go 1.20
+# cloud.google.com/go/storage v1.40.0
+## explicit; go 1.19
 cloud.google.com/go/storage
 cloud.google.com/go/storage/internal
 cloud.google.com/go/storage/internal/apiv2
@@ -152,9 +152,10 @@ github.com/cloudevents/conformance/pkg/http
 ## explicit; go 1.18
 github.com/cloudevents/sdk-go/observability/opencensus/v2/client
 github.com/cloudevents/sdk-go/observability/opencensus/v2/http
-# github.com/cloudevents/sdk-go/sql/v2 v2.15.2
+# github.com/cloudevents/sdk-go/sql/v2 v2.0.0-20240712172937-3ce6b2f1f011
 ## explicit; go 1.18
 github.com/cloudevents/sdk-go/sql/v2
+github.com/cloudevents/sdk-go/sql/v2/errors
 github.com/cloudevents/sdk-go/sql/v2/expression
 github.com/cloudevents/sdk-go/sql/v2/function
 github.com/cloudevents/sdk-go/sql/v2/gen
@@ -1365,7 +1366,7 @@ k8s.io/utils/trace
 ## explicit; go 1.22.0
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.42.1-0.20241016013536-6aa49dc1db88
+# knative.dev/eventing v0.43.0
 ## explicit; go 1.22.0
 knative.dev/eventing/cmd/heartbeats
 knative.dev/eventing/pkg/apis
@@ -1455,7 +1456,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/sender
 # knative.dev/hack v0.0.0-20241010131451-05b2fb30cb4d
 ## explicit; go 1.21
 knative.dev/hack
-# knative.dev/networking v0.0.0-20241015085032-a3d46633cfb3
+# knative.dev/networking v0.0.0-20241022012959-60e29ff520dc
 ## explicit; go 1.22.0
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
@@ -1581,7 +1582,7 @@ knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/resources/serviceaccount
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/certificate
-# knative.dev/serving v0.42.1-0.20241021145327-c93d8c49a1b7
+# knative.dev/serving v0.43.0
 ## explicit; go 1.22.0
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

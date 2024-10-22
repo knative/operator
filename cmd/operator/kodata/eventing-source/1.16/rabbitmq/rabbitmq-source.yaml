@@ -1,0 +1,1114 @@
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: knative-sources
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rabbitmq-controller-manager
+  namespace: knative-sources
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+secrets:
+  - name: rabbitmq-source-key
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rabbitmq-source-key
+  namespace: knative-sources
+type: Opaque
+data:
+  'key.json': ""
+
+---
+# Copyright 2019 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rabbitmq-webhook
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+rules:
+  # For watching logging configuration and getting certs.
+  - apiGroups:
+      - ""
+    resources:
+      - "configmaps"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  # For manipulating certs into secrets.
+  - apiGroups:
+      - ""
+    resources:
+      - "secrets"
+      - "namespaces"
+    verbs:
+      - "get"
+      - "create"
+      - "update"
+      - "list"
+      - "watch"
+      - "patch"
+  - apiGroups:
+      - ""
+    resources:
+      - "namespaces/finalizers"
+    verbs:
+      - "update"
+  # For getting our Deployment so we can decorate with ownerref.
+  - apiGroups:
+      - "apps"
+    resources:
+      - "deployments"
+    verbs:
+      - "get"
+  - apiGroups:
+      - "apps"
+    resources:
+      - "deployments/finalizers"
+    verbs:
+      - update
+  # For actually registering our webhook.
+  - apiGroups:
+      - "admissionregistration.k8s.io"
+    resources:
+      - "mutatingwebhookconfigurations"
+      - "validatingwebhookconfigurations"
+    verbs: &everything
+      - "get"
+      - "list"
+      - "create"
+      - "update"
+      - "delete"
+      - "patch"
+      - "watch"
+  # For leader election
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - "leases"
+    verbs: *everything
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: eventing-sources-rabbitmq-controller
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+rules:
+  - apiGroups:
+      - sources.knative.dev
+    resources:
+      - rabbitmqsources
+      - rabbitmqsources/finalizers
+    verbs: &everything
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - sources.knative.dev
+    resources:
+      - rabbitmqsources/status
+    verbs:
+      - get
+      - update
+      - patch
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs: *everything
+  - apiGroups:
+      - ""
+    resources:
+      - events
+      - configmaps
+      - secrets
+    verbs: *everything
+  # For leader election
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - "leases"
+    verbs: *everything
+  # for RabbitMQ messaging topology objects
+  - apiGroups:
+      - rabbitmq.com
+    resources:
+      - rabbitmqclusters
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - rabbitmq.com
+    resources:
+      - bindings
+      - queues
+      - exchanges
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - rabbitmq.com
+    resources:
+      - bindings/status
+      - queues/status
+      - exchanges/status
+    verbs:
+      - get
+---
+# The role is needed for the aggregated role source-observer in knative-eventing to provide readonly access to "Sources".
+# See https://github.com/knative/eventing/blob/master/config/200-source-observer-clusterrole.yaml.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: eventing-contrib-rabbitmq-source-observer
+  labels:
+    eventing.knative.dev/release: devel
+    duck.knative.dev/source: "true"
+rules:
+  - apiGroups:
+      - "sources.knative.dev"
+    resources:
+      - "rabbitmqsources"
+    verbs:
+      - get
+      - list
+      - watch
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rabbitmq-webhook
+  namespace: knative-sources
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rabbitmq-webhook
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+subjects:
+  - kind: ServiceAccount
+    name: rabbitmq-webhook
+    namespace: knative-sources
+roleRef:
+  kind: ClusterRole
+  name: rabbitmq-webhook
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: eventing-sources-rabbitmq-controller
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+subjects:
+  - kind: ServiceAccount
+    name: rabbitmq-controller-manager
+    namespace: knative-sources
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: eventing-sources-rabbitmq-controller
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: eventing-sources-rabbitmq-controller-addressable-resolver
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+subjects:
+  - kind: ServiceAccount
+    name: rabbitmq-controller-manager
+    namespace: knative-sources
+# An aggregated ClusterRole for all Addressable CRDs.
+# Ref: https://knative.dev/eventing/blob/master/config/200-addressable-resolvers-clusterrole.yaml
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: addressable-resolver
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: rabbitmqsources.sources.knative.dev
+spec:
+  group: sources.knative.dev
+  names:
+    categories:
+      - all
+      - knative
+      - eventing
+      - sources
+      - importers
+    kind: RabbitmqSource
+    listKind: RabbitmqSourceList
+    plural: rabbitmqsources
+    shortNames:
+      - rmqsource
+    singular: rabbitmqsource
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: RabbitmqSource is the Schema for the rabbitmqsources API.
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                rabbitmqResourcesConfig:
+                  description: rabbitmqResourcesConfig stores all the configuration parameters related to RabbitMQ resources created by the Source.
+                  properties:
+                    vhost:
+                      description: VHost is the name of the VHost that will be used to set up our sources
+                      type: string
+                    parallelism:
+                      default: 1
+                      description: Sets the Channel's Prefetch count and number of Workers to consume simultaneously from it
+                      maximum: 1000
+                      minimum: 1
+                      type: integer
+                    exchangeName:
+                      description: Name of the exchange; Required when predeclared is false.
+                      type: string
+                    predeclared:
+                      description: Predeclared defines if channels and queues are already predeclared and shouldn't be recreated. This should be used in case the user does not have permission to declare new queues and channels in RabbitMQ cluster
+                      type: boolean
+                    queueName:
+                      description: Name of the queue to bind to; required value.
+                      type: string
+                  type: object
+                rabbitmqClusterReference:
+                  description: RabbitmqClusterReference stores a reference to RabbitmqCluster. This will get used to create resources on the RabbitMQ Broker.
+                  properties:
+                    connectionSecret:
+                      description: Secret contains the http management uri for the RabbitMQ cluster. The Secret must contain the key `uri`, `username` and `password`. It may optionally contain port or will be defaulted to 5672. Have to set either name or connectionSecret, but not both.
+                      properties:
+                        name:
+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                          type: string
+                      type: object
+                    name:
+                      description: The name of the RabbitMQ cluster to reference. Have to set either name or connectionSecret, but not both.
+                      type: string
+                    namespace:
+                      description: The namespace of the RabbitMQ cluster to reference. Defaults to the namespace of the requested resource if omitted.
+                      type: string
+                  type: object
+                delivery:
+                  description: Delivery stores the backoff strategy and retry configuration for the RabbitMQ Source.
+                  properties:
+                    backoffDelay:
+                      description: BackoffDelay is the delay before retrying in time.Duration format. For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.
+                      type: string
+                    backoffPolicy:
+                      description: BackoffPolicy is the retry backoff policy (linear, exponential).
+                      type: string
+                    retry:
+                      description: Retry is the minimum number of retries the sender should attempt when sending an event before moving it to the dead letter sink.
+                      format: int32
+                      type: integer
+                  type: object
+                serviceAccountName:
+                  description: ServiceAccountName is the name of the ServiceAccount that will be used to run the Receive Adapter Deployment.
+                  type: string
+                sink:
+                  description: Sink is a reference to an object that will resolve to a domain name to use as the sink. Required property.
+                  properties:
+                    ref:
+                      description: Ref points to an Addressable.
+                      properties:
+                        apiVersion:
+                          description: API version of the referent.
+                          type: string
+                        group:
+                          description: 'Group of the API, without the version of the group. This can be used as an alternative to the APIVersion, and then resolved using ResolveGroup. Note: This API is EXPERIMENTAL and might break anytime. For more details: https://github.com/knative/eventing/issues/5086'
+                          type: string
+                        kind:
+                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                          type: string
+                        name:
+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                          type: string
+                        namespace:
+                          description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                          type: string
+                      required:
+                        - kind
+                        - name
+                      type: object
+                    uri:
+                      description: URI can be an absolute URL(non-empty scheme and non-empty host) pointing to the target or a relative URI. Relative URIs will be resolved using the base URI retrieved from Ref.
+                      type: string
+                  type: object
+              required:
+                - rabbitmqClusterReference
+                - sink
+              type: object
+            status:
+              properties:
+                annotations:
+                  additionalProperties:
+                    type: string
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                  type: object
+                ceAttributes:
+                  description: CloudEventAttributes are the specific attributes that the Source uses as part of its CloudEvents.
+                  items:
+                    description: CloudEventAttributes specifies the attributes that a Source uses as part of its CloudEvents.
+                    properties:
+                      source:
+                        description: Source is the CloudEvents source attribute.
+                        type: string
+                      type:
+                        description: Type refers to the CloudEvent type attribute.
+                        type: string
+                    type: object
+                  type: array
+                conditions:
+                  description: Conditions the latest available observations of a resource's current state.
+                  items:
+                    description: 'Condition defines a readiness condition for a Knative resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                    properties:
+                      lastTransitionTime:
+                        description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
+                        type: string
+                      message:
+                        description: A human readable message indicating details about the transition.
+                        type: string
+                      reason:
+                        description: The reason for the condition's last transition.
+                        type: string
+                      severity:
+                        description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+                        type: string
+                      status:
+                        description: Status of the condition, one of True, False, Unknown.
+                        type: string
+                      type:
+                        description: Type of condition.
+                        type: string
+                    required:
+                      - status
+                      - type
+                    type: object
+                  type: array
+                observedGeneration:
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                  format: int64
+                  type: integer
+                sinkUri:
+                  description: SinkURI is the current active sink URI that has been configured for the Source.
+                  type: string
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-controller
+  namespace: knative-sources
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+    control-plane: rabbitmq-controller-manager
+spec:
+  selector:
+    control-plane: rabbitmq-controller-manager
+  ports:
+    - name: https-rabbitmq
+      port: 443
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+    role: rabbitmq-source-webhook
+  name: rabbitmq-source-webhook
+  namespace: knative-sources
+spec:
+  ports:
+    - name: https-webhook
+      port: 443
+      targetPort: 8443
+  selector:
+    role: rabbitmq-source-webhook
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq-controller-manager
+  namespace: knative-sources
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+    control-plane: rabbitmq-controller-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &labels
+      control-plane: rabbitmq-controller-manager
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      serviceAccountName: rabbitmq-controller-manager
+      containers:
+        - name: manager
+          image: gcr.io/knative-releases/knative.dev/eventing-rabbitmq/cmd/controller/source@sha256:99495a1bdda1b8ceff96150ea0ba758a17d75ae7e1df8aa0c0b4393f8b33f789
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: METRICS_DOMAIN
+              value: knative.dev/sources
+            - name: CONFIG_OBSERVABILITY_NAME
+              value: config-observability
+            - name: RABBITMQ_RA_IMAGE
+              value: gcr.io/knative-releases/knative.dev/eventing-rabbitmq/cmd/receive_adapter@sha256:80080f494c76bde146520bb6f909bfbe0281b5dcfa681eccb09c94df9a9e7fe6
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - all
+          volumeMounts:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+      serviceAccount: rabbitmq-controller-manager
+      terminationGracePeriodSeconds: 10
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: config.webhook.rabbitmq.sources.knative.dev
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+webhooks:
+  - admissionReviewVersions: ["v1", "v1beta1"]
+    clientConfig:
+      service:
+        name: rabbitmq-webhook
+        namespace: knative-sources
+    sideEffects: None
+    failurePolicy: Fail
+    name: config.webhook.rabbitmq.sources.knative.dev
+    namespaceSelector:
+      matchExpressions:
+        - key: eventing.knative.dev/release
+          operator: Exists
+    timeoutSeconds: 2
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: webhook.rabbitmq.sources.knative.dev
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+webhooks:
+  - admissionReviewVersions: ["v1", "v1beta1"]
+    clientConfig:
+      service:
+        name: rabbitmq-webhook
+        namespace: knative-sources
+    sideEffects: None
+    failurePolicy: Fail
+    name: webhook.rabbitmq.sources.knative.dev
+    timeoutSeconds: 2
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: validation.webhook.rabbitmq.sources.knative.dev
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+webhooks:
+  - admissionReviewVersions: ["v1", "v1beta1"]
+    clientConfig:
+      service:
+        name: rabbitmq-webhook
+        namespace: knative-sources
+    sideEffects: None
+    failurePolicy: Fail
+    name: validation.webhook.rabbitmq.sources.knative.dev
+    timeoutSeconds: 2
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rabbitmq-webhook-certs
+  namespace: knative-sources
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+# The data is populated at install time.
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: sinkbindings.webhook.sources.knative.dev
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+webhooks:
+  - admissionReviewVersions: ["v1", "v1beta1"]
+    clientConfig:
+      service:
+        name: eventing-webhook
+        namespace: knative-eventing
+    failurePolicy: Fail
+    sideEffects: None
+    name: sinkbindings.webhook.sources.knative.dev
+    timeoutSeconds: 2
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq-webhook
+  namespace: knative-sources
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &labels
+      app: rabbitmq-webhook
+      role: rabbitmq-webhook
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      # To avoid node becoming SPOF, spread our replicas to different nodes.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: rabbitmq-webhook
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      serviceAccountName: rabbitmq-webhook
+      enableServiceLinks: false
+      containers:
+        - name: rabbitmq-webhook
+          terminationMessagePolicy: FallbackToLogsOnError
+          # This is the Go import path for the binary that is containerized
+          # and substituted here.
+          image: gcr.io/knative-releases/knative.dev/eventing-rabbitmq/cmd/webhook/source@sha256:800fe633c6ce0d758c9eff92d1a64494ca7f72f311f8721c6237153796c22b36
+          resources:
+            requests:
+              # taken from serving.
+              cpu: 20m
+              memory: 20Mi
+            limits:
+              # taken from serving.
+              cpu: 200m
+              memory: 200Mi
+          env:
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CONFIG_LOGGING_NAME
+              value: config-logging
+            - name: METRICS_DOMAIN
+              value: knative.dev/sources
+            - name: WEBHOOK_NAME
+              value: rabbitmq-webhook
+            - name: WEBHOOK_PORT
+              value: "8443"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - all
+          ports:
+            - name: https-webhook
+              containerPort: 8443
+            - name: metrics
+              containerPort: 9090
+            - name: profiling
+              containerPort: 8008
+          readinessProbe: &probe
+            periodSeconds: 1
+            httpGet:
+              scheme: HTTPS
+              port: 8443
+              httpHeaders:
+                - name: k-kubelet-probe
+                  value: "webhook"
+          livenessProbe:
+            !!merge <<: *probe
+            initialDelaySeconds: 20
+      # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
+      # high value that we respect whatever value it has configured for the lame duck grace period.
+      terminationGracePeriodSeconds: 300
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    rabbitmq.eventing.knative.dev/release: "v1.16.0"
+    role: rabbitmq-webhook
+  name: rabbitmq-webhook
+  namespace: knative-sources
+spec:
+  ports:
+    - name: https-webhook
+      port: 443
+      targetPort: 8443
+  selector:
+    role: rabbitmq-webhook
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-logging
+  namespace: knative-sources
+data:
+  # Common configuration for all Knative codebase
+  zap-logger-config: |
+    {
+      "level": "info",
+      "development": false,
+      "outputPaths": ["stdout"],
+      "errorOutputPaths": ["stderr"],
+      "encoding": "json",
+      "encoderConfig": {
+        "timeKey": "ts",
+        "levelKey": "level",
+        "nameKey": "logger",
+        "callerKey": "caller",
+        "messageKey": "msg",
+        "stacktraceKey": "stacktrace",
+        "lineEnding": "",
+        "levelEncoder": "",
+        "timeEncoder": "iso8601",
+        "durationEncoder": "",
+        "callerEncoder": ""
+      }
+    }
+  # Log level overrides
+  # For all components changes are be picked up immediately.
+  loglevel.controller: "info"
+  loglevel.webhook: "info"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-observability
+  namespace: knative-sources
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # logging.enable-var-log-collection defaults to false.
+    # A fluentd sidecar will be set up to collect var log if
+    # this flag is true.
+    logging.enable-var-log-collection: false
+
+    # logging.fluentd-sidecar-image provides the fluentd sidecar image
+    # to inject as a sidecar to collect logs from /var/log.
+    # Must be presented if logging.enable-var-log-collection is true.
+    logging.fluentd-sidecar-image: registry.k8s.io/fluentd-elasticsearch:v2.0.4
+
+    # logging.fluentd-sidecar-output-config provides the configuration
+    # for the fluentd sidecar, which will be placed into a configmap and
+    # mounted into the fluentd sidecar image.
+    logging.fluentd-sidecar-output-config: |
+      # Parse json log before sending to Elastic Search
+      <filter **>
+        @type parser
+        key_name log
+        <parse>
+          @type multi_format
+          <pattern>
+            format json
+            time_key fluentd-time # fluentd-time is reserved for structured logs
+            time_format %Y-%m-%dT%H:%M:%S.%NZ
+          </pattern>
+          <pattern>
+            format none
+            message_key log
+          </pattern>
+        </parse>
+      </filter>
+      # Send to Elastic Search
+      <match **>
+        @id elasticsearch
+        @type elasticsearch
+        @log_level info
+        include_tag_key true
+        # Elasticsearch service is in monitoring namespace.
+        host elasticsearch-logging.knative-monitoring
+        port 9200
+        logstash_format true
+        <buffer>
+          @type file
+          path /var/log/fluentd-buffers/kubernetes.system.buffer
+          flush_mode interval
+          retry_type exponential_backoff
+          flush_thread_count 2
+          flush_interval 5s
+          retry_forever
+          retry_max_interval 30
+          chunk_limit_size 2M
+          queue_limit_length 8
+          overflow_action block
+        </buffer>
+      </match>
+
+    # logging.revision-url-template provides a template to use for producing the
+    # logging URL that is injected into the status of each Revision.
+    # This value is what you might use the the Knative monitoring bundle, and provides
+    # access to Kibana after setting up kubectl proxy.
+    logging.revision-url-template: |
+      http://localhost:8001/api/v1/namespaces/knative-monitoring/services/kibana-logging/proxy/app/kibana#/discover?_a=(query:(match:(kubernetes.labels.knative-dev%2FrevisionUID:(query:'${REVISION_UID}',type:phrase))))
+
+    # If non-empty, this enables queue proxy writing request logs to stdout.
+    # The value determines the shape of the request logs and it must be a valid go text/template.
+    # It is important to keep this as a single line. Multiple lines are parsed as separate entities
+    # by most collection agents and will split the request logs into multiple records.
+    #
+    # The following fields and functions are available to the template:
+    #
+    # Request: An http.Request (see https://golang.org/pkg/net/http/#Request)
+    # representing an HTTP request received by the server.
+    #
+    # Response:
+    # struct {
+    #   Code    int       // HTTP status code (see https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml)
+    #   Size    int       // An int representing the size of the response.
+    #   Latency float64   // A float64 representing the latency of the response in seconds.
+    # }
+    #
+    # Revision:
+    # struct {
+    #   Name          string  // Knative revision name
+    #   Namespace     string  // Knative revision namespace
+    #   Service       string  // Knative service name
+    #   Configuration string  // Knative configuration name
+    #   PodName       string  // Name of the pod hosting the revision
+    #   PodIP         string  // IP of the pod hosting the revision
+    # }
+    #
+    logging.request-log-template: '{"httpRequest": {"requestMethod": "{{.Request.Method}}", "requestUrl": "{{js .Request.RequestURI}}", "requestSize": "{{.Request.ContentLength}}", "status": {{.Response.Code}}, "responseSize": "{{.Response.Size}}", "userAgent": "{{js .Request.UserAgent}}", "remoteIp": "{{js .Request.RemoteAddr}}", "serverIp": "{{.Revision.PodIP}}", "referer": "{{js .Request.Referer}}", "latency": "{{.Response.Latency}}s", "protocol": "{{.Request.Proto}}"}, "traceId": "{{index .Request.Header "X-B3-Traceid"}}"}'
+
+    # metrics.backend-destination field specifies the system metrics destination.
+    # It supports either prometheus (the default) or stackdriver.
+    # Note: Using stackdriver will incur additional charges
+    metrics.backend-destination: prometheus
+
+    # metrics.request-metrics-backend-destination specifies the request metrics
+    # destination. If non-empty, it enables queue proxy to send request metrics.
+    # Currently supported values: prometheus, stackdriver.
+    metrics.request-metrics-backend-destination: prometheus
+
+    # metrics.stackdriver-project-id field specifies the stackdriver project ID. This
+    # field is optional. When running on GCE, application default credentials will be
+    # used if this field is not provided.
+    metrics.stackdriver-project-id: "<your stackdriver project id>"
+
+    # metrics.allow-stackdriver-custom-metrics indicates whether it is allowed to send metrics to
+    # Stackdriver using "global" resource type and custom metric type if the
+    # metrics are not supported by "knative_revision" resource type. Setting this
+    # flag to "true" could cause extra Stackdriver charge.
+    # If metrics.backend-destination is not Stackdriver, this is ignored.
+    metrics.allow-stackdriver-custom-metrics: "false"
+
+---

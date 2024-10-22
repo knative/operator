@@ -23,7 +23,7 @@ source "${CODEGEN_PKG}/kube_codegen.sh"
 
 # If we run with -mod=vendor here, then generate-groups.sh looks for vendor files in the wrong place.
 export GOFLAGS=-mod=
-readonly RELEASE_VERSION="v1.15"
+readonly RELEASE_VERSION="v1.16"
 
 boilerplate="${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt"
 

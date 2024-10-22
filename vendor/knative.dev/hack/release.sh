@@ -17,7 +17,7 @@
 # This is a helper script for Knative release scripts.
 # See README.md for instructions on how to use it.
 
-source "$(dirname "${BASH_SOURCE[0]}")/library.sh"
+source $(dirname "${BASH_SOURCE[0]}")/library.sh
 
 # Organization name in GitHub; defaults to Knative.
 readonly ORG_NAME="${ORG_NAME:-knative}"
@@ -34,9 +34,9 @@ readonly NIGHTLY_SIGNING_IDENTITY="signer@knative-nightly.iam.gserviceaccount.co
 readonly RELEASE_SIGNING_IDENTITY="signer@knative-releases.iam.gserviceaccount.com"
 
 # Simple banner for logging purposes.
-# Parameters: $* - message to display.
+# Parameters: $1 - message to display.
 function banner() {
-  subheader "$*"
+    make_banner "@" "$1"
 }
 
 # Copy the given files to the $RELEASE_GCS_BUCKET bucket's "latest" directory.

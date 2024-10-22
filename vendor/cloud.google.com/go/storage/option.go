@@ -44,14 +44,10 @@ type storageClientOption interface {
 	ApplyStorageOpt(*storageConfig)
 }
 
-// WithJSONReads is an option that may be passed to [NewClient].
-// It sets the client to use the Cloud Storage JSON API for object
-// reads. Currently, the default API used for reads is XML, but JSON will
-// become the default in a future release.
-//
-// Setting this option is required to use the GenerationNotMatch condition. We
-// also recommend using JSON reads to ensure consistency with other client
-// operations (all of which use JSON by default).
+// WithJSONReads is an option that may be passed to a Storage Client on creation.
+// It sets the client to use the JSON API for object reads. Currently, the
+// default API used for reads is XML.
+// Setting this option is required to use the GenerationNotMatch condition.
 //
 // Note that when this option is set, reads will return a zero date for
 // [ReaderObjectAttrs].LastModified and may return a different value for
@@ -60,11 +56,10 @@ func WithJSONReads() option.ClientOption {
 	return &withReadAPI{useJSON: true}
 }
 
-// WithXMLReads is an option that may be passed to [NewClient].
-// It sets the client to use the Cloud Storage XML API for object reads.
+// WithXMLReads is an option that may be passed to a Storage Client on creation.
+// It sets the client to use the XML API for object reads.
 //
-// This is the current default, but the default will switch to JSON in a future
-// release.
+// This is the current default.
 func WithXMLReads() option.ClientOption {
 	return &withReadAPI{useJSON: false}
 }

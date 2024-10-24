@@ -48,10 +48,10 @@ metadata:
     app.kubernetes.io/component: operator-webhook
     app.kubernetes.io/version: "{{ .Chart.Version }}"
     app.kubernetes.io/name: knative-operator
-  {{- if and .Values.knative_operator.operator_webhook.annotations }}
+{{- if and .Values.knative_operator.operator_webhook.annotations }}
   annotations:
-    {{ toYaml .Values.knative_operator.operator_webhook.annotations }}
-  {{- end }}
+{{ toYaml .Values.knative_operator.operator_webhook.annotations | indent 4 }}
+{{- end }}
 spec:
   selector:
     matchLabels:
@@ -66,25 +66,19 @@ spec:
         app.kubernetes.io/version: "{{ .Chart.Version }}"
         app.kubernetes.io/name: knative-operator
         sidecar.istio.io/inject: "false"
-      {{- if and .Values.knative_operator.operator_webhook.podAnnotations }}
+{{- if and .Values.knative_operator.operator_webhook.podAnnotations }}
       annotations:
-        {{ toYaml .Values.knative_operator.operator_webhook.podAnnotations }}
-      {{- end }}
+{{ toYaml .Values.knative_operator.operator_webhook.podAnnotations | indent 8 }}
+{{- end }}
     spec:
-      # To avoid node becoming SPOF, spread our replicas to different nodes.
+{{- if .Values.knative_operator.operator_webhook.affinity }}
       affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app: operator-webhook
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-      {{- if and .Values.knative_operator.operator_webhook.securityContext }}
+{{ toYaml .Values.knative_operator.operator_webhook.affinity | indent 8 }}
+{{- end }}
+{{- if and .Values.knative_operator.operator_webhook.securityContext }}
       securityContext:
-        {{ toYaml .Values.knative_operator.operator_webhook.securityContext }}
-      {{- end }}
+{{ toYaml .Values.knative_operator.operator_webhook.securityContext | indent 8 }}
+{{- end }}
       serviceAccountName: operator-webhook
       containers:
       - name: operator-webhook
@@ -4875,6 +4869,13 @@ spec:
                                       type: string
                                   type: object
                                 tls:
+                                  nullable: true
+                                  oneOf:
+                                  - required:
+                                    - mode
+                                    - credentialName
+                                  - required:
+                                    - httpsRedirect
                                   properties:
                                     mode:
                                       description: TLS mode can be SIMPLE, MUTUAL, ISTIO_MUTUAL.
@@ -4884,6 +4885,11 @@ spec:
                                       description: TLS certificate name.
                                       format: string
                                       type: string
+                                    httpsRedirect:
+                                      description: If set to true, the load balancer will send a 301 redirect
+                                        to HTTPS for all HTTP requests. Should be used only for HTTP listener,
+                                        is mutually exclusive with all other TLS options.
+                                      type: boolean
                                   type: object
                               type: object
                             type: array
@@ -4924,6 +4930,13 @@ spec:
                                       type: string
                                   type: object
                                 tls:
+                                  nullable: true
+                                  oneOf:
+                                  - required:
+                                    - mode
+                                    - credentialName
+                                  - required:
+                                    - httpsRedirect
                                   properties:
                                     mode:
                                       description: TLS mode can be SIMPLE, MUTUAL, ISTIO_MUTUAL.
@@ -4933,6 +4946,11 @@ spec:
                                       description: TLS certificate name.
                                       format: string
                                       type: string
+                                    httpsRedirect:
+                                      description: If set to true, the load balancer will send a 301 redirect
+                                        to HTTPS for all HTTP requests. Should be used only for HTTP listener,
+                                        is mutually exclusive with all other TLS options.
+                                      type: boolean
                                   type: object
                               type: object
                             type: array
@@ -6312,10 +6330,10 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-operator
     app.kubernetes.io/version: "{{ .Chart.Version }}"
-  {{- if and .Values.knative_operator.knative_operator.annotations }}
+{{- if and .Values.knative_operator.knative_operator.annotations }}
   annotations:
-    {{ toYaml .Values.knative_operator.knative_operator.annotations }}
-  {{- end }}
+{{ toYaml .Values.knative_operator.knative_operator.annotations | indent 4 }}
+{{- end }}
 spec:
   replicas: 1
   selector:
@@ -6328,16 +6346,20 @@ spec:
         app.kubernetes.io/name: knative-operator
         app.kubernetes.io/version: "{{ .Chart.Version }}"
         sidecar.istio.io/inject: "false"
-      {{- if and .Values.knative_operator.knative_operator.podAnnotations }}
+{{- if and .Values.knative_operator.knative_operator.podAnnotations }}
       annotations:
-        {{ toYaml .Values.knative_operator.knative_operator.podAnnotations }}
-      {{- end }}
+{{ toYaml .Values.knative_operator.knative_operator.podAnnotations | indent 8 }}
+{{- end }}
     spec:
+{{- if .Values.knative_operator.knative_operator.affinity }}
+      affinity:
+{{ toYaml .Values.knative_operator.knative_operator.affinity | indent 8 }}
+{{- end }}
       serviceAccountName: knative-operator
-      {{- if and .Values.knative_operator.knative_operator.securityContext }}
+{{- if and .Values.knative_operator.knative_operator.securityContext }}
       securityContext:
-        {{ toYaml .Values.knative_operator.knative_operator.securityContext }}
-      {{- end }}
+{{ toYaml .Values.knative_operator.knative_operator.securityContext | indent 8 }}
+{{- end }}
       containers:
         - name: knative-operator
           image: "{{ .Values.knative_operator.knative_operator.image }}:{{ .Values.knative_operator.knative_operator.tag }}"

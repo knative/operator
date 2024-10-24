@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Knative Authors
+Copyright 2025 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/tools/cache"
-	v1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+	labels "k8s.io/apimachinery/pkg/labels"
+	listers "k8s.io/client-go/listers"
+	cache "k8s.io/client-go/tools/cache"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 // KnativeEventingLister helps list KnativeEventings.
@@ -30,7 +30,7 @@ import (
 type KnativeEventingLister interface {
 	// List lists all KnativeEventings in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1beta1.KnativeEventing, err error)
+	List(selector labels.Selector) (ret []*operatorv1beta1.KnativeEventing, err error)
 	// KnativeEventings returns an object that can list and get KnativeEventings.
 	KnativeEventings(namespace string) KnativeEventingNamespaceLister
 	KnativeEventingListerExpansion
@@ -38,25 +38,17 @@ type KnativeEventingLister interface {
 
 // knativeEventingLister implements the KnativeEventingLister interface.
 type knativeEventingLister struct {
-	indexer cache.Indexer
+	listers.ResourceIndexer[*operatorv1beta1.KnativeEventing]
 }
 
 // NewKnativeEventingLister returns a new KnativeEventingLister.
 func NewKnativeEventingLister(indexer cache.Indexer) KnativeEventingLister {
-	return &knativeEventingLister{indexer: indexer}
-}
-
-// List lists all KnativeEventings in the indexer.
-func (s *knativeEventingLister) List(selector labels.Selector) (ret []*v1beta1.KnativeEventing, err error) {
-	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1beta1.KnativeEventing))
-	})
-	return ret, err
+	return &knativeEventingLister{listers.New[*operatorv1beta1.KnativeEventing](indexer, operatorv1beta1.Resource("knativeeventing"))}
 }
 
 // KnativeEventings returns an object that can list and get KnativeEventings.
 func (s *knativeEventingLister) KnativeEventings(namespace string) KnativeEventingNamespaceLister {
-	return knativeEventingNamespaceLister{indexer: s.indexer, namespace: namespace}
+	return knativeEventingNamespaceLister{listers.NewNamespaced[*operatorv1beta1.KnativeEventing](s.ResourceIndexer, namespace)}
 }
 
 // KnativeEventingNamespaceLister helps list and get KnativeEventings.
@@ -64,36 +56,15 @@ func (s *knativeEventingLister) KnativeEventings(namespace string) KnativeEventi
 type KnativeEventingNamespaceLister interface {
 	// List lists all KnativeEventings in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1beta1.KnativeEventing, err error)
+	List(selector labels.Selector) (ret []*operatorv1beta1.KnativeEventing, err error)
 	// Get retrieves the KnativeEventing from the indexer for a given namespace and name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1beta1.KnativeEventing, error)
+	Get(name string) (*operatorv1beta1.KnativeEventing, error)
 	KnativeEventingNamespaceListerExpansion
 }
 
 // knativeEventingNamespaceLister implements the KnativeEventingNamespaceLister
 // interface.
 type knativeEventingNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all KnativeEventings in the indexer for a given namespace.
-func (s knativeEventingNamespaceLister) List(selector labels.Selector) (ret []*v1beta1.KnativeEventing, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1beta1.KnativeEventing))
-	})
-	return ret, err
-}
-
-// Get retrieves the KnativeEventing from the indexer for a given namespace and name.
-func (s knativeEventingNamespaceLister) Get(name string) (*v1beta1.KnativeEventing, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, errors.NewNotFound(v1beta1.Resource("knativeeventing"), name)
-	}
-	return obj.(*v1beta1.KnativeEventing), nil
+	listers.ResourceIndexer[*operatorv1beta1.KnativeEventing]
 }

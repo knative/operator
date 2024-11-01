@@ -1366,7 +1366,7 @@ k8s.io/utils/trace
 ## explicit; go 1.22.0
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.43.1-0.20241028083747-ef6b31a697e7
+# knative.dev/eventing v0.43.1-0.20241031141551-7bca81597eee
 ## explicit; go 1.22.0
 knative.dev/eventing/cmd/heartbeats
 knative.dev/eventing/pkg/apis
@@ -1391,6 +1391,7 @@ knative.dev/eventing/pkg/apis/sinks/v1alpha1
 knative.dev/eventing/pkg/apis/sources
 knative.dev/eventing/pkg/apis/sources/config
 knative.dev/eventing/pkg/apis/sources/v1
+knative.dev/eventing/pkg/apis/sources/v1alpha1
 knative.dev/eventing/pkg/apis/sources/v1beta2
 knative.dev/eventing/pkg/auth
 knative.dev/eventing/pkg/broker
@@ -1405,6 +1406,7 @@ knative.dev/eventing/pkg/client/clientset/versioned/typed/flows/v1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/messaging/v1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sinks/v1alpha1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1
+knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1beta2
 knative.dev/eventing/pkg/client/injection/client
 knative.dev/eventing/pkg/client/listers/eventing/v1alpha1
@@ -1582,7 +1584,7 @@ knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/resources/serviceaccount
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/certificate
-# knative.dev/serving v0.43.1-0.20241028121847-7dc3e9588f53
+# knative.dev/serving v0.43.1-0.20241029121948-135b667ba4a6
 ## explicit; go 1.22.0
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

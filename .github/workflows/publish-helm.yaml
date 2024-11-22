@@ -1,0 +1,71 @@
+name: Publish Helm Charts
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install Helm HTML Plugin
+        run: helm plugin install https://github.com/halkeye/helm-repo-html
+
+      - name: Build Helm Chart Repo index.yaml
+        run: |
+          # this script from main will be gone on gh-pages branch, 
+          # so lets stash it away in a temp directory in the directory above this one
+          mkdir ../.tmp
+          mv hack/find_helm_chart_releases_and_create_helm_index.sh ../.tmp/
+          mv hack/gh-pages.tmpl ../.tmp/
+
+          PAGES_BRANCH="gh-pages"
+
+          git fetch --all --tags
+
+          if git show-ref --verify --quiet refs/heads/$PAGES_BRANCH || git ls-remote --exit-code --heads origin $PAGES_BRANCH; then
+              # Branch exists
+              git checkout $PAGES_BRANCH
+              echo "Checked out existing branch '$PAGES_BRANCH'"
+          else
+              # Branch does not exist
+              git symbolic-ref HEAD refs/heads/$PAGES_BRANCH
+              rm .git/index
+              git clean -fdx
+              echo ".tmp/" > .gitignore
+              echo "Created and checked out new branch '$PAGES_BRANCH'"
+          fi
+
+          mv ../.tmp ./
+          .tmp/find_helm_chart_releases_and_create_helm_index.sh
+          helm repo-html -t .tmp/gh-pages.tmpl
+
+          if output=$(git status --porcelain) && [ -z "$output" ]; then
+            # Working directory clean
+
+            echo "No changes to commit"
+          else 
+            # Uncommitted changes
+            echo "Changes detected"
+            git status
+            echo "Committing..."
+
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add -A
+            git commit -m "update helm chart repository index.yaml"
+
+            git push origin gh-pages
+          fi

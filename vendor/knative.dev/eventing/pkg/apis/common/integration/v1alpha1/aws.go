@@ -16,13 +16,19 @@ limitations under the License.
 
 package v1alpha1
 
+const (
+
+	// AwsAccessKey is the name of the expected key on the secret for accessing the actual AWS access key value.
+	AwsAccessKey = "aws.accessKey"
+	// AwsSecretKey is the name of the expected key on the secret for accessing the actual AWS secret key value.
+	AwsSecretKey = "aws.secretKey"
+)
+
 type AWSCommon struct {
 	// Auth is the S3 authentication (accessKey/secretKey) configuration.
-	Region                 string `json:"region,omitempty"`                 // AWS region
-	ProfileCredentialsName string `json:"profileCredentialsName,omitempty"` // Profile name for profile credentials provider
-	SessionToken           string `json:"sessionToken,omitempty"`           // Session token
-	URIEndpointOverride    string `json:"uriEndpointOverride,omitempty"`    // Override endpoint URI
-	OverrideEndpoint       bool   `json:"overrideEndpoint" default:"false"` // Override endpoint flag
+	Region              string `json:"region,omitempty"`                 // AWS region
+	URIEndpointOverride string `json:"uriEndpointOverride,omitempty"`    // Override endpoint URI
+	OverrideEndpoint    bool   `json:"overrideEndpoint" default:"false"` // Override endpoint flag
 }
 
 type AWSS3 struct {
@@ -61,4 +67,10 @@ type AWSDDBStreams struct {
 	Table              string           `json:"table,omitempty"`                                    // The name of the DynamoDB table
 	StreamIteratorType string           `json:"streamIteratorType,omitempty" default:"FROM_LATEST"` // Defines where in the DynamoDB stream to start getting records
 	Delay              int              `json:"delay,omitempty" default:"500"`                      // Delay in milliseconds before the next poll from the database
+}
+
+type AWSSNS struct {
+	AWSCommon       `json:",inline"` // Embeds AWSCommon to inherit its fields in JSON
+	Arn             string           `json:"arn,omitempty" camel:"CAMEL_KAMELET_AWS_SNS_SINK_TOPICNAMEORARN"` // SNS ARN
+	AutoCreateTopic bool             `json:"autoCreateTopic" default:"false"`                                 // Auto-create SNS topic
 }

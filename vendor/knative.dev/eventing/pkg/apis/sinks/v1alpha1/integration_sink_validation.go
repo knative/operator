@@ -22,41 +22,41 @@ import (
 	"knative.dev/pkg/apis"
 )
 
-func (source *IntegrationSource) Validate(ctx context.Context) *apis.FieldError {
-	ctx = apis.WithinParent(ctx, source.ObjectMeta)
-	return source.Spec.Validate(ctx).ViaField("spec")
+func (sink *IntegrationSink) Validate(ctx context.Context) *apis.FieldError {
+	ctx = apis.WithinParent(ctx, sink.ObjectMeta)
+	return sink.Spec.Validate(ctx).ViaField("spec")
 }
 
-func (spec *IntegrationSourceSpec) Validate(ctx context.Context) *apis.FieldError {
+func (spec *IntegrationSinkSpec) Validate(ctx context.Context) *apis.FieldError {
 	var errs *apis.FieldError
 
 	// Count how many fields are set to ensure mutual exclusivity
-	sourceSetCount := 0
-	if spec.Timer != nil {
-		sourceSetCount++
+	sinkSetCount := 0
+	if spec.Log != nil {
+		sinkSetCount++
 	}
 	if spec.Aws != nil {
 		if spec.Aws.S3 != nil {
-			sourceSetCount++
+			sinkSetCount++
 		}
 		if spec.Aws.SQS != nil {
-			sourceSetCount++
+			sinkSetCount++
 		}
-		if spec.Aws.DDBStreams != nil {
-			sourceSetCount++
+		if spec.Aws.SNS != nil {
+			sinkSetCount++
 		}
 	}
 
-	// Validate that only one source field is set
-	if sourceSetCount > 1 {
-		errs = errs.Also(apis.ErrGeneric("only one source type can be set", "spec"))
-	} else if sourceSetCount == 0 {
-		errs = errs.Also(apis.ErrGeneric("at least one source type must be specified", "spec"))
+	// Validate that only one sink field is set
+	if sinkSetCount > 1 {
+		errs = errs.Also(apis.ErrGeneric("only one sink type can be set", "spec"))
+	} else if sinkSetCount == 0 {
+		errs = errs.Also(apis.ErrGeneric("at least one sink type must be specified", "spec"))
 	}
 
-	// Only perform AWS-specific validation if exactly one AWS source is configured
-	if sourceSetCount == 1 && spec.Aws != nil {
-		if spec.Aws.S3 != nil || spec.Aws.SQS != nil || spec.Aws.DDBStreams != nil {
+	// Only perform AWS-specific validation if exactly one AWS sink is configured
+	if sinkSetCount == 1 && spec.Aws != nil {
+		if spec.Aws.S3 != nil || spec.Aws.SQS != nil || spec.Aws.SNS != nil {
 			// Check that AWS Auth is properly configured
 			if !spec.Aws.Auth.HasAuth() {
 				errs = errs.Also(apis.ErrMissingField("aws.auth.secret.ref.name"))
@@ -82,14 +82,13 @@ func (spec *IntegrationSourceSpec) Validate(ctx context.Context) *apis.FieldErro
 				errs = errs.Also(apis.ErrMissingField("aws.sqs.region"))
 			}
 		}
-
-		// Additional validation for AWS DDBStreams required fields
-		if spec.Aws.DDBStreams != nil {
-			if spec.Aws.DDBStreams.Table == "" {
-				errs = errs.Also(apis.ErrMissingField("aws.ddb-streams.table"))
+		// Additional validation for AWS SNS required fields
+		if spec.Aws.SNS != nil {
+			if spec.Aws.SNS.Arn == "" {
+				errs = errs.Also(apis.ErrMissingField("aws.sns.arn"))
 			}
-			if spec.Aws.DDBStreams.Region == "" {
-				errs = errs.Also(apis.ErrMissingField("aws.ddb-streams.region"))
+			if spec.Aws.SNS.Region == "" {
+				errs = errs.Also(apis.ErrMissingField("aws.sns.region"))
 			}
 		}
 	}

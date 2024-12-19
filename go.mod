@@ -23,9 +23,9 @@ require (
 	knative.dev/caching v0.0.0-20241128013742-9f3a58ce332c
 	knative.dev/eventing v0.43.1-0.20241217130309-b00da5954263
 	knative.dev/hack v0.0.0-20241128013751-1978b3a02667
-	knative.dev/pkg v0.0.0-20241128013618-f3ab5605e542
+	knative.dev/pkg v0.0.0-20241218051509-40afb7c5436e
 	knative.dev/reconciler-test v0.0.0-20241128013747-984ae1257c23
-	knative.dev/serving v0.43.1-0.20241209084051-2d5a1e99798a
+	knative.dev/serving v0.43.1-0.20241217181709-d1e308e65f09
 	sigs.k8s.io/yaml v1.4.0
 )
 

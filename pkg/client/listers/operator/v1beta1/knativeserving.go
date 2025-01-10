@@ -19,8 +19,8 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/listers"
 	"k8s.io/client-go/tools/cache"
 	v1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
@@ -38,25 +38,17 @@ type KnativeServingLister interface {
 
 // knativeServingLister implements the KnativeServingLister interface.
 type knativeServingLister struct {
-	indexer cache.Indexer
+	listers.ResourceIndexer[*v1beta1.KnativeServing]
 }
 
 // NewKnativeServingLister returns a new KnativeServingLister.
 func NewKnativeServingLister(indexer cache.Indexer) KnativeServingLister {
-	return &knativeServingLister{indexer: indexer}
-}
-
-// List lists all KnativeServings in the indexer.
-func (s *knativeServingLister) List(selector labels.Selector) (ret []*v1beta1.KnativeServing, err error) {
-	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1beta1.KnativeServing))
-	})
-	return ret, err
+	return &knativeServingLister{listers.New[*v1beta1.KnativeServing](indexer, v1beta1.Resource("knativeserving"))}
 }
 
 // KnativeServings returns an object that can list and get KnativeServings.
 func (s *knativeServingLister) KnativeServings(namespace string) KnativeServingNamespaceLister {
-	return knativeServingNamespaceLister{indexer: s.indexer, namespace: namespace}
+	return knativeServingNamespaceLister{listers.NewNamespaced[*v1beta1.KnativeServing](s.ResourceIndexer, namespace)}
 }
 
 // KnativeServingNamespaceLister helps list and get KnativeServings.
@@ -74,26 +66,5 @@ type KnativeServingNamespaceLister interface {
 // knativeServingNamespaceLister implements the KnativeServingNamespaceLister
 // interface.
 type knativeServingNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all KnativeServings in the indexer for a given namespace.
-func (s knativeServingNamespaceLister) List(selector labels.Selector) (ret []*v1beta1.KnativeServing, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1beta1.KnativeServing))
-	})
-	return ret, err
-}
-
-// Get retrieves the KnativeServing from the indexer for a given namespace and name.
-func (s knativeServingNamespaceLister) Get(name string) (*v1beta1.KnativeServing, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, errors.NewNotFound(v1beta1.Resource("knativeserving"), name)
-	}
-	return obj.(*v1beta1.KnativeServing), nil
+	listers.ResourceIndexer[*v1beta1.KnativeServing]
 }

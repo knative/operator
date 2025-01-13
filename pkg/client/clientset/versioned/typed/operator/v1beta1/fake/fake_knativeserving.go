@@ -41,22 +41,24 @@ var knativeservingsKind = v1beta1.SchemeGroupVersion.WithKind("KnativeServing")
 
 // Get takes name of the knativeServing, and returns the corresponding knativeServing object, and an error if there is any.
 func (c *FakeKnativeServings) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.KnativeServing, err error) {
+	emptyResult := &v1beta1.KnativeServing{}
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(knativeservingsResource, c.ns, name), &v1beta1.KnativeServing{})
+		Invokes(testing.NewGetActionWithOptions(knativeservingsResource, c.ns, name, options), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1beta1.KnativeServing), err
 }
 
 // List takes label and field selectors, and returns the list of KnativeServings that match those selectors.
 func (c *FakeKnativeServings) List(ctx context.Context, opts v1.ListOptions) (result *v1beta1.KnativeServingList, err error) {
+	emptyResult := &v1beta1.KnativeServingList{}
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(knativeservingsResource, knativeservingsKind, c.ns, opts), &v1beta1.KnativeServingList{})
+		Invokes(testing.NewListActionWithOptions(knativeservingsResource, knativeservingsKind, c.ns, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 
 	label, _, _ := testing.ExtractFromListOptions(opts)
@@ -75,40 +77,43 @@ func (c *FakeKnativeServings) List(ctx context.Context, opts v1.ListOptions) (re
 // Watch returns a watch.Interface that watches the requested knativeServings.
 func (c *FakeKnativeServings) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(knativeservingsResource, c.ns, opts))
+		InvokesWatch(testing.NewWatchActionWithOptions(knativeservingsResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a knativeServing and creates it.  Returns the server's representation of the knativeServing, and an error, if there is any.
 func (c *FakeKnativeServings) Create(ctx context.Context, knativeServing *v1beta1.KnativeServing, opts v1.CreateOptions) (result *v1beta1.KnativeServing, err error) {
+	emptyResult := &v1beta1.KnativeServing{}
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(knativeservingsResource, c.ns, knativeServing), &v1beta1.KnativeServing{})
+		Invokes(testing.NewCreateActionWithOptions(knativeservingsResource, c.ns, knativeServing, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1beta1.KnativeServing), err
 }
 
 // Update takes the representation of a knativeServing and updates it. Returns the server's representation of the knativeServing, and an error, if there is any.
 func (c *FakeKnativeServings) Update(ctx context.Context, knativeServing *v1beta1.KnativeServing, opts v1.UpdateOptions) (result *v1beta1.KnativeServing, err error) {
+	emptyResult := &v1beta1.KnativeServing{}
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(knativeservingsResource, c.ns, knativeServing), &v1beta1.KnativeServing{})
+		Invokes(testing.NewUpdateActionWithOptions(knativeservingsResource, c.ns, knativeServing, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1beta1.KnativeServing), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeKnativeServings) UpdateStatus(ctx context.Context, knativeServing *v1beta1.KnativeServing, opts v1.UpdateOptions) (*v1beta1.KnativeServing, error) {
+func (c *FakeKnativeServings) UpdateStatus(ctx context.Context, knativeServing *v1beta1.KnativeServing, opts v1.UpdateOptions) (result *v1beta1.KnativeServing, err error) {
+	emptyResult := &v1beta1.KnativeServing{}
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(knativeservingsResource, "status", c.ns, knativeServing), &v1beta1.KnativeServing{})
+		Invokes(testing.NewUpdateSubresourceActionWithOptions(knativeservingsResource, "status", c.ns, knativeServing, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1beta1.KnativeServing), err
 }
@@ -123,7 +128,7 @@ func (c *FakeKnativeServings) Delete(ctx context.Context, name string, opts v1.D
 
 // DeleteCollection deletes a collection of objects.
 func (c *FakeKnativeServings) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(knativeservingsResource, c.ns, listOpts)
+	action := testing.NewDeleteCollectionActionWithOptions(knativeservingsResource, c.ns, opts, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1beta1.KnativeServingList{})
 	return err
@@ -131,11 +136,12 @@ func (c *FakeKnativeServings) DeleteCollection(ctx context.Context, opts v1.Dele
 
 // Patch applies the patch and returns the patched knativeServing.
 func (c *FakeKnativeServings) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.KnativeServing, err error) {
+	emptyResult := &v1beta1.KnativeServing{}
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(knativeservingsResource, c.ns, name, pt, data, subresources...), &v1beta1.KnativeServing{})
+		Invokes(testing.NewPatchSubresourceActionWithOptions(knativeservingsResource, c.ns, name, pt, data, opts, subresources...), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1beta1.KnativeServing), err
 }

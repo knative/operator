@@ -2,6 +2,7 @@ knative_operator:
   knative_operator:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
     tag: {{ tag }}
+    affinity: {}
     containerSecurityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
@@ -16,6 +17,16 @@ knative_operator:
   operator_webhook:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
     tag: {{ tag }}
+    affinity:
+      # To avoid node becoming SPOF, spread our replicas to different nodes.
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: operator-webhook
+              topologyKey: kubernetes.io/hostname
+            weight: 100
     containerSecurityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true

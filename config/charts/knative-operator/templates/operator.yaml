@@ -71,16 +71,10 @@ spec:
         {{ toYaml .Values.knative_operator.operator_webhook.podAnnotations }}
       {{- end }}
     spec:
-      # To avoid node becoming SPOF, spread our replicas to different nodes.
+      {{- if .Values.knative_operator.operator_webhook.affinity }}
       affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app: operator-webhook
-              topologyKey: kubernetes.io/hostname
-            weight: 100
+      {{- toYaml .Values.knative_operator.operator_webhook.affinity | nindent 8 }}
+      {{- end }}
       {{- if and .Values.knative_operator.operator_webhook.securityContext }}
       securityContext:
         {{ toYaml .Values.knative_operator.operator_webhook.securityContext }}
@@ -6357,6 +6351,10 @@ spec:
         {{ toYaml .Values.knative_operator.knative_operator.podAnnotations }}
       {{- end }}
     spec:
+      {{- if .Values.knative_operator.knative_operator.affinity }}
+      affinity:
+      {{- toYaml .Values.knative_operator.knative_operator.affinity | nindent 8 }}
+      {{- end }}
       serviceAccountName: knative-operator
       {{- if and .Values.knative_operator.knative_operator.securityContext }}
       securityContext:

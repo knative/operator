@@ -22,10 +22,10 @@ require (
 	k8s.io/code-generator v0.30.3
 	knative.dev/caching v0.0.0-20241022012359-41bbaf964d16
 	knative.dev/eventing v0.43.3
-	knative.dev/hack v0.0.0-20250114120502-30344aeba756
+	knative.dev/hack v0.0.0-20250117112405-6cb0feb3ac46
 	knative.dev/pkg v0.0.0-20241021183759-9b9d535af5ad
 	knative.dev/reconciler-test v0.0.0-20241015093232-09111f0f1364
-	knative.dev/serving v0.43.0
+	knative.dev/serving v0.43.1
 	sigs.k8s.io/yaml v1.4.0
 )
 

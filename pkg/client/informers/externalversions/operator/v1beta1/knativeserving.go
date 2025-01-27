@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Knative Authors
+Copyright 2025 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,24 +19,24 @@ limitations under the License.
 package v1beta1
 
 import (
-	"context"
+	context "context"
 	time "time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
 	cache "k8s.io/client-go/tools/cache"
-	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+	apisoperatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	versioned "knative.dev/operator/pkg/client/clientset/versioned"
 	internalinterfaces "knative.dev/operator/pkg/client/informers/externalversions/internalinterfaces"
-	v1beta1 "knative.dev/operator/pkg/client/listers/operator/v1beta1"
+	operatorv1beta1 "knative.dev/operator/pkg/client/listers/operator/v1beta1"
 )
 
 // KnativeServingInformer provides access to a shared informer and lister for
 // KnativeServings.
 type KnativeServingInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1beta1.KnativeServingLister
+	Lister() operatorv1beta1.KnativeServingLister
 }
 
 type knativeServingInformer struct {
@@ -71,7 +71,7 @@ func NewFilteredKnativeServingInformer(client versioned.Interface, namespace str
 				return client.OperatorV1beta1().KnativeServings(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&operatorv1beta1.KnativeServing{},
+		&apisoperatorv1beta1.KnativeServing{},
 		resyncPeriod,
 		indexers,
 	)
@@ -82,9 +82,9 @@ func (f *knativeServingInformer) defaultInformer(client versioned.Interface, res
 }
 
 func (f *knativeServingInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&operatorv1beta1.KnativeServing{}, f.defaultInformer)
+	return f.factory.InformerFor(&apisoperatorv1beta1.KnativeServing{}, f.defaultInformer)
 }
 
-func (f *knativeServingInformer) Lister() v1beta1.KnativeServingLister {
-	return v1beta1.NewKnativeServingLister(f.Informer().GetIndexer())
+func (f *knativeServingInformer) Lister() operatorv1beta1.KnativeServingLister {
+	return operatorv1beta1.NewKnativeServingLister(f.Informer().GetIndexer())
 }

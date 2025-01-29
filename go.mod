@@ -12,7 +12,7 @@ require (
 	go.uber.org/zap v1.27.0
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.22.0
-	golang.org/x/oauth2 v0.23.0
+	golang.org/x/oauth2 v0.24.0
 	google.golang.org/api v0.198.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
 	istio.io/client-go v1.18.7
@@ -20,12 +20,12 @@ require (
 	k8s.io/apimachinery v0.31.4
 	k8s.io/client-go v0.31.4
 	k8s.io/code-generator v0.31.4
-	knative.dev/caching v0.0.0-20250117155405-a76aa7cd2bb6
-	knative.dev/eventing v0.44.0
-	knative.dev/hack v0.0.0-20250116150306-c142b4835bc5
-	knative.dev/pkg v0.0.0-20250117084104-c43477f0052b
-	knative.dev/reconciler-test v0.0.0-20250117161605-4965c77b4dfa
-	knative.dev/serving v0.44.0
+	knative.dev/caching v0.0.0-20250128014344-a990a4fe843b
+	knative.dev/eventing v0.44.1-0.20250128084654-d243b910b2ac
+	knative.dev/hack v0.0.0-20250128013659-5f7f0f50e9de
+	knative.dev/pkg v0.0.0-20250128013458-efddeac3ec35
+	knative.dev/reconciler-test v0.0.0-20250129131157-3424ad806aa1
+	knative.dev/serving v0.44.1-0.20250129103755-45ca4c6369cb
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -125,9 +125,9 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.54.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.54.0 // indirect
-	go.opentelemetry.io/otel v1.31.0 // indirect
-	go.opentelemetry.io/otel/metric v1.31.0 // indirect
-	go.opentelemetry.io/otel/trace v1.31.0 // indirect
+	go.opentelemetry.io/otel v1.32.0 // indirect
+	go.opentelemetry.io/otel/metric v1.32.0 // indirect
+	go.opentelemetry.io/otel/trace v1.32.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
@@ -142,10 +142,10 @@ require (
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20240903143218-8af14fe29dc1 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20241015192408-796eee8c2d53 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
-	google.golang.org/grpc v1.69.2 // indirect
-	google.golang.org/protobuf v1.36.2 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20241202173237-19429a94021a // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20241202173237-19429a94021a // indirect
+	google.golang.org/grpc v1.70.0 // indirect
+	google.golang.org/protobuf v1.36.4 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helm Charts - Knative</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            color: #2c3e50;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 28px;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .usage, .chart-list {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        .usage-code {
+            background: #333;
+            color: #fff;
+            padding: 12px;
+            border-radius: 5px;
+            font-family: "Courier New", monospace;
+            display: block;
+            font-size: 14px;
+        }
+        .chart-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .chart-item h2 {
+            font-size: 18px;
+            margin: 0;
+            color: #007d9c;
+        }
+        .chart-item a {
+            color: #007d9c;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .chart-versions {
+            font-size: 14px;
+            color: #555;
+            margin-top: 5px;
+        }
+        .version-label {
+            font-weight: bold;
+            color: #333;
+        }
+        .chart-description {
+            font-size: 14px;
+            color: #777;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Helm Charts</h1>
+
+    <div class="usage">
+        <h2>Usage</h2>
+        <code class="usage-code">
+          helm repo add knative-operator https://knative.github.io/operator<br/>
+          helm show values knative-operator/knative-operator
+        </code>
+    </div>
+
+    <div class="chart-list">
+        <h2>Charts</h2>
+
+        
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.17.0/knative-operator-v1.17.0.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.17.0/knative-operator-v1.17.0.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.17.0 |
+                        <span class="version-label">App Version:</span> 1.17.0
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.16.1/knative-operator-v1.16.1.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.16.1/knative-operator-v1.16.1.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.16.1 |
+                        <span class="version-label">App Version:</span> 1.16.1
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.15.10/knative-operator-v1.15.10.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.15.10/knative-operator-v1.15.10.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.15.10 |
+                        <span class="version-label">App Version:</span> 1.15.10
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.15.9/knative-operator-v1.15.9.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.15.9/knative-operator-v1.15.9.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.15.9 |
+                        <span class="version-label">App Version:</span> 1.15.9
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.16.0/knative-operator-v1.16.0.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.16.0/knative-operator-v1.16.0.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.16.0 |
+                        <span class="version-label">App Version:</span> 1.16.0
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.15.8/knative-operator-v1.15.8.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.15.8/knative-operator-v1.15.8.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.15.8 |
+                        <span class="version-label">App Version:</span> 1.15.8
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.15.7/knative-operator-v1.15.7.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.15.7/knative-operator-v1.15.7.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.15.7 |
+                        <span class="version-label">App Version:</span> 1.15.7
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.15.6/knative-operator-v1.15.6.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.15.6/knative-operator-v1.15.6.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.15.6 |
+                        <span class="version-label">App Version:</span> 1.15.6
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.15.5/knative-operator-v1.15.5.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.15.5/knative-operator-v1.15.5.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.15.5 |
+                        <span class="version-label">App Version:</span> 1.15.5
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.14.9/knative-operator-v1.14.9.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.14.9/knative-operator-v1.14.9.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.14.9 |
+                        <span class="version-label">App Version:</span> 1.14.9
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.15.4/knative-operator-v1.15.4.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.15.4/knative-operator-v1.15.4.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.15.4 |
+                        <span class="version-label">App Version:</span> 1.15.4
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.14.8/knative-operator-v1.14.8.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.14.8/knative-operator-v1.14.8.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.14.8 |
+                        <span class="version-label">App Version:</span> 1.14.8
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.15.3/knative-operator-v1.15.3.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.15.3/knative-operator-v1.15.3.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.15.3 |
+                        <span class="version-label">App Version:</span> 1.15.3
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.15.2/knative-operator-v1.15.2.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.15.2/knative-operator-v1.15.2.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.15.2 |
+                        <span class="version-label">App Version:</span> 1.15.2
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.15.1/knative-operator-v1.15.1.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.15.1/knative-operator-v1.15.1.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.15.1 |
+                        <span class="version-label">App Version:</span> 1.15.1
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.14.7/knative-operator-v1.14.7.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.14.7/knative-operator-v1.14.7.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.14.7 |
+                        <span class="version-label">App Version:</span> 1.14.7
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.14.6/knative-operator-v1.14.6.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.14.6/knative-operator-v1.14.6.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.14.6 |
+                        <span class="version-label">App Version:</span> 1.14.6
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.15.0/knative-operator-v1.15.0.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.15.0/knative-operator-v1.15.0.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.15.0 |
+                        <span class="version-label">App Version:</span> 1.15.0
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.14.5/knative-operator-v1.14.5.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.14.5/knative-operator-v1.14.5.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.14.5 |
+                        <span class="version-label">App Version:</span> 1.14.5
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.14.4/knative-operator-v1.14.4.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.14.4/knative-operator-v1.14.4.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.14.4 |
+                        <span class="version-label">App Version:</span> 1.14.4
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.14.3/knative-operator-v1.14.3.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.14.3/knative-operator-v1.14.3.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.14.3 |
+                        <span class="version-label">App Version:</span> 1.14.3
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.14.2/knative-operator-v1.14.2.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.14.2/knative-operator-v1.14.2.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.14.2 |
+                        <span class="version-label">App Version:</span> 1.14.2
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.14.1/knative-operator-1.14.1.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.14.1/knative-operator-1.14.1.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.14.1 |
+                        <span class="version-label">App Version:</span> 1.14.1
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.14.0/knative-operator-1.14.0.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.14.0/knative-operator-1.14.0.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.14.0 |
+                        <span class="version-label">App Version:</span> 1.14.0
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.13.3/knative-operator-1.13.3.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.13.3/knative-operator-1.13.3.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.13.3 |
+                        <span class="version-label">App Version:</span> 1.13.3
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.12.5/knative-operator-1.12.5.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.12.5/knative-operator-1.12.5.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.12.5 |
+                        <span class="version-label">App Version:</span> 1.12.5
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.12.4/knative-operator-1.12.4.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.12.4/knative-operator-1.12.4.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.12.4 |
+                        <span class="version-label">App Version:</span> 1.12.4
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.13.2/knative-operator-1.13.2.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.13.2/knative-operator-1.13.2.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.13.2 |
+                        <span class="version-label">App Version:</span> 1.13.2
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.13.1/knative-operator-1.13.1.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.13.1/knative-operator-1.13.1.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.13.1 |
+                        <span class="version-label">App Version:</span> 1.13.1
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+                <div class="chart-item">
+                    <h2><a href="https://github.com/knative/operator/releases/download/knative-v1.12.3/knative-operator-1.12.3.tgz" title="https://github.com/knative/operator/releases/download/knative-v1.12.3/knative-operator-1.12.3.tgz">knative-operator</a></h2>
+                    <div class="chart-versions">
+                        <span class="version-label">Chart Version:</span> v1.12.3 |
+                        <span class="version-label">App Version:</span> 1.12.3
+                    </div>
+                    <p class="chart-description">Helm chart for deploying Knative Operator</p>
+                </div>
+            
+        
+        
+    </div>
+</div>
+
+</body>
+</html>

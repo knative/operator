@@ -20,12 +20,12 @@ require (
 	k8s.io/apimachinery v0.31.4
 	k8s.io/client-go v0.31.4
 	k8s.io/code-generator v0.31.4
-	knative.dev/caching v0.0.0-20250128014344-a990a4fe843b
-	knative.dev/eventing v0.44.1-0.20250128084654-d243b910b2ac
+	knative.dev/caching v0.0.0-20250129142755-41aa68a551d8
+	knative.dev/eventing v0.44.1-0.20250131074056-5fb693f5f65e
 	knative.dev/hack v0.0.0-20250128013659-5f7f0f50e9de
-	knative.dev/pkg v0.0.0-20250128013458-efddeac3ec35
+	knative.dev/pkg v0.0.0-20250203163623-f62a97fc6ad4
 	knative.dev/reconciler-test v0.0.0-20250129131157-3424ad806aa1
-	knative.dev/serving v0.44.1-0.20250129103755-45ca4c6369cb
+	knative.dev/serving v0.44.1-0.20250203174422-9c354163952b
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -61,7 +61,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.9.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
-	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
+	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.3 // indirect
@@ -116,7 +116,7 @@ require (
 	github.com/rickb777/plural v1.2.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/tsenart/vegeta/v12 v12.12.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
@@ -157,7 +157,7 @@ require (
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240903163716-9e1beecbcb38 // indirect
 	k8s.io/utils v0.0.0-20240921022957-49e7df575cb6 // indirect
-	knative.dev/networking v0.0.0-20250117155906-67d1c274ba6a // indirect
+	knative.dev/networking v0.0.0-20250128014447-43761241da75 // indirect
 	sigs.k8s.io/controller-runtime v0.7.2 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect

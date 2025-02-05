@@ -20,12 +20,12 @@ require (
 	k8s.io/apimachinery v0.31.4
 	k8s.io/client-go v0.31.4
 	k8s.io/code-generator v0.31.4
-	knative.dev/caching v0.0.0-20250129142755-41aa68a551d8
-	knative.dev/eventing v0.44.1-0.20250131074056-5fb693f5f65e
+	knative.dev/caching v0.0.0-20250204145224-ed50a5c83f6b
+	knative.dev/eventing v0.44.1-0.20250204160923-4a6e7d25c29a
 	knative.dev/hack v0.0.0-20250128013659-5f7f0f50e9de
 	knative.dev/pkg v0.0.0-20250203163623-f62a97fc6ad4
 	knative.dev/reconciler-test v0.0.0-20250129131157-3424ad806aa1
-	knative.dev/serving v0.44.1-0.20250203174422-9c354163952b
+	knative.dev/serving v0.44.1-0.20250204233124-9be081620a54
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -77,7 +77,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
-	github.com/google/go-containerregistry v0.13.0 // indirect
+	github.com/google/go-containerregistry v0.20.2 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/s2a-go v0.1.8 // indirect

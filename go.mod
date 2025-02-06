@@ -25,7 +25,7 @@ require (
 	knative.dev/hack v0.0.0-20250128013659-5f7f0f50e9de
 	knative.dev/pkg v0.0.0-20250203163623-f62a97fc6ad4
 	knative.dev/reconciler-test v0.0.0-20250129131157-3424ad806aa1
-	knative.dev/serving v0.44.1-0.20250204233124-9be081620a54
+	knative.dev/serving v0.44.1-0.20250205132413-a9c54670fee6
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -157,7 +157,7 @@ require (
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240903163716-9e1beecbcb38 // indirect
 	k8s.io/utils v0.0.0-20240921022957-49e7df575cb6 // indirect
-	knative.dev/networking v0.0.0-20250128014447-43761241da75 // indirect
+	knative.dev/networking v0.0.0-20250204225923-e6fc9bbf3fb0 // indirect
 	sigs.k8s.io/controller-runtime v0.7.2 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect

@@ -1,6 +1,6 @@
 module knative.dev/operator
 
-go 1.23.0
+go 1.23.6
 
 replace (
 	k8s.io/api => k8s.io/api v0.31.4

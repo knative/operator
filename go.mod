@@ -1,6 +1,6 @@
 module knative.dev/operator
 
-go 1.23.6
+go 1.23.0
 
 replace (
 	k8s.io/api => k8s.io/api v0.31.4
@@ -159,6 +159,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.31.4 // indirect
 	k8s.io/apiserver v0.31.4 // indirect
+	k8s.io/gengo v0.0.0-20240404160639-a0386bf69313 // indirect
 	k8s.io/gengo/v2 v2.0.0-20240826214909-a7b603a56eb7 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240903163716-9e1beecbcb38 // indirect
@@ -169,4 +170,7 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.5.0 // indirect
 )
 
-replace k8s.io/gengo/v2 v2.0.0-20240826214909-a7b603a56eb7 => k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70
+replace (
+	k8s.io/gengo/v2 v2.0.0-20240826214909-a7b603a56eb7 => k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70
+	knative.dev/pkg v0.0.0-20250211185550-c8bea7c326ff => knative.dev/pkg v0.0.0-20250203163623-f62a97fc6ad4
+)

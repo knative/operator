@@ -1362,6 +1362,13 @@ k8s.io/code-generator/cmd/register-gen/generators
 k8s.io/code-generator/pkg/namer
 k8s.io/code-generator/pkg/util
 k8s.io/code-generator/third_party/forked/golang/reflect
+# k8s.io/gengo v0.0.0-20240404160639-a0386bf69313
+## explicit; go 1.13
+k8s.io/gengo/args
+k8s.io/gengo/generator
+k8s.io/gengo/namer
+k8s.io/gengo/parser
+k8s.io/gengo/types
 # k8s.io/gengo/v2 v2.0.0-20240826214909-a7b603a56eb7 => k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70
 ## explicit; go 1.20
 k8s.io/gengo/v2
@@ -1521,7 +1528,7 @@ knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/ingress
 knative.dev/networking/pkg/k8s
-# knative.dev/pkg v0.0.0-20250211185550-c8bea7c326ff
+# knative.dev/pkg v0.0.0-20250211185550-c8bea7c326ff => knative.dev/pkg v0.0.0-20250203163623-f62a97fc6ad4
 ## explicit; go 1.22.7
 knative.dev/pkg/apiextensions/storageversion
 knative.dev/pkg/apiextensions/storageversion/cmd/migrate
@@ -1544,13 +1551,6 @@ knative.dev/pkg/client/injection/kube/informers/factory
 knative.dev/pkg/codegen/cmd/injection-gen
 knative.dev/pkg/codegen/cmd/injection-gen/args
 knative.dev/pkg/codegen/cmd/injection-gen/generators
-knative.dev/pkg/codegen/cmd/injection-gen/generators/client
-knative.dev/pkg/codegen/cmd/injection-gen/generators/duck
-knative.dev/pkg/codegen/cmd/injection-gen/generators/factory
-knative.dev/pkg/codegen/cmd/injection-gen/generators/informers
-knative.dev/pkg/codegen/cmd/injection-gen/generators/reconciler
-knative.dev/pkg/codegen/cmd/injection-gen/namer
-knative.dev/pkg/codegen/cmd/injection-gen/tags
 knative.dev/pkg/configmap
 knative.dev/pkg/configmap/informer
 knative.dev/pkg/controller

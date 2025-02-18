@@ -22,7 +22,6 @@
 # to run a specific set of tests.
 
 export GO111MODULE=on
-export GOFLAGS=-mod=
 
 source $(dirname $0)/../vendor/knative.dev/hack/presubmit-tests.sh
 

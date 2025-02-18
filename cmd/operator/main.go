@@ -24,7 +24,7 @@ import (
 
 func main() {
 	sharedmain.Main("knative-operator",
-		knativeserving.NewController,
 		knativeeventing.NewController,
+		knativeserving.NewController,
 	)
 }

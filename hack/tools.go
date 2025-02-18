@@ -22,6 +22,7 @@ import (
 	_ "knative.dev/eventing/cmd/heartbeats"
 	_ "knative.dev/hack"
 	_ "knative.dev/pkg/apiextensions/storageversion/cmd/migrate"
+	_ "knative.dev/pkg/codegen/cmd/injection-gen/tags"
 	_ "knative.dev/pkg/hack"
 	_ "knative.dev/reconciler-test/cmd/eventshub"
 )

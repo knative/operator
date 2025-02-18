@@ -1414,8 +1414,8 @@ knative.dev/hack v0.0.0-20250217122557-ce4c934f30e5 h1:BIkxsbG01S563JJ68n4SIeIpi
 knative.dev/hack v0.0.0-20250217122557-ce4c934f30e5/go.mod h1:R0ritgYtjLDO9527h5vb5X6gfvt5LCrJ55BNbVDsWiY=
 knative.dev/networking v0.0.0-20250204225923-e6fc9bbf3fb0 h1:BNRQ5/VTWH+I1getnHXxqhFfMYY1WsL69ZljNjMukpQ=
 knative.dev/networking v0.0.0-20250204225923-e6fc9bbf3fb0/go.mod h1:4EjAb5Ij83ABbErDmHewyIOUkEoYZqbXa7hf2hbzvUg=
-knative.dev/pkg v0.0.0-20250218011850-c925de2a3f07 h1:uqBiMwd2Es/qA63Qda5qdjCjzhm2f4/Fh7SUVY6EgFc=
-knative.dev/pkg v0.0.0-20250218011850-c925de2a3f07/go.mod h1:ogeAD7DbAoOeKK7fIwUYsEerf+dnEIjJpeAtOYcoyRk=
+knative.dev/pkg v0.0.0-20250214140553-ae2c6bcc1f59 h1:gUycV6nl+ZFIVTeAkQESbdeVmbdDQtELo4eQQ/FwyDY=
+knative.dev/pkg v0.0.0-20250214140553-ae2c6bcc1f59/go.mod h1:MvZDDprJBCEwaeZhdPVTZJtODEHF0ZSj2M3jt1FQ4+Y=
 knative.dev/reconciler-test v0.0.0-20250217113456-62eb465c1406 h1:2qEiveD8LKwWPZmjTjhgy0MPChPJbPMXf8CpRvogjTI=
 knative.dev/reconciler-test v0.0.0-20250217113456-62eb465c1406/go.mod h1:MgX538jlc+yX6k2wWWVPspP64eqLnw/0OAVdTeJJLEM=
 knative.dev/serving v0.44.1-0.20250217152724-7125e03443cd h1:uSTRhaDqYpdunzUhBoUioBR21KOFTtAmtiz1L1t80NA=

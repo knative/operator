@@ -2,6 +2,8 @@ module knative.dev/operator
 
 go 1.23.0
 
+replace knative.dev/pkg => knative.dev/pkg v0.0.0-20250214140553-ae2c6bcc1f59
+
 require (
 	github.com/go-logr/zapr v1.3.0
 	github.com/google/go-cmp v0.6.0

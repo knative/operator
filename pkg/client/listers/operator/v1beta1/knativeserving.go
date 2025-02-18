@@ -19,10 +19,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/listers"
-	"k8s.io/client-go/tools/cache"
-	v1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+	labels "k8s.io/apimachinery/pkg/labels"
+	listers "k8s.io/client-go/listers"
+	cache "k8s.io/client-go/tools/cache"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 )
 
 // KnativeServingLister helps list KnativeServings.
@@ -30,7 +30,7 @@ import (
 type KnativeServingLister interface {
 	// List lists all KnativeServings in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1beta1.KnativeServing, err error)
+	List(selector labels.Selector) (ret []*operatorv1beta1.KnativeServing, err error)
 	// KnativeServings returns an object that can list and get KnativeServings.
 	KnativeServings(namespace string) KnativeServingNamespaceLister
 	KnativeServingListerExpansion
@@ -38,17 +38,17 @@ type KnativeServingLister interface {
 
 // knativeServingLister implements the KnativeServingLister interface.
 type knativeServingLister struct {
-	listers.ResourceIndexer[*v1beta1.KnativeServing]
+	listers.ResourceIndexer[*operatorv1beta1.KnativeServing]
 }
 
 // NewKnativeServingLister returns a new KnativeServingLister.
 func NewKnativeServingLister(indexer cache.Indexer) KnativeServingLister {
-	return &knativeServingLister{listers.New[*v1beta1.KnativeServing](indexer, v1beta1.Resource("knativeserving"))}
+	return &knativeServingLister{listers.New[*operatorv1beta1.KnativeServing](indexer, operatorv1beta1.Resource("knativeserving"))}
 }
 
 // KnativeServings returns an object that can list and get KnativeServings.
 func (s *knativeServingLister) KnativeServings(namespace string) KnativeServingNamespaceLister {
-	return knativeServingNamespaceLister{listers.NewNamespaced[*v1beta1.KnativeServing](s.ResourceIndexer, namespace)}
+	return knativeServingNamespaceLister{listers.NewNamespaced[*operatorv1beta1.KnativeServing](s.ResourceIndexer, namespace)}
 }
 
 // KnativeServingNamespaceLister helps list and get KnativeServings.
@@ -56,15 +56,15 @@ func (s *knativeServingLister) KnativeServings(namespace string) KnativeServingN
 type KnativeServingNamespaceLister interface {
 	// List lists all KnativeServings in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1beta1.KnativeServing, err error)
+	List(selector labels.Selector) (ret []*operatorv1beta1.KnativeServing, err error)
 	// Get retrieves the KnativeServing from the indexer for a given namespace and name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1beta1.KnativeServing, error)
+	Get(name string) (*operatorv1beta1.KnativeServing, error)
 	KnativeServingNamespaceListerExpansion
 }
 
 // knativeServingNamespaceLister implements the KnativeServingNamespaceLister
 // interface.
 type knativeServingNamespaceLister struct {
-	listers.ResourceIndexer[*v1beta1.KnativeServing]
+	listers.ResourceIndexer[*operatorv1beta1.KnativeServing]
 }

@@ -7,8 +7,9 @@ run:
     - postupgrade
     - postdowngrade
 
-  skip-dirs:
-    - pkg/client
+issues:
+  exclude-dirs:
+    - pkg/client # Excludes generated client
 
 linters:
   enable:

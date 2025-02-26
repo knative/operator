@@ -21,11 +21,11 @@ require (
 	k8s.io/client-go v0.30.3
 	k8s.io/code-generator v0.30.3
 	knative.dev/caching v0.0.0-20241022012359-41bbaf964d16
-	knative.dev/eventing v0.43.3
-	knative.dev/hack v0.0.0-20250117112405-6cb0feb3ac46
+	knative.dev/eventing v0.43.4
+	knative.dev/hack v0.0.0-20250220110655-b5e4ff820460
 	knative.dev/pkg v0.0.0-20241021183759-9b9d535af5ad
-	knative.dev/reconciler-test v0.0.0-20241015093232-09111f0f1364
-	knative.dev/serving v0.43.1
+	knative.dev/reconciler-test v0.0.0-20250217113355-f4bd4f5199d4
+	knative.dev/serving v0.43.2
 	sigs.k8s.io/yaml v1.4.0
 )
 

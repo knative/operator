@@ -33,7 +33,7 @@ var (
 	role                      mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
 	rolebinding               mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 	webhook                   mf.Predicate = mf.Any(mf.ByKind("MutatingWebhookConfiguration"), mf.ByKind("ValidatingWebhookConfiguration"))
-	webhookDependantResources mf.Predicate = mf.ByGVK(schema.GroupVersionKind{"networking.internal.knative.dev", "v1alpha1", "Certificate"})
+	webhookDependentResources mf.Predicate = mf.ByGVK(schema.GroupVersionKind{Group: "networking.internal.knative.dev", Version: "v1alpha1", Kind: "Certificate"})
 	gatewayNotMatch                        = "no matches for kind \"Gateway\""
 )
 
@@ -54,7 +54,7 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponen
 		status.MarkInstallFailed(err.Error())
 		return fmt.Errorf("failed to apply (cluster)rolebindings: %w", err)
 	}
-	if err := manifest.Filter(mf.Not(mf.Any(role, rolebinding, webhook, webhookDependantResources))).Apply(); err != nil {
+	if err := manifest.Filter(mf.Not(mf.Any(role, rolebinding, webhook, webhookDependentResources))).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())
 		if ks, ok := instance.(*v1beta1.KnativeServing); ok && strings.Contains(err.Error(), gatewayNotMatch) &&
 			(ks.Spec.Ingress == nil || ks.Spec.Ingress.Istio.Enabled) {
@@ -68,6 +68,7 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponen
 	return nil
 }
 
+// InstallWebhookConfigs applies the Webhook manifest resources and updates the given status accordingly.
 func InstallWebhookConfigs(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	status := instance.GetStatus()
 	if err := manifest.Filter(webhook).Apply(); err != nil {
@@ -77,15 +78,17 @@ func InstallWebhookConfigs(ctx context.Context, manifest *mf.Manifest, instance 
 	return nil
 }
 
-func InstallWebhookDepResources(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+// InstallWebhookDependentResources applies the Webhook dependent resources updates the given status accordingly.
+func InstallWebhookDependentResources(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	status := instance.GetStatus()
-	if err := manifest.Filter(webhookDependantResources).Apply(); err != nil {
+	if err := manifest.Filter(webhookDependentResources).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())
 		return fmt.Errorf("failed to apply webhooks: %w", err)
 	}
 	return nil
 }
 
+// MarkStatusSuccess updates the component status to success.
 func MarkStatusSuccess(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	status := instance.GetStatus()
 	status.MarkInstallSucceeded()

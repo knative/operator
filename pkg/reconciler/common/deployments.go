@@ -18,13 +18,16 @@ package common
 
 import (
 	"context"
+	"time"
 
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes/scheme"
+
 	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/pkg/controller"
 )
 
 // CheckDeployments checks all deployments in the given manifest and updates the given
@@ -52,7 +55,7 @@ func CheckDeployments(ctx context.Context, manifest *mf.Manifest, instance base.
 
 	if len(nonReadyDeployments) > 0 {
 		status.MarkDeploymentsNotReady(nonReadyDeployments)
-		return nil
+		return controller.NewRequeueAfter(1 * time.Second)
 	}
 
 	status.MarkDeploymentsAvailable()

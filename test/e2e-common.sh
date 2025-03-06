@@ -43,6 +43,7 @@ export TIMEOUT_CI=30m
 
 # GKE cluster version
 readonly K8S_CLUSTER_VERSION=1.31
+export ENABLE_GKE_TELEMETRY=true
 
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_SERVING_REPO_BRANCH.
 GENERATE_SERVING_YAML=0

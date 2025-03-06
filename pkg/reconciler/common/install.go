@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	mf "github.com/manifestival/manifestival"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/logging"
 
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -29,10 +30,11 @@ import (
 )
 
 var (
-	role            mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
-	rolebinding     mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
-	webhook         mf.Predicate = mf.Any(mf.ByKind("MutatingWebhookConfiguration"), mf.ByKind("ValidatingWebhookConfiguration"))
-	gatewayNotMatch              = "no matches for kind \"Gateway\""
+	role                      mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
+	rolebinding               mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
+	webhook                   mf.Predicate = mf.Any(mf.ByKind("MutatingWebhookConfiguration"), mf.ByKind("ValidatingWebhookConfiguration"))
+	webhookDependantResources mf.Predicate = mf.ByGVK(schema.GroupVersionKind{"networking.internal.knative.dev", "v1alpha1", "Certificate"})
+	gatewayNotMatch                        = "no matches for kind \"Gateway\""
 )
 
 // Install applies the manifest resources for the given version and updates the given
@@ -52,7 +54,7 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponen
 		status.MarkInstallFailed(err.Error())
 		return fmt.Errorf("failed to apply (cluster)rolebindings: %w", err)
 	}
-	if err := manifest.Filter(mf.Not(mf.Any(role, rolebinding, webhook))).Apply(); err != nil {
+	if err := manifest.Filter(mf.Not(mf.Any(role, rolebinding, webhook, webhookDependantResources))).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())
 		if ks, ok := instance.(*v1beta1.KnativeServing); ok && strings.Contains(err.Error(), gatewayNotMatch) &&
 			(ks.Spec.Ingress == nil || ks.Spec.Ingress.Istio.Enabled) {
@@ -63,10 +65,29 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponen
 
 		return fmt.Errorf("failed to apply non rbac manifest: %w", err)
 	}
+	return nil
+}
+
+func InstallWebhookConfigs(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+	status := instance.GetStatus()
 	if err := manifest.Filter(webhook).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())
 		return fmt.Errorf("failed to apply webhooks: %w", err)
 	}
+	return nil
+}
+
+func InstallWebhookDepResources(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+	status := instance.GetStatus()
+	if err := manifest.Filter(webhookDependantResources).Apply(); err != nil {
+		status.MarkInstallFailed(err.Error())
+		return fmt.Errorf("failed to apply webhooks: %w", err)
+	}
+	return nil
+}
+
+func MarkStatusSuccess(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+	status := instance.GetStatus()
 	status.MarkInstallSucceeded()
 	status.SetVersion(TargetVersion(instance))
 	return nil

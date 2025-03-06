@@ -34,6 +34,10 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponen
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func SetManifestPaths(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	status := instance.GetStatus()
 	path := common.TargetManifestPathArray(instance)
 	version := common.TargetVersion(instance)

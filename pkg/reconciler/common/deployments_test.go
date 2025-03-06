@@ -18,7 +18,6 @@ package common
 
 import (
 	"context"
-	"knative.dev/pkg/controller"
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
@@ -30,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
+	"knative.dev/pkg/controller"
 )
 
 func TestCheckDeployments(t *testing.T) {

@@ -125,7 +125,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		manifests.Install,
 		common.CheckDeployments,
 		common.InstallWebhookConfigs,
-		common.InstallWebhookDepResources,
+		common.InstallWebhookDependentResources,
 		manifests.SetManifestPaths,
 		common.MarkStatusSuccess,
 		common.DeleteObsoleteResources(ctx, ks, r.installed),

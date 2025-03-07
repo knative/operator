@@ -122,8 +122,8 @@ function download_knative() {
 # Install Istio.
 function install_istio() {
   echo ">> Installing Istio"
-  curl -sL https://istio.io/downloadIstioctl | ISTIO_VERSION=1.22.1 sh -
-  $HOME/.istioctl/bin/istioctl install -y
+  curl -sL https://istio.io/downloadIstioctl | sh -
+  $HOME/.istioctl/bin/istioctl install --set values.cni.cniBinDir=/home/kubernetes/bin -y
 }
 
 function create_namespace() {

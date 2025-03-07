@@ -81,6 +81,14 @@ func TestInstall(t *testing.T) {
 		t.Fatalf("Install() = %v, want no error", err)
 	}
 
+	if err := InstallWebhookConfigs(context.TODO(), &manifest, instance); err != nil {
+		t.Fatalf("InstallWebhookConfigs() = %v, want no error", err)
+	}
+
+	if err := MarkStatusSuccess(context.TODO(), &manifest, instance); err != nil {
+		t.Fatalf("MarkStatusSuccess() = %v, want no error", err)
+	}
+
 	if !cmp.Equal(client.creates, want) {
 		t.Fatalf("Unexpected creates: %s", cmp.Diff(client.creates, want))
 	}

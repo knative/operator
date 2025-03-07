@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
+	"knative.dev/pkg/controller"
 )
 
 func TestCheckDeployments(t *testing.T) {
@@ -78,7 +79,7 @@ func TestCheckDeployments(t *testing.T) {
 			*NamespacedResource("apps/v1", "Deployment", "test", "notReady"),
 		},
 		inAPI:      []runtime.Object{notReadyDeployment},
-		wantError:  false,
+		wantError:  true,
 		wantStatus: corev1.ConditionFalse,
 	}, {
 		name: "ready and not ready deployment",
@@ -86,8 +87,8 @@ func TestCheckDeployments(t *testing.T) {
 			*NamespacedResource("apps/v1", "Deployment", "test", "ready"),
 			*NamespacedResource("apps/v1", "Deployment", "test", "notReady"),
 		},
-		inAPI:      []runtime.Object{},
-		wantError:  false,
+		inAPI:      []runtime.Object{readyDeployment, notReadyDeployment},
+		wantError:  true,
 		wantStatus: corev1.ConditionFalse,
 	}, {
 		name: "not found deployment",
@@ -110,7 +111,8 @@ func TestCheckDeployments(t *testing.T) {
 			ks.Status.InitializeConditions()
 
 			err = CheckDeployments(context.TODO(), &manifest, ks)
-			if (err != nil) != test.wantError {
+			req, _ := controller.IsRequeueKey(err)
+			if (err != nil && req) != test.wantError {
 				t.Fatalf("CheckDeployments() = %v, wantError: %v", err, test.wantError)
 			}
 

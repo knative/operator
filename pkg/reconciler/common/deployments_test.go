@@ -29,7 +29,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
-	"knative.dev/pkg/controller"
 )
 
 func TestCheckDeployments(t *testing.T) {
@@ -111,8 +110,7 @@ func TestCheckDeployments(t *testing.T) {
 			ks.Status.InitializeConditions()
 
 			err = CheckDeployments(context.TODO(), &manifest, ks)
-			req, _ := controller.IsRequeueKey(err)
-			if (err != nil && req) != test.wantError {
+			if (err != nil) != test.wantError {
 				t.Fatalf("CheckDeployments() = %v, wantError: %v", err, test.wantError)
 			}
 

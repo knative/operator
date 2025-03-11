@@ -3,7 +3,7 @@ module knative.dev/operator
 go 1.22.0
 
 require (
-	github.com/go-logr/zapr v1.2.2
+	github.com/go-logr/zapr v1.2.4
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-github/v33 v33.0.0
 	github.com/hashicorp/golang-lru v1.0.2
@@ -21,11 +21,11 @@ require (
 	k8s.io/client-go v0.30.3
 	k8s.io/code-generator v0.30.3
 	knative.dev/caching v0.0.0-20241022012359-41bbaf964d16
-	knative.dev/eventing v0.43.4
+	knative.dev/eventing v0.43.5
 	knative.dev/hack v0.0.0-20250220110655-b5e4ff820460
-	knative.dev/pkg v0.0.0-20241021183759-9b9d535af5ad
+	knative.dev/pkg v0.0.0-20250306143800-fff4f701c7af
 	knative.dev/reconciler-test v0.0.0-20250217113355-f4bd4f5199d4
-	knative.dev/serving v0.43.2
+	knative.dev/serving v0.43.3
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -155,7 +155,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20240808142205-8e686545bdb8 // indirect
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8 // indirect
 	knative.dev/networking v0.0.0-20241022012959-60e29ff520dc // indirect
-	sigs.k8s.io/controller-runtime v0.7.2 // indirect
+	sigs.k8s.io/controller-runtime v0.15.3 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 )

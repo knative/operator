@@ -121,6 +121,7 @@ func ImageTransform(registry *base.Registry, log *zap.SugaredLogger) mf.Transfor
 				env := &container.Env[j]
 				if image, ok := registry.Override[env.Name]; ok {
 					env.Value = image
+					env.ValueFrom = nil
 				}
 			}
 		}

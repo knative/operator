@@ -42,7 +42,7 @@ export INGRESS_CLASS=${INGRESS_CLASS:-istio.ingress.networking.knative.dev}
 export TIMEOUT_CI=30m
 
 # GKE cluster version
-readonly K8S_CLUSTER_VERSION=1.30
+readonly K8S_CLUSTER_VERSION=1.31
 
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_SERVING_REPO_BRANCH.
 GENERATE_SERVING_YAML=0
@@ -123,7 +123,7 @@ function download_knative() {
 function install_istio() {
   echo ">> Installing Istio"
   curl -sL https://istio.io/downloadIstioctl | sh -
-  $HOME/.istioctl/bin/istioctl install -y
+  $HOME/.istioctl/bin/istioctl install --set values.cni.cniBinDir=/home/kubernetes/bin -y
 }
 
 function create_namespace() {

@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Knative Authors
+Copyright 2025 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,129 +19,34 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
-	testing "k8s.io/client-go/testing"
+	gentype "k8s.io/client-go/gentype"
 	v1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+	operatorv1beta1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1"
 )
 
-// FakeKnativeServings implements KnativeServingInterface
-type FakeKnativeServings struct {
+// fakeKnativeServings implements KnativeServingInterface
+type fakeKnativeServings struct {
+	*gentype.FakeClientWithList[*v1beta1.KnativeServing, *v1beta1.KnativeServingList]
 	Fake *FakeOperatorV1beta1
-	ns   string
 }
 
-var knativeservingsResource = v1beta1.SchemeGroupVersion.WithResource("knativeservings")
-
-var knativeservingsKind = v1beta1.SchemeGroupVersion.WithKind("KnativeServing")
-
-// Get takes name of the knativeServing, and returns the corresponding knativeServing object, and an error if there is any.
-func (c *FakeKnativeServings) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.KnativeServing, err error) {
-	emptyResult := &v1beta1.KnativeServing{}
-	obj, err := c.Fake.
-		Invokes(testing.NewGetActionWithOptions(knativeservingsResource, c.ns, name, options), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
+func newFakeKnativeServings(fake *FakeOperatorV1beta1, namespace string) operatorv1beta1.KnativeServingInterface {
+	return &fakeKnativeServings{
+		gentype.NewFakeClientWithList[*v1beta1.KnativeServing, *v1beta1.KnativeServingList](
+			fake.Fake,
+			namespace,
+			v1beta1.SchemeGroupVersion.WithResource("knativeservings"),
+			v1beta1.SchemeGroupVersion.WithKind("KnativeServing"),
+			func() *v1beta1.KnativeServing { return &v1beta1.KnativeServing{} },
+			func() *v1beta1.KnativeServingList { return &v1beta1.KnativeServingList{} },
+			func(dst, src *v1beta1.KnativeServingList) { dst.ListMeta = src.ListMeta },
+			func(list *v1beta1.KnativeServingList) []*v1beta1.KnativeServing {
+				return gentype.ToPointerSlice(list.Items)
+			},
+			func(list *v1beta1.KnativeServingList, items []*v1beta1.KnativeServing) {
+				list.Items = gentype.FromPointerSlice(items)
+			},
+		),
+		fake,
 	}
-	return obj.(*v1beta1.KnativeServing), err
-}
-
-// List takes label and field selectors, and returns the list of KnativeServings that match those selectors.
-func (c *FakeKnativeServings) List(ctx context.Context, opts v1.ListOptions) (result *v1beta1.KnativeServingList, err error) {
-	emptyResult := &v1beta1.KnativeServingList{}
-	obj, err := c.Fake.
-		Invokes(testing.NewListActionWithOptions(knativeservingsResource, knativeservingsKind, c.ns, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &v1beta1.KnativeServingList{ListMeta: obj.(*v1beta1.KnativeServingList).ListMeta}
-	for _, item := range obj.(*v1beta1.KnativeServingList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested knativeServings.
-func (c *FakeKnativeServings) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchActionWithOptions(knativeservingsResource, c.ns, opts))
-
-}
-
-// Create takes the representation of a knativeServing and creates it.  Returns the server's representation of the knativeServing, and an error, if there is any.
-func (c *FakeKnativeServings) Create(ctx context.Context, knativeServing *v1beta1.KnativeServing, opts v1.CreateOptions) (result *v1beta1.KnativeServing, err error) {
-	emptyResult := &v1beta1.KnativeServing{}
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateActionWithOptions(knativeservingsResource, c.ns, knativeServing, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1beta1.KnativeServing), err
-}
-
-// Update takes the representation of a knativeServing and updates it. Returns the server's representation of the knativeServing, and an error, if there is any.
-func (c *FakeKnativeServings) Update(ctx context.Context, knativeServing *v1beta1.KnativeServing, opts v1.UpdateOptions) (result *v1beta1.KnativeServing, err error) {
-	emptyResult := &v1beta1.KnativeServing{}
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateActionWithOptions(knativeservingsResource, c.ns, knativeServing, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1beta1.KnativeServing), err
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeKnativeServings) UpdateStatus(ctx context.Context, knativeServing *v1beta1.KnativeServing, opts v1.UpdateOptions) (result *v1beta1.KnativeServing, err error) {
-	emptyResult := &v1beta1.KnativeServing{}
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceActionWithOptions(knativeservingsResource, "status", c.ns, knativeServing, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1beta1.KnativeServing), err
-}
-
-// Delete takes name of the knativeServing and deletes it. Returns an error if one occurs.
-func (c *FakeKnativeServings) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(knativeservingsResource, c.ns, name, opts), &v1beta1.KnativeServing{})
-
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakeKnativeServings) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionActionWithOptions(knativeservingsResource, c.ns, opts, listOpts)
-
-	_, err := c.Fake.Invokes(action, &v1beta1.KnativeServingList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched knativeServing.
-func (c *FakeKnativeServings) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.KnativeServing, err error) {
-	emptyResult := &v1beta1.KnativeServing{}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceActionWithOptions(knativeservingsResource, c.ns, name, pt, data, opts, subresources...), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1beta1.KnativeServing), err
 }

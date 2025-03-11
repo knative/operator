@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Knative Authors
+Copyright 2025 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,24 +19,24 @@ limitations under the License.
 package v1beta1
 
 import (
-	"context"
+	context "context"
 	time "time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
 	cache "k8s.io/client-go/tools/cache"
-	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+	apisoperatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	versioned "knative.dev/operator/pkg/client/clientset/versioned"
 	internalinterfaces "knative.dev/operator/pkg/client/informers/externalversions/internalinterfaces"
-	v1beta1 "knative.dev/operator/pkg/client/listers/operator/v1beta1"
+	operatorv1beta1 "knative.dev/operator/pkg/client/listers/operator/v1beta1"
 )
 
 // KnativeEventingInformer provides access to a shared informer and lister for
 // KnativeEventings.
 type KnativeEventingInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1beta1.KnativeEventingLister
+	Lister() operatorv1beta1.KnativeEventingLister
 }
 
 type knativeEventingInformer struct {
@@ -71,7 +71,7 @@ func NewFilteredKnativeEventingInformer(client versioned.Interface, namespace st
 				return client.OperatorV1beta1().KnativeEventings(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&operatorv1beta1.KnativeEventing{},
+		&apisoperatorv1beta1.KnativeEventing{},
 		resyncPeriod,
 		indexers,
 	)
@@ -82,9 +82,9 @@ func (f *knativeEventingInformer) defaultInformer(client versioned.Interface, re
 }
 
 func (f *knativeEventingInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&operatorv1beta1.KnativeEventing{}, f.defaultInformer)
+	return f.factory.InformerFor(&apisoperatorv1beta1.KnativeEventing{}, f.defaultInformer)
 }
 
-func (f *knativeEventingInformer) Lister() v1beta1.KnativeEventingLister {
-	return v1beta1.NewKnativeEventingLister(f.Informer().GetIndexer())
+func (f *knativeEventingInformer) Lister() operatorv1beta1.KnativeEventingLister {
+	return operatorv1beta1.NewKnativeEventingLister(f.Informer().GetIndexer())
 }

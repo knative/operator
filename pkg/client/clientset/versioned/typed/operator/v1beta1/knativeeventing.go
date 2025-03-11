@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Knative Authors
+Copyright 2025 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ limitations under the License.
 package v1beta1
 
 import (
-	"context"
+	context "context"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	gentype "k8s.io/client-go/gentype"
-	v1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	scheme "knative.dev/operator/pkg/client/clientset/versioned/scheme"
 )
 
@@ -37,33 +37,34 @@ type KnativeEventingsGetter interface {
 
 // KnativeEventingInterface has methods to work with KnativeEventing resources.
 type KnativeEventingInterface interface {
-	Create(ctx context.Context, knativeEventing *v1beta1.KnativeEventing, opts v1.CreateOptions) (*v1beta1.KnativeEventing, error)
-	Update(ctx context.Context, knativeEventing *v1beta1.KnativeEventing, opts v1.UpdateOptions) (*v1beta1.KnativeEventing, error)
+	Create(ctx context.Context, knativeEventing *operatorv1beta1.KnativeEventing, opts v1.CreateOptions) (*operatorv1beta1.KnativeEventing, error)
+	Update(ctx context.Context, knativeEventing *operatorv1beta1.KnativeEventing, opts v1.UpdateOptions) (*operatorv1beta1.KnativeEventing, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, knativeEventing *v1beta1.KnativeEventing, opts v1.UpdateOptions) (*v1beta1.KnativeEventing, error)
+	UpdateStatus(ctx context.Context, knativeEventing *operatorv1beta1.KnativeEventing, opts v1.UpdateOptions) (*operatorv1beta1.KnativeEventing, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1beta1.KnativeEventing, error)
-	List(ctx context.Context, opts v1.ListOptions) (*v1beta1.KnativeEventingList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*operatorv1beta1.KnativeEventing, error)
+	List(ctx context.Context, opts v1.ListOptions) (*operatorv1beta1.KnativeEventingList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.KnativeEventing, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *operatorv1beta1.KnativeEventing, err error)
 	KnativeEventingExpansion
 }
 
 // knativeEventings implements KnativeEventingInterface
 type knativeEventings struct {
-	*gentype.ClientWithList[*v1beta1.KnativeEventing, *v1beta1.KnativeEventingList]
+	*gentype.ClientWithList[*operatorv1beta1.KnativeEventing, *operatorv1beta1.KnativeEventingList]
 }
 
 // newKnativeEventings returns a KnativeEventings
 func newKnativeEventings(c *OperatorV1beta1Client, namespace string) *knativeEventings {
 	return &knativeEventings{
-		gentype.NewClientWithList[*v1beta1.KnativeEventing, *v1beta1.KnativeEventingList](
+		gentype.NewClientWithList[*operatorv1beta1.KnativeEventing, *operatorv1beta1.KnativeEventingList](
 			"knativeeventings",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1beta1.KnativeEventing { return &v1beta1.KnativeEventing{} },
-			func() *v1beta1.KnativeEventingList { return &v1beta1.KnativeEventingList{} }),
+			func() *operatorv1beta1.KnativeEventing { return &operatorv1beta1.KnativeEventing{} },
+			func() *operatorv1beta1.KnativeEventingList { return &operatorv1beta1.KnativeEventingList{} },
+		),
 	}
 }

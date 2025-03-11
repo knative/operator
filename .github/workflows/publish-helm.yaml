@@ -4,6 +4,8 @@ on:
   release:
     types: [published]
 
+  workflow_dispatch:
+
 jobs:
   release:
 
@@ -32,21 +34,17 @@ jobs:
           mv hack/find_helm_chart_releases_and_create_helm_index.sh ../.tmp/
           mv hack/gh-pages.tmpl ../.tmp/
 
-          PAGES_BRANCH="gh-pages"
-
-          git fetch --all --tags
-
-          if git show-ref --verify --quiet refs/heads/$PAGES_BRANCH || git ls-remote --exit-code --heads origin $PAGES_BRANCH; then
+          if git show-ref --verify --quiet refs/heads/gh-pages || git ls-remote --exit-code --heads origin gh-pages; then
               # Branch exists
-              git checkout $PAGES_BRANCH
-              echo "Checked out existing branch '$PAGES_BRANCH'"
+              git checkout gh-pages
+              echo "Checked out existing branch 'gh-pages'"
           else
               # Branch does not exist
-              git symbolic-ref HEAD refs/heads/$PAGES_BRANCH
+              git symbolic-ref HEAD refs/heads/gh-pages
               rm .git/index
               git clean -fdx
               echo ".tmp/" > .gitignore
-              echo "Created and checked out new branch '$PAGES_BRANCH'"
+              echo "Created and checked out new branch 'gh-pages'"
           fi
 
           mv ../.tmp ./

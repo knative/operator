@@ -19,11 +19,11 @@ limitations under the License.
 package v1beta1
 
 import (
-	"net/http"
+	http "net/http"
 
 	rest "k8s.io/client-go/rest"
-	v1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
-	"knative.dev/operator/pkg/client/clientset/versioned/scheme"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+	scheme "knative.dev/operator/pkg/client/clientset/versioned/scheme"
 )
 
 type OperatorV1beta1Interface interface {
@@ -90,10 +90,10 @@ func New(c rest.Interface) *OperatorV1beta1Client {
 }
 
 func setConfigDefaults(config *rest.Config) error {
-	gv := v1beta1.SchemeGroupVersion
+	gv := operatorv1beta1.SchemeGroupVersion
 	config.GroupVersion = &gv
 	config.APIPath = "/apis"
-	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+	config.NegotiatedSerializer = rest.CodecFactoryForGeneratedClient(scheme.Scheme, scheme.Codecs).WithoutConversion()
 
 	if config.UserAgent == "" {
 		config.UserAgent = rest.DefaultKubernetesUserAgent()

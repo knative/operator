@@ -7,7 +7,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/google/go-github/v33 v33.0.0
 	github.com/hashicorp/golang-lru v1.0.2
-	github.com/manifestival/client-go-client v0.5.0
+	github.com/manifestival/client-go-client v0.6.0
 	github.com/manifestival/manifestival v0.7.2
 	go.uber.org/zap v1.27.0
 	gocloud.dev v0.22.0
@@ -21,11 +21,11 @@ require (
 	k8s.io/client-go v0.32.2
 	k8s.io/code-generator v0.32.2
 	knative.dev/caching v0.0.0-20250226145629-ad23fbda1a2b
-	knative.dev/eventing v0.44.1-0.20250227153031-fe83e25214e9
+	knative.dev/eventing v0.44.1-0.20250310190235-ebd149ef2399
 	knative.dev/hack v0.0.0-20250219013704-306ce745e077
 	knative.dev/pkg v0.0.0-20250226145529-0372c089c78f
 	knative.dev/reconciler-test v0.0.0-20250219013557-5ca0bd4fcad5
-	knative.dev/serving v0.44.1-0.20250227084930-02106588462d
+	knative.dev/serving v0.44.1-0.20250307122301-c09ff6cf1822
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -53,6 +53,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
+	github.com/cert-manager/cert-manager v1.16.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudevents/conformance v0.2.0 // indirect
 	github.com/cloudevents/sdk-go/observability/opencensus/v2 v2.15.2 // indirect
@@ -78,7 +79,7 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/gnostic-models v0.6.9 // indirect
 	github.com/google/go-containerregistry v0.20.3 // indirect
-	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/s2a-go v0.1.8 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -157,7 +158,8 @@ require (
 	k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7 // indirect
 	k8s.io/utils v0.0.0-20241210054802-24370beab758 // indirect
 	knative.dev/networking v0.0.0-20250226145929-863b7af736fb // indirect
-	sigs.k8s.io/controller-runtime v0.7.2 // indirect
+	sigs.k8s.io/controller-runtime v0.19.0 // indirect
+	sigs.k8s.io/gateway-api v1.1.0 // indirect
 	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.5.0 // indirect
 )

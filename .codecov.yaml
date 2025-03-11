@@ -23,3 +23,8 @@ ignore:
   - "test"
   - "third_party"
   - "vendor"
+  - "pkg/reconciler/common/deployments.go"
+  - "pkg/reconciler/common/stages.go"
+  - "pkg/reconciler/common/install.go"
+  - "pkg/reconciler/knativeserving/knativeserving.go"
+  - "pkg/reconciler/knativeeventing/knativeeventing.go"

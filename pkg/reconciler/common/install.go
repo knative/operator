@@ -22,18 +22,19 @@ import (
 	"strings"
 
 	mf "github.com/manifestival/manifestival"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"knative.dev/pkg/logging"
 
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
+	"knative.dev/pkg/logging"
 )
 
 var (
 	role                      mf.Predicate = mf.Any(mf.ByKind("ClusterRole"), mf.ByKind("Role"))
 	rolebinding               mf.Predicate = mf.Any(mf.ByKind("ClusterRoleBinding"), mf.ByKind("RoleBinding"))
 	webhook                   mf.Predicate = mf.Any(mf.ByKind("MutatingWebhookConfiguration"), mf.ByKind("ValidatingWebhookConfiguration"))
-	webhookDependentResources mf.Predicate = mf.ByGVK(schema.GroupVersionKind{Group: "networking.internal.knative.dev", Version: "v1alpha1", Kind: "Certificate"})
+	webhookDependentResources mf.Predicate = byGV(schema.GroupKind{Group: "networking.internal.knative.dev", Kind: "Certificate"})
 	gatewayNotMatch                        = "no matches for kind \"Gateway\""
 )
 
@@ -106,4 +107,10 @@ func Uninstall(manifest *mf.Manifest) error {
 		return fmt.Errorf("failed to remove rbac: %w", err)
 	}
 	return nil
+}
+
+func byGV(gk schema.GroupKind) mf.Predicate {
+	return func(u *unstructured.Unstructured) bool {
+		return u.GroupVersionKind().GroupKind() == gk
+	}
 }

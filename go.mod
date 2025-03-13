@@ -11,7 +11,7 @@ require (
 	github.com/manifestival/manifestival v0.7.2
 	go.uber.org/zap v1.27.0
 	gocloud.dev v0.22.0
-	golang.org/x/mod v0.23.0
+	golang.org/x/mod v0.24.0
 	golang.org/x/oauth2 v0.26.0
 	google.golang.org/api v0.198.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
@@ -21,9 +21,9 @@ require (
 	k8s.io/client-go v0.32.2
 	k8s.io/code-generator v0.32.2
 	knative.dev/caching v0.0.0-20250226145629-ad23fbda1a2b
-	knative.dev/eventing v0.44.1-0.20250310190235-ebd149ef2399
+	knative.dev/eventing v0.44.1-0.20250313064637-d6cc879d353e
 	knative.dev/hack v0.0.0-20250219013704-306ce745e077
-	knative.dev/pkg v0.0.0-20250226145529-0372c089c78f
+	knative.dev/pkg v0.0.0-20250312035536-b7bbf4be5dbd
 	knative.dev/reconciler-test v0.0.0-20250219013557-5ca0bd4fcad5
 	knative.dev/serving v0.44.1-0.20250307122301-c09ff6cf1822
 	sigs.k8s.io/yaml v1.4.0
@@ -132,20 +132,20 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.33.0 // indirect
-	golang.org/x/net v0.35.0 // indirect
-	golang.org/x/sync v0.11.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/term v0.29.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
+	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.10.0 // indirect
-	golang.org/x/tools v0.30.0 // indirect
+	golang.org/x/tools v0.31.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250207221924-e9438ea467c6 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250207221924-e9438ea467c6 // indirect
-	google.golang.org/grpc v1.70.0 // indirect
+	google.golang.org/grpc v1.71.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect

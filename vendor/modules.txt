@@ -1428,11 +1428,11 @@ k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/ptr
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20250226145629-ad23fbda1a2b
+# knative.dev/caching v0.0.0-20250313164938-776406ea7b99
 ## explicit; go 1.23.0
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.44.1-0.20250313064637-d6cc879d353e
+# knative.dev/eventing v0.44.1-0.20250314135139-da4377a6dab0
 ## explicit; go 1.23.0
 knative.dev/eventing/cmd/heartbeats
 knative.dev/eventing/pkg/apis
@@ -1522,7 +1522,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/forwarder
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/hack v0.0.0-20250219013704-306ce745e077
+# knative.dev/hack v0.0.0-20250314171439-742e1e50da78
 ## explicit; go 1.21
 knative.dev/hack
 # knative.dev/networking v0.0.0-20250226145929-863b7af736fb

@@ -3,6 +3,7 @@ knative_operator:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
     tag: {{ tag }}
     affinity: {}
+    tolerations: []
     containerSecurityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
@@ -27,6 +28,7 @@ knative_operator:
                   app: operator-webhook
               topologyKey: kubernetes.io/hostname
             weight: 100
+    tolerations: []
     containerSecurityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true

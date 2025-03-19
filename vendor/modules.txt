@@ -152,8 +152,8 @@ github.com/cert-manager/cert-manager/pkg/apis/meta/v1
 # github.com/cespare/xxhash/v2 v2.3.0
 ## explicit; go 1.11
 github.com/cespare/xxhash/v2
-# github.com/cloudevents/conformance v0.2.0
-## explicit; go 1.14
+# github.com/cloudevents/conformance v0.4.1
+## explicit; go 1.16
 github.com/cloudevents/conformance/pkg/event
 github.com/cloudevents/conformance/pkg/http
 # github.com/cloudevents/sdk-go/observability/opencensus/v2 v2.15.2
@@ -1432,7 +1432,7 @@ k8s.io/utils/trace
 ## explicit; go 1.23.0
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.44.1-0.20250314135139-da4377a6dab0
+# knative.dev/eventing v0.44.1-0.20250319092817-433aa64f0950
 ## explicit; go 1.23.0
 knative.dev/eventing/cmd/heartbeats
 knative.dev/eventing/pkg/apis
@@ -1522,7 +1522,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/forwarder
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/hack v0.0.0-20250314171439-742e1e50da78
+# knative.dev/hack v0.0.0-20250318155814-8f599b7a828c
 ## explicit; go 1.21
 knative.dev/hack
 # knative.dev/networking v0.0.0-20250226145929-863b7af736fb

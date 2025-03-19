@@ -38,6 +38,9 @@ type Stages []Stage
 func (stages Stages) Execute(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	for _, stage := range stages {
 		if err := stage(ctx, manifest, instance); err != nil {
+			if IsDeploymentsNotReadyError(err) {
+				break
+			}
 			return err
 		}
 	}

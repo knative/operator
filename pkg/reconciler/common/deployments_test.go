@@ -78,7 +78,7 @@ func TestCheckDeployments(t *testing.T) {
 			*NamespacedResource("apps/v1", "Deployment", "test", "notReady"),
 		},
 		inAPI:      []runtime.Object{notReadyDeployment},
-		wantError:  false,
+		wantError:  true,
 		wantStatus: corev1.ConditionFalse,
 	}, {
 		name: "ready and not ready deployment",
@@ -86,8 +86,8 @@ func TestCheckDeployments(t *testing.T) {
 			*NamespacedResource("apps/v1", "Deployment", "test", "ready"),
 			*NamespacedResource("apps/v1", "Deployment", "test", "notReady"),
 		},
-		inAPI:      []runtime.Object{},
-		wantError:  false,
+		inAPI:      []runtime.Object{readyDeployment, notReadyDeployment},
+		wantError:  true,
 		wantStatus: corev1.ConditionFalse,
 	}, {
 		name: "not found deployment",

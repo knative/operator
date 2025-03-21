@@ -75,6 +75,10 @@ spec:
       affinity:
 {{ toYaml .Values.knative_operator.operator_webhook.affinity | indent 8 }}
 {{- end }}
+{{- with .Values.knative_operator.operator_webhook.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
 {{- if and .Values.knative_operator.operator_webhook.securityContext }}
       securityContext:
 {{ toYaml .Values.knative_operator.operator_webhook.securityContext | indent 8 }}
@@ -6354,6 +6358,10 @@ spec:
 {{- if .Values.knative_operator.knative_operator.affinity }}
       affinity:
 {{ toYaml .Values.knative_operator.knative_operator.affinity | indent 8 }}
+{{- end }}
+{{- with .Values.knative_operator.knative_operator.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
 {{- end }}
       serviceAccountName: knative-operator
 {{- if and .Values.knative_operator.knative_operator.securityContext }}

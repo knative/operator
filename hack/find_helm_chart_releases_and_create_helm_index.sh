@@ -15,22 +15,30 @@ entries:
   $CHART_NAME:
 EOF
 
-# Function to fetch all releases and filter .tgz files
 fetch_tgz_assets() {
   echo "Fetching release assets from GitHub API..." >&2
-  
-  # Get response from GitHub API
-  response=$(curl "$GITHUB_API")
-  
-  # Check if the response is valid JSON
-  if ! echo "$response" | jq 1>/dev/null 2>&1; then
-    echo "(fetch_tgz_assets) Error: The response is not valid JSON. Here's the raw response:" >&2
-    echo "$response" >&2
-    exit 1
-  fi
-  
-  # Parse the response using jq to get the list of .tgz files
-  echo "$response" | jq -c '.[] | .assets[] | select(.name | test("'$CHART_NAME'-(v?\\d+\\.\\d+\\.\\d+)\\.tgz")) | {url: .browser_download_url, name: .name, published: .updated_at}'
+  page=1
+  while true; do
+    echo "Fetching page $page" >&2
+    response=$(curl -s "$GITHUB_API?per_page=100&page=$page")
+    
+    # Check if the response is valid JSON
+    if ! echo "$response" | jq 1>/dev/null 2>&1; then
+      echo "(fetch_tgz_assets) Error: The response is not valid JSON. Here's the raw response:" >&2
+      echo "$response" >&2
+      exit 1
+    fi
+    
+    # Break if no releases are returned
+    if [ "$(echo "$response" | jq 'length')" -eq 0 ]; then
+      break
+    fi
+
+    # Parse the response using jq to get the list of .tgz files
+    echo "$response" | jq -c '.[] | .assets[] | select(.name | test("'$CHART_NAME'-(v?\\d+\\.\\d+\\.\\d+)\\.tgz")) | {url: .browser_download_url, name: .name, published: .updated_at}'
+    
+    page=$((page+1))
+  done
 }
 
 # Function to process each .tgz file and append chart metadata to index.yaml

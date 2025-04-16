@@ -583,7 +583,7 @@ gocloud.dev/internal/oc
 gocloud.dev/internal/openurl
 gocloud.dev/internal/retry
 gocloud.dev/internal/useragent
-# golang.org/x/crypto v0.36.0
+# golang.org/x/crypto v0.37.0
 ## explicit; go 1.23.0
 golang.org/x/crypto/cast5
 golang.org/x/crypto/chacha20
@@ -607,7 +607,7 @@ golang.org/x/crypto/pkcs12/internal/rc2
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.37.0
+# golang.org/x/net v0.39.0
 ## explicit; go 1.23.0
 golang.org/x/net/http/httpguts
 golang.org/x/net/http/httpproxy
@@ -630,22 +630,22 @@ golang.org/x/oauth2/google/internal/stsexchange
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sync v0.12.0
+# golang.org/x/sync v0.13.0
 ## explicit; go 1.23.0
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.31.0
+# golang.org/x/sys v0.32.0
 ## explicit; go 1.23.0
 golang.org/x/sys/cpu
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/windows/registry
-# golang.org/x/term v0.30.0
+# golang.org/x/term v0.31.0
 ## explicit; go 1.23.0
 golang.org/x/term
-# golang.org/x/text v0.23.0
+# golang.org/x/text v0.24.0
 ## explicit; go 1.23.0
 golang.org/x/text/cases
 golang.org/x/text/internal
@@ -660,7 +660,7 @@ golang.org/x/text/unicode/norm
 # golang.org/x/time v0.10.0
 ## explicit; go 1.18
 golang.org/x/time/rate
-# golang.org/x/tools v0.31.0
+# golang.org/x/tools v0.32.0
 ## explicit; go 1.23.0
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
@@ -688,7 +688,7 @@ golang.org/x/tools/internal/versions
 ## explicit; go 1.18
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
-# gomodules.xyz/jsonpatch/v2 v2.4.0
+# gomodules.xyz/jsonpatch/v2 v2.5.0
 ## explicit; go 1.20
 gomodules.xyz/jsonpatch/v2
 # google.golang.org/api v0.198.0
@@ -725,7 +725,7 @@ google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.71.0
+# google.golang.org/grpc v1.71.1
 ## explicit; go 1.22.0
 google.golang.org/grpc
 google.golang.org/grpc/attributes
@@ -802,8 +802,8 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# google.golang.org/protobuf v1.36.5
-## explicit; go 1.21
+# google.golang.org/protobuf v1.36.6
+## explicit; go 1.22
 google.golang.org/protobuf/encoding/protodelim
 google.golang.org/protobuf/encoding/protojson
 google.golang.org/protobuf/encoding/prototext
@@ -1428,11 +1428,11 @@ k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/ptr
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20250331014029-68c1c819cda8
+# knative.dev/caching v0.0.0-20250415164313-8f20a1163dbf
 ## explicit; go 1.23.0
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.44.1-0.20250331215503-9449b64ef31f
+# knative.dev/eventing v0.44.1-0.20250414180812-5f466ad3711a
 ## explicit; go 1.23.0
 knative.dev/eventing/cmd/heartbeats
 knative.dev/eventing/pkg/apis
@@ -1525,7 +1525,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/sender
 # knative.dev/hack v0.0.0-20250331013814-c577ed9f7775
 ## explicit; go 1.21
 knative.dev/hack
-# knative.dev/networking v0.0.0-20250315042440-ad8767c3190c
+# knative.dev/networking v0.0.0-20250411212114-f1b08e6cfc7f
 ## explicit; go 1.23.0
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
@@ -1542,7 +1542,7 @@ knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/ingress
 knative.dev/networking/pkg/k8s
-# knative.dev/pkg v0.0.0-20250331013832-c5a13b15ccdb
+# knative.dev/pkg v0.0.0-20250415155312-ed3e2158b883
 ## explicit; go 1.23.0
 knative.dev/pkg/apiextensions/storageversion
 knative.dev/pkg/apiextensions/storageversion/cmd/migrate
@@ -1629,7 +1629,7 @@ knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates
 knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/resourcesemantics/conversion
-# knative.dev/reconciler-test v0.0.0-20250331013819-4721d51145d6
+# knative.dev/reconciler-test v0.0.0-20250415170512-23f86169156f
 ## explicit; go 1.23.0
 knative.dev/reconciler-test/cmd/eventshub
 knative.dev/reconciler-test/pkg/environment
@@ -1658,7 +1658,7 @@ knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/resources/serviceaccount
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/certificate
-# knative.dev/serving v0.44.1-0.20250328083446-7605ccd2b598
+# knative.dev/serving v0.44.1-0.20250415122313-c7e30759e276
 ## explicit; go 1.23.0
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

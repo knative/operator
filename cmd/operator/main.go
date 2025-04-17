@@ -19,11 +19,18 @@ package main
 import (
 	"knative.dev/operator/pkg/reconciler/knativeeventing"
 	"knative.dev/operator/pkg/reconciler/knativeserving"
+	kubefilteredfactory "knative.dev/pkg/client/injection/kube/informers/factory/filtered"
 	"knative.dev/pkg/injection/sharedmain"
+	"knative.dev/pkg/signals"
 )
 
 func main() {
-	sharedmain.Main("knative-operator",
+	ctx := signals.NewContext()
+	ctx = kubefilteredfactory.WithSelectors(ctx,
+		knativeserving.Selector,
+		knativeeventing.Selector,
+	)
+	sharedmain.MainWithContext(ctx, "knative-operator",
 		knativeserving.NewController,
 		knativeeventing.NewController,
 	)

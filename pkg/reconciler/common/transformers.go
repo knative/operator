@@ -84,6 +84,7 @@ func InjectNamespace(manifest *mf.Manifest, instance base.KComponent, extra ...m
 	return nil
 }
 
+// InjectLabel adds the given key and value as label.
 func InjectLabel(key, value string) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		curr := u.GetLabels()

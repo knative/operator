@@ -43,9 +43,12 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 }
 
 const (
-	SelectorKey   = "app.kubernetes.io/name"
+	// SelectorKey is the key of the selector for the KnativeServing resources.
+	SelectorKey = "app.kubernetes.io/name"
+	// SelectorValue is the value of the selector for the KnativeServing resources.
 	SelectorValue = "knative-serving"
-	Selector      = SelectorKey + "=" + SelectorValue
+	// Selector is the selector for the KnativeServing resources.
+	Selector = SelectorKey + "=" + SelectorValue
 )
 
 // NewExtendedController returns a controller extended to a specific platform

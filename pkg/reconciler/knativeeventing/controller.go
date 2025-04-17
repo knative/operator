@@ -37,9 +37,12 @@ import (
 )
 
 const (
-	SelectorKey   = "app.kubernetes.io/name"
+	// SelectorKey is the key of the selector for the KnativeEventing resources.
+	SelectorKey = "app.kubernetes.io/name"
+	// SelectorValue is the value of the selector for the KnativeEventing resources.
 	SelectorValue = "knative-eventing"
-	Selector      = SelectorKey + "=" + SelectorValue
+	// Selector is the selector for the KnativeEventing resources.
+	Selector = SelectorKey + "=" + SelectorValue
 )
 
 // NewController initializes the controller and is called by the generated code

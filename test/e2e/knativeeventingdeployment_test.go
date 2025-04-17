@@ -53,6 +53,7 @@ func TestKnativeEventingDeployment(t *testing.T) {
 	t.Run("restore", func(t *testing.T) {
 		resources.AssertKEOperatorCRReadyStatus(t, clients, names)
 		resources.DeleteAndVerifyEventingDeployments(t, clients, names)
+		resources.DeleteAndVerifyEventingConfigMaps(t, clients, names)
 	})
 
 	// Delete the KnativeEventing to see if all resources will be removed

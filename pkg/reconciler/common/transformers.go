@@ -83,3 +83,15 @@ func InjectNamespace(manifest *mf.Manifest, instance base.KComponent, extra ...m
 	*manifest = m
 	return nil
 }
+
+func InjectLabel(key, value string) mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		curr := u.GetLabels()
+		if curr == nil {
+			curr = map[string]string{}
+		}
+		curr[key] = value
+		u.SetLabels(curr)
+		return nil
+	}
+}

@@ -58,6 +58,7 @@ func TestKnativeServingDeployment(t *testing.T) {
 	t.Run("restore", func(t *testing.T) {
 		resources.AssertKSOperatorCRReadyStatus(t, clients, names)
 		resources.DeleteAndVerifyDeployments(t, clients, names)
+		resources.DeleteAndVerifyConfigMaps(t, clients, names)
 	})
 
 	// Delete the KnativeServing to see if all resources will be removed

@@ -28,11 +28,21 @@ import (
 	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1beta1/knativeeventing"
 	"knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
-	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
+	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment/filtered"
+	configmapinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/configmap/filtered"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/injection"
 	"knative.dev/pkg/logging"
+)
+
+const (
+	// SelectorKey is the key of the selector for the KnativeEventing resources.
+	SelectorKey = "app.kubernetes.io/name"
+	// SelectorValue is the value of the selector for the KnativeEventing resources.
+	SelectorValue = "knative-eventing"
+	// Selector is the selector for the KnativeEventing resources.
+	Selector = SelectorKey + "=" + SelectorValue
 )
 
 // NewController initializes the controller and is called by the generated code
@@ -45,7 +55,8 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 func NewExtendedController(generator common.ExtensionGenerator) injection.ControllerConstructor {
 	return func(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
 		knativeEventingInformer := knativeEventinginformer.Get(ctx)
-		deploymentInformer := deploymentinformer.Get(ctx)
+		deploymentInformer := deploymentinformer.Get(ctx, Selector)
+		configMapInformer := configmapinformer.Get(ctx, Selector)
 		kubeClient := kubeclient.Get(ctx)
 		logger := logging.FromContext(ctx)
 
@@ -69,6 +80,10 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 		knativeEventingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
 		deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+			FilterFunc: controller.FilterControllerGVK(v1beta1.SchemeGroupVersion.WithKind("KnativeEventing")),
+			Handler:    controller.HandleAll(impl.EnqueueControllerOf),
+		})
+		configMapInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 			FilterFunc: controller.FilterControllerGVK(v1beta1.SchemeGroupVersion.WithKind("KnativeEventing")),
 			Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 		})

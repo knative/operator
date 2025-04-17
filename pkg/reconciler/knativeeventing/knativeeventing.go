@@ -160,6 +160,8 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 		kec.DefaultBrokerConfigMapTransform(instance, logger),
 		kec.SinkBindingSelectionModeTransform(instance, logger),
 		kec.ReplicasEnvVarsTransform(manifest.Client),
+		// Ensure all resources have the selector applied so that the controller re-queues applied resources when they change.
+		common.InjectLabel(SelectorKey, SelectorValue),
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)

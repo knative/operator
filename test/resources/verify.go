@@ -211,6 +211,47 @@ func DeleteAndVerifyDeployments(t *testing.T, clients *test.Clients, names test.
 	t.Logf("The deployment %s/%s reached the desired state.", deployment.Namespace, deployment.Name)
 }
 
+// DeleteAndVerifyConfigMaps verify whether all the ConfigMaps for knative serving are able to recreate, when they are deleted.
+func DeleteAndVerifyConfigMaps(t *testing.T, clients *test.Clients, names test.ResourceNames) {
+	cmList, err := clients.KubeClient.CoreV1().ConfigMaps(names.Namespace).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		t.Fatalf("Failed to get any ConfigMap under the namespace %q: %v",
+			test.ServingOperatorNamespace, err)
+	}
+	if len(cmList.Items) == 0 {
+		t.Fatalf("No ConfigMap under the namespace %q was found",
+			test.ServingOperatorNamespace)
+	}
+	// Delete the first ConfigMap and verify the operator recreates it
+	configMap := cmList.Items[0]
+	if err := clients.KubeClient.CoreV1().ConfigMaps(configMap.Namespace).Delete(context.TODO(), configMap.Name, metav1.DeleteOptions{}); err != nil {
+		t.Fatalf("Failed to delete ConfigMap %s/%s: %v", configMap.Namespace, configMap.Name, err)
+	}
+
+	waitErr := wait.PollUntilContextTimeout(context.TODO(), Interval, Timeout, true, func(context.Context) (bool, error) {
+		_, err := clients.KubeClient.CoreV1().ConfigMaps(configMap.Namespace).Get(context.TODO(), configMap.Name, metav1.GetOptions{})
+		if err != nil {
+			// If the ConfigMap is not found, we continue to wait for the availability.
+			if apierrs.IsNotFound(err) {
+				return false, nil
+			}
+			return false, err
+		}
+		// For ConfigMaps, we consider it recreated as soon as it reappears.
+		return true, nil
+	})
+
+	if waitErr != nil {
+		t.Fatalf("The ConfigMap %s/%s failed to be recreated: %v", configMap.Namespace, configMap.Name, err)
+	}
+
+	if _, err := WaitForKnativeServingState(clients.KnativeServing(), test.OperatorName,
+		IsKnativeServingReady); err != nil {
+		t.Fatalf("KnativeService %q failed to reach the desired state: %v", test.OperatorName, err)
+	}
+	t.Logf("The ConfigMap %s/%s was successfully recreated.", configMap.Namespace, configMap.Name)
+}
+
 // KSOperatorCRDelete deletes tha KnativeServing to see if all resources will be deleted
 func KSOperatorCRDelete(t *testing.T, clients *test.Clients, names test.ResourceNames) {
 	if err := clients.KnativeServing().Delete(context.TODO(), names.KnativeServing, metav1.DeleteOptions{}); err != nil {
@@ -397,6 +438,46 @@ func DeleteAndVerifyEventingDeployments(t *testing.T, clients *test.Clients, nam
 		t.Fatalf("KnativeService %q failed to reach the desired state: %v", test.OperatorName, err)
 	}
 	t.Logf("The deployment %s/%s reached the desired state.", deployment.Namespace, deployment.Name)
+}
+
+// DeleteAndVerifyEventingConfigMaps verify whether all the ConfigMaps for knative eventing are able to recreate, when they are deleted.
+func DeleteAndVerifyEventingConfigMaps(t *testing.T, clients *test.Clients, names test.ResourceNames) {
+	cmList, err := clients.KubeClient.CoreV1().ConfigMaps(names.Namespace).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		t.Fatalf("Failed to get any ConfigMap under the namespace %q: %v",
+			test.EventingOperatorNamespace, err)
+	}
+	if len(cmList.Items) == 0 {
+		t.Fatalf("No ConfigMap under the namespace %q was found",
+			test.EventingOperatorNamespace)
+	}
+	// Delete the first ConfigMap and verify the operator recreates it
+	configMap := cmList.Items[0]
+	if err := clients.KubeClient.CoreV1().ConfigMaps(configMap.Namespace).Delete(context.TODO(), configMap.Name, metav1.DeleteOptions{}); err != nil {
+		t.Fatalf("Failed to delete ConfigMap %s/%s: %v", configMap.Namespace, configMap.Name, err)
+	}
+
+	waitErr := wait.PollUntilContextTimeout(context.TODO(), Interval, Timeout, true, func(context.Context) (bool, error) {
+		_, err := clients.KubeClient.CoreV1().ConfigMaps(configMap.Namespace).Get(context.TODO(), configMap.Name, metav1.GetOptions{})
+		if err != nil {
+			// If the ConfigMap is not found, we continue to wait for the availability.
+			if apierrs.IsNotFound(err) {
+				return false, nil
+			}
+			return false, err
+		}
+		return true, nil
+	})
+
+	if waitErr != nil {
+		t.Fatalf("The ConfigMap %s/%s failed to reach the desired state: %v", configMap.Namespace, configMap.Name, err)
+	}
+
+	if _, err := WaitForKnativeEventingState(clients.KnativeEventing(), test.OperatorName,
+		IsKnativeEventingReady); err != nil {
+		t.Fatalf("KnativeService %q failed to reach the desired state: %v", test.OperatorName, err)
+	}
+	t.Logf("The ConfigMap %s/%s reached the desired state.", configMap.Namespace, configMap.Name)
 }
 
 // KEOperatorCRDelete deletes tha KnativeEventing to see if all resources will be deleted

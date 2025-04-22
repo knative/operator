@@ -17,7 +17,7 @@ metadata:
   name: kafka-broker-config
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 data:
   default.topic.partitions: "10"
   default.topic.replication.factor: "3"
@@ -43,7 +43,7 @@ metadata:
   name: kafka-channel-config
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 data:
   bootstrap.servers: "my-cluster-kafka-bootstrap.kafka:9092"
 
@@ -67,7 +67,7 @@ kind: CustomResourceDefinition
 metadata:
   name: kafkachannels.messaging.knative.dev
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
@@ -412,7 +412,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
     knative.dev/crd-install: "true"
   name: consumers.internal.kafka.eventing.knative.dev
 spec:
@@ -468,7 +468,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
     knative.dev/crd-install: "true"
   name: consumergroups.internal.kafka.eventing.knative.dev
 spec:
@@ -539,7 +539,7 @@ metadata:
   labels:
     duck.knative.dev/addressable: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 spec:
   group: eventing.knative.dev
   names:
@@ -735,7 +735,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
@@ -1595,7 +1595,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: eventing-kafka-source-observer
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
     duck.knative.dev/source: "true"
 rules:
   - apiGroups:
@@ -1628,7 +1628,7 @@ metadata:
   name: config-kafka-source-defaults
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
   annotations:
     knative.dev/example-checksum: "b6ed351d"
 data:
@@ -1688,7 +1688,7 @@ metadata:
   name: config-kafka-autoscaler
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 data:
   class: "keda.autoscaling.knative.dev"
   min-scale: "0"
@@ -1754,7 +1754,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
   name: config-kafka-leader-election
   namespace: knative-eventing
   annotations:
@@ -1820,7 +1820,7 @@ metadata:
   name: kafka-config-logging
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 data:
   config.xml: |
     <configuration>
@@ -1882,7 +1882,7 @@ metadata:
   name: config-tracing
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
     knative.dev/config-propagation: original
     knative.dev/config-category: eventing
   annotations:
@@ -1942,7 +1942,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-kafka-addressable-resolver
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
     duck.knative.dev/addressable: "true"
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -1985,7 +1985,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-channelable-manipulator
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
     duck.knative.dev/channelable: "true"
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -2022,7 +2022,7 @@ kind: ClusterRole
 metadata:
   name: kafka-controller
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 rules:
   - apiGroups:
       - ""
@@ -2321,7 +2321,7 @@ metadata:
   name: kafka-controller
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -2342,7 +2342,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-controller
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 subjects:
   - kind: ServiceAccount
     name: kafka-controller
@@ -2357,7 +2357,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-controller-addressable-resolver
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 subjects:
   - kind: ServiceAccount
     name: kafka-controller
@@ -2388,7 +2388,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-controller
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
     app.kubernetes.io/component: kafka-controller
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -2400,7 +2400,7 @@ spec:
       name: kafka-controller
       labels:
         app: kafka-controller
-        app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+        app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
         app.kubernetes.io/component: kafka-controller
         app.kubernetes.io/name: knative-eventing
     spec:
@@ -2426,7 +2426,7 @@ spec:
               weight: 100
       containers:
         - name: controller
-          image: gcr.io/knative-releases/knative.dev/eventing-kafka-broker/control-plane/cmd/kafka-controller@sha256:9300bb9109ff4d742abe507bd1af531625d0cd9e88d2156d7fdbbffbcd31f966
+          image: gcr.io/knative-releases/knative.dev/eventing-kafka-broker/control-plane/cmd/kafka-controller@sha256:f96b52db15fabb7291ebaf100d57ed0b165598a120715b42bbd32949c43e61cb
           imagePullPolicy: IfNotPresent
           env:
             - name: BROKER_DATA_PLANE_CONFIG_MAP_NAMESPACE
@@ -2567,7 +2567,7 @@ kind: ClusterRole
 metadata:
   name: kafka-webhook-eventing
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:
@@ -2673,7 +2673,7 @@ metadata:
   name: kafka-webhook-eventing
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -2694,7 +2694,7 @@ kind: ClusterRoleBinding
 metadata:
   name: kafka-webhook-eventing
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 subjects:
   - kind: ServiceAccount
     name: kafka-webhook-eventing
@@ -2724,7 +2724,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: defaulting.webhook.kafka.eventing.knative.dev
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -2756,7 +2756,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: pods.defaulting.webhook.kafka.eventing.knative.dev
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 webhooks:
   # Dispatcher pods webhook config.
   - admissionReviewVersions: ["v1", "v1beta1"]
@@ -2798,7 +2798,7 @@ metadata:
   name: kafka-webhook-eventing-certs
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 # The data is populated at install time.
 
 ---
@@ -2821,7 +2821,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.kafka.eventing.knative.dev
   labels:
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -2855,7 +2855,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-webhook-eventing
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
     app.kubernetes.io/component: kafka-webhook-eventing
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -2866,7 +2866,7 @@ spec:
     metadata:
       labels:
         app: kafka-webhook-eventing
-        app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+        app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
         app.kubernetes.io/component: kafka-webhook-eventing
         app.kubernetes.io/name: knative-eventing
     spec:
@@ -2886,7 +2886,7 @@ spec:
       containers:
         - name: kafka-webhook-eventing
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing-kafka-broker/control-plane/cmd/webhook-kafka@sha256:a916d3747e44169866d920b06fbcc838199bb31f54e81b6b6920446edca7fa40
+          image: gcr.io/knative-releases/knative.dev/eventing-kafka-broker/control-plane/cmd/webhook-kafka@sha256:c17149d64565c6de5809acc6ea9152ba3f505886a37e7ec790762e85feff12ec
           resources:
             requests:
               cpu: 20m
@@ -2956,7 +2956,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-webhook-eventing
-    app.kubernetes.io/version: "00fcf317d818d0633587394d03f8c9f097bf704c"
+    app.kubernetes.io/version: "9e97bb4546340598bf40be83c8ffa9deaee5eb46"
     app.kubernetes.io/component: kafka-webhook-eventing
     app.kubernetes.io/name: knative-eventing
 spec:

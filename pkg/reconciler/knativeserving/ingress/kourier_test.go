@@ -235,7 +235,7 @@ func verifyBootstrapVolumeName(t *testing.T, u *unstructured.Unstructured, expCo
 		deployment := &appsv1.Deployment{}
 		err := scheme.Scheme.Convert(u, deployment, nil)
 		util.AssertEqual(t, err, nil)
-		configMapName := deployment.Spec.Template.Spec.Volumes[0].VolumeSource.ConfigMap.Name
+		configMapName := deployment.Spec.Template.Spec.Volumes[0].ConfigMap.Name
 		util.AssertDeepEqual(t, configMapName, expConfigMapName)
 	}
 }

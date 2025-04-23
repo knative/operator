@@ -79,7 +79,7 @@ func GetReleases(ctx context.Context, client *http.Client, cfg packages.S3Source
 			commonRepo = fields[0]
 		}
 		if fields[0] != commonRepo {
-			return nil, fmt.Errorf("Multiple repos listed in a single release source (%q and %q) in %s", fields[0], commonRepo, cfg)
+			return nil, fmt.Errorf("multiple repos listed in a single release source (%q and %q) in %s", fields[0], commonRepo, cfg)
 		}
 		rk := releaseKey{
 			repo: fields[0],

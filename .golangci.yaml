@@ -7,8 +7,11 @@ run:
     - postdowngrade
 linters:
   enable:
+    - asciicheck
+    - gosec
     - prealloc
     - unconvert
+    - unparam
   disable:
     - errcheck
   exclusions:
@@ -18,9 +21,14 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      - linters:
+          - gosec
+          - unparam
+        path: test
     paths:
       - pkg/client
-      - third_party$
+      - third_party
       - builtin$
       - examples$
 formatters:

@@ -26,12 +26,11 @@ import (
 	"istio.io/client-go/pkg/clientset/versioned/scheme"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/base"
-	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	servingv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/pkg/logging"
 )
 
-func istioTransformers(ctx context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
+func istioTransformers(ctx context.Context, instance *servingv1beta1.KnativeServing) []mf.Transformer {
 	logger := logging.FromContext(ctx)
 	return []mf.Transformer{gatewayTransform(instance, logger)}
 }

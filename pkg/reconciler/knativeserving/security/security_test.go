@@ -95,7 +95,7 @@ func TestAppendTargetSecurityGuard(t *testing.T) {
 				},
 			},
 		},
-		expectedErr: fmt.Errorf("The current version of Knative Serving is 1.7. You need to install the version 1.8 or above to support the security guard"),
+		expectedErr: fmt.Errorf("the current version of Knative Serving is 1.7. You need to install the version 1.8 or above to support the security guard"),
 	}, {
 		name: "Get the latest target security guard when the directory latest is unavailable",
 		instance: servingv1beta1.KnativeServing{

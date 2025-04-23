@@ -100,7 +100,7 @@ func main() {
 		}
 
 		for _, release := range packages.LastN(versionCurrentPackage, *maxVersions, repos[v.Primary.String()]) {
-			if err := packages.HandleRelease(ctx, *outDir, http.DefaultClient, *v, release, repos); err != nil {
+			if err := packages.HandleRelease(*outDir, http.DefaultClient, *v, release, repos); err != nil {
 				log.Printf("Unable to fetch %s: %v", release, err)
 			}
 			log.Printf("Wrote %s ==> %s", v.String(), release.String())
@@ -122,7 +122,7 @@ func ensureRepo(ctx context.Context, known map[string][]packages.Release, client
 	}
 	if src.GitHub != (packages.GitHubSource{}) {
 		if client == nil {
-			return fmt.Errorf("must set $GITHUB_TOKEN to use github sources.")
+			return fmt.Errorf("must set $GITHUB_TOKEN to use github sources")
 		}
 		owner, repo := src.OrgRepo()
 		releases, err := github.GetReleases(ctx, client, owner, repo)
@@ -140,5 +140,5 @@ func ensureRepo(ctx context.Context, known map[string][]packages.Release, client
 		known[src.String()] = releases
 		return nil
 	}
-	return errors.New("Must specify one of S3 or GitHub")
+	return errors.New("must specify one of S3 or GitHub")
 }

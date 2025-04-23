@@ -18,7 +18,6 @@ limitations under the License.
 package packages
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"log"
@@ -191,15 +190,15 @@ func CollectReleaseAssets(p Package, r Release, allReleases map[string][]Release
 
 // HandleRelease processes the files for a given release of the specified
 // Package.
-func HandleRelease(ctx context.Context, base string, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
+func HandleRelease(base string, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
 	if p.Alternatives {
-		return handleAlternatives(ctx, base, client, p, r, allReleases)
+		return handleAlternatives(base, client, p, r, allReleases)
 	}
-	return handlePrimary(ctx, base, client, p, r, allReleases)
+	return handlePrimary(base, client, p, r, allReleases)
 }
 
 // handlePrimary handles the files for a primary-style package.
-func handlePrimary(ctx context.Context, base string, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
+func handlePrimary(base string, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
 	assets := CollectReleaseAssets(p, r, allReleases)
 
 	shortName := strings.TrimPrefix(r.TagName, "v")
@@ -214,24 +213,24 @@ func handlePrimary(ctx context.Context, base string, client *http.Client, p Pack
 		fileName := fmt.Sprintf("%d-%s", i+1, asset.Name)
 		file, err := os.OpenFile(filepath.Join(path, fileName), os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			return fmt.Errorf("Unable to open %s: %w", fileName, err)
+			return fmt.Errorf("unable to open %s: %w", fileName, err)
 		}
 		defer file.Close()
 		log.Print(asset.URL)
 		fetch, err := client.Get(asset.URL)
 		if err != nil {
-			return fmt.Errorf("Unable to fetch %s: %w", asset.URL, err)
+			return fmt.Errorf("unable to fetch %s: %w", asset.URL, err)
 		}
 		defer fetch.Body.Close()
 		_, err = io.Copy(file, fetch.Body)
 		if err != nil {
-			return fmt.Errorf("Unable to write to %s: %w", fileName, err)
+			return fmt.Errorf("unable to write to %s: %w", fileName, err)
 		}
 	}
 	return nil
 }
 
-func handleAlternatives(ctx context.Context, base string, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
+func handleAlternatives(base string, client *http.Client, p Package, r Release, allReleases map[string][]Release) error {
 	minor := semver.MajorMinor(r.TagName)
 	if lm := latestMinor(minor, allReleases[p.Primary.String()]); lm.TagName != r.TagName {
 		log.Printf("Skipping %q, %q is newer", r.TagName, lm.TagName)
@@ -269,18 +268,18 @@ func handleAlternatives(ctx context.Context, base string, client *http.Client, p
 			fileName := filepath.Join(resourcePath, a.Name)
 			file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
-				return fmt.Errorf("Unable to open %s: %w", fileName, err)
+				return fmt.Errorf("unable to open %s: %w", fileName, err)
 			}
 			defer file.Close()
 			log.Print(a.URL)
 			fetch, err := client.Get(a.URL)
 			if err != nil {
-				return fmt.Errorf("Unable to fetch %s: %w", a.URL, err)
+				return fmt.Errorf("unable to fetch %s: %w", a.URL, err)
 			}
 			defer fetch.Body.Close()
 			_, err = io.Copy(file, fetch.Body)
 			if err != nil {
-				return fmt.Errorf("Unable to write to %s: %w", fileName, err)
+				return fmt.Errorf("unable to write to %s: %w", fileName, err)
 			}
 		}
 	}

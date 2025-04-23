@@ -22,7 +22,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -187,7 +186,7 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 		for i := range containers {
 			override := findProbeOverride(override.ReadinessProbes, containers[i].Name)
 			if override != nil {
-				overrideProbe := &v1.Probe{
+				overrideProbe := &corev1.Probe{
 					InitialDelaySeconds:           override.InitialDelaySeconds,
 					TimeoutSeconds:                override.TimeoutSeconds,
 					PeriodSeconds:                 override.PeriodSeconds,
@@ -195,7 +194,7 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 					FailureThreshold:              override.FailureThreshold,
 					TerminationGracePeriodSeconds: override.TerminationGracePeriodSeconds,
 				}
-				if *overrideProbe == (v1.Probe{}) {
+				if *overrideProbe == (corev1.Probe{}) {
 					//  Disable probe when users explicitly set the empty overrideProbe.
 					containers[i].ReadinessProbe = nil
 					continue
@@ -213,7 +212,7 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 		containers := ps.Spec.Containers
 		for i := range containers {
 			if override := findProbeOverride(override.LivenessProbes, containers[i].Name); override != nil {
-				overrideProbe := &v1.Probe{
+				overrideProbe := &corev1.Probe{
 					InitialDelaySeconds:           override.InitialDelaySeconds,
 					TimeoutSeconds:                override.TimeoutSeconds,
 					PeriodSeconds:                 override.PeriodSeconds,
@@ -221,7 +220,7 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 					FailureThreshold:              override.FailureThreshold,
 					TerminationGracePeriodSeconds: override.TerminationGracePeriodSeconds,
 				}
-				if *overrideProbe == (v1.Probe{}) {
+				if *overrideProbe == (corev1.Probe{}) {
 					//  Disable probe when users explicitly set the empty overrideProbe.
 					containers[i].LivenessProbe = nil
 					continue

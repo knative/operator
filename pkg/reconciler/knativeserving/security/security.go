@@ -87,7 +87,7 @@ func getSecurity(version string, ks *v1beta1.KnativeServing) (mf.Manifest, error
 	// Find the specific security guard version via the hash map
 	sgVersion, ok := SecurityGuardVersion[common.SanitizeSemver(servingVersion)]
 	if !ok {
-		return mf.Manifest{}, fmt.Errorf("The current version of Knative Serving is %v. You need to install the "+
+		return mf.Manifest{}, fmt.Errorf("the current version of Knative Serving is %v. You need to install the "+
 			"version 1.8 or above to support the security guard", servingVersion)
 	}
 

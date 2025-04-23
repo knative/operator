@@ -77,12 +77,12 @@ func configureCustomCerts(deployment *appsv1.Deployment, certs base.CustomCerts)
 			SecretName: certs.Name,
 		}
 	default:
-		return fmt.Errorf("Unknown CustomCerts type: %s", certs.Type)
+		return fmt.Errorf("unknown CustomCerts type: %s", certs.Type)
 	}
 
 	name := customCertsNamePrefix + certs.Name
 	if name == customCertsNamePrefix {
-		return fmt.Errorf("CustomCerts name for %s is required", certs.Type)
+		return fmt.Errorf("the CustomCerts name for %s is required", certs.Type)
 	}
 	deployment.Spec.Template.Spec.Volumes = append(deployment.Spec.Template.Spec.Volumes, v1.Volume{
 		Name:         name,

@@ -296,7 +296,7 @@ func verifyNoKSOperatorCR(clients *test.Clients) error {
 		return err
 	}
 	if len(servings.Items) > 0 {
-		return errors.New("Unable to verify cluster-scoped resources are deleted if any KnativeServing exists")
+		return errors.New("unable to verify cluster-scoped resources are deleted if any KnativeServing exists")
 	}
 	return nil
 }
@@ -523,7 +523,7 @@ func verifyNoKnativeEventings(clients *test.Clients) error {
 		return err
 	}
 	if len(eventings.Items) > 0 {
-		return errors.New("Unable to verify cluster-scoped resources are deleted if any KnativeEventing exists")
+		return errors.New("unable to verify cluster-scoped resources are deleted if any KnativeEventing exists")
 	}
 	return nil
 }

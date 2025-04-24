@@ -30,7 +30,7 @@ import (
 	"knative.dev/operator/pkg/reconciler/common"
 )
 
-func getSource(manifest *mf.Manifest, path string) (mf.Manifest, error) {
+func getSource(path string) (mf.Manifest, error) {
 	if path == "" {
 		return mf.Manifest{}, nil
 	}
@@ -111,10 +111,10 @@ func GetSourcePath(version string, ke *v1beta1.KnativeEventing) string {
 }
 
 // AppendTargetSources appends the manifests of the eventing sources to be installed
-func AppendTargetSources(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+func AppendTargetSources(_ context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	version := common.TargetVersion(instance)
 	sourcePath := GetSourcePath(version, ConvertToKE(instance))
-	m, err := getSource(manifest, sourcePath)
+	m, err := getSource(sourcePath)
 	if err == nil {
 		*manifest = manifest.Append(m)
 	}
@@ -127,13 +127,13 @@ func AppendTargetSources(ctx context.Context, manifest *mf.Manifest, instance ba
 }
 
 // AppendAllSources appends all the manifests of the eventing sources
-func AppendAllSources(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+func AppendAllSources(_ context.Context, manifest *mf.Manifest, instance base.KComponent) error {
 	version := instance.GetStatus().GetVersion()
 	if version == "" {
 		version = common.TargetVersion(instance)
 	}
 	sourcePath := getAllSourcePath(version)
-	m, err := getSource(manifest, sourcePath)
+	m, err := getSource(sourcePath)
 	if err == nil {
 		*manifest = manifest.Append(m)
 	}

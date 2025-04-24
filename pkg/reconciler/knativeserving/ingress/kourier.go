@@ -38,7 +38,7 @@ const (
 
 var kourierControllerDeploymentNames = sets.NewString("3scale-kourier-control", "net-kourier-controller")
 
-func kourierTransformers(ctx context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
+func kourierTransformers(_ context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
 	return []mf.Transformer{
 		replaceGatewayNamespace(),
 		configureGatewayService(instance),
@@ -76,7 +76,7 @@ func replaceGatewayNamespace() mf.Transformer {
 
 func configureGatewayService(instance *v1beta1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if !(u.GetKind() == "Service" && u.GetName() == kourierGatewayServiceName) {
+		if u.GetKind() != "Service" || u.GetName() != kourierGatewayServiceName {
 			return nil
 		}
 
@@ -138,8 +138,8 @@ func configureBootstrapConfigMap(instance *v1beta1.KnativeServing) mf.Transforme
 
 			for i := range deployment.Spec.Template.Spec.Volumes {
 				v := &deployment.Spec.Template.Spec.Volumes[i]
-				if v.VolumeSource.ConfigMap.Name == kourierDefaultVolumeName {
-					v.VolumeSource.ConfigMap = &v1.ConfigMapVolumeSource{
+				if v.ConfigMap.Name == kourierDefaultVolumeName {
+					v.ConfigMap = &v1.ConfigMapVolumeSource{
 						LocalObjectReference: v1.LocalObjectReference{
 							Name: bootstrapName,
 						},

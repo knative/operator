@@ -185,7 +185,7 @@ func Test_assetList_FilterAssets(t *testing.T) {
 		{
 			name: "Rename bad",
 			f: func(s string) string {
-				return strings.Replace(s, "bad", "okay", -1)
+				return strings.ReplaceAll(s, "bad", "okay")
 			},
 			want: []Asset{
 				{Name: "test.yaml"},

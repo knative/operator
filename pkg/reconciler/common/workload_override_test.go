@@ -27,7 +27,6 @@ import (
 	v2 "k8s.io/api/autoscaling/v2"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -51,8 +50,8 @@ type expDeployments struct {
 	expTolerations               []corev1.Toleration
 	expAffinity                  *corev1.Affinity
 	expEnv                       map[string][]corev1.EnvVar
-	expReadinessProbe            *v1.Probe
-	expLivenessProbe             *v1.Probe
+	expReadinessProbe            *corev1.Probe
+	expLivenessProbe             *corev1.Probe
 	expHostNetwork               *bool
 	expDNSPolicy                 *corev1.DNSPolicy
 }
@@ -235,11 +234,11 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            10,
-			expEnv: map[string][]v1.EnvVar{"controller": {
+			expEnv: map[string][]corev1.EnvVar{"controller": {
 				{
 					Name: "SYSTEM_NAMESPACE",
-					ValueFrom: &v1.EnvVarSource{
-						FieldRef: &v1.ObjectFieldSelector{
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{
 							FieldPath: "metadata.namespace",
 						}},
 				}, {
@@ -276,11 +275,11 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            10,
-			expEnv: map[string][]v1.EnvVar{"controller": {
+			expEnv: map[string][]corev1.EnvVar{"controller": {
 				{
 					Name: "SYSTEM_NAMESPACE",
-					ValueFrom: &v1.EnvVarSource{
-						FieldRef: &v1.ObjectFieldSelector{
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{
 							FieldPath: "metadata.namespace",
 						}},
 				}, {
@@ -317,11 +316,11 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            10,
-			expEnv: map[string][]v1.EnvVar{"controller": {
+			expEnv: map[string][]corev1.EnvVar{"controller": {
 				{
 					Name: "SYSTEM_NAMESPACE",
-					ValueFrom: &v1.EnvVarSource{
-						FieldRef: &v1.ObjectFieldSelector{
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{
 							FieldPath: "metadata.namespace",
 						}},
 				}, {
@@ -355,11 +354,11 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            10,
-			expEnv: map[string][]v1.EnvVar{"controller": {
+			expEnv: map[string][]corev1.EnvVar{"controller": {
 				{
 					Name: "SYSTEM_NAMESPACE",
-					ValueFrom: &v1.EnvVarSource{
-						FieldRef: &v1.ObjectFieldSelector{
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{
 							FieldPath: "metadata.namespace",
 						}},
 				}, {
@@ -399,11 +398,11 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            10,
-			expEnv: map[string][]v1.EnvVar{"controller": {
+			expEnv: map[string][]corev1.EnvVar{"controller": {
 				{
 					Name: "SYSTEM_NAMESPACE",
-					ValueFrom: &v1.EnvVarSource{
-						FieldRef: &v1.ObjectFieldSelector{
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{
 							FieldPath: "metadata.namespace",
 						}},
 				}, {
@@ -443,11 +442,11 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            10,
-			expEnv: map[string][]v1.EnvVar{"controller": {
+			expEnv: map[string][]corev1.EnvVar{"controller": {
 				{
 					Name: "SYSTEM_NAMESPACE",
-					ValueFrom: &v1.EnvVarSource{
-						FieldRef: &v1.ObjectFieldSelector{
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{
 							FieldPath: "metadata.namespace",
 						}},
 				}, {
@@ -487,21 +486,21 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
 			expReplicas:            0,
-			expReadinessProbe: &v1.Probe{
-				ProbeHandler: v1.ProbeHandler{
-					HTTPGet: &v1.HTTPGetAction{
+			expReadinessProbe: &corev1.Probe{
+				ProbeHandler: corev1.ProbeHandler{
+					HTTPGet: &corev1.HTTPGetAction{
 						Port:        intstr.IntOrString{IntVal: 8012},
-						HTTPHeaders: []v1.HTTPHeader{{Name: "k-kubelet-probe", Value: "activator"}},
+						HTTPHeaders: []corev1.HTTPHeader{{Name: "k-kubelet-probe", Value: "activator"}},
 					}},
 				TimeoutSeconds:      15,
 				InitialDelaySeconds: 12,
 				SuccessThreshold:    3,
 			},
-			expLivenessProbe: &v1.Probe{
-				ProbeHandler: v1.ProbeHandler{
-					HTTPGet: &v1.HTTPGetAction{
+			expLivenessProbe: &corev1.Probe{
+				ProbeHandler: corev1.ProbeHandler{
+					HTTPGet: &corev1.HTTPGetAction{
 						Port:        intstr.IntOrString{IntVal: 8012},
-						HTTPHeaders: []v1.HTTPHeader{{Name: "k-kubelet-probe", Value: "activator"}},
+						HTTPHeaders: []corev1.HTTPHeader{{Name: "k-kubelet-probe", Value: "activator"}},
 					}},
 				TimeoutSeconds:      4,
 				InitialDelaySeconds: 2,
@@ -524,7 +523,7 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "controller"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"},
 			expReplicas:            0,
-			expReadinessProbe: &v1.Probe{
+			expReadinessProbe: &corev1.Probe{
 				TimeoutSeconds:      15,
 				InitialDelaySeconds: 12,
 			}}},
@@ -542,11 +541,11 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
 			expReplicas:            0,
-			expLivenessProbe: &v1.Probe{
-				ProbeHandler: v1.ProbeHandler{
-					HTTPGet: &v1.HTTPGetAction{
+			expLivenessProbe: &corev1.Probe{
+				ProbeHandler: corev1.ProbeHandler{
+					HTTPGet: &corev1.HTTPGetAction{
 						Port:        intstr.IntOrString{IntVal: 8012},
-						HTTPHeaders: []v1.HTTPHeader{{Name: "k-kubelet-probe", Value: "activator"}},
+						HTTPHeaders: []corev1.HTTPHeader{{Name: "k-kubelet-probe", Value: "activator"}},
 					}},
 			},
 		}},
@@ -564,11 +563,11 @@ func TestComponentsTransform(t *testing.T) {
 			expTemplateLabels:      map[string]string{"serving.knative.dev/release": "v0.13.0", "app": "activator", "role": "activator"},
 			expTemplateAnnotations: map[string]string{"cluster-autoscaler.kubernetes.io/safe-to-evict": "false"},
 			expReplicas:            0,
-			expReadinessProbe: &v1.Probe{
-				ProbeHandler: v1.ProbeHandler{
-					HTTPGet: &v1.HTTPGetAction{
+			expReadinessProbe: &corev1.Probe{
+				ProbeHandler: corev1.ProbeHandler{
+					HTTPGet: &corev1.HTTPGetAction{
 						Port:        intstr.IntOrString{IntVal: 8012},
-						HTTPHeaders: []v1.HTTPHeader{{Name: "k-kubelet-probe", Value: "activator"}},
+						HTTPHeaders: []corev1.HTTPHeader{{Name: "k-kubelet-probe", Value: "activator"}},
 					}},
 			},
 		}},
@@ -611,7 +610,7 @@ func TestComponentsTransform(t *testing.T) {
 					PodAntiAffinity: &corev1.PodAntiAffinity{
 						PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
 							{
-								PodAffinityTerm: v1.PodAffinityTerm{
+								PodAffinityTerm: corev1.PodAffinityTerm{
 									Namespaces: []string{"test"},
 								},
 								Weight: 10,
@@ -645,7 +644,7 @@ func TestComponentsTransform(t *testing.T) {
 					PodAffinity: &corev1.PodAffinity{
 						PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
 							{
-								PodAffinityTerm: v1.PodAffinityTerm{
+								PodAffinityTerm: corev1.PodAffinityTerm{
 									Namespaces: []string{"test"},
 								},
 								Weight: 10,
@@ -685,7 +684,7 @@ func TestComponentsTransform(t *testing.T) {
 					PodAntiAffinity: &corev1.PodAntiAffinity{
 						PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
 							{
-								PodAffinityTerm: v1.PodAffinityTerm{
+								PodAffinityTerm: corev1.PodAffinityTerm{
 									Namespaces: []string{"test"},
 								},
 								Weight: 10,
@@ -721,7 +720,7 @@ func TestComponentsTransform(t *testing.T) {
 					PodAffinity: &corev1.PodAffinity{
 						PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
 							{
-								PodAffinityTerm: v1.PodAffinityTerm{
+								PodAffinityTerm: corev1.PodAffinityTerm{
 									Namespaces: []string{"test"},
 								},
 								Weight: 10,
@@ -966,7 +965,7 @@ func TestStatefulSetTransform(t *testing.T) {
 	tests := []struct {
 		DeployName string
 		Input      servingv1beta1.KnativeServing
-		Expected   map[string]v1.ResourceRequirements
+		Expected   map[string]corev1.ResourceRequirements
 	}{{
 		DeployName: "kafka-source-dispatcher",
 		Input: servingv1beta1.KnativeServing{
@@ -994,7 +993,7 @@ func TestStatefulSetTransform(t *testing.T) {
 				},
 			},
 		},
-		Expected: map[string]v1.ResourceRequirements{"kafka-source-dispatcher": {
+		Expected: map[string]corev1.ResourceRequirements{"kafka-source-dispatcher": {
 			Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
 				corev1.ResourceMemory: resource.MustParse("999Mi")},
 			Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
@@ -1091,7 +1090,7 @@ func TestDeploymentResourceRequirementsTransform(t *testing.T) {
 	tests := []struct {
 		DeployName string
 		Input      servingv1beta1.KnativeServing
-		Expected   map[string]v1.ResourceRequirements
+		Expected   map[string]corev1.ResourceRequirements
 	}{{
 		DeployName: "net-istio-controller",
 		Input: servingv1beta1.KnativeServing{
@@ -1118,7 +1117,7 @@ func TestDeploymentResourceRequirementsTransform(t *testing.T) {
 				},
 			},
 		},
-		Expected: map[string]v1.ResourceRequirements{"controller": corev1.ResourceRequirements{
+		Expected: map[string]corev1.ResourceRequirements{"controller": corev1.ResourceRequirements{
 			Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
 				corev1.ResourceMemory: resource.MustParse("999Mi")},
 			Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
@@ -1153,7 +1152,7 @@ func TestDeploymentResourceRequirementsTransform(t *testing.T) {
 	}
 }
 
-func getEnv(containers []v1.Container, container string) []v1.EnvVar {
+func getEnv(containers []corev1.Container, container string) []corev1.EnvVar {
 	for _, c := range containers {
 		if c.Name == container {
 			return c.Env
@@ -1162,7 +1161,7 @@ func getEnv(containers []v1.Container, container string) []v1.EnvVar {
 	return nil
 }
 
-func getProbes(containers []v1.Container, container string) (readiness *v1.Probe, liveness *v1.Probe) {
+func getProbes(containers []corev1.Container, container string) (readiness *corev1.Probe, liveness *corev1.Probe) {
 	for _, c := range containers {
 		if c.Name == container {
 			return c.ReadinessProbe, c.LivenessProbe

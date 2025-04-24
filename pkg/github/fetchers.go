@@ -34,7 +34,7 @@ func GetReleases(ctx context.Context, client *github.Client, org string, repo st
 		releases, resp, err := client.Repositories.ListReleases(ctx, org, repo, opt)
 		if err != nil || resp.StatusCode != 200 {
 			if err == nil {
-				err = fmt.Errorf("Got HTTP %d: %s", resp.StatusCode, resp.Status)
+				err = fmt.Errorf("got HTTP %d: %s", resp.StatusCode, resp.Status)
 			}
 			return nil, err
 		}

@@ -148,10 +148,10 @@ func configureIngressClass(spec *v1beta1.KnativeServingSpec) {
 			Kourier: base.KourierIngressConfiguration{Enabled: kourierEnabled},
 		}
 
-		if spec.CommonSpec.Config == nil {
-			spec.CommonSpec.Config = base.ConfigMapData{"network": {"ingress.class": ingressClass}}
+		if spec.Config == nil {
+			spec.Config = base.ConfigMapData{"network": {"ingress.class": ingressClass}}
 		} else {
-			spec.CommonSpec.Config["network"] = map[string]string{"ingress.class": ingressClass}
+			spec.Config["network"] = map[string]string{"ingress.class": ingressClass}
 		}
 	}
 }

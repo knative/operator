@@ -1117,7 +1117,7 @@ func TestDeploymentResourceRequirementsTransform(t *testing.T) {
 				},
 			},
 		},
-		Expected: map[string]corev1.ResourceRequirements{"controller": corev1.ResourceRequirements{
+		Expected: map[string]corev1.ResourceRequirements{"controller": {
 			Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),
 				corev1.ResourceMemory: resource.MustParse("999Mi")},
 			Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("999m"),

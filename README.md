@@ -1,5 +1,6 @@
 # Knative Operator
 
+
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/knative/operator)
 [![Go Report Card](https://goreportcard.com/badge/knative/operator)](https://goreportcard.com/report/knative/operator)
 [![Releases](https://img.shields.io/github/release-pre/knative/operator.svg?sort=semver)](https://github.com/knative/operator/releases)

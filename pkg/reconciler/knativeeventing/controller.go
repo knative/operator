@@ -48,11 +48,11 @@ const (
 // NewController initializes the controller and is called by the generated code
 // Registers eventhandlers to enqueue events
 func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
-	return NewExtendedController(common.NoExtension)(ctx, cmw)
+	return NewExtendedControlle1r(common.NoExtension)(ctx, cmw)
 }
 
-// NewExtendedController returns a controller extended to a specific platform
-func NewExtendedController(generator common.ExtensionGenerator) injection.ControllerConstructor {
+// NewExtendedControlle1r returns a controller extended to a specific platform
+func NewExtendedControlle1r(generator common.ExtensionGenerator) injection.ControllerConstructor {
 	return func(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
 		knativeEventingInformer := knativeEventinginformer.Get(ctx)
 		deploymentInformer := deploymentinformer.Get(ctx, Selector)

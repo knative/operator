@@ -1599,8 +1599,8 @@ google.golang.org/grpc v1.46.0/go.mod h1:vN9eftEi1UMyUsIF80+uQXhHjbXYbm0uXoFCACu
 google.golang.org/grpc v1.46.2/go.mod h1:vN9eftEi1UMyUsIF80+uQXhHjbXYbm0uXoFCACuMGWk=
 google.golang.org/grpc v1.49.0/go.mod h1:ZgQEeidpAuNRZ8iRrlBKXZQP1ghovWIVhdJRyCDK+GI=
 google.golang.org/grpc v1.51.0/go.mod h1:wgNDFcnuBGmxLKI/qn4T+m5BtEBYXJPvibbUPsAIPww=
-google.golang.org/grpc v1.72.0 h1:S7UkcVa60b5AAQTaO6ZKamFp1zMZSU0fGDK2WZLbBnM=
-google.golang.org/grpc v1.72.0/go.mod h1:wH5Aktxcg25y1I3w7H69nHfXdOG3UiadoBtjh3izSDM=
+google.golang.org/grpc v1.72.1 h1:HR03wO6eyZ7lknl75XlxABNVLLFc2PAb6mHlYh756mA=
+google.golang.org/grpc v1.72.1/go.mod h1:wH5Aktxcg25y1I3w7H69nHfXdOG3UiadoBtjh3izSDM=
 google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0/go.mod h1:6Kw0yEErY5E/yWrBtf03jp27GLLJujG4z/JK95pnjjw=
 google.golang.org/protobuf v0.0.0-20200109180630-ec00e32a8dfd/go.mod h1:DFci5gLYBciE7Vtevhsrf46CRTquxDuWsQurQQe4oz8=
 google.golang.org/protobuf v0.0.0-20200221191635-4d8936d0db64/go.mod h1:kwYJMbMJ01Woi6D6+Kah6886xMZcty6N08ah7+eCXa0=
@@ -1722,8 +1722,8 @@ knative.dev/hack v0.0.0-20250514121446-f525e187efdc h1:8HmclJlA0zNE/G1SkgdC3/IFS
 knative.dev/hack v0.0.0-20250514121446-f525e187efdc/go.mod h1:R0ritgYtjLDO9527h5vb5X6gfvt5LCrJ55BNbVDsWiY=
 knative.dev/networking v0.0.0-20250515023348-eea9fd8d72f2 h1:ohEu0ii0tHMFESdUOF++47/stJ2gFfc8KPM3TavRfrI=
 knative.dev/networking v0.0.0-20250515023348-eea9fd8d72f2/go.mod h1:2YJmcqu+PHpCGpxvu9jCkoepJaOg/SnNJZz/qBhn71A=
-knative.dev/pkg v0.0.0-20250515022847-873230f3a48e h1:W00CN0C7c5Inmu4pAqCh+l9z6VdLy8Ligqjhx4gcmE4=
-knative.dev/pkg v0.0.0-20250515022847-873230f3a48e/go.mod h1:XnQM562P39zl08Lp+eO+v06J3P9lgOgGJFO7BTJh9Ls=
+knative.dev/pkg v0.0.0-20250520014526-44579e9ce5ed h1:5ZYbJDnkQ/Q3oZsiwD0hnbmMwC6+2KvkIJNPH9IToUE=
+knative.dev/pkg v0.0.0-20250520014526-44579e9ce5ed/go.mod h1:RgnJAMaNr/5xVZ9Kkd2BBkeNt1/TpDOo5fCSTqaVX8w=
 knative.dev/reconciler-test v0.0.0-20250516121650-f46fa6544a97 h1:IcAtORqZ3ek+HN9799LRRiBijSgNCdtAvF1S7qzPvcM=
 knative.dev/reconciler-test v0.0.0-20250516121650-f46fa6544a97/go.mod h1:CWM3ApZHYFCw2gQi1SDSVSoMNaGMm3M4JZidda6PhY0=
 knative.dev/serving v0.45.1-0.20250516145349-8a39d5e7020a h1:GTiosJyhDGYsikHQrnssOuollEUumMuXsu2g1p1P/P4=

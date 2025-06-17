@@ -62,13 +62,25 @@ func NewFilteredKnativeEventingInformer(client versioned.Interface, namespace st
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OperatorV1beta1().KnativeEventings(namespace).List(context.TODO(), options)
+				return client.OperatorV1beta1().KnativeEventings(namespace).List(context.Background(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OperatorV1beta1().KnativeEventings(namespace).Watch(context.TODO(), options)
+				return client.OperatorV1beta1().KnativeEventings(namespace).Watch(context.Background(), options)
+			},
+			ListWithContextFunc: func(ctx context.Context, options v1.ListOptions) (runtime.Object, error) {
+				if tweakListOptions != nil {
+					tweakListOptions(&options)
+				}
+				return client.OperatorV1beta1().KnativeEventings(namespace).List(ctx, options)
+			},
+			WatchFuncWithContext: func(ctx context.Context, options v1.ListOptions) (watch.Interface, error) {
+				if tweakListOptions != nil {
+					tweakListOptions(&options)
+				}
+				return client.OperatorV1beta1().KnativeEventings(namespace).Watch(ctx, options)
 			},
 		},
 		&apisoperatorv1beta1.KnativeEventing{},

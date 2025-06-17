@@ -74,7 +74,7 @@ function create_test_namespace_serving() {
 }
 
 # Skip installing istio as an add-on.
-initialize --cluster-version=${K8S_CLUSTER_VERSION} "$@" --skip-istio-addon
+initialize "$@"
 
 TIMEOUT=${TIMEOUT_CI}
 

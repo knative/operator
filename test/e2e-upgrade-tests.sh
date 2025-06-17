@@ -36,7 +36,7 @@ export GO111MODULE=on
 source "$(dirname "${BASH_SOURCE[0]}")/e2e-common.sh"
 
 # Skip installing istio as an add-on.
-initialize --cluster-version=${K8S_CLUSTER_VERSION} "$@" --skip-istio-addon
+initialize "$@"
 
 TIMEOUT=${TIMEOUT_CI}
 

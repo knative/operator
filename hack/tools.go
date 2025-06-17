@@ -19,6 +19,7 @@ package tools
 // This package imports things required by this repository, to force `go mod` to see them as dependencies
 import (
 	_ "k8s.io/code-generator"
+	_ "k8s.io/code-generator/cmd/validation-gen"
 	_ "knative.dev/eventing/cmd/heartbeats"
 	_ "knative.dev/hack"
 	_ "knative.dev/pkg/apiextensions/storageversion/cmd/migrate"

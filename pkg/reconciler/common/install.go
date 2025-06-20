@@ -55,14 +55,6 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponen
 		status.MarkInstallFailed(err.Error())
 		return fmt.Errorf("failed to apply (cluster)rolebindings: %w", err)
 	}
-	// Webhook configs are placeholder to be reconciled and configured by webhook controllers, not fully operational yet.
-	// They are owned by SYSTEM_NAMESPACE and reconciled once webhook deployment is started.
-	// In some cases a webhook config might be left on the cluster from previous uncompleted install/reinstall attempts.
-	// Such pre-existing webhook config can block creation of ConfigMap and other resource that are validated, resulting
-	// in a deadlock installation loop. For this reasons
-	if err := InstallWebhookConfigs(ctx, manifest, instance); err != nil {
-		return err
-	}
 	if err := manifest.Filter(mf.Not(mf.Any(role, rolebinding, webhook, webhookDependentResources))).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())
 		if ks, ok := instance.(*v1beta1.KnativeServing); ok && strings.Contains(err.Error(), gatewayNotMatch) &&
@@ -79,7 +71,6 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponen
 
 // InstallWebhookConfigs applies the Webhook manifest resources and updates the given status accordingly.
 func InstallWebhookConfigs(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
-	logging.FromContext(ctx).Debug("Installing webhook configurations")
 	status := instance.GetStatus()
 	if err := manifest.Filter(webhook).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())

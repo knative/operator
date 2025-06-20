@@ -56,9 +56,9 @@ func TestInstall(t *testing.T) {
 		*clusterRole.DeepCopy(),
 		*roleBinding.DeepCopy(),
 		*clusterRoleBinding.DeepCopy(),
+		*deployment.DeepCopy(),
 		*mutatingWebhookConfiguration.DeepCopy(),
 		*validatingWebhookConfiguration.DeepCopy(),
-		*deployment.DeepCopy(),
 	}
 
 	client := &fakeClient{}
@@ -79,6 +79,10 @@ func TestInstall(t *testing.T) {
 	}
 	if err := Install(context.TODO(), &manifest, instance); err != nil {
 		t.Fatalf("Install() = %v, want no error", err)
+	}
+
+	if err := InstallWebhookConfigs(context.TODO(), &manifest, instance); err != nil {
+		t.Fatalf("InstallWebhookConfigs() = %v, want no error", err)
 	}
 
 	if err := MarkStatusSuccess(context.TODO(), &manifest, instance); err != nil {

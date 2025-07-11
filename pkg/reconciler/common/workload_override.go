@@ -29,6 +29,90 @@ import (
 	"knative.dev/operator/pkg/apis/operator/base"
 )
 
+// resourceHandler defines the interface for handling different Kubernetes resource types
+type resourceHandler interface {
+	GetPodTemplateSpec() *corev1.PodTemplateSpec
+	SetReplicas(*int32)
+	GetObject() metav1.Object
+}
+
+// deploymentHandler implements resourceHandler for Deployments
+type deploymentHandler struct {
+	deployment *appsv1.Deployment
+}
+
+func (d *deploymentHandler) GetPodTemplateSpec() *corev1.PodTemplateSpec {
+	return &d.deployment.Spec.Template
+}
+
+func (d *deploymentHandler) SetReplicas(replicas *int32) {
+	d.deployment.Spec.Replicas = replicas
+}
+
+func (d *deploymentHandler) GetObject() metav1.Object {
+	return d.deployment
+}
+
+// statefulSetHandler implements resourceHandler for StatefulSets
+type statefulSetHandler struct {
+	statefulSet *appsv1.StatefulSet
+}
+
+func (s *statefulSetHandler) GetPodTemplateSpec() *corev1.PodTemplateSpec {
+	return &s.statefulSet.Spec.Template
+}
+
+func (s *statefulSetHandler) SetReplicas(replicas *int32) {
+	s.statefulSet.Spec.Replicas = replicas
+}
+
+func (s *statefulSetHandler) GetObject() metav1.Object {
+	return s.statefulSet
+}
+
+// jobHandler implements resourceHandler for Jobs
+type jobHandler struct {
+	job *batchv1.Job
+}
+
+func (j *jobHandler) GetPodTemplateSpec() *corev1.PodTemplateSpec {
+	return &j.job.Spec.Template
+}
+
+func (j *jobHandler) SetReplicas(replicas *int32) {
+	// Jobs don't have replicas, so this is a no-op
+}
+
+func (j *jobHandler) GetObject() metav1.Object {
+	return j.job
+}
+
+// createResourceHandler creates the appropriate resource handler based on the resource type
+func createResourceHandler(u *unstructured.Unstructured) (resourceHandler, error) {
+	switch u.GetKind() {
+	case "Deployment":
+		deployment := &appsv1.Deployment{}
+		if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
+			return nil, err
+		}
+		return &deploymentHandler{deployment: deployment}, nil
+	case "StatefulSet":
+		ss := &appsv1.StatefulSet{}
+		if err := scheme.Scheme.Convert(u, ss, nil); err != nil {
+			return nil, err
+		}
+		return &statefulSetHandler{statefulSet: ss}, nil
+	case "Job":
+		job := &batchv1.Job{}
+		if err := scheme.Scheme.Convert(u, job, nil); err != nil {
+			return nil, err
+		}
+		return &jobHandler{job: job}, nil
+	default:
+		return nil, nil
+	}
+}
+
 // OverridesTransform transforms deployments based on the configuration in `spec.overrides`.
 func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogger) mf.Transformer {
 	if overrides == nil {
@@ -36,54 +120,47 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 	}
 	return func(u *unstructured.Unstructured) error {
 		for _, override := range overrides {
-			var obj metav1.Object
-			var ps *corev1.PodTemplateSpec
-
-			if u.GetKind() == "Deployment" && u.GetName() == override.Name {
-				deployment := &appsv1.Deployment{}
-				if err := scheme.Scheme.Convert(u, deployment, nil); err != nil {
-					return err
-				}
-				obj = deployment
-				ps = &deployment.Spec.Template
-
-				// Do not set replicas, if this resource is controlled by a HPA
-				if override.Replicas != nil && !hasHorizontalPodOrCustomAutoscaler(override.Name) {
-					deployment.Spec.Replicas = override.Replicas
-				}
-			}
-			if u.GetKind() == "StatefulSet" && u.GetName() == override.Name {
-				ss := &appsv1.StatefulSet{}
-				if err := scheme.Scheme.Convert(u, ss, nil); err != nil {
-					return err
-				}
-				obj = ss
-				ps = &ss.Spec.Template
-
-				// Do not set replicas, if this resource is controlled by a HPA
-				if override.Replicas != nil && !hasHorizontalPodOrCustomAutoscaler(override.Name) {
-					ss.Spec.Replicas = override.Replicas
-				}
-			}
-			if u.GetKind() == "Job" && u.GetGenerateName() == override.Name {
-				job := &batchv1.Job{}
-				if err := scheme.Scheme.Convert(u, job, nil); err != nil {
-					return err
-				}
-				obj = job
-				ps = &job.Spec.Template
-			}
-
+			// Handle HPA separately since it doesn't follow the resource handler pattern
 			if u.GetKind() == "HorizontalPodAutoscaler" && override.Replicas != nil && u.GetName() == getHPAName(override.Name) {
 				overrideReplicas := int64(*override.Replicas)
 				if err := hpaTransform(u, overrideReplicas); err != nil {
 					return err
 				}
-			}
-
-			if obj == nil {
 				continue
 			}
+
+			// Check if this resource matches the override
+			var matches bool
+			switch u.GetKind() {
+			case "Deployment", "StatefulSet":
+				matches = u.GetName() == override.Name
+			case "Job":
+				matches = u.GetGenerateName() == override.Name
+			default:
+				continue
+			}
+
+			if !matches {
+				continue
+			}
+
+			// Create the appropriate resource handler
+			handler, err := createResourceHandler(u)
+			if err != nil {
+				return err
+			}
+			if handler == nil {
+				continue
+			}
+
+			// Apply replicas if specified and not controlled by HPA
+			if override.Replicas != nil && !hasHorizontalPodOrCustomAutoscaler(override.Name) {
+				handler.SetReplicas(override.Replicas)
+			}
+
+			// Apply all other overrides
+			obj := handler.GetObject()
+			ps := handler.GetPodTemplateSpec()
 
 			replaceLabels(&override, obj, ps)
 			replaceAnnotations(&override, obj, ps)
@@ -96,6 +173,7 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 			replaceProbes(&override, ps)
 			replaceHostNetwork(&override, ps)
 
+			// Convert back to unstructured
 			if err := scheme.Scheme.Convert(obj, u, nil); err != nil {
 				return err
 			}
@@ -161,7 +239,7 @@ func replaceResources(override *base.WorkloadOverride, ps *corev1.PodTemplateSpe
 	if len(override.Resources) > 0 {
 		containers := ps.Spec.Containers
 		for i := range containers {
-			if override := find(override.Resources, containers[i].Name); override != nil {
+			if override := findResourceOverride(override.Resources, containers[i].Name); override != nil {
 				merge(&override.Limits, &containers[i].Resources.Limits)
 				merge(&override.Requests, &containers[i].Resources.Requests)
 			}

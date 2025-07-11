@@ -30,11 +30,17 @@ import (
 const SinkBindingSelectionModeEnvVarKey = "SINK_BINDING_SELECTION_MODE"
 
 // SinkBindingSelectionModeTransform sets the eventing-webhook's SINK_BINDING_SELECTION_MODE env var to the value in the spec
-func SinkBindingSelectionModeTransform(instance *eventingv1beta1.KnativeEventing, log *zap.SugaredLogger) mf.Transformer {
+func SinkBindingSelectionModeTransform(instance *eventingv1beta1.KnativeEventing, log *zap.SugaredLogger, convertFuncs ...func(in, out, context interface{}) error) mf.Transformer {
+	var convert func(in, out, context interface{}) error
+	if len(convertFuncs) > 0 && convertFuncs[0] != nil {
+		convert = convertFuncs[0]
+	} else {
+		convert = scheme.Scheme.Convert
+	}
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" && u.GetName() == "eventing-webhook" {
 			deployment := &appsv1.Deployment{}
-			err := scheme.Scheme.Convert(u, deployment, nil)
+			err := convert(u, deployment, nil)
 			if err != nil {
 				log.Error(err, "Error converting Unstructured to Deployment", "unstructured", u, "deployment", deployment)
 				return err
@@ -65,7 +71,7 @@ func SinkBindingSelectionModeTransform(instance *eventingv1beta1.KnativeEventing
 				}
 			}
 
-			err = scheme.Scheme.Convert(deployment, u, nil)
+			err = convert(deployment, u, nil)
 			if err != nil {
 				return err
 			}

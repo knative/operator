@@ -46,7 +46,7 @@ func ResourceRequirementsTransform(obj base.KComponent, log *zap.SugaredLogger) 
 			containers := deployment.Spec.Template.Spec.Containers
 			resources := obj.GetSpec().GetResources()
 			for i := range containers {
-				if override := find(resources, containers[i].Name); override != nil {
+				if override := findResourceOverride(resources, containers[i].Name); override != nil {
 					merge(&override.Limits, &containers[i].Resources.Limits)
 					merge(&override.Requests, &containers[i].Resources.Requests)
 				}
@@ -71,7 +71,7 @@ func merge(src, tgt *v1.ResourceList) {
 	}
 }
 
-func find(resources []base.ResourceRequirementsOverride, name string) *base.ResourceRequirementsOverride {
+func findResourceOverride(resources []base.ResourceRequirementsOverride, name string) *base.ResourceRequirementsOverride {
 	for _, override := range resources {
 		if override.Container == name {
 			return &override

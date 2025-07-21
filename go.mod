@@ -20,12 +20,12 @@ require (
 	k8s.io/apimachinery v0.33.1
 	k8s.io/client-go v0.33.1
 	k8s.io/code-generator v0.33.1
-	knative.dev/caching v0.0.0-20250708014010-99e6352a57b1
-	knative.dev/eventing v0.45.1-0.20250709065003-351613bc3192
+	knative.dev/caching v0.0.0-20250716150501-fd36b19e8e44
+	knative.dev/eventing v0.45.1-0.20250719175804-37dd673eef41
 	knative.dev/hack v0.0.0-20250708013849-70d4b00da6ba
-	knative.dev/pkg v0.0.0-20250710001404-a4cc1bdef5b2
-	knative.dev/reconciler-test v0.0.0-20250708152404-d97d9007b8d3
-	knative.dev/serving v0.45.1-0.20250710161811-c65e780e017d
+	knative.dev/pkg v0.0.0-20250716115900-19d3cc2da0b9
+	knative.dev/reconciler-test v0.0.0-20250716152301-806fb6ae0da7
+	knative.dev/serving v0.45.1-0.20250721121606-2af24195fc89
 	sigs.k8s.io/yaml v1.5.0
 )
 
@@ -54,9 +54,9 @@ require (
 	github.com/cert-manager/cert-manager v1.16.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudevents/conformance v0.4.1 // indirect
-	github.com/cloudevents/sdk-go/observability/opencensus/v2 v2.15.2 // indirect
+	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.16.1 // indirect
 	github.com/cloudevents/sdk-go/sql/v2 v2.0.0-20240712172937-3ce6b2f1f011 // indirect
-	github.com/cloudevents/sdk-go/v2 v2.15.2 // indirect
+	github.com/cloudevents/sdk-go/v2 v2.16.1 // indirect
 	github.com/coreos/go-oidc/v3 v3.9.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
@@ -143,7 +143,7 @@ require (
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/term v0.32.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
-	golang.org/x/time v0.10.0 // indirect
+	golang.org/x/time v0.12.0 // indirect
 	golang.org/x/tools v0.34.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect

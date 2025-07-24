@@ -88,7 +88,6 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 	}
 
 	if manifest == nil {
-		logger.Warnf("No manifest found; no cluster-scoped resources will be finalized")
 		return nil
 	}
 
@@ -124,9 +123,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		r.appendExtensionManifests,
 		r.transform,
 		manifests.Install,
-		manifests.SetManifestPaths, // setting path right after applying manifests to populate paths
 		common.CheckDeployments,
+		common.InstallWebhookConfigs,
 		common.InstallWebhookDependentResources,
+		manifests.SetManifestPaths,
 		common.MarkStatusSuccess,
 		common.DeleteObsoleteResources(ctx, ks, r.installed),
 	}

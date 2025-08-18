@@ -16,16 +16,16 @@ require (
 	google.golang.org/api v0.198.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
 	istio.io/client-go v1.18.7
-	k8s.io/api v0.33.1
-	k8s.io/apimachinery v0.33.1
-	k8s.io/client-go v0.33.1
-	k8s.io/code-generator v0.33.1
-	knative.dev/caching v0.0.0-20250812142340-b29547050297
-	knative.dev/eventing v0.46.1-0.20250812205542-23fa8200f151
+	k8s.io/api v0.33.4
+	k8s.io/apimachinery v0.33.4
+	k8s.io/client-go v0.33.4
+	k8s.io/code-generator v0.33.4
+	knative.dev/caching v0.0.0-20250814140644-ebb5f4cb6992
+	knative.dev/eventing v0.46.1-0.20250815061442-81cbeaaeb807
 	knative.dev/hack v0.0.0-20250708013849-70d4b00da6ba
-	knative.dev/pkg v0.0.0-20250813152941-6c39c7c0f363
-	knative.dev/reconciler-test v0.0.0-20250812021543-e78bf69e0210
-	knative.dev/serving v0.46.1-0.20250813121741-7040345eb739
+	knative.dev/pkg v0.0.0-20250817140644-c745f1fcaa2e
+	knative.dev/reconciler-test v0.0.0-20250814021443-f87776da7a48
+	knative.dev/serving v0.46.1-0.20250815165043-5ea75ccf2736
 	sigs.k8s.io/yaml v1.6.0
 )
 
@@ -157,13 +157,13 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.33.1 // indirect
-	k8s.io/apiserver v0.33.1 // indirect
+	k8s.io/apiextensions-apiserver v0.33.4 // indirect
+	k8s.io/apiserver v0.33.4 // indirect
 	k8s.io/gengo/v2 v2.0.0-20250207200755-1244d31929d7 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
 	k8s.io/utils v0.0.0-20241210054802-24370beab758 // indirect
-	knative.dev/networking v0.0.0-20250807143752-5be3ba43ad43 // indirect
+	knative.dev/networking v0.0.0-20250812143640-1456f137af1a // indirect
 	sigs.k8s.io/controller-runtime v0.19.0 // indirect
 	sigs.k8s.io/gateway-api v1.1.0 // indirect
 	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect

@@ -1483,7 +1483,7 @@ k8s.io/utils/trace
 ## explicit; go 1.24.0
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.46.1-0.20250827115136-841dfae2b2b2
+# knative.dev/eventing v0.46.1-0.20250829061938-3e86e9387750
 ## explicit; go 1.24.0
 knative.dev/eventing/cmd/heartbeats
 knative.dev/eventing/pkg/apis
@@ -1714,7 +1714,7 @@ knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/resources/serviceaccount
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/certificate
-# knative.dev/serving v0.46.1-0.20250820171049-30e4f08835af
+# knative.dev/serving v0.46.1-0.20250830231539-109f3f00a892
 ## explicit; go 1.24.0
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

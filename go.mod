@@ -11,7 +11,7 @@ require (
 	github.com/manifestival/manifestival v0.7.2
 	go.uber.org/zap v1.27.0
 	gocloud.dev v0.22.0
-	golang.org/x/mod v0.27.0
+	golang.org/x/mod v0.28.0
 	golang.org/x/oauth2 v0.30.0
 	google.golang.org/api v0.198.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
@@ -21,11 +21,11 @@ require (
 	k8s.io/client-go v0.33.4
 	k8s.io/code-generator v0.33.4
 	knative.dev/caching v0.0.0-20250909014531-e918af7eb00b
-	knative.dev/eventing v0.46.1-0.20250910170819-d5e9973e559b
+	knative.dev/eventing v0.46.1-0.20250911120720-1c920ca1452d
 	knative.dev/hack v0.0.0-20250902153942-1499de21e119
-	knative.dev/pkg v0.0.0-20250909010931-8c9c1d368e4b
+	knative.dev/pkg v0.0.0-20250915135827-db4c336acdbe
 	knative.dev/reconciler-test v0.0.0-20250909113732-73218b8f3940
-	knative.dev/serving v0.46.1-0.20250910032334-93577e9cb30c
+	knative.dev/serving v0.46.1-0.20250912121022-973fcba826c5
 	sigs.k8s.io/yaml v1.6.0
 )
 
@@ -110,7 +110,7 @@ require (
 	github.com/rickb777/plural v1.2.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529 // indirect
-	github.com/spf13/pflag v1.0.7 // indirect
+	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/tsenart/vegeta/v12 v12.12.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
@@ -138,14 +138,14 @@ require (
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
-	golang.org/x/crypto v0.41.0 // indirect
-	golang.org/x/net v0.43.0 // indirect
+	golang.org/x/crypto v0.42.0 // indirect
+	golang.org/x/net v0.44.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
-	golang.org/x/sys v0.35.0 // indirect
-	golang.org/x/term v0.34.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/term v0.35.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
-	golang.org/x/tools v0.36.0 // indirect
+	golang.org/x/tools v0.37.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20240903143218-8af14fe29dc1 // indirect

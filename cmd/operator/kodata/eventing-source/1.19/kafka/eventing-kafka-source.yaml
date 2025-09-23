@@ -17,7 +17,7 @@ metadata:
   name: config-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "1.19.6"
+    app.kubernetes.io/version: "1.19.7"
   annotations:
     knative.dev/example-checksum: "8157ecb1"
 data:
@@ -178,7 +178,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    app.kubernetes.io/version: "1.19.6"
+    app.kubernetes.io/version: "1.19.7"
 rules:
   - apiGroups:
       - ""
@@ -215,7 +215,7 @@ metadata:
   name: knative-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "1.19.6"
+    app.kubernetes.io/version: "1.19.7"
 
 ---
 # Copyright 2021 The Knative Authors
@@ -236,7 +236,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    app.kubernetes.io/version: "1.19.6"
+    app.kubernetes.io/version: "1.19.7"
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-source-data-plane
@@ -267,7 +267,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-source-dispatcher
-    app.kubernetes.io/version: "1.19.6"
+    app.kubernetes.io/version: "1.19.7"
     app.kubernetes.io/component: kafka-source-dispatcher
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -281,7 +281,7 @@ spec:
       name: kafka-source-dispatcher
       labels:
         app: kafka-source-dispatcher
-        app.kubernetes.io/version: "1.19.6"
+        app.kubernetes.io/version: "1.19.7"
         app.kubernetes.io/component: kafka-channel-dispatcher
         app.kubernetes.io/name: knative-eventing
         app.kubernetes.io/kind: kafka-dispatcher
@@ -308,7 +308,7 @@ spec:
         runAsUser: 1001
       containers:
         - name: kafka-source-dispatcher
-          image: gcr.io/knative-releases/knative-kafka-broker-dispatcher-loom@sha256:27ccbd90773e3693e72393c3bed3b9b2b3c27f52954f766eb17c8e2f3250fdfe
+          image: gcr.io/knative-releases/knative-kafka-broker-dispatcher-loom@sha256:c36e868d7f024ac9736bcd88f0f483c07ceb568bec98fca2a596bf9c7e47246b
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /etc/config

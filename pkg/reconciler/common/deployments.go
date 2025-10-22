@@ -19,6 +19,7 @@ package common
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
@@ -27,6 +28,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/pkg/logging"
 )
 
 type deploymentsNotReadyError struct{}
@@ -41,6 +43,43 @@ func (err deploymentsNotReadyError) Error() string {
 // IsDeploymentsNotReadyError returns true if the given error is a deploymentsNotReadyError.
 func IsDeploymentsNotReadyError(err error) bool {
 	return errors.Is(err, deploymentsNotReadyError{})
+}
+
+// CheckWebhookDeployment checks if the webhook deployment is ready.
+// This is needed before creating webhook-dependent resources (e.g., Certificates)
+// because the ValidatingWebhookConfiguration with failurePolicy=Fail will reject
+// Certificate creation if the webhook pod is not ready.
+func CheckWebhookDeployment(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+	logger := logging.FromContext(ctx)
+	logger.Debug("Checking webhook deployment")
+	status := instance.GetStatus()
+	webhookDeployment := manifest.Filter(mf.ByKind("Deployment"), mf.ByName("webhook"))
+
+	if len(webhookDeployment.Resources()) == 0 {
+		status.MarkInstallFailed("webhook deployment not found in manifest")
+		return fmt.Errorf("webhook deployment not found in manifest")
+	}
+
+	for _, u := range webhookDeployment.Resources() {
+		resource, err := manifest.Client.Get(&u)
+		if err != nil {
+			status.MarkDeploymentsNotReady([]string{"webhook"})
+			if apierrors.IsNotFound(err) {
+				return deploymentsNotReadyError{}
+			}
+			return err
+		}
+		deployment := &appsv1.Deployment{}
+		if err := scheme.Scheme.Convert(resource, deployment, nil); err != nil {
+			return err
+		}
+		if !isDeploymentAvailable(deployment) {
+			status.MarkDeploymentsNotReady([]string{"webhook"})
+			return deploymentsNotReadyError{}
+		}
+	}
+
+	return nil
 }
 
 // CheckDeployments checks all deployments in the given manifest and updates the given

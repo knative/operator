@@ -1726,8 +1726,8 @@ knative.dev/pkg v0.0.0-20250415155312-ed3e2158b883 h1:UeOY7009M0EHwdyW3P35Fc1U6F
 knative.dev/pkg v0.0.0-20250415155312-ed3e2158b883/go.mod h1:ptwLYr04MAyeoRvhnhhz0FFkVZTdYJV2QWnw9sZyFSM=
 knative.dev/reconciler-test v0.0.0-20251023120746-56e79a32e54e h1:TTTOKCwJjCOf0Uix9fbaeuKWI46yCpDTZeqaM82G1S8=
 knative.dev/reconciler-test v0.0.0-20251023120746-56e79a32e54e/go.mod h1:jrNdg5OPDhfxYxXDLqA4iv9zvfLhNYpYKmaQvz4ZpRM=
-knative.dev/serving v0.45.1 h1:tDbEZEzWeQ3KAhOZato5p7Jahdks9imerPBsiDUhkzk=
-knative.dev/serving v0.45.1/go.mod h1:AGpRclBUrrSx4KNiyDzAR4DlmENqLKrSNllnBP+h3yw=
+knative.dev/serving v0.45.2 h1:l5ILtq769soZcTUYJAgL0VsHquBNrJv2WguVrJlFpPE=
+knative.dev/serving v0.45.2/go.mod h1:T534clR+3zes/h0yEgrGODZzsWW3v38Trz/7KjZ8t2M=
 nhooyr.io/websocket v1.8.6/go.mod h1:B70DZP8IakI65RVQ51MsWP/8jndNma26DVA/nFSCgW0=
 pgregory.net/rapid v1.1.0 h1:CMa0sjHSru3puNx+J0MIAuiiEV4N0qj8/cMWGBBCsjw=
 pgregory.net/rapid v1.1.0/go.mod h1:PY5XlDGj0+V1FCq0o192FdRhpKHGTRIWBgqjDBTrq04=

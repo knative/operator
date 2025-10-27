@@ -17,7 +17,7 @@ kind: Namespace
 metadata:
   name: knative-sources
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -40,7 +40,7 @@ metadata:
   name: rabbitmq-controller-manager
   namespace: knative-sources
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 secrets:
   - name: rabbitmq-source-key
 ---
@@ -73,7 +73,7 @@ kind: ClusterRole
 metadata:
   name: rabbitmq-webhook
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 rules:
   # For watching logging configuration and getting certs.
   - apiGroups:
@@ -157,7 +157,7 @@ kind: ClusterRole
 metadata:
   name: eventing-sources-rabbitmq-controller
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 rules:
   - apiGroups:
       - sources.knative.dev
@@ -270,14 +270,14 @@ metadata:
   name: rabbitmq-webhook
   namespace: knative-sources
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: rabbitmq-webhook
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 subjects:
   - kind: ServiceAccount
     name: rabbitmq-webhook
@@ -307,7 +307,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-rabbitmq-controller
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 subjects:
   - kind: ServiceAccount
     name: rabbitmq-controller-manager
@@ -322,7 +322,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-sources-rabbitmq-controller-addressable-resolver
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 subjects:
   - kind: ServiceAccount
     name: rabbitmq-controller-manager
@@ -552,7 +552,7 @@ metadata:
   name: rabbitmq-controller
   namespace: knative-sources
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
     control-plane: rabbitmq-controller-manager
 spec:
   selector:
@@ -580,7 +580,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
     role: rabbitmq-source-webhook
   name: rabbitmq-source-webhook
   namespace: knative-sources
@@ -613,7 +613,7 @@ metadata:
   name: rabbitmq-controller-manager
   namespace: knative-sources
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
     control-plane: rabbitmq-controller-manager
 spec:
   replicas: 1
@@ -627,7 +627,7 @@ spec:
       serviceAccountName: rabbitmq-controller-manager
       containers:
         - name: manager
-          image: gcr.io/knative-releases/knative.dev/eventing-rabbitmq/cmd/controller/source@sha256:b4b5ec25afec2937d960938f55e378e6506d239b9ca6df5e9804abb96a56ac5e
+          image: gcr.io/knative-releases/knative.dev/eventing-rabbitmq/cmd/controller/source@sha256:4ed964d3ac2def4757607745f066c47922b63097ba37b31438debdf343b49374
           imagePullPolicy: IfNotPresent
           env:
             - name: SYSTEM_NAMESPACE
@@ -639,7 +639,7 @@ spec:
             - name: CONFIG_OBSERVABILITY_NAME
               value: config-observability
             - name: RABBITMQ_RA_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing-rabbitmq/cmd/receive_adapter@sha256:ba8c544e27b36dea33bd052adcaba067da054f2fba0ac65d0eefe0442ee49a4c
+              value: gcr.io/knative-releases/knative.dev/eventing-rabbitmq/cmd/receive_adapter@sha256:4d9ce60125a69f855c2e8e378dd59acbe88bb652abe2835155473709f4794620
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -675,7 +675,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: config.webhook.rabbitmq.sources.knative.dev
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -711,7 +711,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: webhook.rabbitmq.sources.knative.dev
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -743,7 +743,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.webhook.rabbitmq.sources.knative.dev
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -776,7 +776,7 @@ metadata:
   name: rabbitmq-webhook-certs
   namespace: knative-sources
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 # The data is populated at install time.
 
 ---
@@ -799,7 +799,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: sinkbindings.webhook.sources.knative.dev
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 webhooks:
   - admissionReviewVersions: ["v1", "v1beta1"]
     clientConfig:
@@ -832,7 +832,7 @@ metadata:
   name: rabbitmq-webhook
   namespace: knative-sources
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
 spec:
   replicas: 1
   selector:
@@ -860,7 +860,7 @@ spec:
           terminationMessagePolicy: FallbackToLogsOnError
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/eventing-rabbitmq/cmd/webhook/source@sha256:fa5ed84121ed946fa92d3b854535180490ba42849bd19d2f146971f947c80d7c
+          image: gcr.io/knative-releases/knative.dev/eventing-rabbitmq/cmd/webhook/source@sha256:e76dcf227ec51f0002034e6cfb46c5031cc72e1e96262b526fae85102db0fedb
           resources:
             requests:
               # taken from serving.
@@ -916,7 +916,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    rabbitmq.eventing.knative.dev/release: "v1.19.6"
+    rabbitmq.eventing.knative.dev/release: "v1.19.7"
     role: rabbitmq-webhook
   name: rabbitmq-webhook
   namespace: knative-sources

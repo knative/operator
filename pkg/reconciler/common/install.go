@@ -90,6 +90,7 @@ func InstallWebhookConfigs(ctx context.Context, manifest *mf.Manifest, instance 
 
 // InstallWebhookDependentResources applies the Webhook dependent resources updates the given status accordingly.
 func InstallWebhookDependentResources(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+	logging.FromContext(ctx).Debug("Installing webhook dependent resources")
 	status := instance.GetStatus()
 	if err := manifest.Filter(webhookDependentResources).Apply(); err != nil {
 		status.MarkInstallFailed(err.Error())

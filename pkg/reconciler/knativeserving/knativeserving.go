@@ -124,9 +124,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		r.appendExtensionManifests,
 		r.transform,
 		manifests.Install,
-		manifests.SetManifestPaths, // setting path right after applying manifests to populate paths
-		common.CheckDeployments,
+		manifests.SetManifestPaths,    // setting path right after applying manifests to populate paths
+		common.CheckWebhookDeployment, // Wait for webhook to be ready before creating Certificate resources
 		common.InstallWebhookDependentResources,
+		common.CheckDeployments,
 		common.MarkStatusSuccess,
 		common.DeleteObsoleteResources(ctx, ks, r.installed),
 	}

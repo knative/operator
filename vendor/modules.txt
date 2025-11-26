@@ -590,7 +590,7 @@ go.uber.org/automaxprocs/maxprocs
 # go.uber.org/multierr v1.11.0
 ## explicit; go 1.19
 go.uber.org/multierr
-# go.uber.org/zap v1.27.0
+# go.uber.org/zap v1.27.1
 ## explicit; go 1.19
 go.uber.org/zap
 go.uber.org/zap/buffer
@@ -1489,11 +1489,11 @@ k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/ptr
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20251119144517-088ea3cf1f7d
+# knative.dev/caching v0.0.0-20251126013858-c5173ac2e58a
 ## explicit; go 1.24.0
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.47.1-0.20251121120517-0effffedd9a9
+# knative.dev/eventing v0.47.1-0.20251126013633-47e18d46cb6c
 ## explicit; go 1.24.0
 knative.dev/eventing/cmd/heartbeats
 knative.dev/eventing/pkg/apis
@@ -1586,7 +1586,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/forwarder
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/hack v0.0.0-20251117013754-67a5b048bc27
+# knative.dev/hack v0.0.0-20251126013634-1484a9e9b641
 ## explicit; go 1.24
 knative.dev/hack
 # knative.dev/networking v0.0.0-20251117014740-e8506646d57f
@@ -1606,7 +1606,7 @@ knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/ingress
 knative.dev/networking/pkg/k8s
-# knative.dev/pkg v0.0.0-20251124190527-7d24e8d1085f
+# knative.dev/pkg v0.0.0-20251126013532-e853b1d1d6bb
 ## explicit; go 1.24.0
 knative.dev/pkg/apiextensions/storageversion
 knative.dev/pkg/apiextensions/storageversion/cmd/migrate
@@ -1697,7 +1697,7 @@ knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates
 knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/resourcesemantics/conversion
-# knative.dev/reconciler-test v0.0.0-20251119135518-4b85657eb33d
+# knative.dev/reconciler-test v0.0.0-20251126013638-4aa4b110c508
 ## explicit; go 1.24.0
 knative.dev/reconciler-test/cmd/eventshub
 knative.dev/reconciler-test/pkg/environment
@@ -1726,7 +1726,7 @@ knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/resources/serviceaccount
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/certificate
-# knative.dev/serving v0.47.1-0.20251124122119-7856b63a140c
+# knative.dev/serving v0.47.1-0.20251125185627-a083ca79ebda
 ## explicit; go 1.24.0
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

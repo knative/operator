@@ -1713,10 +1713,10 @@ knative.dev/networking v0.0.0-20251126213812-ebe48fd53262 h1:CEFraQgj5csZPv2NgCA
 knative.dev/networking v0.0.0-20251126213812-ebe48fd53262/go.mod h1:nxN+sYiQCoT2FLgSMTShXYmYYcb7rALHSOz6l5RjCp4=
 knative.dev/pkg v0.0.0-20251126013532-e853b1d1d6bb h1:JhpOj4b8wdTjbahkCyZUaFlkuHib/6uCVyjPI/W4MPg=
 knative.dev/pkg v0.0.0-20251126013532-e853b1d1d6bb/go.mod h1:KFRQGFIcsdi9fDto0lGkcz/NwnNr/8hq9mmLyBuLkro=
-knative.dev/reconciler-test v0.0.0-20251127131716-49c8eb8d6d42 h1:SbejPDcG8osmgzEXxrtwZKN9yMocDMU9IFJSLniXMF8=
-knative.dev/reconciler-test v0.0.0-20251127131716-49c8eb8d6d42/go.mod h1:XiaOxTCk7xf54L6A5/oyBm7VOaGq1ouEpSTDxuME8Ag=
-knative.dev/serving v0.47.1-0.20251202122311-06034f27f1ea h1:4N6e1od7d4Ok2cvb8jM9k6TO5kPQXXcP53HT0eV9ZBg=
-knative.dev/serving v0.47.1-0.20251202122311-06034f27f1ea/go.mod h1:olKUo5+T1KOyD4t7SM6oiEgmkVQO4Gmr6YiVwj0J944=
+knative.dev/reconciler-test v0.0.0-20251203013610-65cec2a81a56 h1:cshdTYJyUKppLc+9MiYr37lXjfoGgf70JdU6LIlm2yc=
+knative.dev/reconciler-test v0.0.0-20251203013610-65cec2a81a56/go.mod h1:XiaOxTCk7xf54L6A5/oyBm7VOaGq1ouEpSTDxuME8Ag=
+knative.dev/serving v0.47.1-0.20251203121611-3908ab87f94a h1:1TMtNG3N1VmC0nimUo9u8npPhsg68jmUgseSVDCaztI=
+knative.dev/serving v0.47.1-0.20251203121611-3908ab87f94a/go.mod h1:olKUo5+T1KOyD4t7SM6oiEgmkVQO4Gmr6YiVwj0J944=
 nhooyr.io/websocket v1.8.6/go.mod h1:B70DZP8IakI65RVQ51MsWP/8jndNma26DVA/nFSCgW0=
 pgregory.net/rapid v1.1.0 h1:CMa0sjHSru3puNx+J0MIAuiiEV4N0qj8/cMWGBBCsjw=
 pgregory.net/rapid v1.1.0/go.mod h1:PY5XlDGj0+V1FCq0o192FdRhpKHGTRIWBgqjDBTrq04=

@@ -1581,7 +1581,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/sender
 # knative.dev/hack v0.0.0-20251021013703-4fae78067103
 ## explicit; go 1.24
 knative.dev/hack
-# knative.dev/networking v0.0.0-20251021092443-0bde19154dce
+# knative.dev/networking v0.0.0-20251030154838-4115314567bb
 ## explicit; go 1.24.0
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
@@ -1598,7 +1598,7 @@ knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/ingress
 knative.dev/networking/pkg/k8s
-# knative.dev/pkg v0.0.0-20251022152246-7bf6febca0b3
+# knative.dev/pkg v0.0.0-20251224022520-6fe064596819
 ## explicit; go 1.24.0
 knative.dev/pkg/apiextensions/storageversion
 knative.dev/pkg/apiextensions/storageversion/cmd/migrate
@@ -1718,7 +1718,7 @@ knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/resources/serviceaccount
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/certificate
-# knative.dev/serving v0.47.0
+# knative.dev/serving v0.47.1
 ## explicit; go 1.24.0
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

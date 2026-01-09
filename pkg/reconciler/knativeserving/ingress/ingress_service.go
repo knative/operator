@@ -23,11 +23,19 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
+	"sigs.k8s.io/yaml" // Ensure this is in your go.mod
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 )
+
+// localGateway defines the structure for the entries in the 'local-gateways' array.
+type localGatewayConfig struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+	Service   string `json:"service"`
+}
 
 // IngressServiceTransform pins the namespace to istio-system for the service named knative-local-gateway.
 // It also removes the OwnerReference to the operator, as they are in different namespaces, which is
@@ -36,6 +44,7 @@ func IngressServiceTransform(ks *v1beta1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetAPIVersion() == "v1" && u.GetKind() == "Service" {
 			if u.GetName() == "knative-local-gateway" {
+				// Default to istio-system, then override if config exists
 				u.SetNamespace("istio-system")
 				u.SetOwnerReferences(nil)
 				config := ks.GetSpec().GetConfig()
@@ -76,11 +85,25 @@ func updateIstioService(ks *v1beta1.KnativeServing, u *unstructured.Unstructured
 
 // UpdateNamespace set correct namespace of istio to the service knative-local-gateway
 func UpdateNamespace(u *unstructured.Unstructured, data map[string]string, ns string) {
+	// 1. Try modern structured config: 'local-gateways' (plural)
+	if val, ok := data["local-gateways"]; ok {
+		var gateways []localGatewayConfig
+		if err := yaml.Unmarshal([]byte(val), &gateways); err == nil {
+			for _, gw := range gateways {
+				// Match based on the gateway name and ensure namespace is provided
+				if gw.Name == "knative-local-gateway" && gw.Namespace != "" {
+					u.SetNamespace(gw.Namespace)
+					return // Found it, no need to check legacy
+				}
+			}
+		}
+	}
+
+	// 2. Fallback to legacy config: 'local-gateway.{knative-serving-ns}.{gateway-name}'
 	key := fmt.Sprintf("%s.%s.%s", "local-gateway", ns, "knative-local-gateway")
 	if val, ok := data[key]; ok {
 		fields := strings.Split(val, ".")
-		// The value is in the format of knative-local-gateway.{istio-namespace}.svc.cluster.local
-		// The second item is the istio namespace
+		// Format: knative-local-gateway.{istio-namespace}.svc.cluster.local
 		if len(fields) >= 2 {
 			u.SetNamespace(fields[1])
 		}

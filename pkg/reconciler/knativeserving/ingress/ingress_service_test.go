@@ -89,6 +89,49 @@ func TestIngressServiceTransformIstioSelector(t *testing.T) {
 		},
 		expected: true,
 	}, {
+		name:              "Structured local-gateways config",
+		namespace:         "test-namespace",
+		serviceName:       "knative-local-gateway",
+		expectedNamespace: "custom-gateway-ns",
+		instance: &servingv1beta1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-instance",
+				Namespace: "test-namespace",
+			},
+			Spec: servingv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Config: map[string]map[string]string{
+						"istio": {
+							"local-gateways": "- name: knative-local-gateway\n  namespace: custom-gateway-ns\n  service: knative-local-gateway.custom-gateway-ns.svc.cluster.local",
+						},
+					},
+				},
+			},
+		},
+		expected: true,
+	}, {
+		name:              "Structured config precedence",
+		namespace:         "test-namespace",
+		serviceName:       "knative-local-gateway",
+		expectedNamespace: "modern-ns",
+		instance: &servingv1beta1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-instance",
+				Namespace: "test-namespace",
+			},
+			Spec: servingv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Config: map[string]map[string]string{
+						"istio": {
+							"local-gateways": "- name: knative-local-gateway\n  namespace: modern-ns",
+							"local-gateway.test-namespace.knative-local-gateway": "knative-local-gateway.legacy-ns.svc.cluster.local",
+						},
+					},
+				},
+			},
+		},
+		expected: true,
+	}, {
 		name:              "IstioNotUnderDefaultNS with both istio and config-istio",
 		namespace:         "test-namespace",
 		serviceName:       "knative-local-gateway",
@@ -137,14 +180,12 @@ func TestIngressServiceTransformIstioSelector(t *testing.T) {
 
 func TestIngressServiceTransform(t *testing.T) {
 	tests := []struct {
-		name                  string
-		namespace             string
-		serviceName           string
-		expectedNamespace     string
-		knativeIngressGateway *base.IstioGatewayOverride
-		clusterLocalGateway   *base.IstioGatewayOverride
-		instance              *servingv1beta1.KnativeServing
-		expected              map[string]string
+		name              string
+		namespace         string
+		serviceName       string
+		expectedNamespace string
+		instance          *servingv1beta1.KnativeServing
+		expected          map[string]string
 	}{{
 		name:              "Istio ingress selector configuration for local gateway service",
 		namespace:         "test-namespace",
@@ -158,8 +199,10 @@ func TestIngressServiceTransform(t *testing.T) {
 			Spec: servingv1beta1.KnativeServingSpec{
 				Ingress: &servingv1beta1.IngressConfigs{
 					Istio: base.IstioIngressConfiguration{
-						Enabled:             true,
-						KnativeLocalGateway: gatewayOverride(map[string]string{"istio": "cluster-local-1"}, nil),
+						Enabled: true,
+						KnativeLocalGateway: &base.IstioGatewayOverride{
+							Selector: map[string]string{"istio": "cluster-local-1"},
+						},
 					},
 				},
 			},
@@ -180,8 +223,10 @@ func TestIngressServiceTransform(t *testing.T) {
 			Spec: servingv1beta1.KnativeServingSpec{
 				Ingress: &servingv1beta1.IngressConfigs{
 					Istio: base.IstioIngressConfiguration{
-						Enabled:               true,
-						KnativeIngressGateway: gatewayOverride(map[string]string{"istio": "ingress-gateway-1"}, nil),
+						Enabled: true,
+						KnativeIngressGateway: &base.IstioGatewayOverride{
+							Selector: map[string]string{"istio": "ingress-gateway-1"},
+						},
 					},
 				},
 			},

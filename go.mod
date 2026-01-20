@@ -11,7 +11,7 @@ require (
 	github.com/manifestival/manifestival v0.7.2
 	go.uber.org/zap v1.27.1
 	gocloud.dev v0.22.0
-	golang.org/x/mod v0.31.0
+	golang.org/x/mod v0.32.0
 	golang.org/x/oauth2 v0.32.0
 	google.golang.org/api v0.198.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
@@ -20,12 +20,12 @@ require (
 	k8s.io/apimachinery v0.34.3
 	k8s.io/client-go v0.34.3
 	k8s.io/code-generator v0.34.3
-	knative.dev/caching v0.0.0-20251217015426-ca66f558da49
-	knative.dev/eventing v0.47.1-0.20260105025030-79d12a93ce2e
-	knative.dev/hack v0.0.0-20251126013634-1484a9e9b641
-	knative.dev/pkg v0.0.0-20260111201937-93d6642bd10b
-	knative.dev/reconciler-test v0.0.0-20251217021727-d67001b5cfe8
-	knative.dev/serving v0.47.1-0.20260105144531-09e59ecb454c
+	knative.dev/caching v0.0.0-20260114014349-d7ca00ad8bd3
+	knative.dev/eventing v0.47.1-0.20260114135450-59b517c8aca0
+	knative.dev/hack v0.0.0-20260114013932-ee8a1b2d08eb
+	knative.dev/pkg v0.0.0-20260119145652-af2d22303fb9
+	knative.dev/reconciler-test v0.0.0-20260114013820-b74774d63680
+	knative.dev/serving v0.47.1-0.20260119085052-05daab6a8de7
 	sigs.k8s.io/yaml v1.6.0
 )
 
@@ -138,14 +138,14 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.46.0 // indirect
-	golang.org/x/net v0.48.0 // indirect
+	golang.org/x/crypto v0.47.0 // indirect
+	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
-	golang.org/x/term v0.38.0 // indirect
-	golang.org/x/text v0.32.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/term v0.39.0 // indirect
+	golang.org/x/text v0.33.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
-	golang.org/x/tools v0.40.0 // indirect
+	golang.org/x/tools v0.41.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20240903143218-8af14fe29dc1 // indirect
@@ -163,7 +163,7 @@ require (
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250710124328-f3f2b991d03b // indirect
 	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397 // indirect
-	knative.dev/networking v0.0.0-20260105015630-65d7d48ac9ef // indirect
+	knative.dev/networking v0.0.0-20260114015531-08680aeb3f13 // indirect
 	sigs.k8s.io/controller-runtime v0.19.0 // indirect
 	sigs.k8s.io/gateway-api v1.1.0 // indirect
 	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect

@@ -83,29 +83,58 @@ func updateIstioService(ks *v1beta1.KnativeServing, u *unstructured.Unstructured
 	return nil
 }
 
+var (
+	knativeLocalGateway = "knative-local-gateway"
+	localGateways       = "local-gateways"
+)
+
 // UpdateNamespace set correct namespace of istio to the service knative-local-gateway
-func UpdateNamespace(u *unstructured.Unstructured, data map[string]string, ns string) {
-	// 1. Try modern structured config: 'local-gateways' (plural)
-	if val, ok := data["local-gateways"]; ok {
-		var gateways []localGatewayConfig
-		if err := yaml.Unmarshal([]byte(val), &gateways); err == nil {
-			for _, gw := range gateways {
-				// Match based on the gateway name and ensure namespace is provided
-				if gw.Name == "knative-local-gateway" && gw.Namespace != "" {
-					u.SetNamespace(gw.Namespace)
-					return // Found it, no need to check legacy
-				}
-			}
+func UpdateNamespace(u *unstructured.Unstructured, data map[string]string, namespace string) {
+	if ns := resolveGatewayNamespace(data, namespace); ns != "" {
+		u.SetNamespace(ns)
+	}
+}
+
+func resolveGatewayNamespace(data map[string]string, ns string) string {
+	if ns := fromStructuredGateways(data); ns != "" {
+		return ns
+	}
+
+	return fromLegacyGateway(data, ns)
+}
+
+func fromStructuredGateways(data map[string]string) string {
+	raw, ok := data[localGateways]
+	if !ok {
+		return ""
+	}
+
+	var gateways []localGatewayConfig
+	if err := yaml.Unmarshal([]byte(raw), &gateways); err != nil {
+		return ""
+	}
+
+	for _, gw := range gateways {
+		if gw.Name == knativeLocalGateway {
+			return gw.Namespace
 		}
 	}
 
-	// 2. Fallback to legacy config: 'local-gateway.{knative-serving-ns}.{gateway-name}'
-	key := fmt.Sprintf("%s.%s.%s", "local-gateway", ns, "knative-local-gateway")
-	if val, ok := data[key]; ok {
-		fields := strings.Split(val, ".")
-		// Format: knative-local-gateway.{istio-namespace}.svc.cluster.local
-		if len(fields) >= 2 {
-			u.SetNamespace(fields[1])
-		}
+	return ""
+}
+
+func fromLegacyGateway(data map[string]string, ns string) string {
+	key := fmt.Sprintf("local-gateway.%s.%s", ns, knativeLocalGateway)
+
+	raw, ok := data[key]
+	if !ok {
+		return ""
 	}
+
+	fields := strings.Split(raw, ".")
+	if len(fields) < 2 {
+		return ""
+	}
+
+	return fields[1]
 }

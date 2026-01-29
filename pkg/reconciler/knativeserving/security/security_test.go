@@ -43,7 +43,7 @@ func TestAppendTargetSecurityGuard(t *testing.T) {
 		instance: servingv1beta1.KnativeServing{
 			Spec: servingv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
-					Version: "1.17.0",
+					Version: "1.20.0",
 				},
 				Security: &servingv1beta1.SecurityConfigs{
 					SecurityGuard: base.SecurityGuardConfiguration{

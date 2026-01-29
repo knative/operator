@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 # Set the version and tag in Chart.yaml and values.yaml
-VERSION=v1.20.0
+VERSION=v1.21.0
 if [[ -n "${TAG:-}" ]]; then
   VERSION=${TAG}
 fi

@@ -57,7 +57,7 @@ func NewKnativeEventingInformer(client versioned.Interface, namespace string, re
 // one. This reduces memory footprint and number of connections to the server.
 func NewFilteredKnativeEventingInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
-		&cache.ListWatch{
+		cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
@@ -82,7 +82,7 @@ func NewFilteredKnativeEventingInformer(client versioned.Interface, namespace st
 				}
 				return client.OperatorV1beta1().KnativeEventings(namespace).Watch(ctx, options)
 			},
-		},
+		}, client),
 		&apisoperatorv1beta1.KnativeEventing{},
 		resyncPeriod,
 		indexers,

@@ -8,7 +8,7 @@ metadata:
     networking.knative.dev/ingress-provider: contour
     app.kubernetes.io/component: net-contour
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.0"
+    app.kubernetes.io/version: "1.21.1"
     serving.knative.dev/controller: "true"
 rules:
   - apiGroups: ["projectcontour.io"]
@@ -38,7 +38,7 @@ metadata:
     networking.knative.dev/ingress-provider: contour
     app.kubernetes.io/component: net-contour
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.0"
+    app.kubernetes.io/version: "1.21.1"
 data:
   _example: |
     ################################
@@ -111,7 +111,7 @@ metadata:
     networking.knative.dev/ingress-provider: contour
     app.kubernetes.io/component: net-contour
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.0"
+    app.kubernetes.io/version: "1.21.1"
 spec:
   replicas: 1
   selector:
@@ -123,14 +123,14 @@ spec:
         app: net-contour-controller
         app.kubernetes.io/component: net-contour
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "1.21.0"
+        app.kubernetes.io/version: "1.21.1"
     spec:
       serviceAccountName: controller
       containers:
         - name: controller
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:ca2ddacf04db9dcb1fc1fdb6e6c292e48ce302d8ce6cf8f99d9d0ca5585b4987
+          image: gcr.io/knative-releases/knative.dev/net-contour/cmd/controller@sha256:14e1bbdd9a5f4de0c0742bccb5b36718a8efa22457634624ecf7b3c882b0c4cd
           resources:
             requests:
               cpu: 40m
@@ -174,7 +174,7 @@ metadata:
     networking.knative.dev/ingress-provider: contour
     app.kubernetes.io/component: net-contour
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.0"
+    app.kubernetes.io/version: "1.21.1"
 spec:
   delegations:
     - secretName: routing-serving-certs

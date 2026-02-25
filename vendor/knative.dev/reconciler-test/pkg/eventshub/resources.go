@@ -212,7 +212,7 @@ func Install(name string, options ...EventsHubOption) feature.StepFn {
 			if _, err := manifest.InstallYamlFS(ctx, forwarderTemplates, cfg); err != nil {
 				log.Fatal(err)
 			}
-			knativeservice.IsReady(name)
+			knativeservice.IsReady(name)(ctx, t)
 		}
 	}
 }

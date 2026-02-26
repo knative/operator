@@ -24,7 +24,7 @@ jobs:
         uses: azure/setup-helm@v4
 
       - name: Install Helm HTML Plugin
-        run: helm plugin install https://github.com/halkeye/helm-repo-html
+        run: helm plugin install --verify=false https://github.com/halkeye/helm-repo-html
 
       - name: Build Helm Chart Repo index.yaml
         run: |

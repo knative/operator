@@ -72,6 +72,18 @@ func TestTransformers(t *testing.T) {
 		},
 		expected: 0,
 	}, {
+		name: "Available gateway-api ingress",
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
+					GatewayAPI: base.GatewayAPIIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expected: 0,
+	}, {
 		name: "Empty ingress for default istio",
 		instance: servingv1beta1.KnativeServing{
 			Spec: servingv1beta1.KnativeServingSpec{},
@@ -89,6 +101,9 @@ func TestTransformers(t *testing.T) {
 						Enabled: true,
 					},
 					Istio: base.IstioIngressConfiguration{
+						Enabled: true,
+					},
+					GatewayAPI: base.GatewayAPIIngressConfiguration{
 						Enabled: true,
 					},
 				},
@@ -215,6 +230,19 @@ func TestGetIngressPath(t *testing.T) {
 			},
 		},
 		expectedPath: os.Getenv(common.KoEnvKey) + "/ingress/latest/contour",
+	}, {
+		name:    "Available ingress path for gateway-api",
+		version: "1.8",
+		ks: &servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				Ingress: &servingv1beta1.IngressConfigs{
+					GatewayAPI: base.GatewayAPIIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expectedPath: os.Getenv(common.KoEnvKey) + "/ingress/1.8/gateway-api",
 	}}
 
 	for _, tt := range tests {
@@ -292,6 +320,22 @@ func TestAppendTargetIngress(t *testing.T) {
 			},
 		},
 		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/1.8/contour",
+		expectedErr:         nil,
+	}, {
+		name: "Available target ingresses with GatewayAPI specified",
+		instance: servingv1beta1.KnativeServing{
+			Spec: servingv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Version: "1.8",
+				},
+				Ingress: &servingv1beta1.IngressConfigs{
+					GatewayAPI: base.GatewayAPIIngressConfiguration{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		expectedIngressPath: os.Getenv(common.KoEnvKey) + "/ingress/1.8/gateway-api",
 		expectedErr:         nil,
 	}, {
 		name: "Unavailable target ingresses",

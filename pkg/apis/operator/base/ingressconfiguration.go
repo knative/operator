@@ -59,6 +59,11 @@ type ContourIngressConfiguration struct {
 	Enabled bool `json:"enabled"`
 }
 
+// GatewayAPIIngressConfiguration specifies whether to enable the gateway-api ingresses.
+type GatewayAPIIngressConfiguration struct {
+	Enabled bool `json:"enabled"`
+}
+
 // IstioGatewayOverride override the knative-ingress-gateway and knative-local-gateway(cluster-local-gateway)
 type IstioGatewayOverride struct {
 	// A map of values to replace the "selector" values in the knative-ingress-gateway and knative-local-gateway(cluster-local-gateway)

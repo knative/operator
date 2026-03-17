@@ -11,7 +11,7 @@ require (
 	github.com/manifestival/manifestival v0.7.2
 	go.uber.org/zap v1.27.1
 	gocloud.dev v0.22.0
-	golang.org/x/mod v0.33.0
+	golang.org/x/mod v0.34.0
 	golang.org/x/oauth2 v0.35.0
 	google.golang.org/api v0.198.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
@@ -23,9 +23,9 @@ require (
 	knative.dev/caching v0.0.0-20260316015123-7c1031085c86
 	knative.dev/eventing v0.48.1-0.20260316031422-ce3fe6b62f97
 	knative.dev/hack v0.0.0-20260310014051-c448fdb867e2
-	knative.dev/pkg v0.0.0-20260314220421-b3fe2e572de3
+	knative.dev/pkg v0.0.0-20260316154451-5d1c12d99335
 	knative.dev/reconciler-test v0.0.0-20260316022126-8b264d235091
-	knative.dev/serving v0.48.1-0.20260316123724-07c6cde81b9e
+	knative.dev/serving v0.48.1-0.20260316224151-10d950c3a0d7
 	sigs.k8s.io/yaml v1.6.0
 )
 
@@ -137,14 +137,14 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/net v0.51.0 // indirect
+	golang.org/x/crypto v0.49.0 // indirect
+	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.41.0 // indirect
-	golang.org/x/term v0.40.0 // indirect
-	golang.org/x/text v0.34.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/term v0.41.0 // indirect
+	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
-	golang.org/x/tools v0.42.0 // indirect
+	golang.org/x/tools v0.43.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20240903143218-8af14fe29dc1 // indirect

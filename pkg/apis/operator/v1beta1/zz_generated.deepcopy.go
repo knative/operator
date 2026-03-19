@@ -31,6 +31,7 @@ func (in *IngressConfigs) DeepCopyInto(out *IngressConfigs) {
 	in.Istio.DeepCopyInto(&out.Istio)
 	out.Kourier = in.Kourier
 	out.Contour = in.Contour
+	out.GatewayAPI = in.GatewayAPI
 	return
 }
 

@@ -2241,6 +2241,12 @@ spec:
                       enabled:
                         type: boolean
                     type: object
+                  gateway-api:
+                    description: Gateway API settings
+                    properties:
+                      enabled:
+                        type: boolean
+                    type: object
                   istio:
                     description: Istio settings
                     properties:

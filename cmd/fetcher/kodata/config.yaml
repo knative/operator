@@ -38,6 +38,12 @@ ingress:
     ingressService: kourier
     include:
       - "kourier.yaml"
+  - s3:
+      bucket: "gs-noauth://knative-releases"
+      prefix: "net-gateway-api/previous"
+    ingressService: gateway-api
+    include:
+      - "net-gateway-api.yaml"
 knative-eventing:
   primary:
     s3:

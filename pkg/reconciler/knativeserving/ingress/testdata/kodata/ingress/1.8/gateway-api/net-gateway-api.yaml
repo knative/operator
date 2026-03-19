@@ -1,0 +1,104 @@
+# Not used directly, this lets the knative-serving service account reconcile
+# Gateway API resources.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: knative-serving-gateway-api
+  labels:
+    networking.knative.dev/ingress-provider: gateway-api
+    app.kubernetes.io/component: net-gateway-api
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.8.0"
+    serving.knative.dev/controller: "true"
+rules:
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gateways", "httproutes"]
+    verbs: ["get", "list", "create", "update", "delete", "deletecollection", "patch", "watch"]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-gateway
+  namespace: knative-serving
+  labels:
+    networking.knative.dev/ingress-provider: gateway-api
+    app.kubernetes.io/component: net-gateway-api
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.8.0"
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # visibility contains the configuration for how to expose services
+    # of assorted visibilities.  Each entry is keyed by the visibility
+    # and contains the gateway-api configuration.
+    visibility: |
+      ExternalIP:
+        class: gateway-api-external
+        gateway: istio-system/knative-gateway
+      ClusterLocal:
+        class: gateway-api-internal
+        gateway: istio-system/knative-local-gateway
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: net-gateway-api-controller
+  namespace: knative-serving
+  labels:
+    networking.knative.dev/ingress-provider: gateway-api
+    app.kubernetes.io/component: net-gateway-api
+    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/version: "1.8.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: net-gateway-api-controller
+  template:
+    metadata:
+      labels:
+        app: net-gateway-api-controller
+        app.kubernetes.io/component: net-gateway-api
+        app.kubernetes.io/name: knative-serving
+        app.kubernetes.io/version: "1.8.0"
+    spec:
+      serviceAccountName: controller
+      containers:
+        - name: controller
+          image: gcr.io/knative-releases/knative.dev/net-gateway-api/cmd/controller@sha256:placeholder
+          resources:
+            requests:
+              cpu: 40m
+              memory: 40Mi
+            limits:
+              cpu: 400m
+              memory: 400Mi
+          env:
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CONFIG_LOGGING_NAME
+              value: config-logging
+            - name: CONFIG_OBSERVABILITY_NAME
+              value: config-observability
+            - name: METRICS_DOMAIN
+              value: knative.dev/net-gateway-api
+          ports:
+            - name: metrics
+              containerPort: 9090
+            - name: profiling
+              containerPort: 8008
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+---

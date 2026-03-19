@@ -45,6 +45,9 @@ func Transformers(ctx context.Context, ks *v1beta1.KnativeServing) []mf.Transfor
 	if ks.Spec.Ingress.Contour.Enabled {
 		transformers = append(transformers, contourTransformers(ctx, ks)...)
 	}
+	if ks.Spec.Ingress.GatewayAPI.Enabled {
+		transformers = append(transformers, gatewayAPITransformers(ctx, ks)...)
+	}
 	return transformers
 }
 
@@ -83,6 +86,10 @@ func GetIngressPath(version string, ks *v1beta1.KnativeServing) string {
 	}
 	if ks.Spec.Ingress.Kourier.Enabled {
 		url := filepath.Join(ingressPath, "kourier")
+		urls = append(urls, url)
+	}
+	if ks.Spec.Ingress.GatewayAPI.Enabled {
+		url := filepath.Join(ingressPath, "gateway-api")
 		urls = append(urls, url)
 	}
 

@@ -1506,11 +1506,11 @@ k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/ptr
 k8s.io/utils/trace
-# knative.dev/caching v0.0.0-20260318014239-0201ecf9e8f3
+# knative.dev/caching v0.0.0-20260330015202-06bfe4789004
 ## explicit; go 1.25.0
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.48.1-0.20260320031001-c6be563d196d
+# knative.dev/eventing v0.48.1-0.20260402142557-263a3a52c638
 ## explicit; go 1.25.0
 knative.dev/eventing/cmd/heartbeats
 knative.dev/eventing/pkg/apis
@@ -1606,7 +1606,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/sender
 # knative.dev/hack v0.0.0-20260318014029-7eede7fdcbad
 ## explicit; go 1.24
 knative.dev/hack
-# knative.dev/networking v0.0.0-20260318014906-001fb594d5a2
+# knative.dev/networking v0.0.0-20260331164354-4103dd9b792c
 ## explicit; go 1.25.0
 knative.dev/networking/pkg/apis/networking
 knative.dev/networking/pkg/apis/networking/v1alpha1
@@ -1709,7 +1709,7 @@ knative.dev/pkg/webhook
 knative.dev/pkg/webhook/certificates
 knative.dev/pkg/webhook/certificates/resources
 knative.dev/pkg/webhook/resourcesemantics/conversion
-# knative.dev/reconciler-test v0.0.0-20260320022005-b870fd6858c7
+# knative.dev/reconciler-test v0.0.0-20260330022304-8cacadc6e997
 ## explicit; go 1.25.0
 knative.dev/reconciler-test/cmd/eventshub
 knative.dev/reconciler-test/pkg/environment
@@ -1738,7 +1738,7 @@ knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/resources/serviceaccount
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/certificate
-# knative.dev/serving v0.48.1-0.20260320181408-75d7cae45942
+# knative.dev/serving v0.48.1-0.20260402181955-0528bdda27c8
 ## explicit; go 1.25.0
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

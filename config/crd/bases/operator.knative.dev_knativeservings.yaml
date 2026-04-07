@@ -1718,8 +1718,6 @@ spec:
                     properties:
                       enabled:
                         type: boolean
-                    required:
-                    - enabled
                     type: object
                   gateway-api:
                     description: GatewayAPIIngressConfiguration specifies whether
@@ -1727,8 +1725,6 @@ spec:
                     properties:
                       enabled:
                         type: boolean
-                    required:
-                    - enabled
                     type: object
                   istio:
                     description: IstioIngressConfiguration specifies options for the
@@ -2030,8 +2026,6 @@ spec:
                               type: object
                             type: array
                         type: object
-                    required:
-                    - enabled
                     type: object
                   kourier:
                     description: KourierIngressConfiguration specifies whether to
@@ -2061,14 +2055,7 @@ spec:
                         description: ServiceType specifies the service type for kourier
                           gateway.
                         type: string
-                    required:
-                    - enabled
                     type: object
-                required:
-                - contour
-                - gateway-api
-                - istio
-                - kourier
                 type: object
               manifests:
                 description: A means to specify the manifests to install

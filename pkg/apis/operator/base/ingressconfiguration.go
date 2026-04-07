@@ -22,7 +22,8 @@ import (
 
 // IstioIngressConfiguration specifies options for the istio ingresses.
 type IstioIngressConfiguration struct {
-	Enabled bool `json:"enabled"`
+	// +optional
+	Enabled bool `json:"enabled,omitempty"`
 
 	// KnativeIngressGateway overrides the knative-ingress-gateway.
 	// +optional
@@ -35,7 +36,8 @@ type IstioIngressConfiguration struct {
 
 // KourierIngressConfiguration specifies whether to enable the kourier ingresses.
 type KourierIngressConfiguration struct {
-	Enabled bool `json:"enabled"`
+	// +optional
+	Enabled bool `json:"enabled,omitempty"`
 
 	// ServiceType specifies the service type for kourier gateway.
 	ServiceType v1.ServiceType `json:"service-type,omitempty"`
@@ -55,12 +57,14 @@ type KourierIngressConfiguration struct {
 
 // ContourIngressConfiguration specifies whether to enable the contour ingresses.
 type ContourIngressConfiguration struct {
-	Enabled bool `json:"enabled"`
+	// +optional
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // GatewayAPIIngressConfiguration specifies whether to enable the gateway-api ingresses.
 type GatewayAPIIngressConfiguration struct {
-	Enabled bool `json:"enabled"`
+	// +optional
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // IstioGatewayOverride override the knative-ingress-gateway and knative-local-gateway(cluster-local-gateway)

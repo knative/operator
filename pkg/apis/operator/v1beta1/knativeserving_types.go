@@ -89,10 +89,14 @@ type KnativeServingList struct {
 
 // IngressConfigs specifies options for the ingresses.
 type IngressConfigs struct {
-	Istio      base.IstioIngressConfiguration      `json:"istio"`
-	Kourier    base.KourierIngressConfiguration    `json:"kourier"`
-	Contour    base.ContourIngressConfiguration    `json:"contour"`
-	GatewayAPI base.GatewayAPIIngressConfiguration `json:"gateway-api"`
+	// +optional
+	Istio base.IstioIngressConfiguration `json:"istio,omitempty"`
+	// +optional
+	Kourier base.KourierIngressConfiguration `json:"kourier,omitempty"`
+	// +optional
+	Contour base.ContourIngressConfiguration `json:"contour,omitempty"`
+	// +optional
+	GatewayAPI base.GatewayAPIIngressConfiguration `json:"gateway-api,omitempty"`
 }
 
 // SecurityConfigs specifies options for the security

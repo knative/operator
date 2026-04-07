@@ -65,6 +65,10 @@ GOFLAGS=-mod=mod controller-gen \
   paths="${REPO_ROOT_DIR}/pkg/apis/..." \
   output:crd:dir="${REPO_ROOT_DIR}/config/crd/bases"
 
+group "Sync CRDs to Helm chart"
+
+"${REPO_ROOT_DIR}/hack/sync-helm-crds.sh"
+
 group "Update deps post-codegen"
 
 # Make sure our dependencies are up-to-date

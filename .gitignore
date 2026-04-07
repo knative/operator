@@ -80,5 +80,7 @@ Session.vim
 .history
 # End of https://www.gitignore.io/api/go,vim,emacs,visualstudiocode
 
-charts/
+# hack/generate-helm.sh copies config/charts/ to charts/ for helm package.
+# Ignore that build output; config/charts/ (the source) is tracked.
+/charts/
 .tmp/

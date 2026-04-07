@@ -53,6 +53,18 @@ kube::codegen::gen_helpers \
   --boilerplate "${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt" \
   "${REPO_ROOT_DIR}/pkg/apis"
 
+group "CRD Gen"
+
+# Install tools at the versions pinned in hack/tools.go (go.mod).
+GOFLAGS=-mod=mod go install sigs.k8s.io/controller-tools/cmd/controller-gen
+GOFLAGS=-mod=mod go install github.com/mikefarah/yq/v4
+export PATH="$(go env GOPATH)/bin:$PATH"
+
+GOFLAGS=-mod=mod controller-gen \
+  crd:allowDangerousTypes=true,ignoreUnexportedFields=true,headerFile="${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.yaml.txt" \
+  paths="${REPO_ROOT_DIR}/pkg/apis/..." \
+  output:crd:dir="${REPO_ROOT_DIR}/config/crd/bases"
+
 group "Update deps post-codegen"
 
 # Make sure our dependencies are up-to-date

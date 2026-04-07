@@ -15,6 +15,9 @@
 # This kustomization.yaml is not intended to be run by itself,
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
+commonLabels:
+  app.kubernetes.io/version: devel
+  app.kubernetes.io/name: knative-operator
 resources:
 - bases/operator.knative.dev_knativeservings.yaml
 - bases/operator.knative.dev_knativeeventings.yaml

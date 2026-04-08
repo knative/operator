@@ -69,6 +69,10 @@ group "Sync CRDs to Helm chart"
 
 "${REPO_ROOT_DIR}/hack/sync-helm-crds.sh"
 
+group "Sync RBAC to Helm chart"
+
+"${REPO_ROOT_DIR}/hack/sync-helm-rbac.sh"
+
 group "Update deps post-codegen"
 
 # Make sure our dependencies are up-to-date

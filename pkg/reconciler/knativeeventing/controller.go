@@ -20,6 +20,8 @@ import (
 	mfc "github.com/manifestival/client-go-client"
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/cache"
 
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -54,30 +56,60 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 // NewExtendedController returns a controller extended to a specific platform
 func NewExtendedController(generator common.ExtensionGenerator) injection.ControllerConstructor {
 	return func(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
-		knativeEventingInformer := knativeEventinginformer.Get(ctx)
+		kneInformer := knativeEventinginformer.Get(ctx)
 		deploymentInformer := deploymentinformer.Get(ctx, Selector)
 		configMapInformer := configmapinformer.Get(ctx, Selector)
 		kubeClient := kubeclient.Get(ctx)
 		logger := logging.FromContext(ctx)
 
-		mfclient, err := mfc.NewClient(injection.GetConfig(ctx))
+		restConfig := injection.GetConfig(ctx)
+		mfclient, err := mfc.NewClient(restConfig)
 		if err != nil {
 			logger.Fatalw("Error creating client from injected config", zap.Error(err))
 		}
 		mflogger := zapr.NewLogger(logger.Named("manifestival").Desugar())
 		manifest, _ := mf.ManifestFrom(mf.Slice{}, mf.UseClient(mfclient), mf.UseLogger(mflogger))
 
+		clusterProvider, err := common.GetOrCreateClusterProvider(ctx, restConfig, common.ClusterProfileProviderFile())
+		if err != nil {
+			logger.Fatalw("Error creating cluster provider", zap.Error(err))
+		}
+
 		c := &Reconciler{
 			kubeClientSet:     kubeClient,
 			operatorClientSet: operatorclient.Get(ctx),
 			manifest:          manifest,
+			clusterProvider:   clusterProvider,
+			eventingLister:    kneInformer.Lister(),
 		}
 		impl := knereconciler.NewImpl(ctx, c)
 		c.extension = generator(ctx, impl)
 
+		clusterProvider.RegisterListener(common.ClusterProfileListener{
+			ListCRs: func(cpNamespace, cpName string) []types.NamespacedName {
+				kes, err := kneInformer.Lister().List(labels.Everything())
+				if err != nil {
+					logger.Warnf("Failed to list KnativeEventings: %v", err)
+					return nil
+				}
+				var keys []types.NamespacedName
+				for _, ke := range kes {
+					ref := ke.Spec.ClusterProfileRef
+					if ref != nil && ref.Namespace == cpNamespace && ref.Name == cpName {
+						keys = append(keys, types.NamespacedName{
+							Namespace: ke.Namespace, Name: ke.Name,
+						})
+					}
+				}
+				return keys
+			},
+			EnqueueKey: impl.EnqueueKey,
+		})
+		clusterProvider.StartInformer(ctx)
+
 		logger.Info("Setting up event handlers")
 
-		knativeEventingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
+		kneInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
 		deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 			FilterFunc: controller.FilterControllerGVK(v1beta1.SchemeGroupVersion.WithKind("KnativeEventing")),

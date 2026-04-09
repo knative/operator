@@ -66,6 +66,7 @@ func TestKnativeEventingHappyPath(t *testing.T) {
 
 	// Deployments become ready and we're good.
 	ke.MarkDeploymentsAvailable()
+	ke.MarkTargetClusterResolved()
 	apistest.CheckConditionSucceeded(ke, base.DependenciesInstalled, t)
 	apistest.CheckConditionSucceeded(ke, base.DeploymentsAvailable, t)
 	apistest.CheckConditionSucceeded(ke, base.InstallSucceeded, t)
@@ -116,6 +117,7 @@ func TestKnativeEventingErrorPath(t *testing.T) {
 
 	// Finally, dependencies become available.
 	ke.MarkDependenciesInstalled()
+	ke.MarkTargetClusterResolved()
 	apistest.CheckConditionSucceeded(ke, base.DependenciesInstalled, t)
 	apistest.CheckConditionSucceeded(ke, base.DeploymentsAvailable, t)
 	apistest.CheckConditionSucceeded(ke, base.InstallSucceeded, t)

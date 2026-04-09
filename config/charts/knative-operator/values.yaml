@@ -1,4 +1,29 @@
 knative_operator:
+  # Multi-cluster support via Cluster Inventory API.
+  multicluster:
+    enabled: false
+    accessProvidersConfig: {}
+    # accessProvidersConfig:
+    #   providers:
+    #     - name: secretreader
+    #       execConfig:
+    #         apiVersion: client.authentication.k8s.io/v1
+    #         command: /access-plugins/secretreader/secretreader-plugin
+    #         provideClusterInfo: true
+    #     - name: kubeconfig-secretreader
+    #       execConfig:
+    #         apiVersion: client.authentication.k8s.io/v1
+    #         command: /access-plugins/secretreader/kubeconfig-secretreader-plugin
+    #         provideClusterInfo: true
+    # plugins[] uses the Kubernetes "image" volume type
+    plugins: []
+    # plugins:
+    #   - name: secretreader
+    #     image: registry.k8s.io/cluster-inventory-api/:v0.1.0
+    #     mountPath: /access-plugins/secretreader
+    #   - name: kubeconfig-secretreader
+    #     image: registry.k8s.io/cluster-inventory-api/:v0.1.0
+    #     mountPath: /access-plugins/kubeconfig-secretreader
   knative_operator:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
     tag: {{ tag }}

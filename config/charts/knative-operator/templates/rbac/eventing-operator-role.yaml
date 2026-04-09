@@ -401,3 +401,12 @@ rules:
       - list
       - get
       - watch
+  # for multicluster support
+  - apiGroups:
+      - multicluster.x-k8s.io
+    resources:
+      - clusterprofiles
+    verbs:
+      - get
+      - list
+      - watch

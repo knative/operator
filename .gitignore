@@ -84,3 +84,10 @@ Session.vim
 # Ignore that build output; config/charts/ (the source) is tracked.
 /charts/
 .tmp/
+
+# Go binary
+/operator
+/token-exec-plugin
+
+# kodata latest (generated locally by fetcher)
+cmd/operator/kodata/*/latest/

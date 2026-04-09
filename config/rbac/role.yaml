@@ -253,6 +253,16 @@ rules:
   - pods
   verbs:
   - get
+
+# for multicluster support
+- apiGroups:
+  - multicluster.x-k8s.io
+  resources:
+  - clusterprofiles
+  verbs:
+  - get
+  - list
+  - watch
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -657,4 +667,14 @@ rules:
       - update
       - list
       - get
+      - watch
+
+  # for multicluster support
+  - apiGroups:
+      - multicluster.x-k8s.io
+    resources:
+      - clusterprofiles
+    verbs:
+      - get
+      - list
       - watch

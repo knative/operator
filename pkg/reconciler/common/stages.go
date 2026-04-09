@@ -19,6 +19,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"time"
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -28,23 +29,31 @@ import (
 	"knative.dev/operator/pkg/apis/operator/base"
 )
 
+const RemoteDeploymentsPollInterval = 10 * time.Second
+
 // Stage represents a step in the reconcile process
 type Stage func(context.Context, *mf.Manifest, base.KComponent) error
 
 // Stages are a list of steps
 type Stages []Stage
 
+type ExecuteResult struct {
+	DeploymentsNotReady bool
+}
+
 // Execute each stage in sequence until one returns an error
-func (stages Stages) Execute(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+func (stages Stages) Execute(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) (ExecuteResult, error) {
+	var result ExecuteResult
 	for _, stage := range stages {
 		if err := stage(ctx, manifest, instance); err != nil {
 			if IsDeploymentsNotReadyError(err) {
+				result.DeploymentsNotReady = true
 				break
 			}
-			return err
+			return result, err
 		}
 	}
-	return nil
+	return result, nil
 }
 
 // NoOp does nothing
@@ -95,6 +104,15 @@ func AppendInstalled(ctx context.Context, manifest *mf.Manifest, instance base.K
 	}
 	*manifest = manifest.Append(m)
 	return nil
+}
+
+type ReconcileState struct {
+	AnchorOwner   mf.Owner
+	RemoteClients RemoteClusterClients
+}
+
+func (s *ReconcileState) IsRemote() bool {
+	return s.RemoteClients != nil
 }
 
 // ManifestFetcher returns a manifest appropriate for the instance

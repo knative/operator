@@ -324,6 +324,16 @@ type WorkloadOverride struct {
 	// When hostNetwork is enabled, this will set dnsPolicy to ClusterFirstWithHostNet automatically for the containers.
 	// +optional
 	HostNetwork *bool `json:"hostNetwork,omitempty"`
+
+	// Version is retained for CRD backward compatibility and has no effect.
+	// Deprecated: will be removed in a future release.
+	// +optional
+	Version string `json:"version,omitempty"`
+
+	// VolumeMounts is retained for CRD backward compatibility and has no effect.
+	// Deprecated: will be removed in a future release.
+	// +optional
+	VolumeMounts []corev1.VolumeMount `json:"volumeMounts,omitempty"`
 }
 
 // ServiceOverride defines the configurations of the service to override.
@@ -348,7 +358,7 @@ type PodDisruptionBudgetOverride struct {
 	// Name is the name of the podDisruptionBudget to override.
 	Name string `json:"name"`
 	// The desired PodDisruptionBudgetSpec
-	policyv1.PodDisruptionBudgetSpec
+	policyv1.PodDisruptionBudgetSpec `json:",inline"`
 }
 
 // ResourceRequirementsOverride enables the user to override any container's
@@ -357,7 +367,7 @@ type ResourceRequirementsOverride struct {
 	// The container name
 	Container string `json:"container"`
 	// The desired ResourceRequirements
-	corev1.ResourceRequirements
+	corev1.ResourceRequirements `json:",inline"`
 }
 
 // EnvRequirementsOverride enables the user to override any container's env vars.

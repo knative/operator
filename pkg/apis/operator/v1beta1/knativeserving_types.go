@@ -31,6 +31,8 @@ var (
 // +genclient
 // +genreconciler:krshapedlogic=false
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 type KnativeServing struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -78,6 +80,7 @@ type KnativeServingStatus struct {
 
 // KnativeServingList contains a list of KnativeServing
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:object:root=true
 type KnativeServingList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
@@ -86,10 +89,14 @@ type KnativeServingList struct {
 
 // IngressConfigs specifies options for the ingresses.
 type IngressConfigs struct {
-	Istio      base.IstioIngressConfiguration      `json:"istio"`
-	Kourier    base.KourierIngressConfiguration    `json:"kourier"`
-	Contour    base.ContourIngressConfiguration    `json:"contour"`
-	GatewayAPI base.GatewayAPIIngressConfiguration `json:"gateway-api"`
+	// +optional
+	Istio base.IstioIngressConfiguration `json:"istio,omitempty"`
+	// +optional
+	Kourier base.KourierIngressConfiguration `json:"kourier,omitempty"`
+	// +optional
+	Contour base.ContourIngressConfiguration `json:"contour,omitempty"`
+	// +optional
+	GatewayAPI base.GatewayAPIIngressConfiguration `json:"gateway-api,omitempty"`
 }
 
 // SecurityConfigs specifies options for the security

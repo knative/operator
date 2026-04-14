@@ -33,7 +33,7 @@ import (
 
 var log = zap.NewNop().Sugar()
 
-func gatewayOverride(selector map[string]string, servers []*istiov1beta1.Server) *base.IstioGatewayOverride {
+func gatewayOverride(selector map[string]string, servers []base.IstioServer) *base.IstioGatewayOverride {
 	return &base.IstioGatewayOverride{
 		Selector: selector,
 		Servers:  servers,
@@ -50,13 +50,13 @@ func TestGatewayTransformV1alpha3(t *testing.T) {
 			Port:  &istiov1alpha3.Port{Name: "test"},
 		}}
 
-	serverUpdate := []*istiov1beta1.Server{
+	serverUpdate := []base.IstioServer{
 		{
 			Hosts: []string{"localhost-1"},
-			Port:  &istiov1beta1.Port{Name: "test-1", Protocol: "proto-1", Number: 25, TargetPort: 53},
+			Port:  &base.IstioPort{Name: "test-1", Protocol: "proto-1", Number: 25, TargetPort: 53},
 		}, {
 			Hosts: []string{"localhost-1"},
-			Port:  &istiov1beta1.Port{Name: "test-1", Protocol: "proto-2", Number: 45, TargetPort: 23},
+			Port:  &base.IstioPort{Name: "test-1", Protocol: "proto-2", Number: 45, TargetPort: 23},
 		}}
 
 	tests := []struct {
@@ -69,7 +69,7 @@ func TestGatewayTransformV1alpha3(t *testing.T) {
 		deprecatedKnativeIngressGateway base.IstioGatewayOverride
 		deprecatedClusterLocalGateway   base.IstioGatewayOverride
 		expected                        map[string]string
-		expectedServersIn               []*istiov1beta1.Server
+		expectedServersIn               []base.IstioServer
 	}{{
 		name:        "update ingress gateway",
 		gatewayName: "knative-ingress-gateway",
@@ -173,13 +173,13 @@ func TestGatewayTransform(t *testing.T) {
 			Port:  &istiov1beta1.Port{Name: "test"},
 		}}
 
-	serverUpdate := []*istiov1beta1.Server{
+	serverUpdate := []base.IstioServer{
 		{
 			Hosts: []string{"localhost-1"},
-			Port:  &istiov1beta1.Port{Name: "test-1", Protocol: "proto-1", Number: 25, TargetPort: 53},
+			Port:  &base.IstioPort{Name: "test-1", Protocol: "proto-1", Number: 25, TargetPort: 53},
 		}, {
 			Hosts: []string{"localhost-1"},
-			Port:  &istiov1beta1.Port{Name: "test-1", Protocol: "proto-2", Number: 45, TargetPort: 23},
+			Port:  &base.IstioPort{Name: "test-1", Protocol: "proto-2", Number: 45, TargetPort: 23},
 		}}
 
 	tests := []struct {
@@ -192,7 +192,7 @@ func TestGatewayTransform(t *testing.T) {
 		deprecatedKnativeIngressGateway base.IstioGatewayOverride
 		deprecatedClusterLocalGateway   base.IstioGatewayOverride
 		expected                        map[string]string
-		expectedServersIn               []*istiov1beta1.Server
+		expectedServersIn               []base.IstioServer
 	}{{
 		name:        "update ingress gateway",
 		gatewayName: "knative-ingress-gateway",

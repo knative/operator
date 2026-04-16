@@ -922,8 +922,11 @@ function run_kntest() {
 
 # Run go-licenses to check for forbidden licenses.
 function check_licenses() {
-  # Check that we don't have any forbidden licenses.
-  go_run github.com/google/go-licenses@v1.6.0 \
+  # Pin GOTOOLCHAIN to the project's Go version so that go-licenses is
+  # compiled with the same toolchain.  GOTOOLCHAIN=auto (the go_run default)
+  # may select a different Go, causing isStdLib() path mismatches.
+  GOTOOLCHAIN="$(go env GOVERSION)" \
+  go_run github.com/google/go-licenses/v2@v2.0.1 \
     check "${REPO_ROOT_DIR}/..." || \
     { echo "--- FAIL: go-licenses failed the license check"; return 1; }
 }

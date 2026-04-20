@@ -91,6 +91,7 @@ func newTestProviderWithStubAccess(stub *stubAccess, cps ...*clusterinventoryv1a
 		ciClient:      ci,
 		controllerCtx: context.Background(),
 		remoteTimeout: defaultRemoteClusterTimeout,
+		clientFactory: defaultClientFactory{},
 	}
 }
 
@@ -252,11 +253,8 @@ func assertTargetClusterNotResolved(t *testing.T, status *v1beta1.KnativeServing
 		t.Fatalf("TargetClusterResolved.Message: want substring %q, got %q", wantMsgContains, tc.Message)
 	}
 	is := status.GetCondition(base.InstallSucceeded)
-	if is == nil || is.Status != corev1.ConditionFalse {
-		t.Fatalf("InstallSucceeded: want False, got %v", is)
-	}
-	if is.Reason != "TargetClusterUnavailable" {
-		t.Fatalf("InstallSucceeded.Reason: want %q, got %q", "TargetClusterUnavailable", is.Reason)
+	if is != nil && is.Status == corev1.ConditionFalse {
+		t.Fatalf("InstallSucceeded must not be flipped to False by MarkTargetClusterNotResolved: %v", is)
 	}
 }
 
@@ -293,7 +291,7 @@ func TestResolveTargetCluster_ReasonPropagation(t *testing.T) {
 		inst := newInstance()
 		runResolve(t, nil, inst)
 		assertTargetClusterNotResolved(t, &inst.Status,
-			"ClusterProviderNotConfigured", "cluster provider not configured")
+			base.ReasonClusterProviderNotConfigured, "cluster provider not configured")
 	})
 
 	t.Run("Disabled", func(t *testing.T) {
@@ -307,7 +305,7 @@ func TestResolveTargetCluster_ReasonPropagation(t *testing.T) {
 		inst := newInstance()
 		runResolve(t, provider, inst)
 		assertTargetClusterNotResolved(t, &inst.Status,
-			"MulticlusterDisabled", "multi-cluster support is disabled")
+			base.ReasonMulticlusterDisabled, "multi-cluster support is disabled")
 	})
 
 	t.Run("ProfileNotFound", func(t *testing.T) {
@@ -315,7 +313,7 @@ func TestResolveTargetCluster_ReasonPropagation(t *testing.T) {
 		inst := newInstance()
 		runResolve(t, provider, inst)
 		assertTargetClusterNotResolved(t, &inst.Status,
-			"ClusterProfileNotFound", "failed to get ClusterProfile")
+			base.ReasonClusterProfileNotFound, "failed to get ClusterProfile")
 	})
 
 	t.Run("ProfileNotReady", func(t *testing.T) {
@@ -337,7 +335,7 @@ func TestResolveTargetCluster_ReasonPropagation(t *testing.T) {
 		inst := newInstance()
 		runResolve(t, provider, inst)
 		assertTargetClusterNotResolved(t, &inst.Status,
-			"ClusterProfileNotReady", "is not ready")
+			base.ReasonClusterProfileNotReady, "is not ready")
 	})
 
 	t.Run("AccessFailed", func(t *testing.T) {
@@ -350,6 +348,6 @@ func TestResolveTargetCluster_ReasonPropagation(t *testing.T) {
 		inst := newInstance()
 		runResolve(t, provider, inst)
 		assertTargetClusterNotResolved(t, &inst.Status,
-			"AccessProviderFailed", "failed to build config from ClusterProfile")
+			base.ReasonAccessProviderFailed, "failed to build config from ClusterProfile")
 	})
 }

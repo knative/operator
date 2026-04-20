@@ -18,17 +18,25 @@ package common
 
 import (
 	"context"
+	"errors"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	mf "github.com/manifestival/manifestival"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
 
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
+
+	clusterinventoryv1alpha1 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha1"
 )
 
 func TestResolveTargetCluster_NilRef(t *testing.T) {
@@ -403,5 +411,251 @@ func TestShouldFinalizeClusterScoped(t *testing.T) {
 				t.Fatalf("ShouldFinalizeClusterScoped() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+// stubClientFactory returns predetermined clients without network I/O.
+type stubClientFactory struct {
+	mfErr      error
+	kubeErr    error
+	kubeClient kubernetes.Interface
+	mfCount    atomic.Int32
+	kubeCount  atomic.Int32
+}
+
+func (s *stubClientFactory) NewMfClient(*rest.Config) (mf.Client, error) {
+	s.mfCount.Add(1)
+	if s.mfErr != nil {
+		return nil, s.mfErr
+	}
+	return fakeMfClient{}, nil
+}
+
+func (s *stubClientFactory) NewKubeClient(*rest.Config) (kubernetes.Interface, error) {
+	s.kubeCount.Add(1)
+	if s.kubeErr != nil {
+		return nil, s.kubeErr
+	}
+	if s.kubeClient != nil {
+		return s.kubeClient, nil
+	}
+	return fake.NewSimpleClientset(), nil
+}
+
+// fakeMfClient is a no-op manifestival client for tests that don't exercise mf I/O.
+type fakeMfClient struct{}
+
+func (fakeMfClient) Create(_ *unstructured.Unstructured, _ ...mf.ApplyOption) error { return nil }
+func (fakeMfClient) Update(_ *unstructured.Unstructured, _ ...mf.ApplyOption) error { return nil }
+func (fakeMfClient) Delete(_ *unstructured.Unstructured, _ ...mf.DeleteOption) error {
+	return nil
+}
+
+func (fakeMfClient) Get(_ *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+	return nil, nil
+}
+
+var _ mf.Client = fakeMfClient{}
+
+// blockingAccess holds BuildConfigFromCP open until release() is closed; used for dedup testing.
+type blockingAccess struct {
+	entered chan struct{}
+	release chan struct{}
+
+	mu    sync.Mutex
+	count int
+	seen  bool
+}
+
+func (b *blockingAccess) BuildConfigFromCP(*clusterinventoryv1alpha1.ClusterProfile) (*rest.Config, error) {
+	b.mu.Lock()
+	b.count++
+	first := !b.seen
+	b.seen = true
+	b.mu.Unlock()
+	if first {
+		close(b.entered)
+	}
+	<-b.release
+	return &rest.Config{Host: "https://blocked.example.com"}, nil
+}
+
+func (b *blockingAccess) calls() int {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.count
+}
+
+func TestDoRefresh_Concurrency_SameKeyDeduped(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	access := &blockingAccess{
+		entered: make(chan struct{}),
+		release: make(chan struct{}),
+	}
+	factory := &stubClientFactory{}
+	provider := newTestProviderWithStubAccess(&stubAccess{}, readyClusterProfile("fleet", "worker"))
+	provider.access = access
+	provider.clientFactory = factory
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+	errs := make([]error, 2)
+
+	go func() {
+		defer wg.Done()
+		_, err := provider.Refresh(ctx, "fleet", "worker")
+		errs[0] = err
+	}()
+
+	select {
+	case <-access.entered:
+	case <-time.After(5 * time.Second):
+		close(access.release)
+		t.Fatal("leader goroutine did not enter BuildConfigFromCP within 5s")
+	}
+
+	followerReady := make(chan struct{})
+	go func() {
+		defer wg.Done()
+		close(followerReady)
+		_, err := provider.Refresh(ctx, "fleet", "worker")
+		errs[1] = err
+	}()
+	<-followerReady
+
+	// A second in-flight call would still be blocked in BuildConfigFromCP; on dedup calls() stays at 1.
+	deadlineCtx, cancelDeadline := context.WithTimeout(context.Background(), 500*time.Millisecond)
+	t.Cleanup(cancelDeadline)
+	for deadlineCtx.Err() == nil {
+		if access.calls() != 1 {
+			break
+		}
+		select {
+		case <-time.After(10 * time.Millisecond):
+		case <-deadlineCtx.Done():
+		}
+	}
+	if got := access.calls(); got != 1 {
+		close(access.release)
+		wg.Wait()
+		t.Fatalf("BuildConfigFromCP calls before release = %d, want 1", got)
+	}
+
+	close(access.release)
+	wg.Wait()
+
+	for i, err := range errs {
+		if err != nil {
+			t.Errorf("goroutine %d: Refresh() = %v, want nil", i, err)
+		}
+	}
+	if got := access.calls(); got != 1 {
+		t.Fatalf("BuildConfigFromCP final calls = %d, want 1", got)
+	}
+	if got := factory.mfCount.Load(); got != 1 {
+		t.Fatalf("NewMfClient calls = %d, want 1", got)
+	}
+	if got := factory.kubeCount.Load(); got != 1 {
+		t.Fatalf("NewKubeClient calls = %d, want 1", got)
+	}
+}
+
+func TestDoRefresh_Concurrency_DifferentKeysIndependent(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	factory := &stubClientFactory{}
+	provider := newTestProviderWithStubAccess(
+		&stubAccess{},
+		readyClusterProfile("fleet", "worker-a"),
+		readyClusterProfile("fleet", "worker-b"),
+	)
+	provider.clientFactory = factory
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+	errs := make([]error, 2)
+	names := []string{"worker-a", "worker-b"}
+	for i, name := range names {
+		go func() {
+			defer wg.Done()
+			_, err := provider.Refresh(ctx, "fleet", name)
+			errs[i] = err
+		}()
+	}
+	wg.Wait()
+	for i, err := range errs {
+		if err != nil {
+			t.Fatalf("goroutine %d (%s): Refresh() = %v, want nil", i, names[i], err)
+		}
+	}
+	if got := factory.mfCount.Load(); got != 2 {
+		t.Fatalf("NewMfClient calls = %d, want 2", got)
+	}
+	if got := factory.kubeCount.Load(); got != 2 {
+		t.Fatalf("NewKubeClient calls = %d, want 2", got)
+	}
+}
+
+func TestDoRefresh_ClientCreationFailure_Manifestival(t *testing.T) {
+	provider := newTestProviderWithStubAccess(&stubAccess{}, readyClusterProfile("fleet", "worker"))
+	mfErr := errors.New("mf boom")
+	factory := &stubClientFactory{mfErr: mfErr}
+	provider.clientFactory = factory
+
+	reason, err := provider.Refresh(context.Background(), "fleet", "worker")
+	if err == nil {
+		t.Fatal("Refresh() = nil, want error")
+	}
+	if reason != base.ReasonRemoteClientCreationFailed {
+		t.Errorf("reason = %q, want %q", reason, base.ReasonRemoteClientCreationFailed)
+	}
+	if !errors.Is(err, mfErr) {
+		t.Errorf("error chain does not wrap mfErr: %v", err)
+	}
+	if !strings.Contains(err.Error(), "manifestival") {
+		t.Errorf("error message = %q, want it to mention %q", err.Error(), "manifestival")
+	}
+	if got := factory.mfCount.Load(); got != 1 {
+		t.Errorf("NewMfClient calls = %d, want 1", got)
+	}
+	if got := factory.kubeCount.Load(); got != 0 {
+		t.Errorf("NewKubeClient calls = %d, want 0 (should short-circuit before kube client)", got)
+	}
+	if got := len(provider.entries); got != 0 {
+		t.Errorf("provider.entries size = %d, want 0 (failure must not cache)", got)
+	}
+}
+
+func TestDoRefresh_ClientCreationFailure_Kube(t *testing.T) {
+	provider := newTestProviderWithStubAccess(&stubAccess{}, readyClusterProfile("fleet", "worker"))
+	kubeErr := errors.New("kube boom")
+	factory := &stubClientFactory{kubeErr: kubeErr}
+	provider.clientFactory = factory
+
+	reason, err := provider.Refresh(context.Background(), "fleet", "worker")
+	if err == nil {
+		t.Fatal("Refresh() = nil, want error")
+	}
+	if reason != base.ReasonRemoteClientCreationFailed {
+		t.Errorf("reason = %q, want %q", reason, base.ReasonRemoteClientCreationFailed)
+	}
+	if !errors.Is(err, kubeErr) {
+		t.Errorf("error chain does not wrap kubeErr: %v", err)
+	}
+	if !strings.Contains(err.Error(), "kube") {
+		t.Errorf("error message = %q, want it to mention %q", err.Error(), "kube")
+	}
+	if got := factory.mfCount.Load(); got != 1 {
+		t.Errorf("NewMfClient calls = %d, want 1", got)
+	}
+	if got := factory.kubeCount.Load(); got != 1 {
+		t.Errorf("NewKubeClient calls = %d, want 1", got)
+	}
+	if got := len(provider.entries); got != 0 {
+		t.Errorf("provider.entries size = %d, want 0 (failure must not cache)", got)
 	}
 }

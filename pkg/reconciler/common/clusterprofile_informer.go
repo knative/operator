@@ -49,47 +49,35 @@ func (c *ClusterProvider) StartInformer(ctx context.Context) {
 		return
 	}
 
-	_, informer := toolscache.NewInformerWithOptions(toolscache.InformerOptions{
-		ListerWatcher: &toolscache.ListWatch{
-			ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-				return c.ciClient.ApisV1alpha1().ClusterProfiles("").List(c.controllerCtx, opts)
-			},
-			WatchFunc: func(opts metav1.ListOptions) (watch.Interface, error) {
-				return c.ciClient.ApisV1alpha1().ClusterProfiles("").Watch(c.controllerCtx, opts)
-			},
+	lw := toolscache.ToListWatcherWithWatchListSemantics(&toolscache.ListWatch{
+		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
+			return c.ciClient.ApisV1alpha1().ClusterProfiles("").List(c.controllerCtx, opts)
 		},
-		ObjectType:   &clusterinventoryv1alpha1.ClusterProfile{},
-		ResyncPeriod: clusterProfileResyncPeriod,
+		WatchFunc: func(opts metav1.ListOptions) (watch.Interface, error) {
+			return c.ciClient.ApisV1alpha1().ClusterProfiles("").Watch(c.controllerCtx, opts)
+		},
+	}, c.ciClient)
+
+	_, informer := toolscache.NewInformerWithOptions(toolscache.InformerOptions{
+		ListerWatcher: lw,
+		ObjectType:    &clusterinventoryv1alpha1.ClusterProfile{},
+		ResyncPeriod:  clusterProfileResyncPeriod,
 		Handler: toolscache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
+			AddFunc: func(obj any) {
 				cp, ok := obj.(*clusterinventoryv1alpha1.ClusterProfile)
 				if !ok {
 					return
 				}
 				c.notifyListeners(cp.Namespace, cp.Name)
 			},
-			UpdateFunc: func(_, newObj interface{}) {
+			UpdateFunc: func(_, newObj any) {
 				cp, ok := newObj.(*clusterinventoryv1alpha1.ClusterProfile)
 				if !ok {
 					return
 				}
 				c.notifyListeners(cp.Namespace, cp.Name)
 			},
-			DeleteFunc: func(obj interface{}) {
-				cp, ok := obj.(*clusterinventoryv1alpha1.ClusterProfile)
-				if !ok {
-					tombstone, ok := obj.(toolscache.DeletedFinalStateUnknown)
-					if !ok {
-						return
-					}
-					cp, ok = tombstone.Obj.(*clusterinventoryv1alpha1.ClusterProfile)
-					if !ok {
-						return
-					}
-				}
-				c.Remove(cp.Namespace + "/" + cp.Name)
-				c.notifyListeners(cp.Namespace, cp.Name)
-			},
+			DeleteFunc: c.handleDelete,
 		},
 	})
 
@@ -102,4 +90,20 @@ func (c *ClusterProvider) StartInformer(ctx context.Context) {
 	} else {
 		logger.Info("ClusterProfile informer cache synced")
 	}
+}
+
+func (c *ClusterProvider) handleDelete(obj any) {
+	cp, ok := obj.(*clusterinventoryv1alpha1.ClusterProfile)
+	if !ok {
+		tombstone, ok := obj.(toolscache.DeletedFinalStateUnknown)
+		if !ok {
+			return
+		}
+		cp, ok = tombstone.Obj.(*clusterinventoryv1alpha1.ClusterProfile)
+		if !ok {
+			return
+		}
+	}
+	c.Remove(cp.Namespace + "/" + cp.Name)
+	c.notifyListeners(cp.Namespace, cp.Name)
 }

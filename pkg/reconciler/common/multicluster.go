@@ -110,6 +110,30 @@ func (e *clusterEntry) Close() {
 	})
 }
 
+// ClientFactory abstracts remote-cluster client construction.
+type ClientFactory interface {
+	NewMfClient(*rest.Config) (mf.Client, error)
+	NewKubeClient(*rest.Config) (kubernetes.Interface, error)
+}
+
+type defaultClientFactory struct{}
+
+func (defaultClientFactory) NewMfClient(c *rest.Config) (mf.Client, error) {
+	return mfc.NewClient(c)
+}
+
+func (defaultClientFactory) NewKubeClient(c *rest.Config) (kubernetes.Interface, error) {
+	return kubernetes.NewForConfig(c)
+}
+
+// ProviderOption configures a ClusterProvider.
+type ProviderOption func(*ClusterProvider)
+
+// WithClientFactory overrides the factory used to construct remote-cluster clients.
+func WithClientFactory(f ClientFactory) ProviderOption {
+	return func(p *ClusterProvider) { p.clientFactory = f }
+}
+
 // ClusterProvider resolves ClusterProfile references into cached client sets.
 type ClusterProvider struct {
 	mu            sync.RWMutex
@@ -119,6 +143,7 @@ type ClusterProvider struct {
 	controllerCtx context.Context
 	group         singleflight.Group
 	remoteTimeout time.Duration
+	clientFactory ClientFactory
 
 	listenersMu     sync.RWMutex
 	listeners       []ClusterProfileListener
@@ -129,6 +154,7 @@ func NewClusterProvider(
 	controllerCtx context.Context,
 	localConfig *rest.Config,
 	providerFile string,
+	opts ...ProviderOption,
 ) (*ClusterProvider, error) {
 	ciClient, err := clusterinventoryclient.NewForConfig(localConfig)
 	if err != nil {
@@ -154,6 +180,10 @@ func NewClusterProvider(
 		ciClient:      ciClient,
 		controllerCtx: controllerCtx,
 		remoteTimeout: defaultRemoteClusterTimeout,
+		clientFactory: defaultClientFactory{},
+	}
+	for _, opt := range opts {
+		opt(p)
 	}
 
 	go func() {
@@ -239,12 +269,12 @@ func (c *ClusterProvider) doRefresh(ctx context.Context, key, namespace, name st
 	}
 	c.mu.RUnlock()
 
-	mfClient, err := mfc.NewClient(newConfig)
+	mfClient, err := c.clientFactory.NewMfClient(newConfig)
 	if err != nil {
 		return "RemoteClientCreationFailed",
 			fmt.Errorf("failed to create remote manifestival client: %w", err)
 	}
-	kubeClient, err := kubernetes.NewForConfig(newConfig)
+	kubeClient, err := c.clientFactory.NewKubeClient(newConfig)
 	if err != nil {
 		return "RemoteClientCreationFailed",
 			fmt.Errorf("failed to create remote kube client: %w", err)

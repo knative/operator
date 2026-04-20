@@ -65,6 +65,12 @@ knative_operator:
 This creates a `ConfigMap` with the provider config and mounts each plugin as a
 Kubernetes image volume inside the operator pod.
 
+## Namespace configuration
+
+`spec.namespaceConfiguration.labels` and `spec.namespaceConfiguration.annotations`
+are applied to the spoke namespace when the operator creates it. Existing
+spoke namespaces are not modified.
+
 ## Anchor ConfigMap
 
 For remote deployments, the operator creates an anchor ConfigMap
@@ -102,6 +108,8 @@ Common reasons for `TargetClusterResolved=False`:
   construction failed (typically invalid TLS material or unreachable host).
 - **RemoteClusterStale**: cached spoke connection was invalidated (context
   cancelled, TCP drop). The next reconcile refreshes and recovers.
+- **ClusterProviderClosed**: operator is shutting down; the next leader
+  re-reconciles and recovers.
 
 If spoke deployments are not coming up, confirm `TargetClusterResolved=True`,
 check the operator logs on the hub, and inspect the spoke cluster directly with

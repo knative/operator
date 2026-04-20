@@ -20,9 +20,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"reflect"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	mfc "github.com/manifestival/client-go-client"
@@ -57,6 +59,8 @@ var (
 
 	errMulticlusterDisabled = errors.New(
 		"multi-cluster support is disabled: set --clusterprofile-provider-file to enable")
+
+	errClusterProviderClosed = errors.New("cluster provider closed during shutdown")
 
 	globalProviderMu sync.Mutex
 	globalProvider   *ClusterProvider
@@ -145,6 +149,9 @@ type ClusterProvider struct {
 	remoteTimeout time.Duration
 	clientFactory ClientFactory
 
+	// closed prevents Refresh/GetOrRefresh after CloseAll.
+	closed atomic.Bool
+
 	listenersMu     sync.RWMutex
 	listeners       []ClusterProfileListener
 	informerStarted bool
@@ -213,6 +220,9 @@ func GetOrCreateClusterProvider(
 }
 
 func (c *ClusterProvider) Refresh(ctx context.Context, namespace, name string) (string, error) {
+	if c.closed.Load() {
+		return base.ReasonClusterProviderClosed, errClusterProviderClosed
+	}
 	key := namespace + "/" + name
 	callerLogger := logging.FromContext(ctx)
 	v, err, _ := c.group.Do(key, func() (any, error) {
@@ -234,17 +244,17 @@ func (c *ClusterProvider) doRefresh(ctx context.Context, key, namespace, name st
 	if err != nil {
 		c.Remove(key)
 		if apierrors.IsNotFound(err) {
-			return "ClusterProfileNotFound",
+			return base.ReasonClusterProfileNotFound,
 				fmt.Errorf("failed to get ClusterProfile %s: %w", key, err)
 		}
-		return "ClusterProfileUnavailable",
+		return base.ReasonClusterProfileUnavailable,
 			fmt.Errorf("failed to get ClusterProfile %s: %w", key, err)
 	}
 
 	if !isClusterProfileReady(cp) {
 		c.Remove(key)
 		logger.Infof("ClusterProfile %s is not ready", key)
-		return "ClusterProfileNotReady",
+		return base.ReasonClusterProfileNotReady,
 			fmt.Errorf("ClusterProfile %s is not ready", key)
 	}
 
@@ -252,10 +262,10 @@ func (c *ClusterProvider) doRefresh(ctx context.Context, key, namespace, name st
 	if err != nil {
 		c.Remove(key)
 		if errors.Is(err, errMulticlusterDisabled) {
-			return "MulticlusterDisabled",
+			return base.ReasonMulticlusterDisabled,
 				fmt.Errorf("failed to build config from ClusterProfile %s: %w", key, err)
 		}
-		return "AccessProviderFailed",
+		return base.ReasonAccessProviderFailed,
 			fmt.Errorf("failed to build config from ClusterProfile %s: %w", key, err)
 	}
 	newConfig.Timeout = c.remoteTimeout
@@ -271,12 +281,12 @@ func (c *ClusterProvider) doRefresh(ctx context.Context, key, namespace, name st
 
 	mfClient, err := c.clientFactory.NewMfClient(newConfig)
 	if err != nil {
-		return "RemoteClientCreationFailed",
+		return base.ReasonRemoteClientCreationFailed,
 			fmt.Errorf("failed to create remote manifestival client: %w", err)
 	}
 	kubeClient, err := c.clientFactory.NewKubeClient(newConfig)
 	if err != nil {
-		return "RemoteClientCreationFailed",
+		return base.ReasonRemoteClientCreationFailed,
 			fmt.Errorf("failed to create remote kube client: %w", err)
 	}
 
@@ -292,6 +302,12 @@ func (c *ClusterProvider) doRefresh(ctx context.Context, key, namespace, name st
 
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
+	if c.closed.Load() {
+		cancel()
+		newEntry.Close()
+		return base.ReasonClusterProviderClosed, errClusterProviderClosed
+	}
 
 	if existing, ok := c.entries[key]; ok {
 		existing.Close()
@@ -313,6 +329,7 @@ func (c *ClusterProvider) Remove(key string) {
 }
 
 func (c *ClusterProvider) CloseAll() {
+	c.closed.Store(true)
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	for key, entry := range c.entries {
@@ -349,17 +366,20 @@ func (c *ClusterProvider) Get(ctx context.Context, clusterName string) (RemoteCl
 
 	entry, ok := c.entries[clusterName]
 	if !ok {
-		return nil, "ClusterProfileUnavailable",
+		return nil, base.ReasonClusterProfileUnavailable,
 			fmt.Errorf("%w: %s", errClusterNotResolved, clusterName)
 	}
 	if !entry.IsAlive() {
-		return nil, "RemoteClusterStale",
+		return nil, base.ReasonRemoteClusterStale,
 			fmt.Errorf("%w: %s", errClusterStale, clusterName)
 	}
 	return entry, "", nil
 }
 
 func (c *ClusterProvider) GetOrRefresh(ctx context.Context, namespace, name string) (RemoteClusterClients, string, error) {
+	if c.closed.Load() {
+		return nil, base.ReasonClusterProviderClosed, errClusterProviderClosed
+	}
 	key := namespace + "/" + name
 
 	if entry, _, err := c.Get(ctx, key); err == nil {
@@ -372,6 +392,7 @@ func (c *ClusterProvider) GetOrRefresh(ctx context.Context, namespace, name stri
 	return c.Get(ctx, key)
 }
 
+// configEqual reports whether two rest.Configs have equivalent credentials.
 func configEqual(a, b *rest.Config) bool {
 	return a.Host == b.Host &&
 		reflect.DeepEqual(a.TLSClientConfig, b.TLSClientConfig) &&
@@ -508,27 +529,42 @@ func EnsureAnchorConfigMap(
 	kubeClient kubernetes.Interface,
 	instance base.KComponent,
 ) (*corev1.ConfigMap, error) {
+	logger := logging.FromContext(ctx)
 	name := AnchorName(instance)
 	if len(name) > maxResourceNameLength {
 		return nil, fmt.Errorf("anchor ConfigMap name %q exceeds maximum length of %d characters; shorten the CR name", name, maxResourceNameLength)
 	}
 	ns := instance.GetNamespace()
+	nsCfg := instance.GetSpec().GetNamespaceConfiguration()
 
 	if _, err := kubeClient.CoreV1().Namespaces().Get(ctx, ns, metav1.GetOptions{}); err != nil {
 		if !apierrors.IsNotFound(err) {
 			return nil, fmt.Errorf("failed to check namespace %s: %w", ns, err)
 		}
+		// The operator always sets app.kubernetes.io/managed-by, overriding any caller value.
+		nsLabels := map[string]string{}
+		var nsAnnotations map[string]string
+		if nsCfg != nil {
+			maps.Copy(nsLabels, nsCfg.Labels)
+			if len(nsCfg.Annotations) > 0 {
+				nsAnnotations = make(map[string]string, len(nsCfg.Annotations))
+				maps.Copy(nsAnnotations, nsCfg.Annotations)
+			}
+		}
+		nsLabels["app.kubernetes.io/managed-by"] = "knative-operator"
 		nsObj := &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: ns,
-				Labels: map[string]string{
-					"app.kubernetes.io/managed-by": "knative-operator",
-				},
+				Name:        ns,
+				Labels:      nsLabels,
+				Annotations: nsAnnotations,
 			},
 		}
 		if _, err := kubeClient.CoreV1().Namespaces().Create(ctx, nsObj, metav1.CreateOptions{}); err != nil && !apierrors.IsAlreadyExists(err) {
 			return nil, fmt.Errorf("failed to create namespace %s on remote cluster: %w", ns, err)
 		}
+	} else if nsCfg != nil && (len(nsCfg.Labels) > 0 || len(nsCfg.Annotations) > 0) {
+		logger.Debugf("Namespace %s already exists on remote cluster; "+
+			"spec.namespaceConfiguration will be reconciled via the Install-stage transform.", ns)
 	}
 
 	expectedLabels := map[string]string{
@@ -622,7 +658,7 @@ func ResolveTargetCluster(provider *ClusterProvider, state *ReconcileState) Stag
 
 		if provider == nil {
 			instance.GetStatus().MarkTargetClusterNotResolved(
-				"ClusterProviderNotConfigured",
+				base.ReasonAccessProviderNotConfigured,
 				"cluster provider not configured; set --clusterprofile-provider-file")
 			return fmt.Errorf("cluster provider not configured but clusterProfileRef is set")
 		}

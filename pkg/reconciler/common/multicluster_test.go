@@ -29,9 +29,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
+	clienttesting "k8s.io/client-go/testing"
 
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -335,6 +337,136 @@ func TestSameClusterProfile(t *testing.T) {
 	}
 }
 
+func TestClusterProvider_ClosedShortCircuit(t *testing.T) {
+	ctx := t.Context()
+
+	p := &ClusterProvider{
+		entries:       make(map[string]*clusterEntry),
+		access:        NoOpClusterProfileAccess{},
+		controllerCtx: ctx,
+	}
+
+	p.CloseAll()
+
+	_, reason, err := p.GetOrRefresh(ctx, "fleet", "spoke1")
+	if !errors.Is(err, errClusterProviderClosed) {
+		t.Fatalf("GetOrRefresh after CloseAll = %v, want errClusterProviderClosed", err)
+	}
+	if reason != base.ReasonClusterProviderClosed {
+		t.Fatalf("GetOrRefresh reason = %q, want %q", reason, base.ReasonClusterProviderClosed)
+	}
+
+	reason, err = p.Refresh(ctx, "fleet", "spoke1")
+	if !errors.Is(err, errClusterProviderClosed) {
+		t.Fatalf("Refresh after CloseAll = %v, want errClusterProviderClosed", err)
+	}
+	if reason != base.ReasonClusterProviderClosed {
+		t.Fatalf("Refresh reason = %q, want %q", reason, base.ReasonClusterProviderClosed)
+	}
+}
+
+func TestEnsureAnchorConfigMap_NamespaceLabels(t *testing.T) {
+	instance := &v1beta1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "test-ns",
+			Name:      "test",
+		},
+		Spec: v1beta1.KnativeServingSpec{
+			CommonSpec: base.CommonSpec{
+				NamespaceConfiguration: &base.NamespaceConfiguration{
+					Labels: map[string]string{
+						"team":                         "platform",
+						"app.kubernetes.io/managed-by": "should-be-overwritten",
+					},
+					Annotations: map[string]string{
+						"docs": "https://example.com/knative",
+					},
+				},
+			},
+		},
+	}
+
+	kubeClient := fake.NewSimpleClientset()
+
+	ctx := context.Background()
+	if _, err := EnsureAnchorConfigMap(ctx, kubeClient, instance); err != nil {
+		t.Fatalf("EnsureAnchorConfigMap() error: %v", err)
+	}
+
+	ns, err := kubeClient.CoreV1().Namespaces().Get(ctx, "test-ns", metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("Get namespace: %v", err)
+	}
+	if got := ns.Labels["team"]; got != "platform" {
+		t.Errorf("namespace label team = %q, want %q", got, "platform")
+	}
+	if got := ns.Labels["app.kubernetes.io/managed-by"]; got != "knative-operator" {
+		t.Errorf("namespace label managed-by = %q, want %q (operator must overwrite CR-provided value)",
+			got, "knative-operator")
+	}
+	if got := ns.Annotations["docs"]; got != "https://example.com/knative" {
+		t.Errorf("namespace annotation docs = %q, want %q", got, "https://example.com/knative")
+	}
+}
+
+func TestEnsureAnchorConfigMap_NamespaceLabels_ExistingUnchanged(t *testing.T) {
+	existingNS := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test-ns",
+			Labels: map[string]string{
+				"preserved-label": "original",
+			},
+			Annotations: map[string]string{
+				"preserved-annotation": "original",
+			},
+		},
+	}
+	kubeClient := fake.NewSimpleClientset(existingNS)
+
+	instance := &v1beta1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "test-ns",
+			Name:      "test",
+		},
+		Spec: v1beta1.KnativeServingSpec{
+			CommonSpec: base.CommonSpec{
+				NamespaceConfiguration: &base.NamespaceConfiguration{
+					Labels: map[string]string{
+						"team": "platform",
+					},
+					Annotations: map[string]string{
+						"docs": "https://example.com/knative",
+					},
+				},
+			},
+		},
+	}
+
+	ctx := context.Background()
+	if _, err := EnsureAnchorConfigMap(ctx, kubeClient, instance); err != nil {
+		t.Fatalf("EnsureAnchorConfigMap() error: %v", err)
+	}
+
+	ns, err := kubeClient.CoreV1().Namespaces().Get(ctx, "test-ns", metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("Get namespace: %v", err)
+	}
+	if got := ns.Labels["preserved-label"]; got != "original" {
+		t.Errorf("namespace label preserved-label = %q, want %q", got, "original")
+	}
+	if _, ok := ns.Labels["team"]; ok {
+		t.Errorf("namespace should not have acquired CR label team=platform on existing namespace, got labels: %v",
+			ns.Labels)
+	}
+	if got := ns.Annotations["preserved-annotation"]; got != "original" {
+		t.Errorf("namespace annotation preserved-annotation = %q, want %q", got, "original")
+	}
+	if _, ok := ns.Annotations["docs"]; ok {
+		t.Errorf("namespace should not have acquired CR annotation docs on existing namespace, got annotations: %v",
+			ns.Annotations)
+	}
+}
+
 func TestShouldFinalizeClusterScoped(t *testing.T) {
 	ref := &base.ClusterProfileReference{Namespace: "fleet", Name: "spoke1"}
 
@@ -600,6 +732,34 @@ func TestDoRefresh_Concurrency_DifferentKeysIndependent(t *testing.T) {
 	}
 }
 
+func TestEnsureAnchorConfigMap_NamespaceExists(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+
+	existingNS := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "existing-ns"}}
+	kubeClient := fake.NewSimpleClientset(existingNS)
+
+	var nsCreated atomic.Bool
+	kubeClient.PrependReactor("create", "namespaces", func(clienttesting.Action) (bool, runtime.Object, error) {
+		nsCreated.Store(true)
+		return false, nil, nil
+	})
+
+	instance := &v1beta1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{Namespace: "existing-ns", Name: "test"},
+	}
+	if _, err := EnsureAnchorConfigMap(ctx, kubeClient, instance); err != nil {
+		t.Fatalf("EnsureAnchorConfigMap() = %v, want nil", err)
+	}
+	if nsCreated.Load() {
+		t.Fatal("Namespaces().Create was invoked for an existing namespace")
+	}
+	if _, err := kubeClient.CoreV1().ConfigMaps("existing-ns").
+		Get(ctx, "knativeserving-test-root-owner", metav1.GetOptions{}); err != nil {
+		t.Fatalf("anchor ConfigMap was not created: %v", err)
+	}
+}
+
 func TestDoRefresh_ClientCreationFailure_Manifestival(t *testing.T) {
 	provider := newTestProviderWithStubAccess(&stubAccess{}, readyClusterProfile("fleet", "worker"))
 	mfErr := errors.New("mf boom")
@@ -657,5 +817,54 @@ func TestDoRefresh_ClientCreationFailure_Kube(t *testing.T) {
 	}
 	if got := len(provider.entries); got != 0 {
 		t.Errorf("provider.entries size = %d, want 0 (failure must not cache)", got)
+	}
+}
+func TestClusterProvider_ClosedShortCircuit_Concurrent(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	access := &blockingAccess{
+		entered: make(chan struct{}),
+		release: make(chan struct{}),
+	}
+	factory := &stubClientFactory{}
+	provider := newTestProviderWithStubAccess(&stubAccess{}, readyClusterProfile("fleet", "worker"))
+	provider.access = access
+	provider.clientFactory = factory
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	var (
+		gotReason string
+		gotErr    error
+	)
+	go func() {
+		defer wg.Done()
+		gotReason, gotErr = provider.Refresh(ctx, "fleet", "worker")
+	}()
+
+	select {
+	case <-access.entered:
+	case <-time.After(5 * time.Second):
+		close(access.release)
+		wg.Wait()
+		t.Fatal("Refresh did not reach BuildConfigFromCP within 5s")
+	}
+
+	provider.CloseAll()
+	close(access.release)
+	wg.Wait()
+
+	if gotErr == nil {
+		t.Fatal("Refresh() = nil, want error after CloseAll")
+	}
+	if !errors.Is(gotErr, errClusterProviderClosed) {
+		t.Errorf("error = %v, want wrapping errClusterProviderClosed", gotErr)
+	}
+	if gotReason != base.ReasonClusterProviderClosed {
+		t.Errorf("reason = %q, want %q", gotReason, base.ReasonClusterProviderClosed)
+	}
+	if got := len(provider.entries); got != 0 {
+		t.Errorf("provider.entries size = %d, want 0 (closed provider must not retain entries)", got)
 	}
 }

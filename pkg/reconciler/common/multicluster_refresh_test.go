@@ -291,7 +291,7 @@ func TestResolveTargetCluster_ReasonPropagation(t *testing.T) {
 		inst := newInstance()
 		runResolve(t, nil, inst)
 		assertTargetClusterNotResolved(t, &inst.Status,
-			base.ReasonClusterProviderNotConfigured, "cluster provider not configured")
+			base.ReasonAccessProviderNotConfigured, "cluster provider not configured")
 	})
 
 	t.Run("Disabled", func(t *testing.T) {

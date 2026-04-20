@@ -68,12 +68,14 @@ Kubernetes image volume inside the operator pod.
 ## Anchor ConfigMap
 
 For remote deployments, the operator creates an anchor ConfigMap
-(`{kind}-{cr-name}-root-owner`) on the spoke cluster. Namespace-scoped resources
-use it as their `OwnerReference` so that Kubernetes GC keeps things in sync.
-Manually deleting the anchor triggers GC of all owned resources.
+(`{kind}-{cr-name}-root-owner`) on the spoke. Namespace-scoped resources use
+it as their `OwnerReference`, so deleting the anchor triggers GC of all owned
+resources. Cluster-scoped resources are not owned by the anchor and are
+cleaned up by `FinalizeRemoteCluster` when the hub CR is deleted.
 
-Cluster-scoped resources are not owned by the anchor; they are cleaned up by
-`FinalizeRemoteCluster` when the hub CR is deleted.
+The anchor carries an `operator.knative.dev/protected=true` annotation and a
+description annotation warning against manual deletion. To uninstall safely,
+delete the corresponding CR on the hub.
 
 ## Troubleshooting
 

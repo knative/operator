@@ -112,8 +112,8 @@ func TestEnsureAnchorConfigMap_Create(t *testing.T) {
 	if got := anchor.Annotations["operator.knative.dev/anchor"]; got != "true" {
 		t.Fatalf("annotation anchor = %q, want %q", got, "true")
 	}
-	if _, ok := anchor.Annotations["operator.knative.dev/warning"]; ok {
-		t.Fatal("unexpected warning annotation on newly created anchor")
+	if got := anchor.Annotations["operator.knative.dev/protected"]; got != "true" {
+		t.Fatalf("annotation protected = %q, want %q", got, "true")
 	}
 
 	ns, err := kubeClient.CoreV1().Namespaces().Get(ctx, "test-ns", metav1.GetOptions{})

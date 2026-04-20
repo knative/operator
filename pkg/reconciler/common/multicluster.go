@@ -536,7 +536,11 @@ func EnsureAnchorConfigMap(
 		"operator.knative.dev/cr-name": instance.GetName(),
 	}
 	expectedAnnotations := map[string]string{
-		"operator.knative.dev/anchor": "true",
+		"operator.knative.dev/anchor":    "true",
+		"operator.knative.dev/protected": "true",
+		"operator.knative.dev/description": "Anchor for Knative resources managed by knative-operator. " +
+			"Deleting this will cascade-delete all owned resources via Kubernetes GC; " +
+			"uninstall via the hub cluster CR instead.",
 	}
 
 	anchor, err := kubeClient.CoreV1().ConfigMaps(ns).Get(ctx, name, metav1.GetOptions{})

@@ -61,6 +61,7 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 		configMapInformer := configmapinformer.Get(ctx, Selector)
 		kubeClient := kubeclient.Get(ctx)
 		logger := logging.FromContext(ctx)
+		logger.Infof("Remote deployments poll interval: %s", common.RemoteDeploymentsPollIntervalValue())
 
 		restConfig := injection.GetConfig(ctx)
 		mfclient, err := mfc.NewClient(restConfig)

@@ -146,7 +146,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		return err
 	}
 	if result.DeploymentsNotReady && state.IsRemote() {
-		return controller.NewRequeueAfter(common.RemoteDeploymentsPollInterval)
+		return controller.NewRequeueAfter(common.RemoteDeploymentsPollIntervalValue())
 	}
 	return nil
 }

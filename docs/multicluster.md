@@ -1,14 +1,15 @@
 # Multi-Cluster Deployment
 
 The operator can deploy Knative Serving and Eventing to remote clusters from a
-single hub cluster. Each `KnativeServing` or `KnativeEventing` CR that carries a
-`spec.clusterProfileRef` causes the operator to reconcile on the referenced
-spoke cluster instead of the local cluster.
+single hub cluster. A `KnativeServing` or `KnativeEventing` CR carrying a
+`spec.clusterProfileRef` reconciles on the referenced spoke cluster; without it
+the operator behaves as before.
 
 The hub needs network access to each spoke API server. Connection details are
-resolved through the Cluster Inventory API (`ClusterProfile`). If direct
-connectivity is not available, you can reverse the direction with
-[OCM Cluster Proxy](https://open-cluster-management.io/docs/getting-started/integration/cluster-proxy/).
+resolved through the Cluster Inventory API (`ClusterProfile`).
+
+> Note: if direct connectivity is not available, reverse the direction with
+> [OCM Cluster Proxy](https://open-cluster-management.io/docs/getting-started/integration/cluster-proxy/).
 
 ## Prerequisites
 
@@ -35,11 +36,11 @@ spec:
 The operator resolves the `ClusterProfile`, builds a `rest.Config` via the
 configured access provider, and applies manifests on the spoke. A
 `TargetClusterResolved` status condition tracks whether the remote cluster was
-reached. When `clusterProfileRef` is omitted the operator behaves as before.
+reached.
 
-The `--clusterprofile-provider-file` flag must point to an access provider config
-JSON file (`sigs.k8s.io/cluster-inventory-api/pkg/access`). Without it, any CR
-with a `clusterProfileRef` will fail to reconcile.
+`--clusterprofile-provider-file` must point to an access provider config JSON
+file (`sigs.k8s.io/cluster-inventory-api/pkg/access`); without it, any CR with
+a `clusterProfileRef` will fail to reconcile.
 
 ## Helm chart
 
@@ -62,8 +63,8 @@ knative_operator:
         mountPath: /access-plugins/token-secretreader
 ```
 
-This creates a `ConfigMap` with the provider config and mounts each plugin as a
-Kubernetes image volume inside the operator pod.
+The chart creates a `ConfigMap` with the provider config and mounts each
+plugin as a Kubernetes image volume inside the operator pod.
 
 ## Namespace configuration
 
@@ -82,6 +83,31 @@ cleaned up by `FinalizeRemoteCluster` when the hub CR is deleted.
 The anchor carries an `operator.knative.dev/protected=true` annotation and a
 description annotation warning against manual deletion. To uninstall safely,
 delete the corresponding CR on the hub.
+
+## Remote deployments poll interval
+
+While spoke deployments roll out, the operator requeues the CR to re-check
+readiness. The interval is controlled by `--remote-deployments-poll-interval`
+(default `10s`); values below `1s` fall back to the default. The effective
+value is logged at operator startup.
+
+Larger values reduce reconcile traffic on hubs managing many spokes, at the
+cost of slower observability of readiness transitions:
+
+| Spoke count | Recommended interval |
+|-------------|----------------------|
+| < 10 | `10s` (default) |
+| 10-100 | `30s` |
+| > 100 | `60s` |
+
+### Setting the interval
+
+```yaml
+knative_operator:
+  multicluster:
+    enabled: true
+    remoteDeploymentsPollInterval: 30s
+```
 
 ## Troubleshooting
 

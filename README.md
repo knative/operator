@@ -18,12 +18,23 @@ Details:
 - [Serving Configuration](https://knative.dev/docs/install/operator/configuring-serving-cr/)
 - [Eventing Configuration](https://knative.dev/docs/install/operator/configuring-eventing-cr/)
 - [Upgrade](docs/upgrade.md)
+- [Multi-cluster deployment](docs/multicluster.md)
 - [Development](docs/development.md)
+- [Multi-cluster E2E testing](docs/development/e2e-multicluster.md)
 - [Release](docs/release.md)
 
 For documentation on using Knative Operator, see the
 [Knative operator section](https://knative.dev/docs/install/operator/knative-with-operators/) of the
 [Knative documentation site](https://www.knative.dev/docs).
+
+## Operator CLI flags
+
+Operator-specific CLI flags (set on the operator Deployment via `args:`):
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--clusterprofile-provider-file` | `""` | Path to the JSON config file describing Cluster Inventory API access providers. Required when any CR sets `spec.clusterProfileRef`. See [docs/multicluster.md](docs/multicluster.md). |
+| `--remote-deployments-poll-interval` | `10s` | Requeue interval used while polling spoke deployment readiness. Raise for large fleets (`30s` for 10-100 spokes, `60s` for >100). Values below `1s` fall back to the default with a WARNING log entry. |
 
 If you are interested in contributing, see [CONTRIBUTING.md](./CONTRIBUTING.md)
 and [DEVELOPMENT.md](./DEVELOPMENT.md). For a list of help wanted issues across 

@@ -24,6 +24,8 @@ knative_operator:
     #   - name: kubeconfig-secretreader
     #     image: registry.k8s.io/cluster-inventory-api/:v0.1.0
     #     mountPath: /access-plugins/kubeconfig-secretreader
+    # Polling cadence for spoke deployment readiness.
+    remoteDeploymentsPollInterval: 10s
   knative_operator:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
     tag: {{ tag }}

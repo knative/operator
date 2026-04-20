@@ -19,7 +19,6 @@ package common
 import (
 	"context"
 	"fmt"
-	"time"
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -28,8 +27,6 @@ import (
 
 	"knative.dev/operator/pkg/apis/operator/base"
 )
-
-const RemoteDeploymentsPollInterval = 10 * time.Second
 
 // Stage represents a step in the reconcile process
 type Stage func(context.Context, *mf.Manifest, base.KComponent) error

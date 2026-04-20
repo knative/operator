@@ -133,16 +133,7 @@ func (is *KnativeServingStatus) MarkTargetClusterResolved() {
 
 // MarkTargetClusterNotResolved marks the TargetClusterResolved status as false with the given reason and message.
 func (is *KnativeServingStatus) MarkTargetClusterNotResolved(reason, msg string) {
-	servingCondSet.Manage(is).MarkFalse(
-		base.TargetClusterResolved,
-		reason,
-		msg,
-	)
-	servingCondSet.Manage(is).MarkFalse(
-		base.InstallSucceeded,
-		"TargetClusterUnavailable",
-		"Cannot install: "+msg,
-	)
+	servingCondSet.Manage(is).MarkFalse(base.TargetClusterResolved, reason, msg)
 }
 
 // GetVersion gets the currently installed version of the component.

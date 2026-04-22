@@ -37,6 +37,8 @@ const (
 	// VersionMigrationEligible is a Condition indicating whether or not the current version of
 	// Knative component is eligible to upgrade or downgrade to the specified version.
 	VersionMigrationEligible apis.ConditionType = "VersionMigrationEligible"
+	// TargetClusterResolved is a Condition indicating whether the target cluster has been resolved.
+	TargetClusterResolved apis.ConditionType = "TargetClusterResolved"
 )
 
 // KComponent is a common interface for accessing meta, spec and status of all known types.
@@ -79,6 +81,9 @@ type KComponentSpec interface {
 
 	// GetPodDisruptionBudgetOverride gets the PodDisruptionBudget configurations to override.
 	GetPodDisruptionBudgetOverride() []PodDisruptionBudgetOverride
+
+	// GetClusterProfileRef gets the reference to a ClusterProfile for multi-cluster deployment.
+	GetClusterProfileRef() *ClusterProfileReference
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -119,6 +124,11 @@ type KComponentStatus interface {
 	GetManifests() []string
 	// SetManifests sets the url links of the manifests
 	SetManifests(manifests []string)
+
+	// MarkTargetClusterResolved marks the TargetClusterResolved status as true.
+	MarkTargetClusterResolved()
+	// MarkTargetClusterNotResolved marks the TargetClusterResolved status as false with the given reason and message.
+	MarkTargetClusterNotResolved(reason, msg string)
 
 	// IsReady return true if all conditions are satisfied
 	IsReady() bool
@@ -176,6 +186,11 @@ type CommonSpec struct {
 	// PodDisruptionBudgetOverride overrides PodDisruptionBudget configurations via minAvailable.
 	// +optional
 	PodDisruptionBudgetOverride []PodDisruptionBudgetOverride `json:"podDisruptionBudgets,omitempty"`
+
+	// ClusterProfileRef optionally targets a ClusterProfile; when set, the
+	// component is reconciled on the referenced remote cluster.
+	// +optional
+	ClusterProfileRef *ClusterProfileReference `json:"clusterProfileRef,omitempty"`
 }
 
 // GetConfig implements KComponentSpec.
@@ -231,6 +246,11 @@ func (c *CommonSpec) GetServiceOverride() []ServiceOverride {
 // GetPodDisruptionBudgetOverride implements KComponentSpec.
 func (c *CommonSpec) GetPodDisruptionBudgetOverride() []PodDisruptionBudgetOverride {
 	return c.PodDisruptionBudgetOverride
+}
+
+// GetClusterProfileRef implements KComponentSpec.
+func (c *CommonSpec) GetClusterProfileRef() *ClusterProfileReference {
+	return c.ClusterProfileRef
 }
 
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first
@@ -440,4 +460,14 @@ type CustomCerts struct {
 
 	// The name of the ConfigMap or Secret
 	Name string `json:"name"`
+}
+
+// ClusterProfileReference identifies a ClusterProfile for remote cluster deployment.
+type ClusterProfileReference struct {
+	// Name is the name of the ClusterProfile resource.
+	// +kubebuilder:validation:MinLength=1
+	Name string `json:"name"`
+	// Namespace is the namespace of the ClusterProfile resource.
+	// +kubebuilder:validation:MinLength=1
+	Namespace string `json:"namespace"`
 }

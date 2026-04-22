@@ -28,7 +28,6 @@ import (
 func transformers(ctx context.Context, obj base.KComponent) []mf.Transformer {
 	logger := logging.FromContext(ctx)
 	return []mf.Transformer{
-		injectOwner(obj),
 		mf.InjectNamespace(obj.GetNamespace()),
 		NamespaceConfigurationTransform(obj.GetSpec().GetNamespaceConfiguration()),
 		HighAvailabilityTransform(obj),
@@ -43,11 +42,18 @@ func transformers(ctx context.Context, obj base.KComponent) []mf.Transformer {
 	}
 }
 
-func injectOwner(owner mf.Owner) mf.Transformer {
+// InjectOwner sets OwnerReference on namespace-scoped resources.
+func InjectOwner(owner mf.Owner, anchorOwner mf.Owner) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		if u.GetNamespace() != "" {
-			u.SetOwnerReferences([]v1.OwnerReference{*v1.NewControllerRef(owner, owner.GroupVersionKind())})
+		if u.GetNamespace() == "" {
+			return nil
 		}
+		if anchorOwner != nil {
+			owner = anchorOwner
+		}
+		u.SetOwnerReferences([]v1.OwnerReference{
+			*v1.NewControllerRef(owner, owner.GroupVersionKind()),
+		})
 		return nil
 	}
 }
@@ -72,9 +78,8 @@ func Transform(ctx context.Context, manifest *mf.Manifest, instance base.KCompon
 
 // InjectNamespace will mutate the namespace of all installed resources
 func InjectNamespace(manifest *mf.Manifest, instance base.KComponent, extra ...mf.Transformer) error {
-	transformers := []mf.Transformer{
-		mf.InjectNamespace(instance.GetNamespace()),
-	}
+	transformers := make([]mf.Transformer, 0, 1+len(extra))
+	transformers = append(transformers, mf.InjectNamespace(instance.GetNamespace()))
 	transformers = append(transformers, extra...)
 	m, err := manifest.Transform(transformers...)
 	if err != nil {

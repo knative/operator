@@ -28,7 +28,11 @@ spec:
     singular: knativeserving
   scope: Namespaced
   versions:
-  - name: v1beta1
+  - additionalPrinterColumns:
+    - jsonPath: .spec.clusterProfileRef.name
+      name: Target Cluster
+      type: string
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: KnativeServing is the Schema for the knativeservings API
@@ -66,6 +70,24 @@ spec:
                   - URL
                   type: object
                 type: array
+              clusterProfileRef:
+                description: |-
+                  ClusterProfileRef optionally targets a ClusterProfile; when set, the
+                  component is reconciled on the referenced remote cluster.
+                properties:
+                  name:
+                    description: Name is the name of the ClusterProfile resource.
+                    minLength: 1
+                    type: string
+                  namespace:
+                    description: Namespace is the namespace of the ClusterProfile
+                      resource.
+                    minLength: 1
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
               config:
                 additionalProperties:
                   additionalProperties:
@@ -3963,6 +3985,12 @@ spec:
                   type: object
                 type: array
             type: object
+            x-kubernetes-validations:
+            - message: spec.clusterProfileRef cannot be added or removed after creation
+              rule: has(self.clusterProfileRef) == has(oldSelf.clusterProfileRef)
+            - message: spec.clusterProfileRef is immutable
+              rule: '!has(self.clusterProfileRef) || !has(oldSelf.clusterProfileRef)
+                || self.clusterProfileRef == oldSelf.clusterProfileRef'
           status:
             description: KnativeServingStatus defines the observed state of KnativeServing
             properties:

@@ -1,0 +1,14 @@
+# Status subresource patch for the spoke ClusterProfile.
+# Used by apply_cluster_profile in e2e-common.sh.
+status:
+  accessProviders:
+  - name: "${MC_PROVIDER_NAME}"
+    cluster:
+      server: "${SPOKE_INTERNAL_ENDPOINT}"
+      certificate-authority-data: "${SPOKE_CA_DATA_B64}"
+  conditions:
+  - type: ControlPlaneHealthy
+    status: "True"
+    reason: E2EHarness
+    message: "spoke kind cluster reachable"
+    lastTransitionTime: "${TRANSITION}"

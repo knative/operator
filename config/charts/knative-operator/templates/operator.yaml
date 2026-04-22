@@ -855,5 +855,38 @@ spec:
           ports:
             - name: metrics
               containerPort: 9090
+{{- $mc := .Values.knative_operator.multicluster | default dict }}
+{{- $pollInterval := $mc.remoteDeploymentsPollInterval }}
+{{- if or $mc.enabled $pollInterval }}
+          args:
+{{- if $mc.enabled }}
+            - --clusterprofile-provider-file=/etc/cluster-inventory/config.json
+{{- end }}
+{{- if $pollInterval }}
+            - --remote-deployments-poll-interval={{ $pollInterval }}
+{{- end }}
+{{- end }}
+{{- if $mc.enabled }}
+          volumeMounts:
+            - name: access-config
+              mountPath: /etc/cluster-inventory
+              readOnly: true
+{{- range ($mc.plugins | default list) }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              readOnly: true
+{{- end }}
+{{- end }}
+{{- if $mc.enabled }}
+      volumes:
+        - name: access-config
+          configMap:
+            name: clusterprofile-provider-file
+{{- range ($mc.plugins | default list) }}
+        - name: {{ .name }}
+          image:
+            reference: {{ .image }}
+{{- end }}
+{{- end }}
 
 ---

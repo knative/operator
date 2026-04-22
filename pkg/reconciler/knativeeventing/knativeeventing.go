@@ -22,9 +22,10 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 
+	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
 
@@ -32,6 +33,7 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
 	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1beta1/knativeeventing"
+	operatorv1beta1lister "knative.dev/operator/pkg/client/listers/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/common"
 	kec "knative.dev/operator/pkg/reconciler/knativeeventing/common"
 	"knative.dev/operator/pkg/reconciler/knativeeventing/source"
@@ -50,7 +52,9 @@ type Reconciler struct {
 	// client & logger
 	manifest mf.Manifest
 	// Platform-specific behavior to affect the transform
-	extension common.Extension
+	extension       common.Extension
+	clusterProvider *common.ClusterProvider
+	eventingLister  operatorv1beta1lister.KnativeEventingLister
 }
 
 // Check that our Reconciler implements controller.Reconciler
@@ -60,21 +64,18 @@ var _ knereconciler.Finalizer = (*Reconciler)(nil)
 // FinalizeKind removes all resources after deletion of a KnativeEventing.
 func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.KnativeEventing) pkgreconciler.Event {
 	logger := logging.FromContext(ctx)
-
-	// Clean up the cache, if the Serving CR is deleted.
 	common.ClearCache()
 
-	// List all KnativeEventings to determine if cluster-scoped resources should be deleted.
-	kes, err := r.operatorClientSet.OperatorV1beta1().KnativeEventings("").List(ctx, metav1.ListOptions{})
+	kes, err := r.eventingLister.List(labels.Everything())
 	if err != nil {
 		return fmt.Errorf("failed to list all KnativeEventings: %w", err)
 	}
-
-	for _, ke := range kes.Items {
-		if ke.GetDeletionTimestamp().IsZero() {
-			// Not deleting all KnativeEventings. Nothing to do here.
-			return nil
-		}
+	components := make([]base.KComponent, len(kes))
+	for i, ke := range kes {
+		components[i] = ke
+	}
+	if !common.ShouldFinalizeClusterScoped(components, original) {
+		return nil
 	}
 
 	if err := r.extension.Finalize(ctx, original); err != nil {
@@ -84,34 +85,26 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 	manifest, err := r.installed(ctx, original)
 	if err != nil {
 		logger.Error("Unable to fetch installed manifest; no cluster-scoped resources will be finalized", err)
-		return nil
+		manifest = nil
+	}
+
+	if handled, err := common.FinalizeRemoteClusterIfNeeded(ctx, r.clusterProvider, manifest, original, TLSResourcesPred); handled {
+		return err
 	}
 
 	if manifest == nil {
 		return nil
 	}
-
-	// For optional resources like cert-manager's Certificates and Issuers, we don't want to fail
-	// finalization when such operator is not installed, so we split the resources in
-	// - optional resources (TLS resources, etc)
-	// - resources (core k8s resources)
-	//
-	// Then, we delete `resources` first and after we delete optional resources while also ignoring
-	// errors returned when such operators are not installed.
-
-	optionalResourcesPred := mf.Any(tlsResourcesPred)
-
+	optionalResourcesPred := mf.Any(TLSResourcesPred)
 	optionalResources := manifest.Filter(optionalResourcesPred)
 	resources := manifest.Filter(mf.Not(optionalResourcesPred))
 
 	if err = common.Uninstall(&resources); err != nil {
 		logger.Error("Failed to finalize platform resources", err)
 	}
-
 	if err := common.Uninstall(&optionalResources); err != nil && !meta.IsNoMatchError(err) {
 		logger.Error("Failed to finalize platform resources", err)
 	}
-
 	return nil
 }
 
@@ -133,12 +126,18 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 	if err := r.extension.Reconcile(ctx, ke); err != nil {
 		return err
 	}
+
+	var state common.ReconcileState
+
 	stages := common.Stages{
+		common.ResolveTargetCluster(r.clusterProvider, &state),
 		common.AppendTarget,
 		source.AppendTargetSources,
 		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
-		r.transform,
+		func(ctx context.Context, manifest *mf.Manifest, comp base.KComponent) error {
+			return r.transform(ctx, manifest, comp, state.AnchorOwner)
+		},
 		r.handleTLSResources,
 		manifests.Install,
 		manifests.SetManifestPaths, // setting path right after applying manifests to populate paths
@@ -147,21 +146,30 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 		common.DeleteObsoleteResources(ctx, ke, r.installed),
 	}
 	manifest := r.manifest.Append()
-	return stages.Execute(ctx, &manifest, ke)
+	result, err := stages.Execute(ctx, &manifest, ke)
+	if err != nil {
+		return err
+	}
+	if result.DeploymentsNotReady && state.IsRemote() {
+		return controller.NewRequeueAfter(common.RemoteDeploymentsPollIntervalValue())
+	}
+	return nil
 }
 
 // transform mutates the passed manifest to one with common, component
 // and platform transformations applied
-func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp base.KComponent) error {
+func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp base.KComponent, anchorOwner mf.Owner) error {
 	logger := logging.FromContext(ctx)
 	instance := comp.(*v1beta1.KnativeEventing)
-	extra := []mf.Transformer{
+	extra := make([]mf.Transformer, 0, 5)
+	extra = append(extra,
+		common.InjectOwner(instance, anchorOwner),
 		kec.DefaultBrokerConfigMapTransform(instance, logger),
 		kec.SinkBindingSelectionModeTransform(instance, logger),
 		kec.ReplicasEnvVarsTransform(manifest.Client),
 		// Ensure all resources have the selector applied so that the controller re-queues applied resources when they change.
 		common.InjectLabel(SelectorKey, SelectorValue),
-	}
+	)
 	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
 }
@@ -186,7 +194,7 @@ func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*
 	// Per the manifests, that have been installed in the cluster, we only need to inject the correct namespace
 	// in the stages.
 	stages := common.Stages{r.injectNamespace}
-	err = stages.Execute(ctx, &installed, instance)
+	_, err = stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }
 

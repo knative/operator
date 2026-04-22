@@ -25,7 +25,8 @@ readonly PREVIOUS_EVENTING_RELEASE_VERSION="1.21"
 # kodata or an incoming new release. This value should be in the semantic format of major.minor.
 readonly TARGET_RELEASE_VERSION="latest"
 # This is the branch name of knative repos, where we run the upgrade tests.
-readonly KNATIVE_REPO_BRANCH="${PULL_BASE_REF}"
+# Default to empty for local runs (not in Prow).
+readonly KNATIVE_REPO_BRANCH="${PULL_BASE_REF:-}"
 # Namespaces used for tests
 # This environment variable TEST_NAMESPACE defines the namespace to install Knative Serving.
 export TEST_NAMESPACE="${TEST_NAMESPACE:-knative-operator-testing}"
@@ -63,7 +64,7 @@ function is_ingress_class() {
 function add_trap() {
   local cmd=$1
   shift
-  for trap_signal in $@; do
+  for trap_signal in "$@"; do
     local current_trap="$(trap -p $trap_signal | cut -d\' -f2)"
     local new_cmd="($cmd)"
     [[ -n "${current_trap}" ]] && new_cmd="${current_trap};${new_cmd}"
@@ -77,12 +78,12 @@ function test_setup_logging() {
   echo ">> Setting up logging..."
 
   # Install kail if needed.
-  if ! which kail > /dev/null; then
-    bash <( curl -sfL https://raw.githubusercontent.com/boz/kail/master/godownloader.sh) -b "$GOPATH/bin"
+  if ! command -v kail > /dev/null; then
+    bash <(curl -sfL https://raw.githubusercontent.com/boz/kail/master/godownloader.sh) -b "$GOPATH/bin"
   fi
 
   # Capture all logs.
-  kail > ${ARTIFACTS}/k8s.log-$(basename ${E2E_SCRIPT}).txt &
+  kail > "${ARTIFACTS}/k8s.log-$(basename "${E2E_SCRIPT}").txt" &
   local kail_pid=$!
   # Clean up kail so it doesn't interfere with job shutting down
   add_trap "kill $kail_pid || true" EXIT
@@ -120,7 +121,11 @@ function download_knative() {
 function install_istio() {
   echo ">> Installing Istio"
   curl -sL https://istio.io/downloadIstioctl | ISTIO_VERSION=1.25.2 sh -
-  $HOME/.istioctl/bin/istioctl install --set values.cni.cniBinDir=/home/kubernetes/bin -y
+  local istioctl_args=(install -y)
+  if [[ "${CLOUD_PROVIDER:-gke}" == "gke" ]]; then
+    istioctl_args+=(--set values.cni.cniBinDir=/home/kubernetes/bin)
+  fi
+  $HOME/.istioctl/bin/istioctl "${istioctl_args[@]}"
 }
 
 function create_namespace() {
@@ -319,4 +324,220 @@ function if_version_exists() {
     fi
   done
   echo "no"
+}
+
+# Multi-cluster e2e helpers
+
+function create_spoke_cluster() {
+  echo ">> Creating spoke KinD cluster: ${SPOKE_CLUSTER_NAME}"
+  if kind get clusters 2>/dev/null | grep -q "^${SPOKE_CLUSTER_NAME}$"; then
+    echo ">> Spoke cluster already exists, reusing"
+  else
+    kind create cluster --name "${SPOKE_CLUSTER_NAME}" --kubeconfig "${SPOKE_HOST_KUBECONFIG}" --wait 120s || return 1
+  fi
+  # internal kubeconfig for hub->spoke access via docker bridge
+  kind get kubeconfig --internal --name "${SPOKE_CLUSTER_NAME}" > "${SPOKE_KUBECONFIG}" || return 1
+  kind get kubeconfig --name "${SPOKE_CLUSTER_NAME}" > "${SPOKE_HOST_KUBECONFIG}" || return 1
+  export SPOKE_KUBECONFIG SPOKE_HOST_KUBECONFIG
+  echo ">> Spoke kubeconfig ready"
+
+  echo ">> Waiting for spoke nodes and core components"
+  KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl wait --for=condition=Ready node --all --timeout=120s || return 1
+  KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl -n kube-system rollout status deployment/coredns --timeout=120s || return 1
+}
+
+function delete_spoke_cluster() {
+  if kind get clusters 2>/dev/null | grep -q "^${SPOKE_CLUSTER_NAME}$"; then
+    kind delete cluster --name "${SPOKE_CLUSTER_NAME}" --kubeconfig "${SPOKE_HOST_KUBECONFIG}"
+  fi
+  rm -f "${SPOKE_KUBECONFIG}" "${SPOKE_HOST_KUBECONFIG}"
+}
+
+function dump_spoke_state() {
+  if [[ -z "${SPOKE_HOST_KUBECONFIG:-}" || ! -f "${SPOKE_HOST_KUBECONFIG}" ]]; then
+    echo ">> [dump_spoke_state] SPOKE_HOST_KUBECONFIG not present, skipping"
+    return 0
+  fi
+  local out="${ARTIFACTS:-/tmp}/spoke-dump.txt"
+  local -a kc=(kubectl --request-timeout=30s)
+  echo ">> Dumping spoke cluster state to ${out}"
+  {
+    echo "=== kubectl get nodes ==="
+    KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" "${kc[@]}" get nodes -o wide || true
+    echo
+    echo "=== kubectl get deployments,statefulsets,daemonsets,pods,svc,cm,secret -A --show-kind ==="
+    KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" "${kc[@]}" \
+      get deployments,statefulsets,daemonsets,pods,svc,cm,secret -A --show-kind -o wide || true
+    echo
+    echo "=== kubectl get events -A ==="
+    KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" "${kc[@]}" get events -A --sort-by=.lastTimestamp || true
+    echo
+    local spoke_ns="${TEST_NAMESPACE:-knative-operator-testing}"
+    echo "=== pod logs in namespace ${spoke_ns} ==="
+    KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" "${kc[@]}" -n "${spoke_ns}" \
+      logs --all-containers=true --prefix --tail=200 -l "app" 2>/dev/null || true
+  } > "${out}" 2>&1 || true
+}
+
+function dump_hub_state() {
+  local out="${ARTIFACTS:-/tmp}/hub-dump.txt"
+  local -a kc=(kubectl --request-timeout=30s)
+  local op_ns="${TEST_OPERATOR_NAMESPACE:-knative-operator}"
+  echo ">> Dumping hub cluster state to ${out}"
+  {
+    echo "=== kubectl -n ${op_ns} get deploy,po,cm,secret ==="
+    "${kc[@]}" -n "${op_ns}" get deploy,po,cm,secret -o wide || true
+    echo
+    echo "=== kubectl -n ${op_ns} describe deployment/knative-operator ==="
+    "${kc[@]}" -n "${op_ns}" describe deployment/knative-operator || true
+    echo
+    echo "=== kubectl -n ${op_ns} logs deployment/knative-operator --all-containers=true --tail=2000 ==="
+    "${kc[@]}" -n "${op_ns}" logs deployment/knative-operator \
+      --all-containers=true --tail=2000 || true
+    echo
+    echo "=== kubectl get clusterprofile -A -o yaml ==="
+    "${kc[@]}" get clusterprofile -A -o yaml || true
+    echo
+    echo "=== kubectl get knativeserving,knativeeventing -A -o yaml ==="
+    "${kc[@]}" get knativeserving,knativeeventing -A -o yaml || true
+    echo
+    echo "=== kubectl get events -A --sort-by=.lastTimestamp ==="
+    "${kc[@]}" get events -A --sort-by=.lastTimestamp || true
+  } > "${out}" 2>&1 || true
+}
+
+function install_cluster_inventory_crd() {
+  echo ">> Installing ClusterProfile CRD on hub"
+  kubectl apply -f "${CLUSTER_INVENTORY_CRD_URL}" || return 1
+  kubectl wait --for=condition=Established --timeout=60s \
+    crd/clusterprofiles.multicluster.x-k8s.io || return 1
+}
+
+function _spoke_bootstrap_token() {
+  local out_file="$1"
+  local sa_ns="kube-system"
+  local sa_name="knative-operator-e2e"
+  KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl -n "${sa_ns}" create serviceaccount "${sa_name}" \
+    --dry-run=client -o yaml | KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl apply -f - >/dev/null
+  KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl create clusterrolebinding "${sa_name}" \
+    --clusterrole=cluster-admin \
+    --serviceaccount="${sa_ns}:${sa_name}" \
+    --dry-run=client -o yaml | KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl apply -f - >/dev/null
+  ( set +x
+    KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl -n "${sa_ns}" create token "${sa_name}" --duration=24h > "${out_file}"
+  )
+}
+
+function apply_cluster_profile() {
+  local cp_namespace="${1:-default}"
+  echo ">> Applying ClusterProfile CR for spoke in namespace ${cp_namespace}"
+  kubectl create namespace "${cp_namespace}" --dry-run=client -o yaml | kubectl apply -f - || return 1
+
+  local spoke_endpoint spoke_ca_b64
+  spoke_endpoint="$(KUBECONFIG="${SPOKE_KUBECONFIG}" kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')" || return 1
+  spoke_ca_b64="$(KUBECONFIG="${SPOKE_KUBECONFIG}" kubectl config view --minify --raw -o jsonpath='{.clusters[0].cluster.certificate-authority-data}')" || return 1
+
+  envsubst '${SPOKE_CLUSTER_NAME}' < test/config/multicluster/clusterprofile.yaml.tmpl \
+    | kubectl -n "${cp_namespace}" apply -f - || return 1
+
+  # Patch the status subresource separately (kubectl apply drops status).
+  local status_tmpdir status_file
+  status_tmpdir="$(mktemp -d)" || return 1
+  local _status_trap="rm -rf ${status_tmpdir}"
+  add_trap "${_status_trap}" EXIT
+  status_file="${status_tmpdir}/clusterprofile-status.yaml"
+
+  SPOKE_INTERNAL_ENDPOINT="${spoke_endpoint}" \
+  SPOKE_CA_DATA_B64="${spoke_ca_b64}" \
+  MC_PROVIDER_NAME="${MC_PROVIDER_NAME}" \
+  TRANSITION="$(date -u +%FT%TZ)" \
+    envsubst '${SPOKE_INTERNAL_ENDPOINT} ${SPOKE_CA_DATA_B64} ${MC_PROVIDER_NAME} ${TRANSITION}' \
+      < test/config/multicluster/clusterprofile-status.yaml.tmpl \
+      > "${status_file}" || return 1
+
+  kubectl -n "${cp_namespace}" patch clusterprofile "${SPOKE_CLUSTER_NAME}" \
+    --subresource=status --type=merge --patch-file="${status_file}" || return 1
+
+  kubectl -n "${cp_namespace}" wait --for=condition=ControlPlaneHealthy --timeout=30s \
+    "clusterprofile/${SPOKE_CLUSTER_NAME}" || return 1
+}
+
+function install_access_provider_config() {
+  echo ">> Building token-exec-plugin image via ko"
+  local plugin_image
+  plugin_image="$(ko build ./test/cmd/token-exec-plugin)" || return 1
+  if [[ -z "${plugin_image}" ]]; then
+    echo "ERROR: ko build did not emit an image reference for token-exec-plugin" >&2
+    return 1
+  fi
+  echo ">> token-exec-plugin image: ${plugin_image}"
+
+  echo ">> Installing access provider ConfigMap/Secret and patching operator deployment"
+  local tmpdir
+  tmpdir="$(mktemp -d)" || return 1
+  add_trap "rm -rf ${tmpdir}" EXIT
+  local token_file="${tmpdir}/token"
+  _spoke_bootstrap_token "${token_file}" || return 1
+
+  local plugin_command="${MC_PROVIDER_PLUGIN_MOUNT_PATH}/ko-app/token-exec-plugin"
+  cat > "${tmpdir}/provider-config.json" <<EOF
+{
+  "providers": [
+    {
+      "name": "${MC_PROVIDER_NAME}",
+      "execConfig": {
+        "apiVersion": "client.authentication.k8s.io/v1",
+        "command": "${plugin_command}",
+        "args": ["${MC_PROVIDER_TOKEN_MOUNT_PATH}/token"],
+        "interactiveMode": "Never"
+      }
+    }
+  ]
+}
+EOF
+
+  kubectl -n "${TEST_OPERATOR_NAMESPACE}" create configmap "${MC_PROVIDER_CONFIGMAP}" \
+    --from-file=config.json="${tmpdir}/provider-config.json" \
+    --dry-run=client -o yaml | kubectl apply -f - || return 1
+
+  kubectl -n "${TEST_OPERATOR_NAMESPACE}" create secret generic "${MC_PROVIDER_TOKEN_SECRET}" \
+    --from-file=token="${token_file}" \
+    --dry-run=client -o yaml | kubectl apply -f - || return 1
+
+  # 0444
+  kubectl -n "${TEST_OPERATOR_NAMESPACE}" patch deployment knative-operator \
+    --type=json \
+    -p "$(cat <<EOF
+[
+  {"op": "add", "path": "/spec/template/spec/containers/0/args", "value": ["--clusterprofile-provider-file=${MC_PROVIDER_MOUNT_PATH}/config.json"]},
+  {"op": "add", "path": "/spec/template/spec/volumes", "value": [
+    {"name": "access-config", "configMap": {"name": "${MC_PROVIDER_CONFIGMAP}"}},
+    {"name": "provider-token", "secret": {"secretName": "${MC_PROVIDER_TOKEN_SECRET}", "defaultMode": 292}},
+    {"name": "access-plugin", "image": {"reference": "${plugin_image}", "pullPolicy": "IfNotPresent"}}
+  ]},
+  {"op": "add", "path": "/spec/template/spec/containers/0/volumeMounts", "value": [
+    {"name": "access-config", "mountPath": "${MC_PROVIDER_MOUNT_PATH}", "readOnly": true},
+    {"name": "provider-token", "mountPath": "${MC_PROVIDER_TOKEN_MOUNT_PATH}", "readOnly": true},
+    {"name": "access-plugin", "mountPath": "${MC_PROVIDER_PLUGIN_MOUNT_PATH}", "readOnly": true}
+  ]}
+]
+EOF
+)" || return 1
+
+  kubectl -n "${TEST_OPERATOR_NAMESPACE}" rollout status deployment/knative-operator --timeout=180s || return 1
+}
+
+function setup_multicluster_e2e() {
+  local cmd
+  for cmd in kind envsubst kubectl ko docker; do
+    if ! command -v "${cmd}" >/dev/null 2>&1; then
+      echo "ERROR: required command not found: ${cmd}" >&2
+      return 1
+    fi
+  done
+
+  create_spoke_cluster || return 1
+  install_cluster_inventory_crd || return 1
+  install_access_provider_config || return 1
+  apply_cluster_profile "default" || return 1
 }

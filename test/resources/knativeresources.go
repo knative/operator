@@ -157,8 +157,9 @@ func IsKnativeDeploymentReady(dpList *v1.DeploymentList, expectedDeployments []s
 // GetExpectedDeployments will return an array of deployment resources based on the version for the knative
 // component.
 func GetExpectedDeployments(manifest mf.Manifest) []string {
-	deployments := []string{}
-	for _, resource := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
+	resources := manifest.Filter(mf.ByKind("Deployment")).Resources()
+	deployments := make([]string, 0, len(resources))
+	for _, resource := range resources {
 		deployments = append(deployments, resource.GetName())
 	}
 	return removeDuplications(deployments)

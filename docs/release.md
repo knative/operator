@@ -85,7 +85,7 @@ spec:
             ...
             - name: KUBERNETES_MIN_VERSION
               value: "{{ .Values.knative_operator.kubernetes_min_version }}"
-            ...      
+            ...
 ```
 
 and
@@ -106,7 +106,7 @@ spec:
             ...
             - name: KUBERNETES_MIN_VERSION
               value: "{{ .Values.knative_operator.kubernetes_min_version }}"
-            ...      
+            ...
 ```
 
 You need to remove the line containing `logging.request-log-template:`, because the value of this key contains `{{ }}` in the example,
@@ -128,3 +128,6 @@ helm install knative-operator ./knative-operator-{version}.tgz
 ```
 
 Replace `{version}` with the correct version for your artifact.
+
+For multi-cluster installs, set `knative_operator.multicluster.enabled` to `true` in `values.yaml`.
+See [multicluster.md](multicluster.md) for details.

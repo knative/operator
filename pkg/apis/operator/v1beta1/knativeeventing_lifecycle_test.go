@@ -66,6 +66,7 @@ func TestKnativeEventingHappyPath(t *testing.T) {
 
 	// Deployments become ready and we're good.
 	ke.MarkDeploymentsAvailable()
+	ke.MarkTargetClusterResolved()
 	apistest.CheckConditionSucceeded(ke, base.DependenciesInstalled, t)
 	apistest.CheckConditionSucceeded(ke, base.DeploymentsAvailable, t)
 	apistest.CheckConditionSucceeded(ke, base.InstallSucceeded, t)
@@ -116,6 +117,7 @@ func TestKnativeEventingErrorPath(t *testing.T) {
 
 	// Finally, dependencies become available.
 	ke.MarkDependenciesInstalled()
+	ke.MarkTargetClusterResolved()
 	apistest.CheckConditionSucceeded(ke, base.DependenciesInstalled, t)
 	apistest.CheckConditionSucceeded(ke, base.DeploymentsAvailable, t)
 	apistest.CheckConditionSucceeded(ke, base.InstallSucceeded, t)
@@ -150,4 +152,81 @@ func TestKnativeEventingVersionMigrationNotEligible(t *testing.T) {
 
 	ke.MarkVersionMigrationNotEligible("Version migration not eligible.")
 	apistest.CheckConditionFailed(ke, base.VersionMigrationEligible, t)
+}
+
+func TestKnativeEventingTargetClusterTransitions(t *testing.T) {
+	t.Run("PreservesInstallSucceeded", func(t *testing.T) {
+		ke := &KnativeEventingStatus{}
+		ke.InitializeConditions()
+
+		// Drive the component to fully Ready first.
+		ke.MarkVersionMigrationEligible()
+		ke.MarkDependenciesInstalled()
+		ke.MarkInstallSucceeded()
+		ke.MarkDeploymentsAvailable()
+		ke.MarkTargetClusterResolved()
+		if ready := ke.IsReady(); !ready {
+			t.Fatalf("precondition: ke.IsReady() = %v, want true", ready)
+		}
+		apistest.CheckConditionSucceeded(ke, base.InstallSucceeded, t)
+
+		// Simulate a hub-side disconnect.
+		ke.MarkTargetClusterNotResolved(base.ReasonClusterProfileNotReady, "control plane unhealthy")
+
+		apistest.CheckConditionFailed(ke, base.TargetClusterResolved, t)
+		tc := ke.GetCondition(base.TargetClusterResolved)
+		if tc == nil || tc.Reason != base.ReasonClusterProfileNotReady {
+			t.Fatalf("TargetClusterResolved.Reason = %v, want %q", tc, base.ReasonClusterProfileNotReady)
+		}
+
+		apistest.CheckConditionSucceeded(ke, base.InstallSucceeded, t)
+
+		if ready := ke.IsReady(); ready {
+			t.Fatalf("ke.IsReady() = %v, want false after MarkTargetClusterNotResolved", ready)
+		}
+	})
+
+	t.Run("InitialDeployFailureIsUnknown", func(t *testing.T) {
+		ke := &KnativeEventingStatus{}
+		ke.InitializeConditions()
+
+		ke.MarkTargetClusterNotResolved(base.ReasonClusterProfileNotFound, "cluster profile not found")
+
+		apistest.CheckConditionFailed(ke, base.TargetClusterResolved, t)
+		apistest.CheckConditionOngoing(ke, base.InstallSucceeded, t)
+		if ready := ke.IsReady(); ready {
+			t.Fatalf("ke.IsReady() = %v, want false", ready)
+		}
+	})
+
+	t.Run("ToggleDoesNotCorruptInstallSucceeded", func(t *testing.T) {
+		ke := &KnativeEventingStatus{}
+		ke.InitializeConditions()
+
+		ke.MarkVersionMigrationEligible()
+		ke.MarkDependenciesInstalled()
+		ke.MarkInstallSucceeded()
+		ke.MarkDeploymentsAvailable()
+		ke.MarkTargetClusterResolved()
+		if ready := ke.IsReady(); !ready {
+			t.Fatalf("precondition: ke.IsReady() = %v, want true", ready)
+		}
+
+		for i := range 3 {
+			ke.MarkTargetClusterNotResolved(base.ReasonClusterProfileNotReady, "flapping")
+			apistest.CheckConditionFailed(ke, base.TargetClusterResolved, t)
+			apistest.CheckConditionSucceeded(ke, base.InstallSucceeded, t)
+			if ready := ke.IsReady(); ready {
+				t.Fatalf("iteration %d: ke.IsReady() = %v, want false", i, ready)
+			}
+
+			ke.MarkTargetClusterResolved()
+			apistest.CheckConditionSucceeded(ke, base.TargetClusterResolved, t)
+			apistest.CheckConditionSucceeded(ke, base.InstallSucceeded, t)
+		}
+
+		if ready := ke.IsReady(); !ready {
+			t.Fatalf("final ke.IsReady() = %v, want true", ready)
+		}
+	})
 }

@@ -33,6 +33,7 @@ var (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Target Cluster",type=string,JSONPath=`.spec.clusterProfileRef.name`,priority=0
 type KnativeServing struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -52,6 +53,8 @@ func (ks *KnativeServing) GetStatus() base.KComponentStatus {
 }
 
 // KnativeServingSpec defines the desired state of KnativeServing
+// +kubebuilder:validation:XValidation:rule="has(self.clusterProfileRef) == has(oldSelf.clusterProfileRef)",message="spec.clusterProfileRef cannot be added or removed after creation"
+// +kubebuilder:validation:XValidation:rule="!has(self.clusterProfileRef) || !has(oldSelf.clusterProfileRef) || self.clusterProfileRef == oldSelf.clusterProfileRef",message="spec.clusterProfileRef is immutable"
 type KnativeServingSpec struct {
 	base.CommonSpec `json:",inline"`
 

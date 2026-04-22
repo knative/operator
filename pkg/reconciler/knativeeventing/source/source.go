@@ -51,15 +51,10 @@ func getAllSourcePath(version string) string {
 		return ""
 	}
 
-	var urls []string
+	urls := make([]string, 0, len(fileList))
 	for _, file := range fileList {
-		name := path.Join(sourcePath, file.Name())
-		pathDirOrFile, err := os.Stat(name)
-		if err != nil {
-			continue
-		}
-		if pathDirOrFile.IsDir() {
-			urls = append(urls, name)
+		if file.IsDir() {
+			urls = append(urls, path.Join(sourcePath, file.Name()))
 		}
 	}
 	return strings.Join(urls, common.COMMA)

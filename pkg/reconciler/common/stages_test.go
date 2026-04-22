@@ -70,8 +70,9 @@ func TestStagesExecute(t *testing.T) {
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
 			stages := Stages{AppendTarget, AppendAdditionalManifests}
 			util.AssertEqual(t, len(manifest.Resources()), 0)
-			err := stages.Execute(context.TODO(), &manifest, test.component)
+			result, err := stages.Execute(context.TODO(), &manifest, test.component)
 			util.AssertEqual(t, err, nil)
+			util.AssertEqual(t, result.DeploymentsNotReady, false)
 			util.AssertEqual(t, util.DeepMatchWithPath(manifest, test.expectedManifestsPath), true)
 		})
 	}
@@ -111,8 +112,9 @@ func TestStagesExecuteWithRepetition(t *testing.T) {
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
 			stages := Stages{AppendTarget, AppendAdditionalManifests}
 			util.AssertEqual(t, len(manifest.Resources()), 0)
-			err := stages.Execute(context.TODO(), &manifest, test.component)
+			result, err := stages.Execute(context.TODO(), &manifest, test.component)
 			util.AssertEqual(t, err, nil)
+			util.AssertEqual(t, result.DeploymentsNotReady, false)
 			// The expected manifests are not 100% identical to the actual manifests, since the additional manifests
 			// have the repeated resource.
 			util.AssertEqual(t, util.DeepMatchWithPath(manifest, test.expectedManifestsPath), false)
@@ -199,11 +201,36 @@ func TestStagesExecuteInstalledManifests(t *testing.T) {
 			manifest, _ := mf.ManifestFrom(mf.Slice{})
 			stages := Stages{AppendInstalled}
 			util.AssertEqual(t, len(manifest.Resources()), 0)
-			err := stages.Execute(context.TODO(), &manifest, test.component)
+			result, err := stages.Execute(context.TODO(), &manifest, test.component)
 			util.AssertEqual(t, err, nil)
+			util.AssertEqual(t, result.DeploymentsNotReady, false)
 			util.AssertEqual(t, util.DeepMatchWithPath(manifest, test.expectedManifestsPath), true)
 		})
 	}
+}
+
+func TestStagesExecuteDeploymentsNotReady(t *testing.T) {
+	component := &v1beta1.KnativeServing{}
+	manifest, _ := mf.ManifestFrom(mf.Slice{})
+
+	var laterCalled bool
+	stages := Stages{
+		NoOp,
+		func(context.Context, *mf.Manifest, base.KComponent) error {
+			return deploymentsNotReadyError{}
+		},
+		func(context.Context, *mf.Manifest, base.KComponent) error {
+			laterCalled = true
+			return nil
+		},
+	}
+
+	result, err := stages.Execute(context.TODO(), &manifest, component)
+	util.AssertEqual(t, err, nil)
+	util.AssertEqual(t, result.DeploymentsNotReady, true)
+	// Stages after the one that signalled "not ready" must be skipped
+	// so that side effects do not observe a partial manifest.
+	util.AssertEqual(t, laterCalled, false)
 }
 
 func TestDeleteObsoleteResources(t *testing.T) {

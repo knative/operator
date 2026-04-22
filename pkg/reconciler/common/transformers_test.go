@@ -22,8 +22,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	mf "github.com/manifestival/manifestival"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/types"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/pkg/ptr"
 )
@@ -40,7 +42,7 @@ func TestCommonTransformers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to generate manifest: %v", err)
 	}
-	if err := Transform(context.Background(), &manifest, component); err != nil {
+	if err := Transform(context.Background(), &manifest, component, InjectOwner(component, nil)); err != nil {
 		t.Fatalf("Failed to transform manifest: %v", err)
 	}
 	resource := &manifest.Resources()[0]
@@ -79,6 +81,146 @@ func TestCommonTransformers(t *testing.T) {
 
 	if !cmp.Equal(ownerRef, wantOwnerRef) {
 		t.Fatalf("Unexpected ownerRef: %s", cmp.Diff(ownerRef, wantOwnerRef))
+	}
+}
+
+func TestInjectOwner_UsesAnchorWhenSet(t *testing.T) {
+	component := &v1beta1.KnativeEventing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "test-ns",
+			Name:      "test-name",
+		},
+	}
+
+	anchor := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "knativeeventing-test-name-root-owner",
+			Namespace: "test-ns",
+			UID:       types.UID("anchor-uid-123"),
+		},
+	}
+	anchor.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
+
+	in := []unstructured.Unstructured{*NamespacedResource("test/v1", "TestCR", "some-ns", "test-resource")}
+	manifest, err := mf.ManifestFrom(mf.Slice(in))
+	if err != nil {
+		t.Fatalf("Failed to generate manifest: %v", err)
+	}
+
+	transformer := InjectOwner(component, anchor)
+	m, err := manifest.Transform(transformer)
+	if err != nil {
+		t.Fatalf("Failed to transform manifest: %v", err)
+	}
+
+	resource := &m.Resources()[0]
+	if len(resource.GetOwnerReferences()) == 0 {
+		t.Fatal("len(GetOwnerReferences()) = 0, expected at least 1")
+	}
+
+	ownerRef := resource.GetOwnerReferences()[0]
+	if ownerRef.Name != anchor.Name {
+		t.Fatalf("ownerRef.Name = %q, want %q (anchor name)", ownerRef.Name, anchor.Name)
+	}
+	if ownerRef.Kind != "ConfigMap" {
+		t.Fatalf("ownerRef.Kind = %q, want %q", ownerRef.Kind, "ConfigMap")
+	}
+	if ownerRef.UID != anchor.UID {
+		t.Fatalf("ownerRef.UID = %q, want %q", ownerRef.UID, anchor.UID)
+	}
+}
+
+func TestInjectOwner_UsesCRWhenAnchorNil(t *testing.T) {
+	component := &v1beta1.KnativeEventing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "test-ns",
+			Name:      "test-name",
+		},
+	}
+	in := []unstructured.Unstructured{*NamespacedResource("test/v1", "TestCR", "some-ns", "test-resource")}
+	manifest, err := mf.ManifestFrom(mf.Slice(in))
+	if err != nil {
+		t.Fatalf("Failed to generate manifest: %v", err)
+	}
+
+	transformer := InjectOwner(component, nil)
+	m, err := manifest.Transform(transformer)
+	if err != nil {
+		t.Fatalf("Failed to transform manifest: %v", err)
+	}
+
+	resource := &m.Resources()[0]
+	if len(resource.GetOwnerReferences()) == 0 {
+		t.Fatal("len(GetOwnerReferences()) = 0, expected at least 1")
+	}
+
+	ownerRef := resource.GetOwnerReferences()[0]
+	apiVersion, kind := component.GroupVersionKind().ToAPIVersionAndKind()
+	wantOwnerRef := metav1.OwnerReference{
+		APIVersion:         apiVersion,
+		Kind:               kind,
+		Name:               component.GetName(),
+		Controller:         ptr.Bool(true),
+		BlockOwnerDeletion: ptr.Bool(true),
+	}
+
+	if !cmp.Equal(ownerRef, wantOwnerRef) {
+		t.Fatalf("Unexpected ownerRef: %s", cmp.Diff(ownerRef, wantOwnerRef))
+	}
+}
+
+func TestInjectOwner_SkipsClusterScoped(t *testing.T) {
+	component := &v1beta1.KnativeEventing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "test-ns",
+			Name:      "test-name",
+		},
+	}
+
+	tests := []struct {
+		name        string
+		anchorOwner mf.Owner
+	}{
+		{
+			name:        "without anchor",
+			anchorOwner: nil,
+		},
+		{
+			name: "with anchor",
+			anchorOwner: func() mf.Owner {
+				anchor := &corev1.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "anchor",
+						Namespace: "test-ns",
+						UID:       types.UID("anchor-uid"),
+					},
+				}
+				anchor.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
+				return anchor
+			}(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			in := []unstructured.Unstructured{*ClusterScopedResource("test/v1", "TestCR", "test-resource")}
+			manifest, err := mf.ManifestFrom(mf.Slice(in))
+			if err != nil {
+				t.Fatalf("Failed to generate manifest: %v", err)
+			}
+
+			transformer := InjectOwner(component, tt.anchorOwner)
+			m, err := manifest.Transform(transformer)
+			if err != nil {
+				t.Fatalf("Failed to transform manifest: %v", err)
+			}
+
+			resource := &m.Resources()[0]
+			if got := len(resource.GetOwnerReferences()); got != 0 {
+				t.Fatalf("len(GetOwnerReferences()) = %d, want 0",
+					got)
+			}
+		})
 	}
 }
 

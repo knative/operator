@@ -33,6 +33,7 @@ var (
 		base.DeploymentsAvailable,
 		base.InstallSucceeded,
 		base.VersionMigrationEligible,
+		base.TargetClusterResolved,
 	)
 )
 
@@ -123,6 +124,16 @@ func (es *KnativeEventingStatus) MarkDependencyMissing(msg string) {
 		base.DependenciesInstalled,
 		"Error",
 		"Dependency missing: %s", msg)
+}
+
+// MarkTargetClusterResolved marks the TargetClusterResolved status as true.
+func (es *KnativeEventingStatus) MarkTargetClusterResolved() {
+	eventingCondSet.Manage(es).MarkTrue(base.TargetClusterResolved)
+}
+
+// MarkTargetClusterNotResolved marks the TargetClusterResolved status as false with the given reason and message.
+func (es *KnativeEventingStatus) MarkTargetClusterNotResolved(reason, msg string) {
+	eventingCondSet.Manage(es).MarkFalse(base.TargetClusterResolved, reason, msg)
 }
 
 // GetVersion gets the currently installed version of the component.

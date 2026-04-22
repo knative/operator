@@ -31,7 +31,7 @@ import (
 )
 
 var (
-	tlsResourcesPred = mf.Any(byGroup("cert-manager.io"), byGroup("trust.cert-manager.io"))
+	TLSResourcesPred = mf.Any(byGroup("cert-manager.io"), byGroup("trust.cert-manager.io"))
 )
 
 func (r *Reconciler) handleTLSResources(ctx context.Context, manifests *mf.Manifest, comp base.KComponent) error {
@@ -42,13 +42,13 @@ func (r *Reconciler) handleTLSResources(ctx context.Context, manifests *mf.Manif
 	}
 
 	// Delete TLS resources (if present)
-	toBeDeleted := manifests.Filter(tlsResourcesPred)
+	toBeDeleted := manifests.Filter(TLSResourcesPred)
 	if err := toBeDeleted.Delete(mf.IgnoreNotFound(true)); err != nil && !meta.IsNoMatchError(err) {
 		return fmt.Errorf("failed to delete TLS resources: %v", err)
 	}
 
 	// Filter out TLS resources from the final list of manifests
-	*manifests = manifests.Filter(mf.Not(tlsResourcesPred))
+	*manifests = manifests.Filter(mf.Not(TLSResourcesPred))
 
 	return nil
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	_ "knative.dev/operator/pkg/reconciler/common" // registers flags
 	"knative.dev/operator/pkg/reconciler/knativeeventing"
 	"knative.dev/operator/pkg/reconciler/knativeserving"
 	kubefilteredfactory "knative.dev/pkg/client/injection/kube/informers/factory/filtered"

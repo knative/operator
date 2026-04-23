@@ -28,13 +28,13 @@ const (
 )
 
 var (
-	// JobSinkResource respresents a Knative Eventing sink JobSink
+	// JobSinkResource represents a Knative Eventing sink JobSink
 	JobSinkResource = schema.GroupResource{
 		Group:    GroupName,
 		Resource: "jobsinks",
 	}
 
-	// IntegrationSinkResource respresents a Knative Eventing sink IntegrationSink
+	// IntegrationSinkResource represents a Knative Eventing sink IntegrationSink
 	IntegrationSinkResource = schema.GroupResource{
 		Group:    GroupName,
 		Resource: "integrationsinks",

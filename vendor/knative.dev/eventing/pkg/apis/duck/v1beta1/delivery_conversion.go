@@ -76,4 +76,4 @@ func (sink *DeliverySpec) ConvertFrom(ctx context.Context, from apis.Convertible
 	}
 }
 
-// DeliveryStatus v1beta1 is not convertable to v1 (Channel ref type vs URL)
+// DeliveryStatus v1beta1 is not convertible to v1 (Channel ref type vs URL)

@@ -312,7 +312,7 @@ func (p *prober) findSucceededPod(job *batchv1.Job) (*corev1.Pod, error) {
 		}
 	}
 	return nil, fmt.Errorf(
-		"could't find succeeded pod for job: %s", job.Name,
+		"couldn't find succeeded pod for job: %s", job.Name,
 	)
 }
 

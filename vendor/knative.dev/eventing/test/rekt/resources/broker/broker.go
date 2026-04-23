@@ -169,7 +169,7 @@ func IsAddressable(name string, timings ...time.Duration) feature.StepFn {
 	return k8s.IsAddressable(GVR(), name, timings...)
 }
 
-// ValidateAddress validates the address retured by Address
+// ValidateAddress validates the address returned by Address
 func ValidateAddress(name string, validate addressable.ValidateAddressFn, timings ...time.Duration) feature.StepFn {
 	return addressable.ValidateAddress(GVR(), name, validate, timings...)
 }

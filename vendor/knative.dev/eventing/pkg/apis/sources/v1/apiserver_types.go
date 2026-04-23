@@ -134,7 +134,7 @@ type APIVersionKindSelector struct {
 
 	// LabelSelector filters this source to objects to those resources pass the
 	// label selector.
-	// More info: http://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
 	// +optional
 	LabelSelector *metav1.LabelSelector `json:"selector,omitempty"`
 }

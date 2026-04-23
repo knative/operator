@@ -24,7 +24,7 @@ import (
 	cehttp "github.com/cloudevents/sdk-go/v2/protocol/http"
 )
 
-// EventChannelHandler is an http.Handler that covert received requests to cloudevent.Event and then
+// EventChannelHandler is an http.Handler that converts received requests to cloudevent.Event and then
 // send them to the given channel.
 func EventChannelHandler(requestsChan chan<- cloudevents.Event) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {

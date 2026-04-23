@@ -18,16 +18,16 @@ require (
 	google.golang.org/api v0.198.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
 	istio.io/client-go v1.18.7
-	k8s.io/api v0.35.3
-	k8s.io/apimachinery v0.35.3
-	k8s.io/client-go v0.35.3
-	k8s.io/code-generator v0.35.3
-	knative.dev/caching v0.0.0-20260415135440-a753404a9071
-	knative.dev/eventing v0.48.1-0.20260415165636-0a7b2da46145
-	knative.dev/hack v0.0.0-20260415233235-54d1312ccc91
-	knative.dev/pkg v0.0.0-20260415140041-388556d5c488
-	knative.dev/reconciler-test v0.0.0-20260415143040-51affdaaa44f
-	knative.dev/serving v0.48.1-0.20260415213836-1017c2be6232
+	k8s.io/api v0.35.4
+	k8s.io/apimachinery v0.35.4
+	k8s.io/client-go v0.35.4
+	k8s.io/code-generator v0.35.4
+	knative.dev/caching v0.0.0-20260422140616-453ad996bbe2
+	knative.dev/eventing v0.48.1-0.20260422192315-152cef39c9ab
+	knative.dev/hack v0.0.0-20260421155212-aeb7b4a9bf96
+	knative.dev/pkg v0.0.0-20260422015212-ec452872dcc1
+	knative.dev/reconciler-test v0.0.0-20260422143017-dd240881af76
+	knative.dev/serving v0.48.1-0.20260422164114-24d95224dd8c
 	sigs.k8s.io/cluster-inventory-api v0.1.0
 	sigs.k8s.io/controller-tools v0.20.1
 	sigs.k8s.io/yaml v1.6.0
@@ -193,13 +193,13 @@ require (
 	gopkg.in/op/go-logging.v1 v1.0.0-20160211212156-b2cb9fa56473 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.35.3 // indirect
-	k8s.io/apiserver v0.35.3 // indirect
+	k8s.io/apiextensions-apiserver v0.35.4 // indirect
+	k8s.io/apiserver v0.35.4 // indirect
 	k8s.io/gengo/v2 v2.0.0-20250922181213-ec3ebc5fd46b // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260319004828-5883c5ee87b9 // indirect
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2 // indirect
-	knative.dev/networking v0.0.0-20260414015937-f29b24983488 // indirect
+	knative.dev/networking v0.0.0-20260421015711-652da006c95d // indirect
 	sigs.k8s.io/controller-runtime v0.23.3 // indirect
 	sigs.k8s.io/gateway-api v1.1.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect

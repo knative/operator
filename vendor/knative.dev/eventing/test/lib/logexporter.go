@@ -102,7 +102,7 @@ func ExportLogs(systemLogsDir, systemNamespace string) {
 }
 
 // ExportLogStreamOnError starts a log stream from the given namespace
-// for pods specified via podPrefixes. The log strema is stopped and
+// for pods specified via podPrefixes. The log stream is stopped and
 // logs exported upon calling the returned Canceler.
 func ExportLogStreamOnError(t *testing.T, logDir, namespace string, podPrefixes ...string) logstream.Canceler {
 	config, err := pkgtest.Flags.GetRESTConfig()

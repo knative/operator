@@ -35,30 +35,30 @@ const (
 )
 
 var (
-	// ApiServerSourceResource respresents a Knative Eventing Sources ApiServerSource
+	// ApiServerSourceResource represents a Knative Eventing Sources ApiServerSource
 	//nolint:staticcheck // Not capitalizing "API"
 	ApiServerSourceResource = schema.GroupResource{
 		Group:    GroupName,
 		Resource: "apiserversources",
 	}
-	// PingSourceResource respresents a Knative Eventing Sources PingSource
+	// PingSourceResource represents a Knative Eventing Sources PingSource
 	PingSourceResource = schema.GroupResource{
 		Group:    GroupName,
 		Resource: "pingsources",
 	}
-	// SinkBindingResource respresents a Knative Eventing Sources SinkBinding
+	// SinkBindingResource represents a Knative Eventing Sources SinkBinding
 	SinkBindingResource = schema.GroupResource{
 		Group:    GroupName,
 		Resource: "sinkbindings",
 	}
 
-	// ContainerSourceResource respresents a Knative Eventing Sources ContainerSource
+	// ContainerSourceResource represents a Knative Eventing Sources ContainerSource
 	ContainerSourceResource = schema.GroupResource{
 		Group:    GroupName,
 		Resource: "containersources",
 	}
 
-	// IntegrationSourceResource respresents a Knative Eventing Sources IntegrationSource
+	// IntegrationSourceResource represents a Knative Eventing Sources IntegrationSource
 	IntegrationSourceResource = schema.GroupResource{
 		Group:    GroupName,
 		Resource: "integrationsources",

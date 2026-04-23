@@ -161,7 +161,7 @@ func GSetup(t *testing.T, options ...SetupClientOption) *Client {
 		t.Fatal("Couldn't initialize clients:", err)
 	}
 
-	// If namespaces are re-used the pull-secret is supposed to be created in advance.
+	// If namespaces are reused the pull-secret is supposed to be created in advance.
 	if !ReuseNamespace {
 		SetupServiceAccount(t, client)
 		SetupPullSecret(t, client)
@@ -202,7 +202,7 @@ func CreateNamespacedClient(t *testing.T) (*Client, error) {
 			return nil, err
 		}
 		if ReuseNamespace {
-			// Re-using existing namespace, no need to create it.
+			// Reusing existing namespace, no need to create it.
 			// The namespace is supposed to be created in advance.
 			return client, nil
 		} else {

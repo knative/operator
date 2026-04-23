@@ -30,7 +30,7 @@ var (
 	MessagingSystem              = attributekey.String("messaging.system")
 	MessagingOperationName       = attributekey.String("messaging.operation.name")
 	MessagingDestinationName     = attributekey.String("messaging.destination.name")
-	MessagingDestinationTemplate = attributekey.String("messaging.destination.tempate")
+	MessagingDestinationTemplate = attributekey.String("messaging.destination.template")
 
 	// attributes relating to the source
 	SourceName          = attributekey.String("kn.source.name")

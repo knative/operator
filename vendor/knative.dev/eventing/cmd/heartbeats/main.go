@@ -124,7 +124,7 @@ func main() {
 		overrides := duckv1.CloudEventOverrides{}
 		err := json.Unmarshal([]byte(env.CEOverrides), &overrides)
 		if err != nil {
-			log.Printf("[ERROR] Unparseable CloudEvents overrides %s: %v", env.CEOverrides, err)
+			log.Printf("[ERROR] Unparsable CloudEvents overrides %s: %v", env.CEOverrides, err)
 			os.Exit(1)
 		}
 		ceOverrides = &overrides
@@ -146,9 +146,9 @@ func main() {
 
 	ctx = observability.WithConfig(ctx, cfg)
 
-	otelResource, err := resource.Default("hearbeat")
+	otelResource, err := resource.Default("heartbeat")
 	if err != nil {
-		log.Printf("failed to correctly initialize otel resource, resouce may be missing some attributes: %s\n", err.Error())
+		log.Printf("failed to correctly initialize otel resource, resource may be missing some attributes: %s\n", err.Error())
 	}
 
 	meterProvider, err := metrics.NewMeterProvider(

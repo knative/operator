@@ -19,10 +19,10 @@ knative_operator:
     plugins: []
     # plugins:
     #   - name: secretreader
-    #     image: registry.k8s.io/cluster-inventory-api/:v0.1.0
+    #     image: registry.k8s.io/cluster-inventory-api/secretreader:v0.1.0
     #     mountPath: /access-plugins/secretreader
     #   - name: kubeconfig-secretreader
-    #     image: registry.k8s.io/cluster-inventory-api/:v0.1.0
+    #     image: registry.k8s.io/cluster-inventory-api/kubeconfig-secretreader:v0.1.0
     #     mountPath: /access-plugins/kubeconfig-secretreader
     # Polling cadence for spoke deployment readiness.
     remoteDeploymentsPollInterval: 10s

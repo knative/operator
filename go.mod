@@ -23,11 +23,11 @@ require (
 	k8s.io/client-go v0.35.4
 	k8s.io/code-generator v0.35.4
 	knative.dev/caching v0.0.0-20260422140616-453ad996bbe2
-	knative.dev/eventing v0.48.1-0.20260424085315-0b7f22cc0488
+	knative.dev/eventing v0.48.1-0.20260424165618-9ba4c6c223fe
 	knative.dev/hack v0.0.0-20260421155212-aeb7b4a9bf96
 	knative.dev/pkg v0.0.0-20260422015212-ec452872dcc1
 	knative.dev/reconciler-test v0.0.0-20260424102515-e1c3185a30af
-	knative.dev/serving v0.48.1-0.20260423124519-7c944739e28a
+	knative.dev/serving v0.48.1-0.20260425200516-b85cf85d31db
 	sigs.k8s.io/cluster-inventory-api v0.1.0
 	sigs.k8s.io/controller-tools v0.20.1
 	sigs.k8s.io/yaml v1.6.0
@@ -74,7 +74,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
-	github.com/go-jose/go-jose/v3 v3.0.4 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.5 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.22.5 // indirect

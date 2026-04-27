@@ -325,8 +325,8 @@ github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4/go.mod h1:tQ2
 github.com/go-ini/ini v1.25.4/go.mod h1:ByCAeIL28uOIIG0E3PJtZPDL8WnHpFKFOtgjp+3Ies8=
 github.com/go-ini/ini v1.67.0 h1:z6ZrTEZqSWOTyH2FlglNbNgARyHG8oLW9gMELqKr06A=
 github.com/go-ini/ini v1.67.0/go.mod h1:ByCAeIL28uOIIG0E3PJtZPDL8WnHpFKFOtgjp+3Ies8=
-github.com/go-jose/go-jose/v3 v3.0.4 h1:Wp5HA7bLQcKnf6YYao/4kpRpVMp/yf6+pJKV8WFSaNY=
-github.com/go-jose/go-jose/v3 v3.0.4/go.mod h1:5b+7YgP7ZICgJDBdfjZaIt+H/9L9T/YQrVfLAMboGkQ=
+github.com/go-jose/go-jose/v3 v3.0.5 h1:BLLJWbC4nMZOfuPVxoZIxeYsn6Nl2r1fITaJ78UQlVQ=
+github.com/go-jose/go-jose/v3 v3.0.5/go.mod h1:5b+7YgP7ZICgJDBdfjZaIt+H/9L9T/YQrVfLAMboGkQ=
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-kit/kit v0.9.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-kit/log v0.1.0/go.mod h1:zbhenjAZHb184qTLMA9ZjW7ThYL0H2mk7Q6pNt4vbaY=
@@ -1812,8 +1812,8 @@ k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2 h1:AZYQSJemyQB5eRxqcPky+/7EdBj0x
 k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2/go.mod h1:xDxuJ0whA3d0I4mf/C4ppKHxXynQ+fxnkmQH0vTHnuk=
 knative.dev/caching v0.0.0-20260422140616-453ad996bbe2 h1:HXtegm/lH8phaAGKTnluecHlc2pAPG/5zqeqXJFdW5c=
 knative.dev/caching v0.0.0-20260422140616-453ad996bbe2/go.mod h1:SeXUtQmuH+GKPo0WdP7mdktlzqHt69kwvMfyi5Ag+0M=
-knative.dev/eventing v0.48.1-0.20260424085315-0b7f22cc0488 h1:iPPPqErhJBY7Bp5XQH7hKyRqZFFduQwEkz6l+qiXraw=
-knative.dev/eventing v0.48.1-0.20260424085315-0b7f22cc0488/go.mod h1:xb5MjjaoSjcBY/fCYZ/39Ay36F2mGZFigMjBSsM9yT0=
+knative.dev/eventing v0.48.1-0.20260424165618-9ba4c6c223fe h1:MFBORG1dZpMFg+5qWtTQRi1qXXgt+y/Nx/3h7R3tRsE=
+knative.dev/eventing v0.48.1-0.20260424165618-9ba4c6c223fe/go.mod h1:5lsUu0xHPLQpfVW7kmYXB7uRCUOnGGPsE87rx3hrRsM=
 knative.dev/hack v0.0.0-20260421155212-aeb7b4a9bf96 h1:YrpWTCDRzoGz0Fe7AcLTsBY+D5vx0ijhuxEVl0z3Xyw=
 knative.dev/hack v0.0.0-20260421155212-aeb7b4a9bf96/go.mod h1:L5RzHgbvam0u8QFHfzCX6MKxu/a/gIGEdaRBqNiVbl0=
 knative.dev/networking v0.0.0-20260421015711-652da006c95d h1:8IA93AjVzaKFpKM8/U4h5gIJr4SFLsVMSiGYYzk0guY=
@@ -1822,8 +1822,8 @@ knative.dev/pkg v0.0.0-20260422015212-ec452872dcc1 h1:bO5X2bugzMqoVltm2n16mHpAdp
 knative.dev/pkg v0.0.0-20260422015212-ec452872dcc1/go.mod h1:EZeB2nBW4QcpZuCPB5a/UnoVIH2N+5z5fwNw1PUeqMg=
 knative.dev/reconciler-test v0.0.0-20260424102515-e1c3185a30af h1:DR4ZkCxbspf65OZ1a4t/Y1+qW3ITIUTkP5IyFAkiG7w=
 knative.dev/reconciler-test v0.0.0-20260424102515-e1c3185a30af/go.mod h1:96PDjAjfSmnUSvDi4obIlI3CI0v+hQOWlCxQnGogO8g=
-knative.dev/serving v0.48.1-0.20260423124519-7c944739e28a h1:HFhd+jvBK3TzbaVKbeZ3tyeDZYuEc0FVmKfCfY9juwQ=
-knative.dev/serving v0.48.1-0.20260423124519-7c944739e28a/go.mod h1:EtPhJ3d4b+QDepFEmbct6V5ermpdixDhVYCSx0VJzuk=
+knative.dev/serving v0.48.1-0.20260425200516-b85cf85d31db h1:KhbfpBfkKUzHeyRMneaIzMRyClfeJz9wG48Wx+sEynA=
+knative.dev/serving v0.48.1-0.20260425200516-b85cf85d31db/go.mod h1:EtPhJ3d4b+QDepFEmbct6V5ermpdixDhVYCSx0VJzuk=
 nhooyr.io/websocket v1.8.6/go.mod h1:B70DZP8IakI65RVQ51MsWP/8jndNma26DVA/nFSCgW0=
 pgregory.net/rapid v1.1.0 h1:CMa0sjHSru3puNx+J0MIAuiiEV4N0qj8/cMWGBBCsjw=
 pgregory.net/rapid v1.1.0/go.mod h1:PY5XlDGj0+V1FCq0o192FdRhpKHGTRIWBgqjDBTrq04=

@@ -38,10 +38,12 @@ source "$(dirname "$0")/e2e-common.sh"
 : "${MC_PROVIDER_TOKEN_MOUNT_PATH:=/etc/cluster-inventory/access}"
 : "${MC_PROVIDER_PLUGIN_MOUNT_PATH:=/etc/cluster-inventory/plugin}"
 : "${MC_PROVIDER_NAME:=e2e-static-token}"
+: "${SPOKE_GATEWAY_API_CRD_URL:=https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/experimental-install.yaml}"
 export SPOKE_CLUSTER_NAME SPOKE_KUBECONFIG SPOKE_HOST_KUBECONFIG
 export CLUSTER_INVENTORY_CRD_URL MC_PROVIDER_CONFIGMAP MC_PROVIDER_TOKEN_SECRET
 export MC_PROVIDER_MOUNT_PATH MC_PROVIDER_TOKEN_MOUNT_PATH
 export MC_PROVIDER_PLUGIN_MOUNT_PATH MC_PROVIDER_NAME
+export SPOKE_GATEWAY_API_CRD_URL
 
 function knative_setup() {
   create_namespace

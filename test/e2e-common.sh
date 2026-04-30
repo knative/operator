@@ -346,6 +346,20 @@ function create_spoke_cluster() {
   KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl -n kube-system rollout status deployment/coredns --timeout=120s || return 1
 }
 
+function install_spoke_gateway_api_crds() {
+  echo ">> Installing Gateway API CRDs on spoke"
+  KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl apply --server-side -f "${SPOKE_GATEWAY_API_CRD_URL}" || return 1
+
+  local crd
+  for crd in \
+    gatewayclasses.gateway.networking.k8s.io \
+    gateways.gateway.networking.k8s.io \
+    httproutes.gateway.networking.k8s.io \
+    referencegrants.gateway.networking.k8s.io; do
+    KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl wait --for=condition=Established --timeout=60s "crd/${crd}" || return 1
+  done
+}
+
 function delete_spoke_cluster() {
   if kind get clusters 2>/dev/null | grep -q "^${SPOKE_CLUSTER_NAME}$"; then
     kind delete cluster --name "${SPOKE_CLUSTER_NAME}" --kubeconfig "${SPOKE_HOST_KUBECONFIG}"
@@ -537,6 +551,7 @@ function setup_multicluster_e2e() {
   done
 
   create_spoke_cluster || return 1
+  install_spoke_gateway_api_crds || return 1
   install_cluster_inventory_crd || return 1
   install_access_provider_config || return 1
   apply_cluster_profile "default" || return 1

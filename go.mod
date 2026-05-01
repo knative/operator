@@ -12,7 +12,7 @@ require (
 	go.uber.org/zap v1.27.1
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.32.0
-	golang.org/x/oauth2 v0.32.0
+	golang.org/x/oauth2 v0.34.0
 	google.golang.org/api v0.198.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
 	istio.io/client-go v1.18.7
@@ -21,11 +21,11 @@ require (
 	k8s.io/client-go v0.34.3
 	k8s.io/code-generator v0.34.3
 	knative.dev/caching v0.0.0-20260120130310-f1fc03b7f5ee
-	knative.dev/eventing v0.48.0
-	knative.dev/hack v0.0.0-20260120115810-bf6758cba446
-	knative.dev/pkg v0.0.0-20260120122510-4a022ed9999a
-	knative.dev/reconciler-test v0.0.0-20260225102520-330ffb2184a7
-	knative.dev/serving v0.48.1
+	knative.dev/eventing v0.48.2
+	knative.dev/hack v0.0.0-20260420222011-c985ed3cefe8
+	knative.dev/pkg v0.0.0-20260319144603-18c5d580ae64
+	knative.dev/reconciler-test v0.0.0-20260424102515-75d476349613
+	knative.dev/serving v0.48.2
 	sigs.k8s.io/yaml v1.6.0
 )
 
@@ -151,7 +151,7 @@ require (
 	google.golang.org/genproto v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20251202230838-ff82c1b0f217 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
-	google.golang.org/grpc v1.77.0 // indirect
+	google.golang.org/grpc v1.79.3 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect

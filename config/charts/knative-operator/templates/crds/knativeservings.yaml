@@ -31,6 +31,15 @@ spec:
     plural: knativeservings
     singular: knativeserving
   scope: Namespaced
+  conversion:
+    strategy: Webhook
+    webhook:
+      conversionReviewVersions: ["v1beta1"]
+      clientConfig:
+        service:
+          name: operator-webhook
+          namespace: '{{ .Release.Namespace }}'
+          path: /resource-conversion
   versions:
   - additionalPrinterColumns:
     - jsonPath: .spec.clusterProfileRef.name
@@ -3867,13 +3876,3 @@ spec:
     storage: true
     subresources:
       status: {}
-  conversion:
-    strategy: Webhook
-    webhook:
-      conversionReviewVersions:
-      - v1beta1
-      clientConfig:
-        service:
-          name: operator-webhook
-          namespace: '{{ .Release.Namespace }}'
-          path: /resource-conversion

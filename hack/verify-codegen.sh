@@ -31,8 +31,9 @@ trap "cleanup" EXIT SIGINT
 cleanup
 
 # Save working tree state
-mkdir -p "${TMP_DIFFROOT}/pkg" "${TMP_DIFFROOT}/config"
+mkdir -p "${TMP_DIFFROOT}/pkg" "${TMP_DIFFROOT}/config/crd"
 cp -aR "${REPO_ROOT_DIR}/go.sum" "${REPO_ROOT_DIR}/pkg" "${REPO_ROOT_DIR}/vendor" "${TMP_DIFFROOT}"
+cp -aR "${REPO_ROOT_DIR}/config/crd/bases" "${TMP_DIFFROOT}/config/crd/"
 cp -aR "${REPO_ROOT_DIR}/config/charts" "${TMP_DIFFROOT}/config/"
 
 # TODO(mattmoor): We should be able to rm -rf pkg/client/ and vendor/
@@ -42,9 +43,12 @@ echo "Diffing ${REPO_ROOT_DIR} against freshly generated codegen"
 ret=0
 diff -Nupr --no-dereference "${REPO_ROOT_DIR}/pkg" "${TMP_DIFFROOT}/pkg" || ret=1
 diff -Nupr --no-dereference "${REPO_ROOT_DIR}/vendor" "${TMP_DIFFROOT}/vendor" || ret=1
+diff -Nupr --no-dereference "${REPO_ROOT_DIR}/config/crd/bases" "${TMP_DIFFROOT}/config/crd/bases" || ret=1
 diff -Nupr --no-dereference "${REPO_ROOT_DIR}/config/charts" "${TMP_DIFFROOT}/config/charts" || ret=1
 
 # Restore working tree state
+rm -fr "${REPO_ROOT_DIR}/config/crd/bases"
+cp -aR "${TMP_DIFFROOT}/config/crd/bases" "${REPO_ROOT_DIR}/config/crd/"
 rm -fr "${REPO_ROOT_DIR}/config/charts"
 cp -aR "${TMP_DIFFROOT}/config/charts" "${REPO_ROOT_DIR}/config/"
 rm -fr "${TMP_DIFFROOT}/config"

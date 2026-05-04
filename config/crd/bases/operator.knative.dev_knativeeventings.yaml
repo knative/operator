@@ -27,6 +27,15 @@ spec:
     plural: knativeeventings
     singular: knativeeventing
   scope: Namespaced
+  conversion:
+    strategy: Webhook
+    webhook:
+      conversionReviewVersions: ["v1beta1"]
+      clientConfig:
+        service:
+          name: operator-webhook
+          namespace: knative-operator
+          path: /resource-conversion
   versions:
   - additionalPrinterColumns:
     - jsonPath: .spec.clusterProfileRef.name

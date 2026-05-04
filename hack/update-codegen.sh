@@ -58,12 +58,20 @@ group "CRD Gen"
 # Install tools at the versions pinned in hack/tools.go (go.mod).
 GOFLAGS=-mod=mod go install sigs.k8s.io/controller-tools/cmd/controller-gen
 GOFLAGS=-mod=mod go install github.com/mikefarah/yq/v4
-export PATH="$(go env GOPATH)/bin:$PATH"
+go_bin="$(go env GOBIN)"
+if [[ -z "${go_bin}" ]]; then
+  go_bin="$(go env GOPATH)/bin"
+fi
+export PATH="${go_bin}:$PATH"
 
 GOFLAGS=-mod=mod controller-gen \
   crd:allowDangerousTypes=true,ignoreUnexportedFields=true,headerFile="${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.yaml.txt" \
   paths="${REPO_ROOT_DIR}/pkg/apis/..." \
   output:crd:dir="${REPO_ROOT_DIR}/config/crd/bases"
+
+group "Update CRD conversion webhooks"
+
+"${REPO_ROOT_DIR}/hack/update-crd-conversion.sh"
 
 group "Sync CRDs to Helm chart"
 

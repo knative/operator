@@ -15,8 +15,8 @@
 # limitations under the License.
 
 # Syncs CRD definitions from config/crd/bases/ to the Helm chart templates.
-# This script transforms controller-gen output into Helm-ready CRD templates
-# by adding Helm template variables for labels and conversion webhook configuration.
+# This script transforms generated CRD bases into Helm-ready CRD templates by
+# adding Helm template variables for labels and the conversion webhook namespace.
 #
 # Usage: hack/sync-helm-crds.sh
 
@@ -45,23 +45,16 @@ for crd_file in "${CRD_BASES_DIR}"/*.yaml; do
 
   echo "  Processing ${filename} -> crds/${short_name}"
 
+  if [[ "$(yq eval '.spec.conversion.webhook.clientConfig.service.namespace // ""' "${crd_file}")" != "knative-operator" ]]; then
+    echo "ERROR: ${filename} is missing the operator conversion webhook. Run ./hack/update-crd-conversion.sh first." >&2
+    exit 1
+  fi
+
   # -c keeps compact sequence indentation so "- name:" stays flush with its parent key.
   if ! yq eval -c '
     .metadata.labels."app.kubernetes.io/version" = "{{ .Chart.Version }}" |
     .metadata.labels."app.kubernetes.io/name" = "knative-operator" |
-    .spec.conversion = {
-      "strategy": "Webhook",
-      "webhook": {
-        "conversionReviewVersions": ["v1beta1"],
-        "clientConfig": {
-          "service": {
-            "name": "operator-webhook",
-            "namespace": "{{ .Release.Namespace }}",
-            "path": "/resource-conversion"
-          }
-        }
-      }
-    }
+    .spec.conversion.webhook.clientConfig.service.namespace = "{{ .Release.Namespace }}"
   ' "${crd_file}" > "${target}"; then
     echo "ERROR: yq failed to process ${filename}"
     rm -f "${target}"

@@ -10,7 +10,7 @@ require (
 	github.com/manifestival/client-go-client v0.6.0
 	github.com/manifestival/manifestival v0.7.2
 	github.com/mikefarah/yq/v4 v4.52.5
-	go.uber.org/zap v1.27.1
+	go.uber.org/zap v1.28.0
 	gocloud.dev v0.22.0
 	golang.org/x/mod v0.35.0
 	golang.org/x/oauth2 v0.36.0
@@ -22,12 +22,12 @@ require (
 	k8s.io/apimachinery v0.35.4
 	k8s.io/client-go v0.35.4
 	k8s.io/code-generator v0.35.4
-	knative.dev/caching v0.0.0-20260422140616-453ad996bbe2
-	knative.dev/eventing v0.49.0
-	knative.dev/hack v0.0.0-20260421155212-aeb7b4a9bf96
-	knative.dev/pkg v0.0.0-20260422015212-ec452872dcc1
-	knative.dev/reconciler-test v0.0.0-20260424102515-e1c3185a30af
-	knative.dev/serving v0.49.0
+	knative.dev/caching v0.0.0-20260506015122-1baccd201093
+	knative.dev/eventing v0.49.1-0.20260506130425-5a46719f32de
+	knative.dev/hack v0.0.0-20260428014158-b2a37f1b6e7b
+	knative.dev/pkg v0.0.0-20260505204821-021ad709ec68
+	knative.dev/reconciler-test v0.0.0-20260506021927-a807ab8bf3d4
+	knative.dev/serving v0.49.1-0.20260506125524-0d8c1360a42a
 	sigs.k8s.io/cluster-inventory-api v0.1.0
 	sigs.k8s.io/controller-tools v0.20.1
 	sigs.k8s.io/yaml v1.6.0
@@ -199,7 +199,7 @@ require (
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260319004828-5883c5ee87b9 // indirect
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2 // indirect
-	knative.dev/networking v0.0.0-20260422140718-e9578ef11562 // indirect
+	knative.dev/networking v0.0.0-20260428014950-5876dec269ce // indirect
 	sigs.k8s.io/controller-runtime v0.23.3 // indirect
 	sigs.k8s.io/gateway-api v1.1.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect

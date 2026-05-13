@@ -27,7 +27,7 @@ require (
 	knative.dev/hack v0.0.0-20260428014158-b2a37f1b6e7b
 	knative.dev/pkg v0.0.0-20260507212125-df317a52d112
 	knative.dev/reconciler-test v0.0.0-20260506021927-a807ab8bf3d4
-	knative.dev/serving v0.49.1-0.20260508141527-06f2ba70f0cc
+	knative.dev/serving v0.49.1-0.20260512221929-dbaab46874d2
 	sigs.k8s.io/cluster-inventory-api v0.1.0
 	sigs.k8s.io/controller-tools v0.20.1
 	sigs.k8s.io/yaml v1.6.0

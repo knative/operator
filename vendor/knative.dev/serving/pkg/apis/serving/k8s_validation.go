@@ -138,6 +138,10 @@ func validateVolume(ctx context.Context, volume corev1.Volume) *apis.FieldError 
 		errs = errs.Also(&apis.FieldError{Message: fmt.Sprintf("CSI volume support is disabled, "+
 			"but found CSI volume %s", volume.Name)})
 	}
+	if volume.Ephemeral != nil && features.PodSpecVolumesEphemeral != config.Enabled {
+		errs = errs.Also(&apis.FieldError{Message: fmt.Sprintf("Ephemeral volume support is disabled, "+
+			"but found Ephemeral volume %s", volume.Name)})
+	}
 	errs = errs.Also(apis.CheckDisallowedFields(volume, *VolumeMask(ctx, &volume)))
 	if volume.Name == "" {
 		errs = apis.ErrMissingField("name")
@@ -182,6 +186,10 @@ func validateVolume(ctx context.Context, volume corev1.Volume) *apis.FieldError 
 		specified = append(specified, "csi")
 	}
 
+	if vs.Ephemeral != nil {
+		specified = append(specified, "ephemeral")
+	}
+
 	if vs.Image != nil {
 		specified = append(specified, "image")
 		errs = errs.Also(validateImageVolumeSource(vs.Image).ViaField("image"))
@@ -201,6 +209,9 @@ func validateVolume(ctx context.Context, volume corev1.Volume) *apis.FieldError 
 		}
 		if cfg.Features.PodSpecVolumesCSI == config.Enabled {
 			fieldPaths = append(fieldPaths, "csi")
+		}
+		if cfg.Features.PodSpecVolumesEphemeral == config.Enabled {
+			fieldPaths = append(fieldPaths, "ephemeral")
 		}
 		if cfg.Features.PodSpecVolumesImage == config.Enabled {
 			fieldPaths = append(fieldPaths, "image")
@@ -545,11 +556,17 @@ func validateSidecarContainer(ctx context.Context, container corev1.Container, v
 			errs = errs.Also(apis.CheckDisallowedFields(*container.ReadinessProbe,
 				*ProbeMask(&corev1.Probe{})).ViaField("readinessProbe"))
 		}
+		if container.StartupProbe != nil {
+			errs = errs.Also(apis.CheckDisallowedFields(*container.StartupProbe,
+				*ProbeMask(&corev1.Probe{})).ViaField("startupProbe"))
+		}
 	} else if cfg.Features.MultiContainerProbing == config.Enabled {
 		// Liveness Probes
 		errs = errs.Also(validateProbe(container.LivenessProbe, nil, false).ViaField("livenessProbe"))
 		// Readiness Probes
 		errs = errs.Also(validateReadinessProbe(container.ReadinessProbe, nil, false).ViaField("readinessProbe"))
+		// Startup Probes
+		errs = errs.Also(validateProbe(container.StartupProbe, nil, false).ViaField("startupProbe"))
 	}
 
 	return errs.Also(validate(ctx, container, volumes))
@@ -591,6 +608,8 @@ func ValidateUserContainer(ctx context.Context, container corev1.Container, volu
 	errs = errs.Also(validateProbe(container.LivenessProbe, &port, true).ViaField("livenessProbe"))
 	// Readiness Probes
 	errs = errs.Also(validateReadinessProbe(container.ReadinessProbe, &port, true).ViaField("readinessProbe"))
+	// Startup Probes
+	errs = errs.Also(validateProbe(container.StartupProbe, &port, true).ViaField("startupProbe"))
 	return errs.Also(validate(ctx, container, volumes))
 }
 
@@ -717,7 +736,7 @@ func validateVolumeMounts(ctx context.Context, mounts []corev1.VolumeMount, volu
 		}
 		seenMountPath.Insert(path.Clean(vm.MountPath))
 
-		shouldCheckReadOnlyVolume := volumes[vm.Name].EmptyDir == nil && volumes[vm.Name].PersistentVolumeClaim == nil
+		shouldCheckReadOnlyVolume := volumes[vm.Name].EmptyDir == nil && volumes[vm.Name].PersistentVolumeClaim == nil && volumes[vm.Name].Ephemeral == nil
 		if shouldCheckReadOnlyVolume && !vm.ReadOnly {
 			errs = errs.Also((&apis.FieldError{
 				Message: "volume mount should be readOnly for this type of volume",

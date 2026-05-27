@@ -22,12 +22,12 @@ require (
 	k8s.io/apimachinery v0.35.5
 	k8s.io/client-go v0.35.5
 	k8s.io/code-generator v0.35.5
-	knative.dev/caching v0.0.0-20260506015122-1baccd201093
-	knative.dev/eventing v0.49.1-0.20260518163531-504f7e00e182
+	knative.dev/caching v0.0.0-20260521015626-6f9fb4d2ae21
+	knative.dev/eventing v0.49.1-0.20260521032925-b4a23c85e4bb
 	knative.dev/hack v0.0.0-20260428014158-b2a37f1b6e7b
-	knative.dev/pkg v0.0.0-20260520153225-91e8142be85c
-	knative.dev/reconciler-test v0.0.0-20260506021927-a807ab8bf3d4
-	knative.dev/serving v0.49.1-0.20260515125932-a4e653bb53da
+	knative.dev/pkg v0.0.0-20260526162440-71f6ad65d251
+	knative.dev/reconciler-test v0.0.0-20260521141032-6a18bd4ee659
+	knative.dev/serving v0.49.1-0.20260525133029-a4ab6ebc4761
 	sigs.k8s.io/cluster-inventory-api v0.1.0
 	sigs.k8s.io/controller-tools v0.20.1
 	sigs.k8s.io/yaml v1.6.0
@@ -175,8 +175,8 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.3 // indirect
 	golang.org/x/crypto v0.51.0 // indirect
-	golang.org/x/net v0.54.0 // indirect
-	golang.org/x/sys v0.44.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/term v0.43.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
@@ -199,7 +199,7 @@ require (
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260319004828-5883c5ee87b9 // indirect
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2 // indirect
-	knative.dev/networking v0.0.0-20260428014950-5876dec269ce // indirect
+	knative.dev/networking v0.0.0-20260506015723-9b427f7c8091 // indirect
 	sigs.k8s.io/controller-runtime v0.23.3 // indirect
 	sigs.k8s.io/gateway-api v1.1.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect

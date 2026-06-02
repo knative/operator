@@ -464,7 +464,7 @@ spec:
       containers:
         - name: controller
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing-ceph/cmd/controller@sha256:2e45fa321d1c15c741a16a6075e9fc0c8c3fdcc55f3f791de0ee0bcbc810af01
+          image: gcr.io/knative-releases/knative.dev/eventing-ceph/cmd/controller@sha256:e87fef399640adb4ed5ff846201c1eecd51c524e94971e7a60bad997b8a28abb
           resources:
             requests:
               cpu: 100m
@@ -481,7 +481,7 @@ spec:
             - name: METRICS_DOMAIN
               value: knative.dev/sources
             - name: CEPH_SOURCE_RA_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing-ceph/cmd/receive_adapter@sha256:cbf05b9a9f84b4b2a7dd2a0220cf349cf3968257b92badbf3810d775c8e79efb
+              value: gcr.io/knative-releases/knative.dev/eventing-ceph/cmd/receive_adapter@sha256:32d04b7648c205c340acc5bf636247a74c8b0bad723cf27501c873cd5cd39791
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -620,7 +620,7 @@ spec:
       containers:
         - name: cephsource-webhook
           terminationMessagePolicy: FallbackToLogsOnError
-          image: gcr.io/knative-releases/knative.dev/eventing-ceph/cmd/webhook@sha256:4925067cb142e23e9c160c82b589a04dd3cd12719b5f4d56b95234232c50cc31
+          image: gcr.io/knative-releases/knative.dev/eventing-ceph/cmd/webhook@sha256:49b2e405e61ba6f728eaf37568ad133085f869b85862220d469824694214863c
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:

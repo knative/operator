@@ -74,7 +74,9 @@ knative_operator:
 ```
 
 The chart creates a `ConfigMap` with the provider config and mounts each
-plugin as a Kubernetes image volume inside the operator pod.
+plugin as a Kubernetes image volume inside the operator pod. Each
+`plugins[].mountPath` must be absolute, and each `execConfig.command` must
+point under a plugin mount path, not at the mount directory itself.
 
 ## Namespace configuration
 

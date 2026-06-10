@@ -17,7 +17,8 @@ knative_operator:
     #         command: /access-plugins/kubeconfig-secretreader/bin/kubeconfig-secretreader-plugin
     #         interactiveMode: Never
     #         provideClusterInfo: true
-    # plugins[] uses the Kubernetes "image" volume type
+    # plugins[] uses the Kubernetes "image" volume type. Each mountPath must be
+    # absolute, and each execConfig.command must point under one of these paths.
     plugins: []
     # plugins:
     #   - name: secretreader

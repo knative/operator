@@ -52,15 +52,25 @@ knative_operator:
     enabled: true
     accessProvidersConfig:
       providers:
-        - name: token-secretreader
+        - name: secretreader
           execConfig:
             apiVersion: client.authentication.k8s.io/v1
-            command: /access-plugins/token-secretreader/kubeconfig-secretreader-plugin
+            command: /access-plugins/secretreader/bin/secretreader-plugin
+            interactiveMode: Never
+            provideClusterInfo: true
+        - name: kubeconfig-secretreader
+          execConfig:
+            apiVersion: client.authentication.k8s.io/v1
+            command: /access-plugins/kubeconfig-secretreader/bin/kubeconfig-secretreader-plugin
+            interactiveMode: Never
             provideClusterInfo: true
     plugins:
-      - name: token-secretreader
-        image: ghcr.io/example/plugin:v1.0.0
-        mountPath: /access-plugins/token-secretreader
+      - name: secretreader
+        image: registry.k8s.io/cluster-inventory-api/secretreader:v0.1.3
+        mountPath: /access-plugins/secretreader
+      - name: kubeconfig-secretreader
+        image: registry.k8s.io/cluster-inventory-api/kubeconfig-secretreader:v0.1.3
+        mountPath: /access-plugins/kubeconfig-secretreader
 ```
 
 The chart creates a `ConfigMap` with the provider config and mounts each

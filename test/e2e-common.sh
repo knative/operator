@@ -42,6 +42,12 @@ export KO_FLAGS="${KO_FLAGS:-}"
 export INGRESS_CLASS=${INGRESS_CLASS:-istio.ingress.networking.knative.dev}
 export TIMEOUT_CI=30m
 
+: "${MC_PROVIDER_CONFIGMAP:=clusterprofile-provider-file}"
+: "${MC_PROVIDER_MOUNT_PATH:=/etc/cluster-inventory}"
+: "${MC_PROVIDER_PLUGIN_MOUNT_PATH:=/etc/cluster-inventory/plugin}"
+: "${MC_PROVIDER_PLUGIN_IMAGE:=registry.k8s.io/cluster-inventory-api/secretreader:v0.1.3}"
+: "${MC_PROVIDER_NAME:=secretreader}"
+
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_SERVING_REPO_BRANCH.
 GENERATE_SERVING_YAML=0
 
@@ -464,8 +470,9 @@ function apply_cluster_profile() {
   SPOKE_INTERNAL_ENDPOINT="${spoke_endpoint}" \
   SPOKE_CA_DATA_B64="${spoke_ca_b64}" \
   MC_PROVIDER_NAME="${MC_PROVIDER_NAME}" \
+  SPOKE_CLUSTER_NAME="${SPOKE_CLUSTER_NAME}" \
   TRANSITION="$(date -u +%FT%TZ)" \
-    envsubst '${SPOKE_INTERNAL_ENDPOINT} ${SPOKE_CA_DATA_B64} ${MC_PROVIDER_NAME} ${TRANSITION}' \
+    envsubst '${SPOKE_INTERNAL_ENDPOINT} ${SPOKE_CA_DATA_B64} ${MC_PROVIDER_NAME} ${SPOKE_CLUSTER_NAME} ${TRANSITION}' \
       < test/config/multicluster/clusterprofile-status.yaml.tmpl \
       > "${status_file}" || return 1
 
@@ -477,15 +484,6 @@ function apply_cluster_profile() {
 }
 
 function install_access_provider_config() {
-  echo ">> Building token-exec-plugin image via ko"
-  local plugin_image
-  plugin_image="$(ko build ./test/cmd/token-exec-plugin)" || return 1
-  if [[ -z "${plugin_image}" ]]; then
-    echo "ERROR: ko build did not emit an image reference for token-exec-plugin" >&2
-    return 1
-  fi
-  echo ">> token-exec-plugin image: ${plugin_image}"
-
   echo ">> Installing access provider ConfigMap/Secret and patching operator deployment"
   local tmpdir
   tmpdir="$(mktemp -d)" || return 1
@@ -493,7 +491,7 @@ function install_access_provider_config() {
   local token_file="${tmpdir}/token"
   _spoke_bootstrap_token "${token_file}" || return 1
 
-  local plugin_command="${MC_PROVIDER_PLUGIN_MOUNT_PATH}/ko-app/token-exec-plugin"
+  local plugin_command="${MC_PROVIDER_PLUGIN_MOUNT_PATH}/bin/secretreader-plugin"
   cat > "${tmpdir}/provider-config.json" <<EOF
 {
   "providers": [
@@ -502,7 +500,7 @@ function install_access_provider_config() {
       "execConfig": {
         "apiVersion": "client.authentication.k8s.io/v1",
         "command": "${plugin_command}",
-        "args": ["${MC_PROVIDER_TOKEN_MOUNT_PATH}/token"],
+        "provideClusterInfo": true,
         "interactiveMode": "Never"
       }
     }
@@ -514,11 +512,10 @@ EOF
     --from-file=config.json="${tmpdir}/provider-config.json" \
     --dry-run=client -o yaml | kubectl apply -f - || return 1
 
-  kubectl -n "${TEST_OPERATOR_NAMESPACE}" create secret generic "${MC_PROVIDER_TOKEN_SECRET}" \
+  kubectl -n "${TEST_OPERATOR_NAMESPACE}" create secret generic "${SPOKE_CLUSTER_NAME}" \
     --from-file=token="${token_file}" \
     --dry-run=client -o yaml | kubectl apply -f - || return 1
 
-  # 0444
   kubectl -n "${TEST_OPERATOR_NAMESPACE}" patch deployment knative-operator \
     --type=json \
     -p "$(cat <<EOF
@@ -526,12 +523,10 @@ EOF
   {"op": "add", "path": "/spec/template/spec/containers/0/args", "value": ["--clusterprofile-provider-file=${MC_PROVIDER_MOUNT_PATH}/config.json"]},
   {"op": "add", "path": "/spec/template/spec/volumes", "value": [
     {"name": "access-config", "configMap": {"name": "${MC_PROVIDER_CONFIGMAP}"}},
-    {"name": "provider-token", "secret": {"secretName": "${MC_PROVIDER_TOKEN_SECRET}", "defaultMode": 292}},
-    {"name": "access-plugin", "image": {"reference": "${plugin_image}", "pullPolicy": "IfNotPresent"}}
+    {"name": "access-plugin", "image": {"reference": "${MC_PROVIDER_PLUGIN_IMAGE}", "pullPolicy": "IfNotPresent"}}
   ]},
   {"op": "add", "path": "/spec/template/spec/containers/0/volumeMounts", "value": [
     {"name": "access-config", "mountPath": "${MC_PROVIDER_MOUNT_PATH}", "readOnly": true},
-    {"name": "provider-token", "mountPath": "${MC_PROVIDER_TOKEN_MOUNT_PATH}", "readOnly": true},
     {"name": "access-plugin", "mountPath": "${MC_PROVIDER_PLUGIN_MOUNT_PATH}", "readOnly": true}
   ]}
 ]

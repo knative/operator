@@ -6,6 +6,10 @@ status:
     cluster:
       server: "${SPOKE_INTERNAL_ENDPOINT}"
       certificate-authority-data: "${SPOKE_CA_DATA_B64}"
+      extensions:
+      - name: client.authentication.k8s.io/exec
+        extension:
+          clusterName: "${SPOKE_CLUSTER_NAME}"
   conditions:
   - type: ControlPlaneHealthy
     status: "True"

@@ -40,7 +40,7 @@ KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl get nodes
 ## 2. Install the ClusterProfile CRD on the hub
 
 ```bash
-: "${CLUSTER_INVENTORY_CRD_URL:=https://raw.githubusercontent.com/kubernetes-sigs/cluster-inventory-api/v0.1.0/config/crd/bases/multicluster.x-k8s.io_clusterprofiles.yaml}"
+: "${CLUSTER_INVENTORY_CRD_URL:=https://raw.githubusercontent.com/kubernetes-sigs/cluster-inventory-api/v0.1.3/config/crd/bases/multicluster.x-k8s.io_clusterprofiles.yaml}"
 kubectl apply -f "${CLUSTER_INVENTORY_CRD_URL}"
 kubectl wait --for=condition=Established --timeout=60s \
   crd/clusterprofiles.multicluster.x-k8s.io
@@ -54,12 +54,13 @@ Apply the operator from source:
 ko apply -Rf config/
 ```
 
-Generate a spoke bootstrap token and mount the access provider plumbing. The
-helper script does this end to end:
+Generate a spoke bootstrap token, store it as `knative-operator/${SPOKE_CLUSTER_NAME}`,
+and mount the official `secretreader` image as the access provider. The helper
+script does this end to end:
 
 ```bash
 source test/e2e-common.sh
-install_access_provider_config   # builds and installs the token-exec-plugin
+install_access_provider_config   # installs the secretreader access provider
 apply_cluster_profile default    # creates the ClusterProfile on the hub
 ```
 
@@ -70,11 +71,11 @@ A minimal provider config (written by the helper to
 {
   "providers": [
     {
-      "name": "e2e-static-token",
+      "name": "secretreader",
       "execConfig": {
         "apiVersion": "client.authentication.k8s.io/v1",
-        "command": "/etc/cluster-inventory/plugin/ko-app/token-exec-plugin",
-        "args": ["/etc/cluster-inventory/access/token"],
+        "command": "/etc/cluster-inventory/plugin/bin/secretreader-plugin",
+        "provideClusterInfo": true,
         "interactiveMode": "Never"
       }
     }
@@ -205,8 +206,8 @@ which reuses the same helpers this guide calls manually:
   `AccessProviderFailed`, exec into the operator and run the plugin manually:
   ```bash
   kubectl -n knative-operator exec deploy/knative-operator -- \
-    /etc/cluster-inventory/plugin/ko-app/token-exec-plugin \
-    /etc/cluster-inventory/access/token
+    env KUBERNETES_EXEC_INFO="{\"apiVersion\":\"client.authentication.k8s.io/v1\",\"kind\":\"ExecCredential\",\"spec\":{\"cluster\":{\"server\":\"https://debug.invalid\",\"config\":{\"clusterName\":\"${SPOKE_CLUSTER_NAME}\"}}}}" \
+    /etc/cluster-inventory/plugin/bin/secretreader-plugin
   ```
 
 ## 8. Cleanup

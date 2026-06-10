@@ -31,18 +31,12 @@ source "$(dirname "$0")/e2e-common.sh"
 : "${SPOKE_CLUSTER_NAME:=spoke}"
 : "${SPOKE_KUBECONFIG:=/tmp/spoke.kubeconfig}"
 : "${SPOKE_HOST_KUBECONFIG:=/tmp/spoke-host.kubeconfig}"
-: "${CLUSTER_INVENTORY_CRD_URL:=https://raw.githubusercontent.com/kubernetes-sigs/cluster-inventory-api/v0.1.0/config/crd/bases/multicluster.x-k8s.io_clusterprofiles.yaml}"
-: "${MC_PROVIDER_CONFIGMAP:=clusterprofile-provider-file}"
-: "${MC_PROVIDER_TOKEN_SECRET:=clusterprofile-provider-token}"
-: "${MC_PROVIDER_MOUNT_PATH:=/etc/cluster-inventory}"
-: "${MC_PROVIDER_TOKEN_MOUNT_PATH:=/etc/cluster-inventory/access}"
-: "${MC_PROVIDER_PLUGIN_MOUNT_PATH:=/etc/cluster-inventory/plugin}"
-: "${MC_PROVIDER_NAME:=e2e-static-token}"
+: "${CLUSTER_INVENTORY_CRD_URL:=https://raw.githubusercontent.com/kubernetes-sigs/cluster-inventory-api/v0.1.3/config/crd/bases/multicluster.x-k8s.io_clusterprofiles.yaml}"
 : "${SPOKE_GATEWAY_API_CRD_URL:=https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/experimental-install.yaml}"
 export SPOKE_CLUSTER_NAME SPOKE_KUBECONFIG SPOKE_HOST_KUBECONFIG
-export CLUSTER_INVENTORY_CRD_URL MC_PROVIDER_CONFIGMAP MC_PROVIDER_TOKEN_SECRET
-export MC_PROVIDER_MOUNT_PATH MC_PROVIDER_TOKEN_MOUNT_PATH
-export MC_PROVIDER_PLUGIN_MOUNT_PATH MC_PROVIDER_NAME
+export CLUSTER_INVENTORY_CRD_URL MC_PROVIDER_CONFIGMAP
+export MC_PROVIDER_MOUNT_PATH MC_PROVIDER_PLUGIN_MOUNT_PATH
+export MC_PROVIDER_PLUGIN_IMAGE MC_PROVIDER_NAME
 export SPOKE_GATEWAY_API_CRD_URL
 
 function knative_setup() {

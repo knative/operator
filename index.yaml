@@ -3,6 +3,24 @@ entries:
   knative-operator:
   - name: "knative-operator"
     apiVersion: v2
+    version: "v1.22.2"
+    appVersion: "1.22.2"
+    description: "Helm chart for deploying Knative Operator"
+    created: "2026-06-02T10:00:49Z"
+    urls:
+    - "https://github.com/knative/operator/releases/download/knative-v1.22.2/knative-operator-v1.22.2.tgz"
+    digest: "2171aa2da8f1ebea43b3ac8a2f1cd9adadbee6aa0ea87bd80caf2e03a29f0f3f"
+  - name: "knative-operator"
+    apiVersion: v2
+    version: "v1.21.3"
+    appVersion: "1.21.3"
+    description: "Helm chart for deploying Knative Operator"
+    created: "2026-06-02T09:51:19Z"
+    urls:
+    - "https://github.com/knative/operator/releases/download/knative-v1.21.3/knative-operator-v1.21.3.tgz"
+    digest: "cc721fd1d458af0b0acff2c3e70aaea89e2b3d81872c1bdebaad3ebd13cb18ed"
+  - name: "knative-operator"
+    apiVersion: v2
     version: "v1.22.1"
     appVersion: "1.22.1"
     description: "Helm chart for deploying Knative Operator"

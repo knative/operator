@@ -40,7 +40,7 @@ KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl get nodes
 ## 2. Install the ClusterProfile CRD on the hub
 
 ```bash
-: "${CLUSTER_INVENTORY_CRD_URL:=https://raw.githubusercontent.com/kubernetes-sigs/cluster-inventory-api/v0.1.0/config/crd/bases/multicluster.x-k8s.io_clusterprofiles.yaml}"
+: "${CLUSTER_INVENTORY_CRD_URL:=https://raw.githubusercontent.com/kubernetes-sigs/cluster-inventory-api/v0.1.3/config/crd/bases/multicluster.x-k8s.io_clusterprofiles.yaml}"
 kubectl apply -f "${CLUSTER_INVENTORY_CRD_URL}"
 kubectl wait --for=condition=Established --timeout=60s \
   crd/clusterprofiles.multicluster.x-k8s.io

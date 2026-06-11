@@ -142,7 +142,6 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	instance := comp.(*v1beta1.KnativeServing)
 	extra := []mf.Transformer{
 		ksc.CustomCertsTransform(instance, logger),
-		ksc.AggregationRuleTransform(manifest.Client),
 		// Ensure all resources have the selector applied so that the controller re-queues applied resources when they change.
 		common.InjectLabel(SelectorKey, SelectorValue),
 	}

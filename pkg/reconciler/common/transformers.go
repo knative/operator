@@ -58,6 +58,7 @@ func Transform(ctx context.Context, manifest *mf.Manifest, instance base.KCompon
 	logger.Debug("Transforming manifest")
 
 	transformers := transformers(ctx, instance)
+	transformers = append(transformers, AggregationRuleTransform(manifest.Client))
 	transformers = append(transformers, extra...)
 
 	m, err := manifest.Transform(transformers...)

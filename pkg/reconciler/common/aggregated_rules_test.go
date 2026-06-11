@@ -74,6 +74,41 @@ func TestAggregationRuleTransform(t *testing.T) {
           serving.knative.dev/controller: "true"
     rules: []
   overwriteExpected: false
+- name: "existing eventing aggregated role has rules"
+  input:
+    kind: ClusterRole
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: channelable-manipulator
+    aggregationRule:
+      clusterRoleSelectors:
+      - matchLabels:
+          duck.knative.dev/channelable: "true"
+    rules: []
+  existing:
+    kind: ClusterRole
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: channelable-manipulator
+    aggregationRule:
+      clusterRoleSelectors:
+      - matchLabels:
+          duck.knative.dev/channelable: "true"
+    rules:
+    - apiGroups:
+      - messaging.knative.dev
+      resources:
+      - channels
+      - channels/status
+      verbs:
+      - create
+      - get
+      - list
+      - watch
+      - update
+      - patch
+      - delete
+  overwriteExpected: true
 `)
 	err := yaml.Unmarshal(testData, &tests)
 	if err != nil {

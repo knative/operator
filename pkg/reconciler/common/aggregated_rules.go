@@ -26,12 +26,13 @@ type unstructuredGetter interface {
 	Get(obj *unstructured.Unstructured) (*unstructured.Unstructured, error)
 }
 
-// AggregationRuleTransform
+// AggregationRuleTransform preserves the rules of aggregated ClusterRoles.
+// The Kubernetes aggregation controller manages the rules field of aggregated
+// ClusterRoles. Without this transform, manifestival overwrites the aggregated
+// rules with the empty rules from the manifest, causing a race condition.
 func AggregationRuleTransform(client unstructuredGetter) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "ClusterRole" && u.Object["aggregationRule"] != nil {
-			// we rely on the controller manager to fill in rules so
-			// ours will always trigger an unnecessary update
 			current, err := client.Get(u)
 			if errors.IsNotFound(err) {
 				return nil

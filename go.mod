@@ -22,12 +22,12 @@ require (
 	k8s.io/apimachinery v0.35.6
 	k8s.io/client-go v0.35.6
 	k8s.io/code-generator v0.35.6
-	knative.dev/caching v0.0.0-20260615151736-e6e6a89d939a
-	knative.dev/eventing v0.49.1-0.20260615165644-9a2ae8b2b023
+	knative.dev/caching v0.0.0-20260616020845-bc4d8c10d214
+	knative.dev/eventing v0.49.1-0.20260616033845-2996bf922daa
 	knative.dev/hack v0.0.0-20260428014158-b2a37f1b6e7b
 	knative.dev/pkg v0.0.0-20260615201544-6300c57a9e78
-	knative.dev/reconciler-test v0.0.0-20260602150814-125bf8d48e1c
-	knative.dev/serving v0.49.1-0.20260615163344-394d3f959991
+	knative.dev/reconciler-test v0.0.0-20260616023650-a4d79b33cda4
+	knative.dev/serving v0.49.1-0.20260616135451-b555de57c5d4
 	sigs.k8s.io/cluster-inventory-api v0.1.3
 	sigs.k8s.io/controller-tools v0.20.1
 	sigs.k8s.io/yaml v1.6.0

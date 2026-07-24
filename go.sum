@@ -1692,8 +1692,8 @@ google.golang.org/grpc v1.46.0/go.mod h1:vN9eftEi1UMyUsIF80+uQXhHjbXYbm0uXoFCACu
 google.golang.org/grpc v1.46.2/go.mod h1:vN9eftEi1UMyUsIF80+uQXhHjbXYbm0uXoFCACuMGWk=
 google.golang.org/grpc v1.49.0/go.mod h1:ZgQEeidpAuNRZ8iRrlBKXZQP1ghovWIVhdJRyCDK+GI=
 google.golang.org/grpc v1.51.0/go.mod h1:wgNDFcnuBGmxLKI/qn4T+m5BtEBYXJPvibbUPsAIPww=
-google.golang.org/grpc v1.81.1 h1:VnnIIZ88UzOOKLukQi+ImGz8O1Wdp8nAGGnvOfEIWQQ=
-google.golang.org/grpc v1.81.1/go.mod h1:xGH9GfzOyMTGIOXBJmXt+BX/V0kcdQbdcuwQ/zNw42I=
+google.golang.org/grpc v1.82.1 h1:NnAxzGRA0677vCa4BUkOAnO5+FfQqVl9iUXeD0IqcGE=
+google.golang.org/grpc v1.82.1/go.mod h1:yzTZ1TB1Z3SG+LIYaI+WiE8D5+PZ3ArnrSp8zF3+/ZA=
 google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0/go.mod h1:6Kw0yEErY5E/yWrBtf03jp27GLLJujG4z/JK95pnjjw=
 google.golang.org/protobuf v0.0.0-20200109180630-ec00e32a8dfd/go.mod h1:DFci5gLYBciE7Vtevhsrf46CRTquxDuWsQurQQe4oz8=
 google.golang.org/protobuf v0.0.0-20200221191635-4d8936d0db64/go.mod h1:kwYJMbMJ01Woi6D6+Kah6886xMZcty6N08ah7+eCXa0=
@@ -1814,8 +1814,8 @@ k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2 h1:AZYQSJemyQB5eRxqcPky+/7EdBj0x
 k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2/go.mod h1:xDxuJ0whA3d0I4mf/C4ppKHxXynQ+fxnkmQH0vTHnuk=
 knative.dev/caching v0.0.0-20260616020845-bc4d8c10d214 h1:zeufKrVrpp4hvYo+1/j8yxqCCQqryokQx6PPXT6jiZI=
 knative.dev/caching v0.0.0-20260616020845-bc4d8c10d214/go.mod h1:GUfFhhdS/3Ob7E6uT90ghZ2T90N7IUPdqne6zI9Bu7E=
-knative.dev/eventing v0.49.1-0.20260617191249-8cf4c4b67303 h1:kG/rr63mOgmoEDzdYrDMIMIXfKPO0ycheUVQk94JtGA=
-knative.dev/eventing v0.49.1-0.20260617191249-8cf4c4b67303/go.mod h1:qAdl4gctMP0BvhxtkM7QCalOHcwY62MjB4s9XYSwzAw=
+knative.dev/eventing v0.49.1-0.20260724130631-defbb5343203 h1:S8Vjm5cY4zzygqJ6jcXxn+Zt9lruKFXjUfTYRQVFAUw=
+knative.dev/eventing v0.49.1-0.20260724130631-defbb5343203/go.mod h1:6+xOOrUY2wqD8hyv1gzgONxYlLGquyGvUyu9ONmLkoI=
 knative.dev/hack v0.0.0-20260428014158-b2a37f1b6e7b h1:MvbV2F2BdI8qKrYYUhDwbUZbX0BAYRSIpXM2TOtTvs0=
 knative.dev/hack v0.0.0-20260428014158-b2a37f1b6e7b/go.mod h1:L5RzHgbvam0u8QFHfzCX6MKxu/a/gIGEdaRBqNiVbl0=
 knative.dev/networking v0.0.0-20260616021346-d4e13b76b133 h1:9gaxONVJQn7tfIfL0PgIvT8o6H5KVE2Y2lbA9jX+wsw=

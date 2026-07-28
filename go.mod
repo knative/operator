@@ -12,7 +12,7 @@ require (
 	github.com/mikefarah/yq/v4 v4.52.5
 	go.uber.org/zap v1.28.0
 	gocloud.dev v0.22.0
-	golang.org/x/mod v0.37.0
+	golang.org/x/mod v0.38.0
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/sync v0.22.0
 	google.golang.org/api v0.198.0
@@ -22,12 +22,12 @@ require (
 	k8s.io/apimachinery v0.35.7
 	k8s.io/client-go v0.35.7
 	k8s.io/code-generator v0.35.7
-	knative.dev/caching v0.0.0-20260616020845-bc4d8c10d214
-	knative.dev/eventing v0.49.1-0.20260724130631-defbb5343203
+	knative.dev/caching v0.0.0-20260727161800-0edbf88bc267
+	knative.dev/eventing v0.49.1-0.20260727153458-6cdaf81c52e4
 	knative.dev/hack v0.0.0-20260428014158-b2a37f1b6e7b
-	knative.dev/pkg v0.0.0-20260727095757-76601dd085d0
-	knative.dev/reconciler-test v0.0.0-20260616023650-a4d79b33cda4
-	knative.dev/serving v0.49.1-0.20260724135632-cef8d7e092bf
+	knative.dev/pkg v0.0.0-20260727151759-521cb33b33dd
+	knative.dev/reconciler-test v0.0.0-20260727164000-4a4407a5fe88
+	knative.dev/serving v0.49.1-0.20260727151504-3c9c1c3fedcf
 	sigs.k8s.io/cluster-inventory-api v0.1.3
 	sigs.k8s.io/controller-tools v0.20.1
 	sigs.k8s.io/yaml v1.6.0
@@ -180,7 +180,7 @@ require (
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/text v0.40.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	golang.org/x/tools v0.47.0 // indirect
+	golang.org/x/tools v0.48.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20240903143218-8af14fe29dc1 // indirect

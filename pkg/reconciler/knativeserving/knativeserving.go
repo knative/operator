@@ -121,6 +121,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 	}
 
 	var state common.ReconcileState
+	patchStages := common.NewResourcePatchStages(base.PatchTarget{APIVersion: "apps/v1", Kind: "Deployment", Name: "webhook"})
 
 	stages := common.Stages{
 		common.ResolveTargetCluster(r.clusterProvider, &state),
@@ -132,11 +133,13 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		func(ctx context.Context, manifest *mf.Manifest, comp base.KComponent) error {
 			return r.transform(ctx, manifest, comp, state.AnchorOwner)
 		},
+		patchStages.Apply,
 		manifests.Install,
 		manifests.SetManifestPaths,    // setting path right after applying manifests to populate paths
 		common.CheckWebhookDeployment, // Wait for webhook to be ready before creating Certificate resources
 		common.InstallWebhookDependentResources,
 		common.CheckDeployments,
+		patchStages.Delete,
 		common.MarkStatusSuccess,
 		common.DeleteObsoleteResources(ctx, ks, r.installed),
 	}
@@ -188,9 +191,10 @@ func (r *Reconciler) installed(ctx context.Context, instance base.KComponent) (*
 	}
 	installed = r.manifest.Append(installed)
 
-	// Per the manifests, that have been installed in the cluster, we only need to inject the correct namespace
-	// in the stages.
-	stages := common.Stages{r.injectNamespace}
+	// Core resources only need their installation namespace restored. Extension
+	// resources also need the extension transforms that determined their final
+	// identities so obsolete-resource cleanup can find them.
+	stages := common.Stages{r.injectNamespace, r.appendInstalledExtensionManifests}
 	_, err = stages.Execute(ctx, &installed, instance)
 	return &installed, err
 }
@@ -201,5 +205,21 @@ func (r *Reconciler) appendExtensionManifests(ctx context.Context, manifest *mf.
 		return err
 	}
 	*manifest = manifest.Append(platformManifests...)
+	return nil
+}
+
+func (r *Reconciler) appendInstalledExtensionManifests(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
+	platformManifests, err := r.extension.Manifests(instance)
+	if err != nil {
+		return err
+	}
+	if len(platformManifests) == 0 {
+		return nil
+	}
+	extensionManifest := manifest.Filter(mf.Nothing).Append(platformManifests...)
+	if err := r.transform(ctx, &extensionManifest, instance, nil); err != nil {
+		return err
+	}
+	*manifest = manifest.Append(extensionManifest)
 	return nil
 }

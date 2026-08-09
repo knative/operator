@@ -18,6 +18,7 @@ Details:
 - [Serving Configuration](https://knative.dev/docs/install/operator/configuring-serving-cr/)
 - [Eventing Configuration](https://knative.dev/docs/install/operator/configuring-eventing-cr/)
 - [Upgrade](docs/upgrade.md)
+- [Customizing generated resources with patches](docs/resource-patches.md)
 - [Multi-cluster deployment](docs/multicluster.md)
 - [Development](docs/development.md)
 - [Multi-cluster E2E testing](docs/development/e2e-multicluster.md)

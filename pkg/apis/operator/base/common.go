@@ -66,6 +66,8 @@ type KComponentSpec interface {
 	GetManifests() []Manifest
 	// GetAdditionalManifests gets the list of additional manifests, which should be installed
 	GetAdditionalManifests() []Manifest
+	// GetPatches gets the patches to apply to generated resources.
+	GetPatches() []ResourcePatch
 
 	// GetNamespaceConfiguration gets the labels and annotations for the namespace
 	GetNamespaceConfiguration() *NamespaceConfiguration
@@ -179,6 +181,10 @@ type CommonSpec struct {
 	// +optional
 	AdditionalManifests []Manifest `json:"additionalManifests,omitempty"`
 
+	// Patches customize generated resources after all built-in transformations have been applied.
+	// +optional
+	Patches []ResourcePatch `json:"patches,omitempty"`
+
 	// HighAvailability allows specification of HA control plane.
 	// +optional
 	HighAvailability *HighAvailability `json:"high-availability,omitempty"`
@@ -226,6 +232,11 @@ func (c *CommonSpec) GetManifests() []Manifest {
 // GetAdditionalManifests implements KComponentSpec.
 func (c *CommonSpec) GetAdditionalManifests() []Manifest {
 	return c.AdditionalManifests
+}
+
+// GetPatches implements KComponentSpec.
+func (c *CommonSpec) GetPatches() []ResourcePatch {
+	return c.Patches
 }
 
 // GetHighAvailability implements KComponentSpec.
@@ -442,6 +453,59 @@ type Manifest struct {
 	// The link of the manifest URL
 	Url string `json:"URL"`
 }
+
+// ResourcePatch customizes one generated Kubernetes resource.
+type ResourcePatch struct {
+	// Target identifies exactly one generated resource to patch.
+	// +kubebuilder:validation:Required
+	Target PatchTarget `json:"target"`
+
+	// Patch defines the patch type and content to apply.
+	// +kubebuilder:validation:Required
+	Patch PatchSpec `json:"patch"`
+}
+
+// PatchTarget identifies a generated Kubernetes resource.
+type PatchTarget struct {
+	// APIVersion is the API version of the target resource, for example "apps/v1".
+	// +kubebuilder:validation:MinLength=1
+	APIVersion string `json:"apiVersion"`
+
+	// Kind is the Kubernetes kind of the target resource, for example "Deployment".
+	// +kubebuilder:validation:MinLength=1
+	Kind string `json:"kind"`
+
+	// Name is the name of the target resource, for example "activator".
+	// +kubebuilder:validation:MinLength=1
+	Name string `json:"name"`
+
+	// Namespace optionally disambiguates resources with the same API version, kind, and name.
+	// +optional
+	Namespace string `json:"namespace,omitempty"`
+}
+
+// PatchSpec defines a patch to apply to a generated resource.
+type PatchSpec struct {
+	// Type is the patch type: "json", "merge", or "strategic".
+	// +kubebuilder:validation:Enum=json;merge;strategic
+	Type PatchType `json:"type"`
+
+	// Content is a JSON or YAML patch document.
+	// +kubebuilder:validation:MinLength=1
+	Content string `json:"content"`
+}
+
+// PatchType is the algorithm used to apply a resource patch.
+type PatchType string
+
+const (
+	// JSONPatchType is an RFC 6902 JSON Patch.
+	JSONPatchType PatchType = "json"
+	// MergePatchType is an RFC 7386 JSON Merge Patch.
+	MergePatchType PatchType = "merge"
+	// StrategicMergePatchType is a Kubernetes Strategic Merge Patch.
+	StrategicMergePatchType PatchType = "strategic"
+)
 
 // HighAvailability specifies options for deploying Knative Serving control
 // plane in a highly available manner. Note that HighAvailability is still in

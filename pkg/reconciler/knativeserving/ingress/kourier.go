@@ -19,6 +19,7 @@ package ingress
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
@@ -34,6 +35,8 @@ const (
 	kourierGatewayServiceName     = "kourier"
 	kourierDefaultVolumeName      = "kourier-bootstrap"
 	kourierGatewayDeploymentNames = "3scale-kourier-gateway"
+	kourierDefaultNamespace       = "knative-serving"
+	kourierBootstrapDataKey       = "envoy-bootstrap.yaml"
 )
 
 var kourierControllerDeploymentNames = sets.NewString("3scale-kourier-control", "net-kourier-controller")
@@ -41,6 +44,7 @@ var kourierControllerDeploymentNames = sets.NewString("3scale-kourier-control", 
 func kourierTransformers(_ context.Context, instance *v1beta1.KnativeServing) []mf.Transformer {
 	return []mf.Transformer{
 		replaceGatewayNamespace(),
+		replaceBootstrapNamespace(),
 		configureGatewayService(instance),
 		configureBootstrapConfigMap(instance),
 	}
@@ -71,6 +75,28 @@ func replaceGatewayNamespace() mf.Transformer {
 			}
 		}
 		return nil
+	}
+}
+
+// replaceBootstrapNamespace updates namespace references embedded in Kourier's
+// default bootstrap configuration.
+func replaceBootstrapNamespace() mf.Transformer {
+	return func(u *unstructured.Unstructured) error {
+		if u.GetKind() != "ConfigMap" || u.GetName() != kourierDefaultVolumeName {
+			return nil
+		}
+
+		configMap := &v1.ConfigMap{}
+		if err := scheme.Scheme.Convert(u, configMap, nil); err != nil {
+			return err
+		}
+
+		if bootstrap, found := configMap.Data[kourierBootstrapDataKey]; found {
+			configMap.Data[kourierBootstrapDataKey] = strings.ReplaceAll(
+				bootstrap, kourierDefaultNamespace, configMap.GetNamespace())
+		}
+
+		return scheme.Scheme.Convert(configMap, u, nil)
 	}
 }
 
@@ -121,7 +147,7 @@ func configureGatewayService(instance *v1beta1.KnativeServing) mf.Transformer {
 	}
 }
 
-// configureBootstrapConfigMap sets Kourier GW's bootstrap configmap name.
+// configureBootstrapConfigMap sets Kourier GW's bootstrap ConfigMap name.
 func configureBootstrapConfigMap(instance *v1beta1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetKind() == "Deployment" && u.GetName() == kourierGatewayDeploymentNames {

@@ -2,56 +2,44 @@
 # Do not modify this file, instead modify peribolos/knative.yaml
 
 aliases:
-  client-reviewers:
-  - itsmurugappan
+  client-reviewers: []
   client-wg-leads:
   - dsimansk
-  - rhuss
   client-writers:
   - dsimansk
-  - rhuss
-  - vyasgun
   docs-reviewers:
   - nainaz
-  - retocode
   - skonto
   docs-writers:
-  - csantanapr
-  - retocode
   - skonto
   eventing-reviewers:
   - Leo6Leo
-  - aslom
   - cali0707
   - creydr
   eventing-wg-leads:
+  - creydr
   - pierDipi
   eventing-writers:
   - Leo6Leo
   - aliok
   - cali0707
   - creydr
-  - lionelvillard
   - matzew
   - pierDipi
   func-reviewers:
   - jrangelramos
-  - nainaz
   func-writers:
   - gauron99
   - jrangelramos
-  - lance
   - lkingland
   - matejvasek
   - matzew
-  - salaboy
   functions-wg-leads:
   - lkingland
-  - salaboy
   knative-admin:
   - aliok
+  - arsenetar
   - cardil
-  - davidhadas
   - dprotaso
   - dsimansk
   - evankanderson
@@ -60,11 +48,11 @@ aliases:
   - knative-prow-robot
   - knative-prow-updater-robot
   - knative-test-reporter-robot
-  - nainaz
-  - psschwei
-  - salaboy
+  - matzew
   - upodroid
-  knative-release-leads: []
+  knative-release-leads:
+  - dprotaso
+  - dsimansk
   knative-robots:
   - knative-automation
   - knative-prow-releaser-robot
@@ -74,6 +62,7 @@ aliases:
   operations-reviewers:
   - aliok
   - houshengbo
+  - kahirokunn
   - matzew
   operations-wg-leads:
   - houshengbo
@@ -86,7 +75,6 @@ aliases:
   - upodroid
   productivity-reviewers:
   - evankanderson
-  - mgencur
   productivity-wg-leads:
   - cardil
   - upodroid
@@ -100,39 +88,34 @@ aliases:
   - davidhadas
   - evankanderson
   serving-approvers:
-  - ReToCode
+  - dsimansk
   - skonto
   serving-reviewers:
-  - izabelacg
-  - retocode
   - skonto
   serving-triage:
-  - izabelacg
-  - retocode
   - skonto
   serving-wg-leads:
   - dprotaso
   serving-writers:
-  - ReToCode
   - dprotaso
+  - dsimansk
   - skonto
   steering-committee:
   - aliok
-  - davidhadas
+  - arsenetar
   - dprotaso
-  - dsimansk
   - evankanderson
-  - nainaz
-  - psschwei
-  - salaboy
-  technical-oversight-committee: []
+  - matzew
+  ux-approvers:
+  - prajjwalyd
   ux-wg-leads:
+  - Leo6Leo
   - cali0707
-  - leo6leo
   - mmejia02
   - zainabhusain227
   ux-writers:
+  - Leo6Leo
   - cali0707
-  - leo6leo
   - mmejia02
+  - prajjwalyd
   - zainabhusain227

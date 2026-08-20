@@ -334,6 +334,29 @@ function if_version_exists() {
 
 # Multi-cluster e2e helpers
 
+function wait_until_crd_established() {
+  local crd timeout_seconds deadline conditions
+  crd="$1"
+  timeout_seconds="${2:-60}"
+  deadline=$((SECONDS + timeout_seconds))
+
+  echo -n "Waiting for crd/${crd} to be Established"
+  while ((SECONDS < deadline)); do
+    conditions="$(kubectl --request-timeout=10s get "crd/${crd}" \
+      -o 'jsonpath={range .status.conditions[*]}{.type}={.status}{"\n"}{end}' 2>/dev/null || true)"
+    if grep -qx 'Established=True' <<< "${conditions}"; then
+      echo -e "\ncrd/${crd} condition met"
+      return 0
+    fi
+    echo -n "."
+    sleep 1
+  done
+
+  echo -e "\nERROR: timeout waiting for crd/${crd} to be Established"
+  kubectl --request-timeout=10s get "crd/${crd}" -o yaml || true
+  return 1
+}
+
 function create_spoke_cluster() {
   echo ">> Creating spoke KinD cluster: ${SPOKE_CLUSTER_NAME}"
   if kind get clusters 2>/dev/null | grep -q "^${SPOKE_CLUSTER_NAME}$"; then
@@ -362,7 +385,7 @@ function install_spoke_gateway_api_crds() {
     gateways.gateway.networking.k8s.io \
     httproutes.gateway.networking.k8s.io \
     referencegrants.gateway.networking.k8s.io; do
-    KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl wait --for=condition=Established --timeout=60s "crd/${crd}" || return 1
+    KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" wait_until_crd_established "${crd}" || return 1
   done
 }
 
@@ -429,8 +452,7 @@ function dump_hub_state() {
 function install_cluster_inventory_crd() {
   echo ">> Installing ClusterProfile CRD on hub"
   kubectl apply -f "${CLUSTER_INVENTORY_CRD_URL}" || return 1
-  kubectl wait --for=condition=Established --timeout=60s \
-    crd/clusterprofiles.multicluster.x-k8s.io || return 1
+  wait_until_crd_established clusterprofiles.multicluster.x-k8s.io || return 1
 }
 
 function _spoke_bootstrap_token() {

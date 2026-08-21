@@ -196,6 +196,119 @@ spec:
 	}
 }
 
+func TestApplyResourcePatchesReplacesNestedMap(t *testing.T) {
+	deployment := deploymentForPatchTest(t, "activator", "knative-serving", 1)
+	podSpec := map[string]interface{}{
+		"serviceAccountName": "old-service-account",
+		"containers": []interface{}{
+			map[string]interface{}{"name": "old", "image": "example.com/old"},
+		},
+	}
+	if err := unstructured.SetNestedMap(deployment.Object, podSpec, "spec", "template", "spec"); err != nil {
+		t.Fatalf("SetNestedMap() = %v", err)
+	}
+	manifest := manifestForPatchTest(t, deployment)
+	patch := resourcePatchForTest(base.StrategicMergePatchType, "apps/v1", "Deployment", "activator", `
+spec:
+  template:
+    spec:
+      $patch: replace
+      containers:
+      - name: replacement
+        image: example.com/replacement
+`)
+
+	if err := ApplyResourcePatches(&manifest, []base.ResourcePatch{patch}); err != nil {
+		t.Fatalf("ApplyResourcePatches() = %v", err)
+	}
+	gotPodSpec, found, err := unstructured.NestedMap(manifest.Resources()[0].Object, "spec", "template", "spec")
+	if err != nil || !found {
+		t.Fatalf("pod spec = %#v, found = %v, err = %v, want a pod spec", gotPodSpec, found, err)
+	}
+	if _, found := gotPodSpec["serviceAccountName"]; found {
+		t.Fatalf("pod spec = %#v, want serviceAccountName removed", gotPodSpec)
+	}
+	gotContainers, found, err := unstructured.NestedSlice(gotPodSpec, "containers")
+	if err != nil || !found || len(gotContainers) != 1 {
+		t.Fatalf("containers = %#v, found = %v, err = %v, want one container", gotContainers, found, err)
+	}
+	gotContainer, ok := gotContainers[0].(map[string]interface{})
+	if !ok || gotContainer["name"] != "replacement" || gotContainer["image"] != "example.com/replacement" {
+		t.Fatalf("container = %#v, want replacement container", gotContainers[0])
+	}
+}
+
+func TestApplyResourcePatchesReplacesNestedList(t *testing.T) {
+	deployment := deploymentForPatchTest(t, "activator", "knative-serving", 1)
+	containers := []interface{}{
+		map[string]interface{}{"name": "activator", "image": "example.com/activator"},
+		map[string]interface{}{"name": "sidecar", "image": "example.com/sidecar"},
+	}
+	if err := unstructured.SetNestedSlice(deployment.Object, containers, "spec", "template", "spec", "containers"); err != nil {
+		t.Fatalf("SetNestedSlice() = %v", err)
+	}
+	manifest := manifestForPatchTest(t, deployment)
+	patch := resourcePatchForTest(base.StrategicMergePatchType, "apps/v1", "Deployment", "activator", `
+spec:
+  template:
+    spec:
+      containers:
+      - name: replacement
+        image: example.com/replacement
+      - $patch: replace
+`)
+
+	if err := ApplyResourcePatches(&manifest, []base.ResourcePatch{patch}); err != nil {
+		t.Fatalf("ApplyResourcePatches() = %v", err)
+	}
+	gotContainers, found, err := unstructured.NestedSlice(manifest.Resources()[0].Object, "spec", "template", "spec", "containers")
+	if err != nil || !found || len(gotContainers) != 1 {
+		t.Fatalf("containers = %#v, found = %v, err = %v, want one container", gotContainers, found, err)
+	}
+	gotContainer, ok := gotContainers[0].(map[string]interface{})
+	if !ok || gotContainer["name"] != "replacement" || gotContainer["image"] != "example.com/replacement" {
+		t.Fatalf("container = %#v, want replacement container", gotContainers[0])
+	}
+}
+
+func TestApplyResourcePatchesReplacesResourceAndPreservesIdentity(t *testing.T) {
+	deployment := deploymentForPatchTest(t, "activator", "knative-serving", 1)
+	deployment.SetLabels(map[string]string{"example.com/old": "label"})
+	deployment.SetAnnotations(map[string]string{"example.com/old": "annotation"})
+	if err := unstructured.SetNestedField(deployment.Object, true, "spec", "paused"); err != nil {
+		t.Fatalf("SetNestedField() = %v", err)
+	}
+	manifest := manifestForPatchTest(t, deployment)
+	patch := resourcePatchForTest(base.StrategicMergePatchType, "apps/v1", "Deployment", "activator", `
+$patch: replace
+metadata:
+  labels:
+    example.com/replacement: applied
+spec:
+  replicas: 3
+`)
+
+	if err := ApplyResourcePatches(&manifest, []base.ResourcePatch{patch}); err != nil {
+		t.Fatalf("ApplyResourcePatches() = %v", err)
+	}
+	got := manifest.Resources()[0]
+	if got.GetAPIVersion() != "apps/v1" || got.GetKind() != "Deployment" || got.GetName() != "activator" || got.GetNamespace() != "knative-serving" {
+		t.Fatalf("identity = %s, %s, %s/%s, want apps/v1, Deployment, knative-serving/activator", got.GetAPIVersion(), got.GetKind(), got.GetNamespace(), got.GetName())
+	}
+	if labels := got.GetLabels(); len(labels) != 1 || labels["example.com/replacement"] != "applied" {
+		t.Fatalf("labels = %#v, want only replacement label", labels)
+	}
+	if annotations := got.GetAnnotations(); len(annotations) != 0 {
+		t.Fatalf("annotations = %#v, want none", annotations)
+	}
+	if _, found, err := unstructured.NestedFieldNoCopy(got.Object, "spec", "paused"); err != nil || found {
+		t.Fatalf("spec.paused found = %v, err = %v, want false, nil", found, err)
+	}
+	if replicas, found, err := unstructured.NestedInt64(got.Object, "spec", "replicas"); err != nil || !found || replicas != 3 {
+		t.Fatalf("spec.replicas = %d, found = %v, err = %v, want 3, true, nil", replicas, found, err)
+	}
+}
+
 func TestResourcePatchStagesDeleteLiveResourceWithoutManifestStatus(t *testing.T) {
 	client := mffake.New()
 	hpa := resourceForPatchTest("autoscaling/v2", "HorizontalPodAutoscaler", "activator", "knative-serving")
@@ -301,6 +414,16 @@ func TestApplyResourcePatchesValidatesTargetAndIdentity(t *testing.T) {
 			name:      "identity changes",
 			resources: []unstructured.Unstructured{deploymentForPatchTest(t, "activator", "knative-serving", 1)},
 			patch: resourcePatchForTest(base.MergePatchType, "apps/v1", "Deployment", "activator", `
+metadata:
+  name: changed
+`),
+			wantError: "must not change apiVersion, kind, metadata.name, or metadata.namespace",
+		},
+		{
+			name:      "root replacement changes identity",
+			resources: []unstructured.Unstructured{deploymentForPatchTest(t, "activator", "knative-serving", 1)},
+			patch: resourcePatchForTest(base.StrategicMergePatchType, "apps/v1", "Deployment", "activator", `
+$patch: replace
 metadata:
   name: changed
 `),

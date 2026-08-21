@@ -56,6 +56,66 @@ patch:
       value: 4
 ```
 
+## Replacing existing content
+
+Use `$patch: replace` with `type: strategic` when the generated resource has
+keys or named list entries that must be discarded instead of merged. For
+example, this patch replaces the entire `data` map in Knative Serving's
+`config-features` ConfigMap. After the patch, `data` contains only the enabled
+affinity flag; the generated `_example` entry is removed.
+
+```yaml
+spec:
+  patches:
+  - target:
+      apiVersion: v1
+      kind: ConfigMap
+      name: config-features
+    patch:
+      type: strategic
+      content: |
+        data:
+          $patch: replace
+          kubernetes.podspec-affinity: "enabled"
+```
+
+Place the directive at the level that should be replaced:
+
+| Placement | Result |
+| --- | --- |
+| Inside a map, such as `data` | Removes the map's existing keys and keeps only the keys beside `$patch: replace` |
+| As an item in a named list, such as `containers` | Removes every existing list item and keeps only the other items in the patch list |
+| At the root of `content` | Replaces the entire resource except its API version, kind, name, and namespace |
+
+For example, a list replacement puts the directive and the desired items in
+the same list:
+
+```yaml
+spec:
+  template:
+    spec:
+      containers:
+      - name: replacement
+        image: example.com/replacement
+      - $patch: replace
+```
+
+A root replacement for the same `config-features` target does not need to
+repeat the identity already selected by `target`:
+
+```yaml
+patch:
+  type: strategic
+  content: |
+    $patch: replace
+    data:
+      kubernetes.podspec-affinity: "enabled"
+```
+
+For a root replacement, omitted labels, annotations, and resource fields are
+removed. If `content` explicitly includes an API version, kind, name, or
+namespace, it must match the selected resource.
+
 ## Letting KEDA manage replicas
 
 Knative 1.23 includes the following HorizontalPodAutoscalers. An ingress or

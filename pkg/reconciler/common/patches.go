@@ -34,7 +34,10 @@ import (
 	"knative.dev/operator/pkg/apis/operator/base"
 )
 
-const strategicMergeDeleteDirective = "delete"
+const (
+	strategicMergeDeleteDirective  = "delete"
+	strategicMergeReplaceDirective = "replace"
+)
 
 type resourceIdentity struct {
 	apiVersion string
@@ -80,9 +83,9 @@ func (stages *ResourcePatchStages) Delete(_ context.Context, _ *mf.Manifest, ins
 	return nil
 }
 
-// ApplyResourcePatches applies user-provided patches in declaration order. A
-// strategic merge patch with a root-level "$patch: delete" directive removes
-// the matching resource from the manifest.
+// ApplyResourcePatches applies user-provided patches in declaration order.
+// Root-level strategic merge directives can delete a matching resource or
+// replace it while preserving its identity.
 func ApplyResourcePatches(manifest *mf.Manifest, patches []base.ResourcePatch) error {
 	_, err := applyResourcePatches(manifest, patches, nil)
 	return err
@@ -124,12 +127,12 @@ func applyPatchToManifest(manifest *mf.Manifest, resourcePatch base.ResourcePatc
 	if err := validatePatchDirectives(resourcePatch.Patch.Type, patchJSON); err != nil {
 		return nil, err
 	}
-	isDelete, err := isStrategicMergeDelete(resourcePatch.Patch.Type, patchJSON)
+	rootDirective, patchDocument, err := parseRootPatchDirective(resourcePatch.Patch.Type, patchJSON)
 	if err != nil {
 		return nil, err
 	}
 
-	if isDelete {
+	if rootDirective == strategicMergeDeleteDirective {
 		if mf.CRDs(&matchedResources[0]) {
 			return nil, errors.New("deleting CustomResourceDefinitions is not supported")
 		}
@@ -144,6 +147,12 @@ func applyPatchToManifest(manifest *mf.Manifest, resourcePatch base.ResourcePatc
 		deletedResource := manifest.Filter(matchesTarget)
 		*manifest = manifest.Filter(mf.Not(matchesTarget))
 		return &deletedResource, nil
+	}
+	if rootDirective == strategicMergeReplaceDirective {
+		patchJSON, err = preserveResourceIdentityInReplacement(patchDocument, &matchedResources[0])
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	patchedManifest, err := manifest.Transform(func(resource *unstructured.Unstructured) error {
@@ -245,23 +254,23 @@ func validatePatchDirectives(patchType base.PatchType, patchJSON []byte) error {
 	return nil
 }
 
-func isStrategicMergeDelete(patchType base.PatchType, patchJSON []byte) (bool, error) {
+func parseRootPatchDirective(patchType base.PatchType, patchJSON []byte) (string, map[string]interface{}, error) {
 	if patchType != base.StrategicMergePatchType {
-		return false, nil
+		return "", nil, nil
 	}
 	patchDocument := map[string]interface{}{}
 	if err := json.Unmarshal(patchJSON, &patchDocument); err != nil {
-		return false, fmt.Errorf("decode strategic merge patch: %w", err)
+		return "", nil, fmt.Errorf("decode strategic merge patch: %w", err)
 	}
 	directive, found := patchDocument["$patch"]
 	if !found {
-		return false, nil
+		return "", patchDocument, nil
 	}
 	directiveString, ok := directive.(string)
 	if !ok {
-		return false, errors.New("root $patch directive must be a string")
+		return "", nil, errors.New("root $patch directive must be a string")
 	}
-	return directiveString == strategicMergeDeleteDirective, nil
+	return directiveString, patchDocument, nil
 }
 
 func containsPatchDirective(value interface{}) bool {
@@ -280,6 +289,43 @@ func containsPatchDirective(value interface{}) bool {
 		}
 	}
 	return false
+}
+
+// preserveResourceIdentityInReplacement lets a root-level replacement omit
+// identity fields already specified by its target. Explicit identity fields
+// remain untouched so applyPatchToResource can reject attempts to change them.
+func preserveResourceIdentityInReplacement(patchDocument map[string]interface{}, resource *unstructured.Unstructured) ([]byte, error) {
+	identity := identityOf(resource)
+	if _, found := patchDocument["apiVersion"]; !found {
+		patchDocument["apiVersion"] = identity.apiVersion
+	}
+	if _, found := patchDocument["kind"]; !found {
+		patchDocument["kind"] = identity.kind
+	}
+
+	metadataValue, found := patchDocument["metadata"]
+	if !found {
+		metadataValue = map[string]interface{}{}
+		patchDocument["metadata"] = metadataValue
+	}
+	metadata, ok := metadataValue.(map[string]interface{})
+	if !ok {
+		return nil, errors.New("root $patch: replace metadata must be an object")
+	}
+	if _, found := metadata["name"]; !found {
+		metadata["name"] = identity.name
+	}
+	if identity.namespace != "" {
+		if _, found := metadata["namespace"]; !found {
+			metadata["namespace"] = identity.namespace
+		}
+	}
+
+	patchJSON, err := json.Marshal(patchDocument)
+	if err != nil {
+		return nil, fmt.Errorf("encode root replacement patch: %w", err)
+	}
+	return patchJSON, nil
 }
 
 func identityOf(resource *unstructured.Unstructured) resourceIdentity {

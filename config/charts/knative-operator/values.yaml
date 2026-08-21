@@ -71,3 +71,13 @@ knative_operator:
         cpu: 500m
         memory: 500Mi
   kubernetes_min_version: v1.25.0
+
+# extraObjects renders arbitrary manifests alongside the operator, e.g. extra
+# RBAC or platform-specific resources such as OpenShift SCC bindings or
+# NetworkPolicies.
+extraObjects: []
+# extraObjects:
+#   - apiVersion: v1
+#     kind: ConfigMap
+#     metadata:
+#       name: example

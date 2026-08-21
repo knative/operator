@@ -526,6 +526,17 @@ spec:
 	}
 }
 
+func TestValidatePatchDirectivesReturnsDecodeError(t *testing.T) {
+	for _, patchType := range []base.PatchType{base.JSONPatchType, base.MergePatchType} {
+		t.Run(string(patchType), func(t *testing.T) {
+			err := validatePatchDirectives(patchType, []byte(`{`))
+			if err == nil || !strings.Contains(err.Error(), "decode patch document") {
+				t.Fatalf("validatePatchDirectives() = %v, want decode patch document error", err)
+			}
+		})
+	}
+}
+
 func TestResourcePatchRunsAfterBuiltInTransforms(t *testing.T) {
 	replicas := int32(5)
 	instance := &v1beta1.KnativeServing{

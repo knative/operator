@@ -245,7 +245,7 @@ func validatePatchDirectives(patchType base.PatchType, patchJSON []byte) error {
 	if patchType != base.StrategicMergePatchType {
 		var patchDocument interface{}
 		if err := json.Unmarshal(patchJSON, &patchDocument); err != nil {
-			return nil
+			return fmt.Errorf("decode patch document: %w", err)
 		}
 		if containsPatchDirective(patchDocument) {
 			return errors.New("$patch directive is only supported for the strategic merge patch type")

@@ -33,7 +33,7 @@ Operator-specific CLI flags (set on the operator Deployment via `args:`):
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--clusterprofile-provider-file` | `""` | Path to the JSON config file describing Cluster Inventory API access providers. Required when any CR sets `spec.clusterProfileRef`. See [docs/multicluster.md](docs/multicluster.md). |
+| `--clusterprofile-provider-file` | `""` | Path to the JSON config file describing Cluster Inventory API access providers. Required when any CR sets `spec.destination`. See [docs/multicluster.md](docs/multicluster.md). |
 | `--remote-deployments-poll-interval` | `10s` | Requeue interval used while polling spoke deployment readiness. Raise for large fleets (`30s` for 10-100 spokes, `60s` for >100). Values below `1s` fall back to the default with a WARNING log entry. |
 
 If you are interested in contributing, see [CONTRIBUTING.md](./CONTRIBUTING.md)

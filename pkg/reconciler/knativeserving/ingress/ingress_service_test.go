@@ -72,6 +72,29 @@ func TestIngressServiceTransformIstioSelector(t *testing.T) {
 		},
 		expected: true,
 	}, {
+		name:              "Legacy gateway config uses destination namespace",
+		namespace:         "test-namespace",
+		serviceName:       "knative-local-gateway",
+		expectedNamespace: "remote-gateway-ns",
+		instance: &servingv1beta1.KnativeServing{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-instance",
+				Namespace: "hub-namespace",
+			},
+			Spec: servingv1beta1.KnativeServingSpec{
+				CommonSpec: base.CommonSpec{
+					Destination: &base.ComponentDestination{
+						ClusterProfileRef: base.ClusterProfileReference{Namespace: "fleet", Name: "spoke"},
+						Namespace:         "installation-namespace",
+					},
+					Config: map[string]map[string]string{"istio": {
+						"local-gateway.installation-namespace.knative-local-gateway": "knative-local-gateway.remote-gateway-ns.svc.cluster.local",
+					}},
+				},
+			},
+		},
+		expected: true,
+	}, {
 		name:              "IstioNotUnderDefaultNS with config-istio",
 		namespace:         "test-namespace",
 		serviceName:       "knative-local-gateway",

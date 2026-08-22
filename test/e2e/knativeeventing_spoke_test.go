@@ -32,6 +32,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/dynamic"
 
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -43,6 +44,9 @@ import (
 // TestMulticlusterKnativeEventingSpokeDeployment verifies KnativeEventing is reconciled onto a spoke cluster and cleaned up on delete.
 func TestMulticlusterKnativeEventingSpokeDeployment(t *testing.T) {
 	ctx := t.Context()
+	if test.EventingOperatorNamespace == spokeEventingInstallNamespace {
+		t.Fatalf("TEST_EVENTING_NAMESPACE %q must differ from the spoke installation namespace", test.EventingOperatorNamespace)
+	}
 
 	hub := client.Setup(t)
 	spoke := client.SetupSpoke(t)
@@ -52,7 +56,7 @@ func TestMulticlusterKnativeEventingSpokeDeployment(t *testing.T) {
 		Namespace:       test.EventingOperatorNamespace,
 	}
 
-	ensureSpokeNamespace(ctx, t, spoke, names.Namespace)
+	ensureSpokeNamespace(ctx, t, spoke, spokeEventingInstallNamespace)
 
 	test.CleanupOnInterrupt(func() { test.TearDown(hub, names) })
 	defer test.TearDown(hub, names)
@@ -68,11 +72,16 @@ func TestMulticlusterKnativeEventingSpokeDeployment(t *testing.T) {
 
 	t.Run("spoke-deployments-ready", func(t *testing.T) {
 		waitForSpokeEventingDeploymentsReady(t.Context(), t, hub, spoke, names)
+		assertNoSpokeDeployments(t.Context(), t, spoke, names.Namespace, spokeEventingSelector)
+	})
+
+	t.Run("destination-validation", func(t *testing.T) {
+		assertEventingDestinationValidation(t.Context(), t, hub, names)
 	})
 
 	t.Run("tls-resources-filtered-without-cert-manager", func(t *testing.T) {
 		ctx := t.Context()
-		assertNoCertManagerResourcesOnSpoke(ctx, t, spoke, names.Namespace)
+		assertNoCertManagerResourcesOnSpoke(ctx, t, spoke, spokeEventingInstallNamespace)
 	})
 
 	t.Run("delete-and-cleanup-spoke", func(t *testing.T) {
@@ -80,13 +89,56 @@ func TestMulticlusterKnativeEventingSpokeDeployment(t *testing.T) {
 		if err := deleteHubKnativeEventing(ctx, hub, names); err != nil {
 			t.Fatalf("Failed to delete hub KnativeEventing %q: %v", names.KnativeEventing, err)
 		}
-		if err := waitForSpokeEventingDeploymentsGone(ctx, t, spoke, names.Namespace); err != nil {
+		if err := waitForSpokeEventingDeploymentsGone(ctx, t, spoke, spokeEventingInstallNamespace, spokeEventingSelector); err != nil {
 			t.Fatalf("Spoke deployments still present after deletion in namespace %q: %v",
-				names.Namespace, err)
+				spokeEventingInstallNamespace, err)
 		}
-		waitForSpokeManagedEventingServicesGone(ctx, t, spoke, names.Namespace)
+		waitForSpokeManagedEventingServicesGone(ctx, t, spoke, spokeEventingInstallNamespace)
 		assertAnchorConfigMapGoneEventing(ctx, t, spoke, names)
 	})
+}
+
+func assertEventingDestinationValidation(ctx context.Context, t *testing.T, hub *test.Clients, names test.ResourceNames) {
+	t.Helper()
+	ke, err := hub.KnativeEventing().Get(ctx, names.KnativeEventing, metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("Failed to get KnativeEventing for destination validation: %v", err)
+	}
+	ke.Spec.Destination.Namespace = "different-namespace"
+	if _, err := hub.KnativeEventing().Update(ctx, ke, metav1.UpdateOptions{}); !apierrs.IsInvalid(err) {
+		t.Fatalf("Changing spec.destination error = %v, want Invalid", err)
+	}
+	ke, err = hub.KnativeEventing().Get(ctx, names.KnativeEventing, metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("Failed to re-fetch KnativeEventing for destination validation: %v", err)
+	}
+	ke.Spec.Destination.ClusterProfileRef.Name = "different-profile"
+	if _, err := hub.KnativeEventing().Update(ctx, ke, metav1.UpdateOptions{}); !apierrs.IsInvalid(err) {
+		t.Fatalf("Changing spec.destination.clusterProfileRef.name error = %v, want Invalid", err)
+	}
+	ke, err = hub.KnativeEventing().Get(ctx, names.KnativeEventing, metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("Failed to re-fetch KnativeEventing for destination validation: %v", err)
+	}
+	ke.Spec.Destination.ClusterProfileRef.Namespace = "different-profile-namespace"
+	if _, err := hub.KnativeEventing().Update(ctx, ke, metav1.UpdateOptions{}); !apierrs.IsInvalid(err) {
+		t.Fatalf("Changing spec.destination.clusterProfileRef.namespace error = %v, want Invalid", err)
+	}
+
+	invalid := &v1beta1.KnativeEventing{
+		ObjectMeta: metav1.ObjectMeta{Name: "invalid-destination", Namespace: names.Namespace},
+		Spec: v1beta1.KnativeEventingSpec{CommonSpec: base.CommonSpec{
+			Destination: &base.ComponentDestination{
+				ClusterProfileRef: base.ClusterProfileReference{
+					Name: spokeClusterProfileRefName(), Namespace: spokeClusterProfileRefNamespace(),
+				},
+				Namespace: "INVALID_NAMESPACE",
+			},
+		}},
+	}
+	if _, err := hub.KnativeEventing().Create(ctx, invalid, metav1.CreateOptions{}); !apierrs.IsInvalid(err) {
+		t.Fatalf("Creating an invalid spec.destination error = %v, want Invalid", err)
+	}
 }
 
 func createKnativeEventingWithSpokeRef(ctx context.Context, clients *test.Clients, names test.ResourceNames) error {
@@ -97,9 +149,12 @@ func createKnativeEventingWithSpokeRef(ctx context.Context, clients *test.Client
 		},
 		Spec: v1beta1.KnativeEventingSpec{
 			CommonSpec: base.CommonSpec{
-				ClusterProfileRef: &base.ClusterProfileReference{
-					Name:      spokeClusterProfileRefName(),
-					Namespace: spokeClusterProfileRefNamespace(),
+				Destination: &base.ComponentDestination{
+					ClusterProfileRef: base.ClusterProfileReference{
+						Name:      spokeClusterProfileRefName(),
+						Namespace: spokeClusterProfileRefNamespace(),
+					},
+					Namespace: spokeEventingInstallNamespace,
 				},
 			},
 		},
@@ -174,7 +229,7 @@ func waitForSpokeEventingDeploymentsReady(ctx context.Context, t *testing.T, hub
 	}
 
 	t.Logf("Waiting up to %s for all Deployments in spoke namespace %q to become Available",
-		spokeReadyTimeout, names.Namespace)
+		spokeReadyTimeout, spokeEventingInstallNamespace)
 
 	var (
 		lastTotal    = -1
@@ -183,7 +238,9 @@ func waitForSpokeEventingDeploymentsReady(ctx context.Context, t *testing.T, hub
 	)
 	pollErr := wait.PollUntilContextTimeout(ctx, spokeWaitInterval, spokeReadyTimeout, true,
 		func(ctx context.Context) (bool, error) {
-			dpList, err := spoke.KubeClient.AppsV1().Deployments(names.Namespace).List(ctx, metav1.ListOptions{})
+			dpList, err := spoke.KubeClient.AppsV1().Deployments(spokeEventingInstallNamespace).List(ctx, metav1.ListOptions{
+				LabelSelector: spokeEventingSelector,
+			})
 			if err != nil {
 				return false, err
 			}
@@ -196,7 +253,7 @@ func waitForSpokeEventingDeploymentsReady(ctx context.Context, t *testing.T, hub
 				}
 			}
 			if total != lastTotal || ready != lastReady {
-				t.Logf("spoke ns %q: %d/%d Deployments Available", names.Namespace, ready, total)
+				t.Logf("spoke ns %q: %d/%d Deployments Available", spokeEventingInstallNamespace, ready, total)
 				lastTotal = total
 				lastReady = ready
 			}
@@ -207,22 +264,24 @@ func waitForSpokeEventingDeploymentsReady(ctx context.Context, t *testing.T, hub
 		})
 	if pollErr != nil {
 		t.Logf("Spoke deployments did not become ready in namespace %q. Last observed state:",
-			names.Namespace)
+			spokeEventingInstallNamespace)
 		dumpDeployments(t, lastObserved)
 		t.Fatalf("Spoke deployments did not become ready in namespace %q: %v",
-			names.Namespace, pollErr)
+			spokeEventingInstallNamespace, pollErr)
 	}
 }
 
-func waitForSpokeEventingDeploymentsGone(ctx context.Context, t *testing.T, clients *test.Clients, namespace string) error {
+func waitForSpokeEventingDeploymentsGone(ctx context.Context, t *testing.T, clients *test.Clients, namespace, selector string) error {
 	t.Helper()
-	t.Logf("Waiting up to %s for all Deployments in spoke namespace %q to disappear",
-		spokeGoneTimeout, namespace)
+	t.Logf("Waiting up to %s for Deployments matching %q in spoke namespace %q to disappear",
+		spokeGoneTimeout, selector, namespace)
 
 	lastCount := -1
 	return wait.PollUntilContextTimeout(ctx, spokeWaitInterval, spokeGoneTimeout, true,
 		func(ctx context.Context) (bool, error) {
-			dpList, err := clients.KubeClient.AppsV1().Deployments(namespace).List(ctx, metav1.ListOptions{})
+			dpList, err := clients.KubeClient.AppsV1().Deployments(namespace).List(ctx, metav1.ListOptions{
+				LabelSelector: selector,
+			})
 			if err != nil {
 				if apierrs.IsNotFound(err) {
 					return true, nil
@@ -285,41 +344,52 @@ func waitForSpokeManagedEventingServicesGone(ctx context.Context, t *testing.T, 
 func assertAnchorConfigMapGoneEventing(ctx context.Context, t *testing.T, spoke *test.Clients, names test.ResourceNames) {
 	t.Helper()
 	anchorName := "knativeeventing-" + names.KnativeEventing + "-root-owner"
-	_, err := spoke.KubeClient.CoreV1().ConfigMaps(names.Namespace).Get(ctx, anchorName, metav1.GetOptions{})
+	_, err := spoke.KubeClient.CoreV1().ConfigMaps(spokeEventingInstallNamespace).Get(ctx, anchorName, metav1.GetOptions{})
 	if err == nil {
-		t.Fatalf("Anchor ConfigMap %q still exists in spoke namespace %q", anchorName, names.Namespace)
+		t.Fatalf("Anchor ConfigMap %q still exists in spoke namespace %q", anchorName, spokeEventingInstallNamespace)
 	}
 	if !apierrs.IsNotFound(err) {
 		t.Fatalf("Unexpected error checking anchor ConfigMap %q: %v", anchorName, err)
 	}
 }
 
-// assertNoCertManagerResourcesOnSpoke fails if any cert-manager CRs exist in the spoke eventing namespace.
+// assertNoCertManagerResourcesOnSpoke fails if any cert-manager CRs exist in the spoke eventing namespace or cluster scope.
 // Missing CRDs are treated as success.
 func assertNoCertManagerResourcesOnSpoke(ctx context.Context, t *testing.T, spoke *test.Clients, namespace string) {
 	t.Helper()
-	gvrs := []schema.GroupVersionResource{
-		{Group: "cert-manager.io", Version: "v1", Resource: "certificates"},
-		{Group: "cert-manager.io", Version: "v1", Resource: "issuers"},
-		{Group: "cert-manager.io", Version: "v1", Resource: "clusterissuers"},
-		{Group: "trust.cert-manager.io", Version: "v1alpha1", Resource: "bundles"},
+	resources := []struct {
+		gvr        schema.GroupVersionResource
+		namespaced bool
+	}{
+		{gvr: schema.GroupVersionResource{Group: "cert-manager.io", Version: "v1", Resource: "certificates"}, namespaced: true},
+		{gvr: schema.GroupVersionResource{Group: "cert-manager.io", Version: "v1", Resource: "issuers"}, namespaced: true},
+		{gvr: schema.GroupVersionResource{Group: "cert-manager.io", Version: "v1", Resource: "clusterissuers"}},
+		{gvr: schema.GroupVersionResource{Group: "trust.cert-manager.io", Version: "v1alpha1", Resource: "bundles"}},
 	}
-	for _, gvr := range gvrs {
-		list, err := spoke.Dynamic.Resource(gvr).Namespace(namespace).List(ctx, metav1.ListOptions{})
+	for _, resource := range resources {
+		var client dynamic.ResourceInterface
+		scope := "cluster scope"
+		if resource.namespaced {
+			client = spoke.Dynamic.Resource(resource.gvr).Namespace(namespace)
+			scope = fmt.Sprintf("namespace %q", namespace)
+		} else {
+			client = spoke.Dynamic.Resource(resource.gvr)
+		}
+		list, err := client.List(ctx, metav1.ListOptions{})
 		if err != nil {
 			// CRD not installed on spoke => predicate trivially satisfied.
 			if apierrs.IsNotFound(err) || isNoMatchErr(err) {
-				t.Logf("cert-manager resource %s not registered on spoke (expected): %v", gvr.String(), err)
+				t.Logf("cert-manager resource %s not registered on spoke (expected): %v", resource.gvr.String(), err)
 				continue
 			}
-			t.Fatalf("unexpected error listing %s on spoke: %v", gvr.String(), err)
+			t.Fatalf("unexpected error listing %s on spoke: %v", resource.gvr.String(), err)
 		}
 		if len(list.Items) != 0 {
 			names := make([]string, 0, len(list.Items))
 			for _, it := range list.Items {
 				names = append(names, it.GetName())
 			}
-			t.Fatalf("unexpected %s resources present on spoke ns %q: %v", gvr.String(), namespace, names)
+			t.Fatalf("unexpected %s resources present on spoke in %s: %v", resource.gvr.String(), scope, names)
 		}
 	}
 }

@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/pkg/ptr"
 )
@@ -244,5 +245,32 @@ func TestInjectNamespace(t *testing.T) {
 	// Verify namespace is carried over.
 	if got, want := resource.GetNamespace(), component.GetNamespace(); got != want {
 		t.Fatalf("GetNamespace() = %s, want %s", got, want)
+	}
+}
+
+func TestInjectNamespace_UsesDestinationNamespace(t *testing.T) {
+	component := &v1beta1.KnativeEventing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "management-ns",
+			Name:      "test-name",
+		},
+		Spec: v1beta1.KnativeEventingSpec{CommonSpec: base.CommonSpec{
+			Destination: &base.ComponentDestination{
+				ClusterProfileRef: base.ClusterProfileReference{Namespace: "fleet", Name: "spoke"},
+				Namespace:         "installation-ns",
+			},
+		}},
+	}
+	in := []unstructured.Unstructured{*NamespacedResource("test/v1", "TestCR", "another-ns", "test-resource")}
+	manifest, err := mf.ManifestFrom(mf.Slice(in))
+	if err != nil {
+		t.Fatalf("Failed to generate manifest: %v", err)
+	}
+	if err := InjectNamespace(&manifest, component); err != nil {
+		t.Fatalf("Failed to transform manifest: %v", err)
+	}
+
+	if got, want := manifest.Resources()[0].GetNamespace(), "installation-ns"; got != want {
+		t.Fatalf("GetNamespace() = %q, want %q", got, want)
 	}
 }

@@ -25,9 +25,11 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
 
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -214,6 +216,52 @@ func TestClusterProvider_GetOrRefresh_CacheMiss_RefreshFails(t *testing.T) {
 	}
 }
 
+func TestFinalizeRemoteClusterIfNeeded_RefreshesColdCache(t *testing.T) {
+	const (
+		profileNamespace = "fleet"
+		profileName      = "worker"
+		remoteNamespace  = "knative-serving"
+		instanceName     = "default"
+	)
+
+	stub := &stubAccess{}
+	provider := newTestProviderWithStubAccess(
+		stub,
+		readyClusterProfile(profileNamespace, profileName),
+	)
+	anchor := &corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{
+		Namespace: remoteNamespace,
+		Name:      "knativeserving-default-root-owner",
+	}}
+	kubeClient := fake.NewSimpleClientset(anchor)
+	provider.clientFactory = &stubClientFactory{kubeClient: kubeClient}
+
+	instance := &v1beta1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{Namespace: "management", Name: instanceName},
+		Spec: v1beta1.KnativeServingSpec{CommonSpec: base.CommonSpec{
+			Destination: testDestination(remoteNamespace, base.ClusterProfileReference{
+				Namespace: profileNamespace,
+				Name:      profileName,
+			}),
+		}},
+	}
+
+	handled, err := FinalizeRemoteClusterIfNeeded(context.Background(), provider, nil, instance)
+	if err != nil {
+		t.Fatalf("FinalizeRemoteClusterIfNeeded() error = %v", err)
+	}
+	if !handled {
+		t.Fatal("FinalizeRemoteClusterIfNeeded() handled = false, want true")
+	}
+	if got := stub.count(); got != 1 {
+		t.Fatalf("BuildConfigFromCP call count = %d, want 1", got)
+	}
+	if _, err := kubeClient.CoreV1().ConfigMaps(remoteNamespace).
+		Get(context.Background(), anchor.Name, metav1.GetOptions{}); !apierrors.IsNotFound(err) {
+		t.Fatalf("anchor ConfigMap still exists or get failed unexpectedly: %v", err)
+	}
+}
+
 func TestNotifyListeners_DoesNotCallRefresh(t *testing.T) {
 	stub := &stubAccess{}
 	provider := newTestProviderWithStubAccess(stub, readyClusterProfile("fleet", "worker"))
@@ -264,9 +312,12 @@ func TestResolveTargetCluster_ReasonPropagation(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Namespace: "knative-serving", Name: "default"},
 			Spec: v1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
-					ClusterProfileRef: &base.ClusterProfileReference{
-						Namespace: "fleet",
-						Name:      "worker",
+					Destination: &base.ComponentDestination{
+						ClusterProfileRef: base.ClusterProfileReference{
+							Namespace: "fleet",
+							Name:      "worker",
+						},
+						Namespace: "knative-serving",
 					},
 				},
 			},

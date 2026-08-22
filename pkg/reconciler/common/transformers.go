@@ -28,7 +28,7 @@ import (
 func transformers(ctx context.Context, obj base.KComponent) []mf.Transformer {
 	logger := logging.FromContext(ctx)
 	return []mf.Transformer{
-		mf.InjectNamespace(obj.GetNamespace()),
+		mf.InjectNamespace(InstallationNamespace(obj)),
 		NamespaceConfigurationTransform(obj.GetSpec().GetNamespaceConfiguration()),
 		HighAvailabilityTransform(obj),
 		ImageTransform(obj.GetSpec().GetRegistry(), logger),
@@ -80,7 +80,7 @@ func Transform(ctx context.Context, manifest *mf.Manifest, instance base.KCompon
 // InjectNamespace will mutate the namespace of all installed resources
 func InjectNamespace(manifest *mf.Manifest, instance base.KComponent, extra ...mf.Transformer) error {
 	transformers := make([]mf.Transformer, 0, 1+len(extra))
-	transformers = append(transformers, mf.InjectNamespace(instance.GetNamespace()))
+	transformers = append(transformers, mf.InjectNamespace(InstallationNamespace(instance)))
 	transformers = append(transformers, extra...)
 	m, err := manifest.Transform(transformers...)
 	if err != nil {

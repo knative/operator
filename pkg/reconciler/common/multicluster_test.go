@@ -41,6 +41,13 @@ import (
 	clusterinventoryv1alpha1 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha1"
 )
 
+func testDestination(namespace string, ref base.ClusterProfileReference) *base.ComponentDestination {
+	return &base.ComponentDestination{
+		ClusterProfileRef: ref,
+		Namespace:         namespace,
+	}
+}
+
 func TestResolveTargetCluster_NilRef(t *testing.T) {
 	instance := &v1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
@@ -81,13 +88,59 @@ func TestResolveTargetCluster_NilRef(t *testing.T) {
 	}
 }
 
+func TestDestinationAccessors(t *testing.T) {
+	ref := base.ClusterProfileReference{Namespace: "fleet", Name: "spoke"}
+	tests := []struct {
+		name          string
+		instance      *v1beta1.KnativeServing
+		wantNamespace string
+		wantRef       *base.ClusterProfileReference
+	}{
+		{
+			name: "local component uses management namespace",
+			instance: &v1beta1.KnativeServing{ObjectMeta: metav1.ObjectMeta{
+				Namespace: "management", Name: "test",
+			}},
+			wantNamespace: "management",
+		},
+		{
+			name: "remote component uses destination",
+			instance: &v1beta1.KnativeServing{
+				ObjectMeta: metav1.ObjectMeta{Namespace: "management", Name: "test"},
+				Spec: v1beta1.KnativeServingSpec{CommonSpec: base.CommonSpec{
+					Destination: testDestination("installation", ref),
+				}},
+			},
+			wantNamespace: "installation",
+			wantRef:       &ref,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := InstallationNamespace(tt.instance); got != tt.wantNamespace {
+				t.Fatalf("InstallationNamespace() = %q, want %q", got, tt.wantNamespace)
+			}
+			gotRef := ClusterProfileRef(tt.instance)
+			if !SameClusterProfile(gotRef, tt.wantRef) {
+				t.Fatalf("ClusterProfileRef() = %#v, want %#v", gotRef, tt.wantRef)
+			}
+		})
+	}
+}
+
 func TestEnsureAnchorConfigMap_Create(t *testing.T) {
 	kubeClient := fake.NewSimpleClientset()
 	instance := &v1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "test-ns",
+			Namespace: "hub-ns",
 			Name:      "test",
 		},
+		Spec: v1beta1.KnativeServingSpec{CommonSpec: base.CommonSpec{
+			Destination: testDestination("test-ns", base.ClusterProfileReference{
+				Namespace: "fleet", Name: "spoke",
+			}),
+		}},
 	}
 
 	ctx := context.Background()
@@ -244,9 +297,14 @@ func TestDeleteAnchorConfigMap_Success(t *testing.T) {
 
 	instance := &v1beta1.KnativeServing{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "test-ns",
+			Namespace: "hub-ns",
 			Name:      "test",
 		},
+		Spec: v1beta1.KnativeServingSpec{CommonSpec: base.CommonSpec{
+			Destination: testDestination("test-ns", base.ClusterProfileReference{
+				Namespace: "fleet", Name: "spoke",
+			}),
+		}},
 	}
 
 	ctx := context.Background()
@@ -468,7 +526,7 @@ func TestEnsureAnchorConfigMap_NamespaceLabels_ExistingUnchanged(t *testing.T) {
 }
 
 func TestShouldFinalizeClusterScoped(t *testing.T) {
-	ref := &base.ClusterProfileReference{Namespace: "fleet", Name: "spoke1"}
+	ref := base.ClusterProfileReference{Namespace: "fleet", Name: "spoke1"}
 
 	tests := []struct {
 		name       string
@@ -490,14 +548,14 @@ func TestShouldFinalizeClusterScoped(t *testing.T) {
 				&v1beta1.KnativeServing{
 					ObjectMeta: metav1.ObjectMeta{Namespace: "ns", Name: "ks-other"},
 					Spec: v1beta1.KnativeServingSpec{
-						CommonSpec: base.CommonSpec{ClusterProfileRef: ref},
+						CommonSpec: base.CommonSpec{Destination: testDestination("target-a", ref)},
 					},
 				},
 			},
 			original: &v1beta1.KnativeServing{
 				ObjectMeta: metav1.ObjectMeta{Namespace: "ns", Name: "ks"},
 				Spec: v1beta1.KnativeServingSpec{
-					CommonSpec: base.CommonSpec{ClusterProfileRef: ref},
+					CommonSpec: base.CommonSpec{Destination: testDestination("target-b", ref)},
 				},
 			},
 			want: false,
@@ -508,16 +566,16 @@ func TestShouldFinalizeClusterScoped(t *testing.T) {
 				&v1beta1.KnativeServing{
 					ObjectMeta: metav1.ObjectMeta{Namespace: "ns", Name: "ks-other"},
 					Spec: v1beta1.KnativeServingSpec{
-						CommonSpec: base.CommonSpec{ClusterProfileRef: &base.ClusterProfileReference{
+						CommonSpec: base.CommonSpec{Destination: testDestination("target-a", base.ClusterProfileReference{
 							Namespace: "fleet", Name: "spoke2",
-						}},
+						})},
 					},
 				},
 			},
 			original: &v1beta1.KnativeServing{
 				ObjectMeta: metav1.ObjectMeta{Namespace: "ns", Name: "ks"},
 				Spec: v1beta1.KnativeServingSpec{
-					CommonSpec: base.CommonSpec{ClusterProfileRef: ref},
+					CommonSpec: base.CommonSpec{Destination: testDestination("target-a", ref)},
 				},
 			},
 			want: true,

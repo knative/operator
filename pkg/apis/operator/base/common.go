@@ -82,8 +82,8 @@ type KComponentSpec interface {
 	// GetPodDisruptionBudgetOverride gets the PodDisruptionBudget configurations to override.
 	GetPodDisruptionBudgetOverride() []PodDisruptionBudgetOverride
 
-	// GetClusterProfileRef gets the reference to a ClusterProfile for multi-cluster deployment.
-	GetClusterProfileRef() *ClusterProfileReference
+	// GetDestination gets the remote cluster and installation namespace.
+	GetDestination() *ComponentDestination
 }
 
 // KComponentStatus is a common interface for status mutations of all known types.
@@ -187,10 +187,9 @@ type CommonSpec struct {
 	// +optional
 	PodDisruptionBudgetOverride []PodDisruptionBudgetOverride `json:"podDisruptionBudgets,omitempty"`
 
-	// ClusterProfileRef optionally targets a ClusterProfile; when set, the
-	// component is reconciled on the referenced remote cluster.
+	// Destination selects a remote cluster and the namespace where Knative is installed.
 	// +optional
-	ClusterProfileRef *ClusterProfileReference `json:"clusterProfileRef,omitempty"`
+	Destination *ComponentDestination `json:"destination,omitempty"`
 }
 
 // GetConfig implements KComponentSpec.
@@ -248,9 +247,9 @@ func (c *CommonSpec) GetPodDisruptionBudgetOverride() []PodDisruptionBudgetOverr
 	return c.PodDisruptionBudgetOverride
 }
 
-// GetClusterProfileRef implements KComponentSpec.
-func (c *CommonSpec) GetClusterProfileRef() *ClusterProfileReference {
-	return c.ClusterProfileRef
+// GetDestination implements KComponentSpec.
+func (c *CommonSpec) GetDestination() *ComponentDestination {
+	return c.Destination
 }
 
 // ConfigMapData is a nested map of maps representing all upstream ConfigMaps. The first
@@ -466,8 +465,26 @@ type CustomCerts struct {
 type ClusterProfileReference struct {
 	// Name is the name of the ClusterProfile resource.
 	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=253
+	// +kubebuilder:validation:Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`
 	Name string `json:"name"`
 	// Namespace is the namespace of the ClusterProfile resource.
 	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=63
+	// +kubebuilder:validation:Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`
+	Namespace string `json:"namespace"`
+}
+
+// ComponentDestination identifies where a Knative component is installed on a remote cluster.
+type ComponentDestination struct {
+	// ClusterProfileRef identifies the ClusterProfile resource for the remote cluster.
+	// +required
+	ClusterProfileRef ClusterProfileReference `json:"clusterProfileRef"`
+
+	// Namespace is the namespace on the remote cluster where Knative is installed.
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=63
+	// +kubebuilder:validation:Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`
+	// +required
 	Namespace string `json:"namespace"`
 }

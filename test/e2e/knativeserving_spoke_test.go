@@ -44,6 +44,10 @@ import (
 const (
 	defaultSpokeClusterProfileName      = "spoke"
 	defaultSpokeClusterProfileNamespace = "default"
+	spokeServingInstallNamespace        = "knative-serving"
+	spokeEventingInstallNamespace       = "knative-eventing-spoke"
+	spokeServingSelector                = "app.kubernetes.io/name=knative-serving"
+	spokeEventingSelector               = "app.kubernetes.io/name=knative-eventing"
 
 	spokeWaitInterval = 5 * time.Second
 	spokeReadyTimeout = 5 * time.Minute
@@ -67,6 +71,9 @@ func spokeClusterProfileRefNamespace() string {
 
 func TestMulticlusterKnativeServingSpokeDeployment(t *testing.T) {
 	ctx := t.Context()
+	if test.ServingOperatorNamespace == spokeServingInstallNamespace {
+		t.Fatalf("TEST_NAMESPACE %q must differ from the spoke installation namespace", test.ServingOperatorNamespace)
+	}
 
 	hub := client.Setup(t)
 	spoke := client.SetupSpoke(t)
@@ -76,7 +83,7 @@ func TestMulticlusterKnativeServingSpokeDeployment(t *testing.T) {
 		Namespace:      test.ServingOperatorNamespace,
 	}
 
-	ensureSpokeNamespace(ctx, t, spoke, names.Namespace)
+	ensureSpokeNamespace(ctx, t, spoke, spokeServingInstallNamespace)
 
 	test.CleanupOnInterrupt(func() { test.TearDown(hub, names) })
 	defer test.TearDown(hub, names)
@@ -92,6 +99,11 @@ func TestMulticlusterKnativeServingSpokeDeployment(t *testing.T) {
 
 	t.Run("spoke-deployments-ready", func(t *testing.T) {
 		waitForSpokeDeploymentsReady(t.Context(), t, hub, spoke, names)
+		assertNoSpokeDeployments(t.Context(), t, spoke, names.Namespace, spokeServingSelector)
+	})
+
+	t.Run("destination-validation", func(t *testing.T) {
+		assertServingDestinationValidation(t.Context(), t, hub, names)
 	})
 
 	t.Run("delete-and-cleanup-spoke", func(t *testing.T) {
@@ -99,13 +111,70 @@ func TestMulticlusterKnativeServingSpokeDeployment(t *testing.T) {
 		if err := deleteHubKnativeServing(ctx, hub, names); err != nil {
 			t.Fatalf("Failed to delete hub KnativeServing %q: %v", names.KnativeServing, err)
 		}
-		if err := waitForSpokeDeploymentsGone(ctx, t, spoke, names.Namespace); err != nil {
+		if err := waitForSpokeDeploymentsGone(ctx, t, spoke, spokeServingInstallNamespace, spokeServingSelector); err != nil {
 			t.Fatalf("Spoke deployments still present after deletion in namespace %q: %v",
-				names.Namespace, err)
+				spokeServingInstallNamespace, err)
 		}
-		waitForSpokeManagedServicesGone(ctx, t, spoke, names.Namespace)
+		waitForSpokeManagedServicesGone(ctx, t, spoke, spokeServingInstallNamespace)
 		assertAnchorConfigMapGone(ctx, t, spoke, names)
 	})
+}
+
+func assertServingDestinationValidation(ctx context.Context, t *testing.T, hub *test.Clients, names test.ResourceNames) {
+	t.Helper()
+	ks, err := hub.KnativeServing().Get(ctx, names.KnativeServing, metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("Failed to get KnativeServing for destination validation: %v", err)
+	}
+	ks.Spec.Destination.Namespace = "different-namespace"
+	if _, err := hub.KnativeServing().Update(ctx, ks, metav1.UpdateOptions{}); !apierrs.IsInvalid(err) {
+		t.Fatalf("Changing spec.destination error = %v, want Invalid", err)
+	}
+	ks, err = hub.KnativeServing().Get(ctx, names.KnativeServing, metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("Failed to re-fetch KnativeServing for destination validation: %v", err)
+	}
+	ks.Spec.Destination.ClusterProfileRef.Name = "different-profile"
+	if _, err := hub.KnativeServing().Update(ctx, ks, metav1.UpdateOptions{}); !apierrs.IsInvalid(err) {
+		t.Fatalf("Changing spec.destination.clusterProfileRef.name error = %v, want Invalid", err)
+	}
+	ks, err = hub.KnativeServing().Get(ctx, names.KnativeServing, metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("Failed to re-fetch KnativeServing for destination validation: %v", err)
+	}
+	ks.Spec.Destination.ClusterProfileRef.Namespace = "different-profile-namespace"
+	if _, err := hub.KnativeServing().Update(ctx, ks, metav1.UpdateOptions{}); !apierrs.IsInvalid(err) {
+		t.Fatalf("Changing spec.destination.clusterProfileRef.namespace error = %v, want Invalid", err)
+	}
+
+	invalid := &v1beta1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{Name: "invalid-destination", Namespace: names.Namespace},
+		Spec: v1beta1.KnativeServingSpec{CommonSpec: base.CommonSpec{
+			Destination: &base.ComponentDestination{
+				ClusterProfileRef: base.ClusterProfileReference{
+					Name: spokeClusterProfileRefName(), Namespace: spokeClusterProfileRefNamespace(),
+				},
+				Namespace: "INVALID_NAMESPACE",
+			},
+		}},
+	}
+	if _, err := hub.KnativeServing().Create(ctx, invalid, metav1.CreateOptions{}); !apierrs.IsInvalid(err) {
+		t.Fatalf("Creating an invalid spec.destination error = %v, want Invalid", err)
+	}
+}
+
+func assertNoSpokeDeployments(ctx context.Context, t *testing.T, spoke *test.Clients, namespace, selector string) {
+	t.Helper()
+	deployments, err := spoke.KubeClient.AppsV1().Deployments(namespace).List(ctx, metav1.ListOptions{
+		LabelSelector: selector,
+	})
+	if err != nil {
+		t.Fatalf("Failed to list Deployments in non-destination namespace %q: %v", namespace, err)
+	}
+	if len(deployments.Items) != 0 {
+		t.Fatalf("Found %d Deployments matching %q in non-destination namespace %q",
+			len(deployments.Items), selector, namespace)
+	}
 }
 
 func createKnativeServingWithSpokeRef(ctx context.Context, clients *test.Clients, names test.ResourceNames) error {
@@ -116,9 +185,12 @@ func createKnativeServingWithSpokeRef(ctx context.Context, clients *test.Clients
 		},
 		Spec: v1beta1.KnativeServingSpec{
 			CommonSpec: base.CommonSpec{
-				ClusterProfileRef: &base.ClusterProfileReference{
-					Name:      spokeClusterProfileRefName(),
-					Namespace: spokeClusterProfileRefNamespace(),
+				Destination: &base.ComponentDestination{
+					ClusterProfileRef: base.ClusterProfileReference{
+						Name:      spokeClusterProfileRefName(),
+						Namespace: spokeClusterProfileRefNamespace(),
+					},
+					Namespace: spokeServingInstallNamespace,
 				},
 				Config: map[string]map[string]string{
 					"network": {
@@ -214,7 +286,7 @@ func waitForSpokeDeploymentsReady(ctx context.Context, t *testing.T, hub *test.C
 	}
 
 	t.Logf("Waiting up to %s for all Deployments in spoke namespace %q to become Available",
-		spokeReadyTimeout, names.Namespace)
+		spokeReadyTimeout, spokeServingInstallNamespace)
 
 	var (
 		lastTotal    = -1
@@ -223,7 +295,9 @@ func waitForSpokeDeploymentsReady(ctx context.Context, t *testing.T, hub *test.C
 	)
 	pollErr := wait.PollUntilContextTimeout(ctx, spokeWaitInterval, spokeReadyTimeout, true,
 		func(ctx context.Context) (bool, error) {
-			dpList, err := spoke.KubeClient.AppsV1().Deployments(names.Namespace).List(ctx, metav1.ListOptions{})
+			dpList, err := spoke.KubeClient.AppsV1().Deployments(spokeServingInstallNamespace).List(ctx, metav1.ListOptions{
+				LabelSelector: spokeServingSelector,
+			})
 			if err != nil {
 				return false, err
 			}
@@ -236,7 +310,7 @@ func waitForSpokeDeploymentsReady(ctx context.Context, t *testing.T, hub *test.C
 				}
 			}
 			if total != lastTotal || ready != lastReady {
-				t.Logf("spoke ns %q: %d/%d Deployments Available", names.Namespace, ready, total)
+				t.Logf("spoke ns %q: %d/%d Deployments Available", spokeServingInstallNamespace, ready, total)
 				lastTotal = total
 				lastReady = ready
 			}
@@ -247,22 +321,24 @@ func waitForSpokeDeploymentsReady(ctx context.Context, t *testing.T, hub *test.C
 		})
 	if pollErr != nil {
 		t.Logf("Spoke deployments did not become ready in namespace %q. Last observed state:",
-			names.Namespace)
+			spokeServingInstallNamespace)
 		dumpDeployments(t, lastObserved)
 		t.Fatalf("Spoke deployments did not become ready in namespace %q: %v",
-			names.Namespace, pollErr)
+			spokeServingInstallNamespace, pollErr)
 	}
 }
 
-func waitForSpokeDeploymentsGone(ctx context.Context, t *testing.T, clients *test.Clients, namespace string) error {
+func waitForSpokeDeploymentsGone(ctx context.Context, t *testing.T, clients *test.Clients, namespace, selector string) error {
 	t.Helper()
-	t.Logf("Waiting up to %s for all Deployments in spoke namespace %q to disappear",
-		spokeGoneTimeout, namespace)
+	t.Logf("Waiting up to %s for Deployments matching %q in spoke namespace %q to disappear",
+		spokeGoneTimeout, selector, namespace)
 
 	lastCount := -1
 	return wait.PollUntilContextTimeout(ctx, spokeWaitInterval, spokeGoneTimeout, true,
 		func(ctx context.Context) (bool, error) {
-			dpList, err := clients.KubeClient.AppsV1().Deployments(namespace).List(ctx, metav1.ListOptions{})
+			dpList, err := clients.KubeClient.AppsV1().Deployments(namespace).List(ctx, metav1.ListOptions{
+				LabelSelector: selector,
+			})
 			if err != nil {
 				if apierrs.IsNotFound(err) {
 					return true, nil
@@ -361,9 +437,9 @@ func waitForSpokeManagedServicesGone(ctx context.Context, t *testing.T, spoke *t
 func assertAnchorConfigMapGone(ctx context.Context, t *testing.T, spoke *test.Clients, names test.ResourceNames) {
 	t.Helper()
 	anchorName := "knativeserving-" + names.KnativeServing + "-root-owner"
-	_, err := spoke.KubeClient.CoreV1().ConfigMaps(names.Namespace).Get(ctx, anchorName, metav1.GetOptions{})
+	_, err := spoke.KubeClient.CoreV1().ConfigMaps(spokeServingInstallNamespace).Get(ctx, anchorName, metav1.GetOptions{})
 	if err == nil {
-		t.Fatalf("Anchor ConfigMap %q still exists in spoke namespace %q", anchorName, names.Namespace)
+		t.Fatalf("Anchor ConfigMap %q still exists in spoke namespace %q", anchorName, spokeServingInstallNamespace)
 	}
 	if !apierrs.IsNotFound(err) {
 		t.Fatalf("Unexpected error checking anchor ConfigMap %q: %v", anchorName, err)

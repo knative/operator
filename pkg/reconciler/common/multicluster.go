@@ -421,7 +421,7 @@ func ShouldFinalizeClusterScoped(
 ) bool {
 	for _, comp := range components {
 		if comp.GetDeletionTimestamp().IsZero() &&
-			SameClusterProfile(comp.GetSpec().GetClusterProfileRef(), original.GetSpec().GetClusterProfileRef()) {
+			SameClusterProfile(ClusterProfileRef(comp), ClusterProfileRef(original)) {
 			return false
 		}
 	}
@@ -436,6 +436,24 @@ func SameClusterProfile(a, b *base.ClusterProfileReference) bool {
 		return false
 	}
 	return a.Namespace == b.Namespace && a.Name == b.Name
+}
+
+// ClusterProfileRef returns the ClusterProfile selected by the component destination.
+func ClusterProfileRef(instance base.KComponent) *base.ClusterProfileReference {
+	destination := instance.GetSpec().GetDestination()
+	if destination == nil {
+		return nil
+	}
+	return &destination.ClusterProfileRef
+}
+
+// InstallationNamespace returns the namespace where the component is installed.
+func InstallationNamespace(instance base.KComponent) string {
+	destination := instance.GetSpec().GetDestination()
+	if destination == nil {
+		return instance.GetNamespace()
+	}
+	return destination.Namespace
 }
 
 func FinalizeRemoteCluster(
@@ -487,16 +505,16 @@ func FinalizeRemoteClusterIfNeeded(
 	instance base.KComponent,
 	optionalPreds ...mf.Predicate,
 ) (bool, error) {
-	cpRef := instance.GetSpec().GetClusterProfileRef()
+	cpRef := ClusterProfileRef(instance)
 	if cpRef == nil {
 		return false, nil
 	}
 	if provider == nil {
-		return true, fmt.Errorf("cluster provider not configured but clusterProfileRef is set")
+		return true, fmt.Errorf("cluster provider not configured but destination is set")
 	}
 	logger := logging.FromContext(ctx)
 	clusterName := cpRef.Namespace + "/" + cpRef.Name
-	entry, reason, err := provider.Get(ctx, clusterName)
+	entry, reason, err := provider.GetOrRefresh(ctx, cpRef.Namespace, cpRef.Name)
 	if err != nil {
 		if errors.Is(err, errClusterNotResolved) {
 			logger.Warnf("ClusterProfile %s not yet resolved; remote resources may be orphaned. "+
@@ -534,7 +552,7 @@ func EnsureAnchorConfigMap(
 	if len(name) > maxResourceNameLength {
 		return nil, fmt.Errorf("anchor ConfigMap name %q exceeds maximum length of %d characters; shorten the CR name", name, maxResourceNameLength)
 	}
-	ns := instance.GetNamespace()
+	ns := InstallationNamespace(instance)
 	nsCfg := instance.GetSpec().GetNamespaceConfiguration()
 
 	if _, err := kubeClient.CoreV1().Namespaces().Get(ctx, ns, metav1.GetOptions{}); err != nil {
@@ -564,7 +582,7 @@ func EnsureAnchorConfigMap(
 		}
 	} else if nsCfg != nil && (len(nsCfg.Labels) > 0 || len(nsCfg.Annotations) > 0) {
 		logger.Debugf("Namespace %s already exists on remote cluster; "+
-			"spec.namespaceConfiguration will be reconciled via the Install-stage transform.", ns)
+			"spec.namespace will be reconciled via the Install-stage transform.", ns)
 	}
 
 	expectedLabels := map[string]string{
@@ -640,7 +658,7 @@ func DeleteAnchorConfigMap(
 	instance base.KComponent,
 ) error {
 	name := AnchorName(instance)
-	ns := instance.GetNamespace()
+	ns := InstallationNamespace(instance)
 	err := kubeClient.CoreV1().ConfigMaps(ns).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete anchor ConfigMap %s/%s: %w", ns, name, err)
@@ -650,7 +668,7 @@ func DeleteAnchorConfigMap(
 
 func ResolveTargetCluster(provider *ClusterProvider, state *ReconcileState) Stage {
 	return func(ctx context.Context, manifest *mf.Manifest, instance base.KComponent) error {
-		cpRef := instance.GetSpec().GetClusterProfileRef()
+		cpRef := ClusterProfileRef(instance)
 		if cpRef == nil {
 			instance.GetStatus().MarkTargetClusterResolved()
 			return nil
@@ -660,7 +678,7 @@ func ResolveTargetCluster(provider *ClusterProvider, state *ReconcileState) Stag
 			instance.GetStatus().MarkTargetClusterNotResolved(
 				base.ReasonAccessProviderNotConfigured,
 				"cluster provider not configured; set --clusterprofile-provider-file")
-			return fmt.Errorf("cluster provider not configured but clusterProfileRef is set")
+			return fmt.Errorf("cluster provider not configured but destination is set")
 		}
 
 		entry, reason, err := provider.GetOrRefresh(ctx, cpRef.Namespace, cpRef.Name)

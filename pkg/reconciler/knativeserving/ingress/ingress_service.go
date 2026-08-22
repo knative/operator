@@ -28,6 +28,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
+	"knative.dev/operator/pkg/reconciler/common"
 )
 
 // localGateway defines the structure for the entries in the 'local-gateways' array.
@@ -44,17 +45,18 @@ func IngressServiceTransform(ks *v1beta1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetAPIVersion() == "v1" && u.GetKind() == "Service" {
 			if u.GetName() == "knative-local-gateway" {
+				installNamespace := common.InstallationNamespace(ks)
 				// Default to istio-system, then override if config exists
 				u.SetNamespace("istio-system")
 				u.SetOwnerReferences(nil)
 				config := ks.GetSpec().GetConfig()
 				if data, ok := config["istio"]; ok {
-					UpdateNamespace(u, data, ks.GetNamespace())
+					UpdateNamespace(u, data, installNamespace)
 				}
 
 				// The "config-" prefix is optional
 				if data, ok := config["config-istio"]; ok {
-					UpdateNamespace(u, data, ks.GetNamespace())
+					UpdateNamespace(u, data, installNamespace)
 				}
 
 				return updateIstioService(ks, u, localGateway)

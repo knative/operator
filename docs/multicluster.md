@@ -2,8 +2,8 @@
 
 The operator can deploy Knative Serving and Eventing to remote clusters from a
 single hub cluster. A `KnativeServing` or `KnativeEventing` CR carrying a
-`spec.clusterProfileRef` reconciles on the referenced spoke cluster; without it
-the operator behaves as before.
+`spec.destination` reconciles in the selected namespace on the referenced spoke
+cluster; without it the operator behaves as before.
 
 The hub needs network access to each spoke API server. Connection details are
 resolved through the Cluster Inventory API (`ClusterProfile`).
@@ -19,19 +19,27 @@ resolved through the Cluster Inventory API (`ClusterProfile`).
 
 ## Usage
 
-Set `spec.clusterProfileRef` on a CR to target a remote cluster:
+Set `spec.destination` on a CR to select both the remote cluster and the
+installation namespace:
 
 ```yaml
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
   name: knative-serving
-  namespace: knative-serving
+  namespace: knative-operator
 spec:
-  clusterProfileRef:
-    name: spoke-cluster-1
-    namespace: fleet-system
+  destination:
+    clusterProfileRef:
+      name: spoke-cluster-1
+      namespace: fleet-system
+    namespace: knative-serving
 ```
+
+`destination.clusterProfileRef.name`, `destination.clusterProfileRef.namespace`,
+and `destination.namespace` are required. The destination is immutable after
+creation; delete and recreate the management CR to target a different cluster
+or namespace.
 
 The operator resolves the `ClusterProfile`, builds a `rest.Config` via the
 configured access provider, and applies manifests on the spoke. A
@@ -40,7 +48,7 @@ reached.
 
 `--clusterprofile-provider-file` must point to an access provider config JSON
 file (`sigs.k8s.io/cluster-inventory-api/pkg/access`); without it, any CR with
-a `clusterProfileRef` will fail to reconcile.
+a `destination` will fail to reconcile.
 
 ## Helm chart
 
@@ -80,7 +88,7 @@ point under a plugin mount path, not at the mount directory itself.
 
 ## Namespace configuration
 
-`spec.namespaceConfiguration.labels` and `spec.namespaceConfiguration.annotations`
+`spec.namespace.labels` and `spec.namespace.annotations`
 are applied to the spoke namespace when the operator creates it. Existing
 spoke namespaces are not modified.
 
@@ -132,7 +140,7 @@ kubectl get knativeserving -n <ns> <name> -o jsonpath='{.status.conditions[?(@.t
 Common reasons for `TargetClusterResolved=False`:
 
 - **ClusterProfileNotFound**: the referenced `ClusterProfile` does not exist.
-  Check `spec.clusterProfileRef`.
+  Check `spec.destination.clusterProfileRef`.
 - **ClusterProfileNotReady**: `ClusterProfile` exists but is unhealthy.
   Inspect `kubectl get clusterprofile -n <ns> <name> -o yaml`.
 - **ClusterProfileUnavailable**: fetch failed or cache not primed yet.

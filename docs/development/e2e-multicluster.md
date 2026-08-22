@@ -107,17 +107,18 @@ Create the manifest in a temp file (the repository does not ship a
 `hack/manual/` directory) and apply it:
 
 ```bash
-kubectl create ns knative-serving
 cat > /tmp/knativeserving-spoke.yaml <<'EOF'
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
   name: knative-serving
-  namespace: knative-serving
+  namespace: knative-operator
 spec:
-  clusterProfileRef:
-    name: spoke
-    namespace: default
+  destination:
+    clusterProfileRef:
+      name: spoke
+      namespace: default
+    namespace: knative-serving
 EOF
 kubectl apply -f /tmp/knativeserving-spoke.yaml
 ```
@@ -125,17 +126,18 @@ kubectl apply -f /tmp/knativeserving-spoke.yaml
 Same pattern for Eventing:
 
 ```bash
-kubectl create ns knative-eventing
 cat > /tmp/knativeeventing-spoke.yaml <<'EOF'
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeEventing
 metadata:
   name: knative-eventing
-  namespace: knative-eventing
+  namespace: knative-operator
 spec:
-  clusterProfileRef:
-    name: spoke
-    namespace: default
+  destination:
+    clusterProfileRef:
+      name: spoke
+      namespace: default
+    namespace: knative-eventing
 EOF
 kubectl apply -f /tmp/knativeeventing-spoke.yaml
 ```
@@ -156,8 +158,8 @@ KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl -n knative-serving rollout status 
 Delete the hub CRs in reverse order; the operator's finalizer cleans the spoke:
 
 ```bash
-kubectl delete knativeeventing -n knative-eventing knative-eventing
-kubectl delete knativeserving  -n knative-serving  knative-serving
+kubectl delete knativeeventing -n knative-operator knative-eventing
+kubectl delete knativeserving  -n knative-operator knative-serving
 
 # Anchors should be gone.
 KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl get cm -A \

@@ -42,8 +42,11 @@ spec:
           path: /resource-conversion
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.clusterProfileRef.name
+    - jsonPath: .spec.destination.clusterProfileRef.name
       name: Target Cluster
+      type: string
+    - jsonPath: .spec.destination.namespace
+      name: Target Namespace
       type: string
     name: v1beta1
     schema:
@@ -82,23 +85,6 @@ spec:
                   - URL
                   type: object
                 type: array
-              clusterProfileRef:
-                description: |-
-                  ClusterProfileRef optionally targets a ClusterProfile; when set, the
-                  component is reconciled on the referenced remote cluster.
-                properties:
-                  name:
-                    description: Name is the name of the ClusterProfile resource.
-                    minLength: 1
-                    type: string
-                  namespace:
-                    description: Namespace is the namespace of the ClusterProfile resource.
-                    minLength: 1
-                    type: string
-                required:
-                - name
-                - namespace
-                type: object
               config:
                 additionalProperties:
                   additionalProperties:
@@ -1647,6 +1633,38 @@ spec:
                   - name
                   type: object
                 type: array
+              destination:
+                description: Destination selects a remote cluster and the namespace where Knative is installed.
+                properties:
+                  clusterProfileRef:
+                    description: ClusterProfileRef identifies the ClusterProfile resource for the remote cluster.
+                    properties:
+                      name:
+                        description: Name is the name of the ClusterProfile resource.
+                        maxLength: 253
+                        minLength: 1
+                        pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                        type: string
+                      namespace:
+                        description: Namespace is the namespace of the ClusterProfile resource.
+                        maxLength: 63
+                        minLength: 1
+                        pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
+                  namespace:
+                    description: Namespace is the namespace on the remote cluster where Knative is installed.
+                    maxLength: 63
+                    minLength: 1
+                    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                    type: string
+                required:
+                - clusterProfileRef
+                - namespace
+                type: object
               high-availability:
                 description: HighAvailability allows specification of HA control plane.
                 properties:
@@ -3534,10 +3552,8 @@ spec:
                 type: array
             type: object
             x-kubernetes-validations:
-            - message: spec.clusterProfileRef cannot be added or removed after creation
-              rule: has(self.clusterProfileRef) == has(oldSelf.clusterProfileRef)
-            - message: spec.clusterProfileRef is immutable
-              rule: '!has(self.clusterProfileRef) || !has(oldSelf.clusterProfileRef) || self.clusterProfileRef == oldSelf.clusterProfileRef'
+            - message: spec.destination is immutable
+              rule: has(self.destination) == has(oldSelf.destination) && (!has(self.destination) || self.destination == oldSelf.destination)
           status:
             description: KnativeEventingStatus defines the observed state of KnativeEventing
             properties:

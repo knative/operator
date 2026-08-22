@@ -33,7 +33,8 @@ var (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="Target Cluster",type=string,JSONPath=`.spec.clusterProfileRef.name`,priority=0
+// +kubebuilder:printcolumn:name="Target Cluster",type=string,JSONPath=`.spec.destination.clusterProfileRef.name`,priority=0
+// +kubebuilder:printcolumn:name="Target Namespace",type=string,JSONPath=`.spec.destination.namespace`,priority=0
 type KnativeEventing struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -53,8 +54,7 @@ func (ke *KnativeEventing) GetStatus() base.KComponentStatus {
 }
 
 // KnativeEventingSpec defines the desired state of KnativeEventing
-// +kubebuilder:validation:XValidation:rule="has(self.clusterProfileRef) == has(oldSelf.clusterProfileRef)",message="spec.clusterProfileRef cannot be added or removed after creation"
-// +kubebuilder:validation:XValidation:rule="!has(self.clusterProfileRef) || !has(oldSelf.clusterProfileRef) || self.clusterProfileRef == oldSelf.clusterProfileRef",message="spec.clusterProfileRef is immutable"
+// +kubebuilder:validation:XValidation:rule="has(self.destination) == has(oldSelf.destination) && (!has(self.destination) || self.destination == oldSelf.destination)",message="spec.destination is immutable"
 type KnativeEventingSpec struct {
 	base.CommonSpec `json:",inline"`
 

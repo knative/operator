@@ -89,8 +89,8 @@ point under a plugin mount path, not at the mount directory itself.
 ## Namespace configuration
 
 `spec.namespace.labels` and `spec.namespace.annotations`
-are applied to the spoke namespace when the operator creates it. Existing
-spoke namespaces are not modified.
+are merged into the spoke namespace metadata. Existing labels and annotations
+with other keys are preserved.
 
 ## Anchor ConfigMap
 

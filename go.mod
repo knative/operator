@@ -3,6 +3,7 @@ module knative.dev/operator
 go 1.25.0
 
 require (
+	github.com/evanphx/json-patch/v5 v5.9.11
 	github.com/go-logr/zapr v1.3.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/go-github/v33 v33.0.0
@@ -77,7 +78,6 @@ require (
 	github.com/emicklei/go-restful/v3 v3.13.0 // indirect
 	github.com/envoyproxy/go-control-plane/envoy v1.37.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.3.3 // indirect
-	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect

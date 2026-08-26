@@ -46,12 +46,14 @@ func TestMulticlusterKnativeEventingSpokeDeployment(t *testing.T) {
 	hub := client.Setup(t)
 	spoke := client.SetupSpoke(t)
 
+	// Use a different hub namespace so the test cannot pass because the
+	// management namespace happens to match the spoke installation namespace.
 	names := test.ResourceNames{
 		KnativeEventing: test.OperatorName,
-		Namespace:       test.EventingOperatorNamespace,
+		Namespace:       test.ServingOperatorNamespace,
 	}
 
-	ensureSpokeNamespace(ctx, t, spoke, names.Namespace)
+	ensureSpokeNamespace(ctx, t, spoke, spokeEventingInstallNamespace)
 
 	test.CleanupOnInterrupt(func() { test.TearDown(hub, names) })
 	defer test.TearDown(hub, names)
@@ -71,7 +73,7 @@ func TestMulticlusterKnativeEventingSpokeDeployment(t *testing.T) {
 
 	t.Run("tls-resources-filtered-without-cert-manager", func(t *testing.T) {
 		ctx := t.Context()
-		assertNoCertManagerResourcesOnSpoke(ctx, t, spoke, names.Namespace)
+		assertNoCertManagerResourcesOnSpoke(ctx, t, spoke, spokeEventingInstallNamespace)
 	})
 
 	t.Run("delete-and-cleanup-spoke", func(t *testing.T) {
@@ -79,13 +81,13 @@ func TestMulticlusterKnativeEventingSpokeDeployment(t *testing.T) {
 		if err := deleteHubKnativeEventing(ctx, hub, names); err != nil {
 			t.Fatalf("Failed to delete hub KnativeEventing %q: %v", names.KnativeEventing, err)
 		}
-		if err := waitForSpokeDeploymentsGone(ctx, t, spoke, names.Namespace); err != nil {
+		if err := waitForSpokeDeploymentsGone(ctx, t, spoke, spokeEventingInstallNamespace); err != nil {
 			t.Fatalf("Spoke deployments still present after deletion in namespace %q: %v",
-				names.Namespace, err)
+				spokeEventingInstallNamespace, err)
 		}
-		waitForSpokeManagedServicesGone(ctx, t, spoke, names.Namespace,
+		waitForSpokeManagedServicesGone(ctx, t, spoke, spokeEventingInstallNamespace,
 			"app.kubernetes.io/name=knative-eventing")
-		assertAnchorConfigMapGone(ctx, t, spoke, names.Namespace,
+		assertAnchorConfigMapGone(ctx, t, spoke, spokeEventingInstallNamespace,
 			"knativeeventing-"+names.KnativeEventing+"-root-owner")
 	})
 }
@@ -105,7 +107,7 @@ func createKnativeEventingWithSpokeRef(ctx context.Context, clients *test.Client
 			},
 		},
 	}
-	_, err := clients.KnativeEventing().Create(ctx, ke, metav1.CreateOptions{})
+	_, err := clients.Operator.KnativeEventings(names.Namespace).Create(ctx, ke, metav1.CreateOptions{})
 	if apierrs.IsAlreadyExists(err) {
 		return nil
 	}
@@ -113,7 +115,7 @@ func createKnativeEventingWithSpokeRef(ctx context.Context, clients *test.Client
 }
 
 func deleteHubKnativeEventing(ctx context.Context, clients *test.Clients, names test.ResourceNames) error {
-	if err := clients.KnativeEventing().Delete(ctx, names.KnativeEventing, metav1.DeleteOptions{}); err != nil {
+	if err := clients.Operator.KnativeEventings(names.Namespace).Delete(ctx, names.KnativeEventing, metav1.DeleteOptions{}); err != nil {
 		if apierrs.IsNotFound(err) {
 			return nil
 		}
@@ -121,7 +123,7 @@ func deleteHubKnativeEventing(ctx context.Context, clients *test.Clients, names 
 	}
 	return wait.PollUntilContextTimeout(ctx, spokeWaitInterval, spokeGoneTimeout, true,
 		func(ctx context.Context) (bool, error) {
-			_, err := clients.KnativeEventing().Get(ctx, names.KnativeEventing, metav1.GetOptions{})
+			_, err := clients.Operator.KnativeEventings(names.Namespace).Get(ctx, names.KnativeEventing, metav1.GetOptions{})
 			if apierrs.IsNotFound(err) {
 				return true, nil
 			}
@@ -138,7 +140,7 @@ func waitForSpokeEventingDeploymentsReady(ctx context.Context, t *testing.T, hub
 	var lastResolveStatus string
 	resolveErr := wait.PollUntilContextTimeout(ctx, spokeWaitInterval, hubResolveTimeout, true,
 		func(ctx context.Context) (bool, error) {
-			ke, err := hub.KnativeEventing().Get(ctx, names.KnativeEventing, metav1.GetOptions{})
+			ke, err := hub.Operator.KnativeEventings(names.Namespace).Get(ctx, names.KnativeEventing, metav1.GetOptions{})
 			if err != nil {
 				if apierrs.IsNotFound(err) {
 					return false, nil
@@ -173,12 +175,12 @@ func waitForSpokeEventingDeploymentsReady(ctx context.Context, t *testing.T, hub
 		t.Fatalf("hub KnativeEventing %s/%s did not reach %s=True: %v",
 			names.Namespace, names.KnativeEventing, base.TargetClusterResolved, resolveErr)
 	}
-	waitForSpokeDeploymentsAvailable(ctx, t, spoke, names.Namespace)
+	waitForSpokeDeploymentsAvailable(ctx, t, spoke, spokeEventingInstallNamespace)
 }
 
 func assertTargetClusterResolvedEventing(ctx context.Context, t *testing.T, hub *test.Clients, names test.ResourceNames) {
 	t.Helper()
-	ke, err := hub.KnativeEventing().Get(ctx, names.KnativeEventing, metav1.GetOptions{})
+	ke, err := hub.Operator.KnativeEventings(names.Namespace).Get(ctx, names.KnativeEventing, metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("Failed to get hub KnativeEventing %q: %v", names.KnativeEventing, err)
 	}

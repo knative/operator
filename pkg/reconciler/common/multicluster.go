@@ -39,6 +39,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
+	"knative.dev/operator/pkg/apis/operator"
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/pkg/logging"
 
@@ -48,9 +49,11 @@ import (
 )
 
 const (
-	defaultRemoteClusterTimeout = 10 * time.Second
-	remoteClusterQPS            = float32(20)
-	remoteClusterBurst          = 40
+	defaultRemoteClusterTimeout   = 10 * time.Second
+	remoteClusterQPS              = float32(20)
+	remoteClusterBurst            = 40
+	servingInstallationNamespace  = "knative-serving"
+	eventingInstallationNamespace = "knative-eventing"
 )
 
 var (
@@ -428,6 +431,21 @@ func ShouldFinalizeClusterScoped(
 	return true
 }
 
+// InstallationNamespace returns the namespace where the component's manifests
+// are installed. Local installations use the management CR namespace. Remote
+// installations use the canonical namespace for the component kind.
+func InstallationNamespace(instance base.KComponent) string {
+	if instance.GetSpec().GetClusterProfileRef() != nil {
+		switch instance.GroupVersionKind().Kind {
+		case operator.KindKnativeServing:
+			return servingInstallationNamespace
+		case operator.KindKnativeEventing:
+			return eventingInstallationNamespace
+		}
+	}
+	return instance.GetNamespace()
+}
+
 func SameClusterProfile(a, b *base.ClusterProfileReference) bool {
 	if a == nil && b == nil {
 		return true
@@ -534,7 +552,7 @@ func EnsureAnchorConfigMap(
 	if len(name) > maxResourceNameLength {
 		return nil, fmt.Errorf("anchor ConfigMap name %q exceeds maximum length of %d characters; shorten the CR name", name, maxResourceNameLength)
 	}
-	ns := instance.GetNamespace()
+	ns := InstallationNamespace(instance)
 	nsCfg := instance.GetSpec().GetNamespaceConfiguration()
 
 	if _, err := kubeClient.CoreV1().Namespaces().Get(ctx, ns, metav1.GetOptions{}); err != nil {
@@ -640,7 +658,7 @@ func DeleteAnchorConfigMap(
 	instance base.KComponent,
 ) error {
 	name := AnchorName(instance)
-	ns := instance.GetNamespace()
+	ns := InstallationNamespace(instance)
 	err := kubeClient.CoreV1().ConfigMaps(ns).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete anchor ConfigMap %s/%s: %w", ns, name, err)

@@ -1,9 +1,8 @@
 # Multi-Cluster Deployment
 
 The operator can deploy Knative Serving and Eventing to remote clusters from a
-single hub cluster. A `KnativeServing` or `KnativeEventing` CR carrying a
-`spec.clusterProfileRef` reconciles on the referenced spoke cluster; without it
-the operator behaves as before.
+single hub cluster. Platform administrators keep the management CRs on the hub
+and use `spec.clusterProfileRef` to choose the spoke cluster.
 
 The hub needs network access to each spoke API server. Connection details are
 resolved through the Cluster Inventory API (`ClusterProfile`).
@@ -19,19 +18,34 @@ resolved through the Cluster Inventory API (`ClusterProfile`).
 
 ## Usage
 
-Set `spec.clusterProfileRef` on a CR to target a remote cluster:
+Create the management CR in a hub namespace used by your platform team and set
+`spec.clusterProfileRef` to the spoke cluster. For example:
 
 ```yaml
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
-  name: knative-serving
-  namespace: knative-serving
+  name: serving-spoke-tokyo
+  namespace: fleet-workloads
 spec:
   clusterProfileRef:
-    name: spoke-cluster-1
+    name: spoke-tokyo
     namespace: fleet-system
 ```
+
+Remote placement is fixed by component kind. The management CR namespace does
+not select the spoke installation namespace:
+
+| Management CR on the hub | `ClusterProfile` on the hub | Installation namespace on the spoke |
+|--------------------------|-----------------------------|-------------------------------------|
+| `fleet-workloads/serving-spoke-tokyo` (`KnativeServing`) | `fleet-system/spoke-tokyo` | `knative-serving` |
+| `fleet-workloads/eventing-spoke-tokyo` (`KnativeEventing`) | `fleet-system/spoke-tokyo` | `knative-eventing` |
+
+The operator does not create a `KnativeServing` or `KnativeEventing` CR on the
+spoke. It renders and applies the release manifests from the hub CR directly.
+
+When `spec.clusterProfileRef` is omitted, the installation remains local and
+continues to use the management CR's `metadata.namespace`.
 
 The operator resolves the `ClusterProfile`, builds a `rest.Config` via the
 configured access provider, and applies manifests on the spoke. A
@@ -80,17 +94,18 @@ point under a plugin mount path, not at the mount directory itself.
 
 ## Namespace configuration
 
-`spec.namespaceConfiguration.labels` and `spec.namespaceConfiguration.annotations`
-are applied to the spoke namespace when the operator creates it. Existing
-spoke namespaces are not modified.
+`spec.namespace.labels` and `spec.namespace.annotations` are applied to the
+spoke installation namespace shown in the Usage table, not the management CR
+namespace.
 
 ## Anchor ConfigMap
 
 For remote deployments, the operator creates an anchor ConfigMap
-(`{kind}-{cr-name}-root-owner`) on the spoke. Namespace-scoped resources use
-it as their `OwnerReference`, so deleting the anchor triggers GC of all owned
-resources. Cluster-scoped resources are not owned by the anchor and are
-cleaned up by `FinalizeRemoteCluster` when the hub CR is deleted.
+(`{kind}-{cr-name}-root-owner`) in the spoke installation namespace shown in the
+Usage table. Namespace-scoped resources use it as their `OwnerReference`, so
+deleting the anchor triggers GC of all owned resources. Cluster-scoped resources
+are not owned by the anchor and are cleaned up by the operator when the hub CR
+is deleted.
 
 The anchor carries an `operator.knative.dev/protected=true` annotation and a
 description annotation warning against manual deletion. To uninstall safely,
@@ -126,7 +141,8 @@ knative_operator:
 Check the status condition on the CR:
 
 ```bash
-kubectl get knativeserving -n <ns> <name> -o jsonpath='{.status.conditions[?(@.type=="TargetClusterResolved")]}'
+kubectl get knativeserving -n fleet-workloads serving-spoke-tokyo \
+  -o jsonpath='{.status.conditions[?(@.type=="TargetClusterResolved")]}'
 ```
 
 Common reasons for `TargetClusterResolved=False`:
@@ -151,4 +167,5 @@ Common reasons for `TargetClusterResolved=False`:
 
 If spoke deployments are not coming up, confirm `TargetClusterResolved=True`,
 check the operator logs on the hub, and inspect the spoke cluster directly with
-`kubectl --kubeconfig=<spoke> get deployments -n <ns>`.
+`kubectl --kubeconfig=spoke-tokyo.kubeconfig get deployments -n knative-serving`
+or `-n knative-eventing`.

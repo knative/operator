@@ -107,13 +107,13 @@ Create the manifest in a temp file (the repository does not ship a
 `hack/manual/` directory) and apply it:
 
 ```bash
-kubectl create ns knative-serving
+kubectl create ns fleet-workloads
 cat > /tmp/knativeserving-spoke.yaml <<'EOF'
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
-  name: knative-serving
-  namespace: knative-serving
+  name: serving-spoke
+  namespace: fleet-workloads
 spec:
   clusterProfileRef:
     name: spoke
@@ -122,16 +122,15 @@ EOF
 kubectl apply -f /tmp/knativeserving-spoke.yaml
 ```
 
-Same pattern for Eventing:
+Apply the Eventing management CR in the same hub namespace:
 
 ```bash
-kubectl create ns knative-eventing
 cat > /tmp/knativeeventing-spoke.yaml <<'EOF'
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeEventing
 metadata:
-  name: knative-eventing
-  namespace: knative-eventing
+  name: eventing-spoke
+  namespace: fleet-workloads
 spec:
   clusterProfileRef:
     name: spoke
@@ -146,7 +145,7 @@ Watch both status conditions and the spoke anchor:
 kubectl get knativeserving -A -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.conditions[?(@.type=="TargetClusterResolved")].status}{"\t"}{.status.conditions[?(@.type=="InstallSucceeded")].status}{"\n"}{end}'
 
 KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl get cm -A \
-  -l operator.knative.dev/cr-name=knative-serving
+  -l operator.knative.dev/cr-name=serving-spoke
 
 KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl -n knative-serving rollout status deploy/activator
 ```
@@ -156,8 +155,8 @@ KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl -n knative-serving rollout status 
 Delete the hub CRs in reverse order; the operator's finalizer cleans the spoke:
 
 ```bash
-kubectl delete knativeeventing -n knative-eventing knative-eventing
-kubectl delete knativeserving  -n knative-serving  knative-serving
+kubectl delete knativeeventing -n fleet-workloads eventing-spoke
+kubectl delete knativeserving  -n fleet-workloads serving-spoke
 
 # Anchors should be gone.
 KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" kubectl get cm -A \

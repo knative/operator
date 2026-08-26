@@ -41,6 +41,8 @@ import (
 const (
 	defaultSpokeClusterProfileName      = "spoke"
 	defaultSpokeClusterProfileNamespace = "default"
+	spokeServingInstallNamespace        = "knative-serving"
+	spokeEventingInstallNamespace       = "knative-eventing"
 
 	spokeWaitInterval = 5 * time.Second
 	spokeReadyTimeout = 5 * time.Minute
@@ -73,7 +75,7 @@ func TestMulticlusterKnativeServingSpokeDeployment(t *testing.T) {
 		Namespace:      test.ServingOperatorNamespace,
 	}
 
-	ensureSpokeNamespace(ctx, t, spoke, names.Namespace)
+	ensureSpokeNamespace(ctx, t, spoke, spokeServingInstallNamespace)
 
 	test.CleanupOnInterrupt(func() { test.TearDown(hub, names) })
 	defer test.TearDown(hub, names)
@@ -96,13 +98,13 @@ func TestMulticlusterKnativeServingSpokeDeployment(t *testing.T) {
 		if err := deleteHubKnativeServing(ctx, hub, names); err != nil {
 			t.Fatalf("Failed to delete hub KnativeServing %q: %v", names.KnativeServing, err)
 		}
-		if err := waitForSpokeDeploymentsGone(ctx, t, spoke, names.Namespace); err != nil {
+		if err := waitForSpokeDeploymentsGone(ctx, t, spoke, spokeServingInstallNamespace); err != nil {
 			t.Fatalf("Spoke deployments still present after deletion in namespace %q: %v",
-				names.Namespace, err)
+				spokeServingInstallNamespace, err)
 		}
-		waitForSpokeManagedServicesGone(ctx, t, spoke, names.Namespace,
+		waitForSpokeManagedServicesGone(ctx, t, spoke, spokeServingInstallNamespace,
 			"app.kubernetes.io/name=knative-serving")
-		assertAnchorConfigMapGone(ctx, t, spoke, names.Namespace,
+		assertAnchorConfigMapGone(ctx, t, spoke, spokeServingInstallNamespace,
 			"knativeserving-"+names.KnativeServing+"-root-owner")
 	})
 }
@@ -131,7 +133,7 @@ func createKnativeServingWithSpokeRef(ctx context.Context, clients *test.Clients
 			},
 		},
 	}
-	_, err := clients.KnativeServing().Create(ctx, ks, metav1.CreateOptions{})
+	_, err := clients.Operator.KnativeServings(names.Namespace).Create(ctx, ks, metav1.CreateOptions{})
 	if apierrs.IsAlreadyExists(err) {
 		return nil
 	}
@@ -139,7 +141,7 @@ func createKnativeServingWithSpokeRef(ctx context.Context, clients *test.Clients
 }
 
 func deleteHubKnativeServing(ctx context.Context, clients *test.Clients, names test.ResourceNames) error {
-	if err := clients.KnativeServing().Delete(ctx, names.KnativeServing, metav1.DeleteOptions{}); err != nil {
+	if err := clients.Operator.KnativeServings(names.Namespace).Delete(ctx, names.KnativeServing, metav1.DeleteOptions{}); err != nil {
 		if apierrs.IsNotFound(err) {
 			return nil
 		}
@@ -147,7 +149,7 @@ func deleteHubKnativeServing(ctx context.Context, clients *test.Clients, names t
 	}
 	return wait.PollUntilContextTimeout(ctx, spokeWaitInterval, spokeGoneTimeout, true,
 		func(ctx context.Context) (bool, error) {
-			_, err := clients.KnativeServing().Get(ctx, names.KnativeServing, metav1.GetOptions{})
+			_, err := clients.Operator.KnativeServings(names.Namespace).Get(ctx, names.KnativeServing, metav1.GetOptions{})
 			if apierrs.IsNotFound(err) {
 				return true, nil
 			}
@@ -176,7 +178,7 @@ func waitForSpokeDeploymentsReady(ctx context.Context, t *testing.T, hub *test.C
 	var lastResolveStatus string
 	resolveErr := wait.PollUntilContextTimeout(ctx, spokeWaitInterval, hubResolveTimeout, true,
 		func(ctx context.Context) (bool, error) {
-			ks, err := hub.KnativeServing().Get(ctx, names.KnativeServing, metav1.GetOptions{})
+			ks, err := hub.Operator.KnativeServings(names.Namespace).Get(ctx, names.KnativeServing, metav1.GetOptions{})
 			if err != nil {
 				if apierrs.IsNotFound(err) {
 					return false, nil
@@ -211,12 +213,12 @@ func waitForSpokeDeploymentsReady(ctx context.Context, t *testing.T, hub *test.C
 		t.Fatalf("hub KnativeServing %s/%s did not reach %s=True: %v",
 			names.Namespace, names.KnativeServing, base.TargetClusterResolved, resolveErr)
 	}
-	waitForSpokeDeploymentsAvailable(ctx, t, spoke, names.Namespace)
+	waitForSpokeDeploymentsAvailable(ctx, t, spoke, spokeServingInstallNamespace)
 }
 
 func assertTargetClusterResolved(ctx context.Context, t *testing.T, hub *test.Clients, names test.ResourceNames) {
 	t.Helper()
-	ks, err := hub.KnativeServing().Get(ctx, names.KnativeServing, metav1.GetOptions{})
+	ks, err := hub.Operator.KnativeServings(names.Namespace).Get(ctx, names.KnativeServing, metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("Failed to get hub KnativeServing %q: %v", names.KnativeServing, err)
 	}

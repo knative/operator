@@ -27,6 +27,7 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -40,6 +41,58 @@ import (
 
 	clusterinventoryv1alpha1 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha1"
 )
+
+func TestInstallationNamespace(t *testing.T) {
+	remoteRef := &base.ClusterProfileReference{Name: "spoke", Namespace: "fleet-system"}
+	tests := []struct {
+		name     string
+		instance base.KComponent
+		want     string
+	}{
+		{
+			name: "local serving uses management namespace",
+			instance: &v1beta1.KnativeServing{
+				ObjectMeta: metav1.ObjectMeta{Namespace: "serving-management"},
+			},
+			want: "serving-management",
+		},
+		{
+			name: "remote serving uses canonical namespace",
+			instance: &v1beta1.KnativeServing{
+				ObjectMeta: metav1.ObjectMeta{Namespace: "serving-management"},
+				Spec: v1beta1.KnativeServingSpec{
+					CommonSpec: base.CommonSpec{ClusterProfileRef: remoteRef},
+				},
+			},
+			want: "knative-serving",
+		},
+		{
+			name: "local eventing uses management namespace",
+			instance: &v1beta1.KnativeEventing{
+				ObjectMeta: metav1.ObjectMeta{Namespace: "eventing-management"},
+			},
+			want: "eventing-management",
+		},
+		{
+			name: "remote eventing uses canonical namespace",
+			instance: &v1beta1.KnativeEventing{
+				ObjectMeta: metav1.ObjectMeta{Namespace: "eventing-management"},
+				Spec: v1beta1.KnativeEventingSpec{
+					CommonSpec: base.CommonSpec{ClusterProfileRef: remoteRef},
+				},
+			},
+			want: "knative-eventing",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := InstallationNamespace(tt.instance); got != tt.want {
+				t.Fatalf("InstallationNamespace() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
 
 func TestResolveTargetCluster_NilRef(t *testing.T) {
 	instance := &v1beta1.KnativeServing{
@@ -257,6 +310,54 @@ func TestDeleteAnchorConfigMap_Success(t *testing.T) {
 	_, err := kubeClient.CoreV1().ConfigMaps("test-ns").Get(ctx, "knativeserving-test-root-owner", metav1.GetOptions{})
 	if err == nil {
 		t.Fatal("anchor ConfigMap still exists after deletion")
+	}
+}
+
+func TestEnsureAndDeleteAnchorConfigMap_RemoteCanonicalNamespace(t *testing.T) {
+	instance := &v1beta1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "serving-management",
+			Name:      "test",
+		},
+		Spec: v1beta1.KnativeServingSpec{
+			CommonSpec: base.CommonSpec{
+				ClusterProfileRef: &base.ClusterProfileReference{
+					Name:      "spoke",
+					Namespace: "fleet-system",
+				},
+				NamespaceConfiguration: &base.NamespaceConfiguration{
+					Labels: map[string]string{"team": "platform"},
+				},
+			},
+		},
+	}
+	kubeClient := fake.NewSimpleClientset()
+	ctx := context.Background()
+
+	anchor, err := EnsureAnchorConfigMap(ctx, kubeClient, instance)
+	if err != nil {
+		t.Fatalf("EnsureAnchorConfigMap() error: %v", err)
+	}
+	if got, want := anchor.Namespace, "knative-serving"; got != want {
+		t.Fatalf("anchor.Namespace = %q, want %q", got, want)
+	}
+	ns, err := kubeClient.CoreV1().Namespaces().Get(ctx, "knative-serving", metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("Get canonical namespace: %v", err)
+	}
+	if got := ns.Labels["team"]; got != "platform" {
+		t.Fatalf("canonical namespace team label = %q, want %q", got, "platform")
+	}
+	if _, err := kubeClient.CoreV1().Namespaces().Get(ctx, "serving-management", metav1.GetOptions{}); !apierrors.IsNotFound(err) {
+		t.Fatalf("management namespace lookup error = %v, want NotFound", err)
+	}
+
+	if err := DeleteAnchorConfigMap(ctx, kubeClient, instance); err != nil {
+		t.Fatalf("DeleteAnchorConfigMap() error: %v", err)
+	}
+	if _, err := kubeClient.CoreV1().ConfigMaps("knative-serving").Get(
+		ctx, AnchorName(instance), metav1.GetOptions{}); !apierrors.IsNotFound(err) {
+		t.Fatalf("canonical namespace anchor lookup error = %v, want NotFound", err)
 	}
 }
 

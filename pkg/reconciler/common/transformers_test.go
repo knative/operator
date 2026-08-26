@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
+	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/pkg/ptr"
 )
@@ -81,6 +82,35 @@ func TestCommonTransformers(t *testing.T) {
 
 	if !cmp.Equal(ownerRef, wantOwnerRef) {
 		t.Fatalf("Unexpected ownerRef: %s", cmp.Diff(ownerRef, wantOwnerRef))
+	}
+}
+
+func TestCommonTransformers_RemoteCanonicalNamespace(t *testing.T) {
+	component := &v1beta1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "serving-management",
+			Name:      "test-name",
+		},
+		Spec: v1beta1.KnativeServingSpec{
+			CommonSpec: base.CommonSpec{
+				ClusterProfileRef: &base.ClusterProfileReference{
+					Name:      "spoke",
+					Namespace: "fleet-system",
+				},
+			},
+		},
+	}
+	in := []unstructured.Unstructured{*NamespacedResource("test/v1", "TestCR", "another-ns", "test-resource")}
+	manifest, err := mf.ManifestFrom(mf.Slice(in))
+	if err != nil {
+		t.Fatalf("Failed to generate manifest: %v", err)
+	}
+	if err := Transform(context.Background(), &manifest, component); err != nil {
+		t.Fatalf("Transform() error: %v", err)
+	}
+
+	if got, want := manifest.Resources()[0].GetNamespace(), "knative-serving"; got != want {
+		t.Fatalf("resource namespace = %q, want %q", got, want)
 	}
 }
 
@@ -244,5 +274,34 @@ func TestInjectNamespace(t *testing.T) {
 	// Verify namespace is carried over.
 	if got, want := resource.GetNamespace(), component.GetNamespace(); got != want {
 		t.Fatalf("GetNamespace() = %s, want %s", got, want)
+	}
+}
+
+func TestInjectNamespace_RemoteCanonicalNamespace(t *testing.T) {
+	component := &v1beta1.KnativeEventing{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "eventing-management",
+			Name:      "test-name",
+		},
+		Spec: v1beta1.KnativeEventingSpec{
+			CommonSpec: base.CommonSpec{
+				ClusterProfileRef: &base.ClusterProfileReference{
+					Name:      "spoke",
+					Namespace: "fleet-system",
+				},
+			},
+		},
+	}
+	in := []unstructured.Unstructured{*NamespacedResource("test/v1", "TestCR", "another-ns", "test-resource")}
+	manifest, err := mf.ManifestFrom(mf.Slice(in))
+	if err != nil {
+		t.Fatalf("Failed to generate manifest: %v", err)
+	}
+	if err := InjectNamespace(&manifest, component); err != nil {
+		t.Fatalf("InjectNamespace() error: %v", err)
+	}
+
+	if got, want := manifest.Resources()[0].GetNamespace(), "knative-eventing"; got != want {
+		t.Fatalf("resource namespace = %q, want %q", got, want)
 	}
 }

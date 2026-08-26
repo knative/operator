@@ -25,7 +25,6 @@ import (
 	"strings"
 	"testing"
 
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -80,12 +79,14 @@ func TestMulticlusterKnativeEventingSpokeDeployment(t *testing.T) {
 		if err := deleteHubKnativeEventing(ctx, hub, names); err != nil {
 			t.Fatalf("Failed to delete hub KnativeEventing %q: %v", names.KnativeEventing, err)
 		}
-		if err := waitForSpokeEventingDeploymentsGone(ctx, t, spoke, names.Namespace); err != nil {
+		if err := waitForSpokeDeploymentsGone(ctx, t, spoke, names.Namespace); err != nil {
 			t.Fatalf("Spoke deployments still present after deletion in namespace %q: %v",
 				names.Namespace, err)
 		}
-		waitForSpokeManagedEventingServicesGone(ctx, t, spoke, names.Namespace)
-		assertAnchorConfigMapGoneEventing(ctx, t, spoke, names)
+		waitForSpokeManagedServicesGone(ctx, t, spoke, names.Namespace,
+			"app.kubernetes.io/name=knative-eventing")
+		assertAnchorConfigMapGone(ctx, t, spoke, names.Namespace,
+			"knativeeventing-"+names.KnativeEventing+"-root-owner")
 	})
 }
 
@@ -172,69 +173,7 @@ func waitForSpokeEventingDeploymentsReady(ctx context.Context, t *testing.T, hub
 		t.Fatalf("hub KnativeEventing %s/%s did not reach %s=True: %v",
 			names.Namespace, names.KnativeEventing, base.TargetClusterResolved, resolveErr)
 	}
-
-	t.Logf("Waiting up to %s for all Deployments in spoke namespace %q to become Available",
-		spokeReadyTimeout, names.Namespace)
-
-	var (
-		lastTotal    = -1
-		lastReady    = -1
-		lastObserved []appsv1.Deployment
-	)
-	pollErr := wait.PollUntilContextTimeout(ctx, spokeWaitInterval, spokeReadyTimeout, true,
-		func(ctx context.Context) (bool, error) {
-			dpList, err := spoke.KubeClient.AppsV1().Deployments(names.Namespace).List(ctx, metav1.ListOptions{})
-			if err != nil {
-				return false, err
-			}
-			lastObserved = dpList.Items
-			total := len(dpList.Items)
-			ready := 0
-			for _, d := range dpList.Items {
-				if isDeploymentAvailable(&d) {
-					ready++
-				}
-			}
-			if total != lastTotal || ready != lastReady {
-				t.Logf("spoke ns %q: %d/%d Deployments Available", names.Namespace, ready, total)
-				lastTotal = total
-				lastReady = ready
-			}
-			if total == 0 {
-				return false, nil
-			}
-			return ready == total, nil
-		})
-	if pollErr != nil {
-		t.Logf("Spoke deployments did not become ready in namespace %q. Last observed state:",
-			names.Namespace)
-		dumpDeployments(t, lastObserved)
-		t.Fatalf("Spoke deployments did not become ready in namespace %q: %v",
-			names.Namespace, pollErr)
-	}
-}
-
-func waitForSpokeEventingDeploymentsGone(ctx context.Context, t *testing.T, clients *test.Clients, namespace string) error {
-	t.Helper()
-	t.Logf("Waiting up to %s for all Deployments in spoke namespace %q to disappear",
-		spokeGoneTimeout, namespace)
-
-	lastCount := -1
-	return wait.PollUntilContextTimeout(ctx, spokeWaitInterval, spokeGoneTimeout, true,
-		func(ctx context.Context) (bool, error) {
-			dpList, err := clients.KubeClient.AppsV1().Deployments(namespace).List(ctx, metav1.ListOptions{})
-			if err != nil {
-				if apierrs.IsNotFound(err) {
-					return true, nil
-				}
-				return false, err
-			}
-			if len(dpList.Items) != lastCount {
-				t.Logf("spoke ns %q: %d Deployments remaining", namespace, len(dpList.Items))
-				lastCount = len(dpList.Items)
-			}
-			return len(dpList.Items) == 0, nil
-		})
+	waitForSpokeDeploymentsAvailable(ctx, t, spoke, names.Namespace)
 }
 
 func assertTargetClusterResolvedEventing(ctx context.Context, t *testing.T, hub *test.Clients, names test.ResourceNames) {
@@ -250,47 +189,6 @@ func assertTargetClusterResolvedEventing(ctx context.Context, t *testing.T, hub 
 	if cond.Status != corev1.ConditionTrue {
 		t.Fatalf("hub KnativeEventing %q %s = %s, want True (reason=%q message=%q)",
 			names.KnativeEventing, base.TargetClusterResolved, cond.Status, cond.Reason, cond.Message)
-	}
-}
-
-func waitForSpokeManagedEventingServicesGone(ctx context.Context, t *testing.T, spoke *test.Clients, namespace string) {
-	t.Helper()
-	const managedBySelector = "app.kubernetes.io/name=knative-eventing"
-	t.Logf("Waiting up to %s for operator-managed Services (%s) in spoke namespace %q to disappear",
-		spokeGoneTimeout, managedBySelector, namespace)
-
-	lastCount := -1
-	err := wait.PollUntilContextTimeout(ctx, spokeWaitInterval, spokeGoneTimeout, true,
-		func(ctx context.Context) (bool, error) {
-			svcList, err := spoke.KubeClient.CoreV1().Services(namespace).List(ctx, metav1.ListOptions{
-				LabelSelector: managedBySelector,
-			})
-			if err != nil {
-				if apierrs.IsNotFound(err) {
-					return true, nil
-				}
-				return false, err
-			}
-			if len(svcList.Items) != lastCount {
-				t.Logf("spoke ns %q: %d operator-managed Services remaining", namespace, len(svcList.Items))
-				lastCount = len(svcList.Items)
-			}
-			return len(svcList.Items) == 0, nil
-		})
-	if err != nil {
-		t.Fatalf("Spoke namespace %q still has operator-managed Services after cleanup: %v", namespace, err)
-	}
-}
-
-func assertAnchorConfigMapGoneEventing(ctx context.Context, t *testing.T, spoke *test.Clients, names test.ResourceNames) {
-	t.Helper()
-	anchorName := "knativeeventing-" + names.KnativeEventing + "-root-owner"
-	_, err := spoke.KubeClient.CoreV1().ConfigMaps(names.Namespace).Get(ctx, anchorName, metav1.GetOptions{})
-	if err == nil {
-		t.Fatalf("Anchor ConfigMap %q still exists in spoke namespace %q", anchorName, names.Namespace)
-	}
-	if !apierrs.IsNotFound(err) {
-		t.Fatalf("Unexpected error checking anchor ConfigMap %q: %v", anchorName, err)
 	}
 }
 

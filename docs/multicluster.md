@@ -1,11 +1,14 @@
 # Multi-Cluster Deployment
 
+**Stage**: Alpha, disabled by default
+
 The operator can deploy Knative Serving and Eventing to remote clusters from a
 single hub cluster. Platform administrators keep the management CRs on the hub
 and use `spec.clusterProfileRef` to choose the spoke cluster.
 
 The hub needs network access to each spoke API server. Connection details are
-resolved through the Cluster Inventory API (`ClusterProfile`).
+resolved through the Cluster Inventory API `v1alpha1` (`ClusterProfile`), so its
+schema and access-provider integration may change between releases.
 
 > Note: if direct connectivity is not available, reverse the direction with
 > [OCM Cluster Proxy](https://open-cluster-management.io/docs/getting-started/integration/cluster-proxy/).

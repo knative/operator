@@ -415,10 +415,12 @@ function dump_spoke_state() {
     echo "=== kubectl get events -A ==="
     KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" "${kc[@]}" get events -A --sort-by=.lastTimestamp || true
     echo
-    local spoke_ns="${TEST_NAMESPACE:-knative-operator-testing}"
-    echo "=== pod logs in namespace ${spoke_ns} ==="
-    KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" "${kc[@]}" -n "${spoke_ns}" \
-      logs --all-containers=true --prefix --tail=200 -l "app" 2>/dev/null || true
+    local spoke_ns
+    for spoke_ns in knative-serving knative-eventing; do
+      echo "=== pod logs in namespace ${spoke_ns} ==="
+      KUBECONFIG="${SPOKE_HOST_KUBECONFIG}" "${kc[@]}" -n "${spoke_ns}" \
+        logs --all-containers=true --prefix --tail=200 -l "app" 2>/dev/null || true
+    done
   } > "${out}" 2>&1 || true
 }
 

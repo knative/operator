@@ -38,7 +38,7 @@ import (
 
 // AssertKSOperatorCRReadyStatus verifies if the KnativeServing reaches the READY status.
 func AssertKSOperatorCRReadyStatus(t *testing.T, clients *test.Clients, names test.ResourceNames) {
-	if _, err := WaitForKnativeServingState(clients.KnativeServing(), names.KnativeServing,
+	if _, err := WaitForKnativeServingState(clients.Operator.KnativeServings(names.Namespace), names.KnativeServing,
 		IsKnativeServingReady); err != nil {
 		t.Fatalf("KnativeService %q failed to get to the READY status: %v", names.KnativeServing, err)
 	}
@@ -319,7 +319,7 @@ func AssertKnativeDeploymentStatus(t *testing.T, clients *test.Clients, namespac
 
 // AssertKEOperatorCRReadyStatus verifies if the KnativeEventing can reach the READY status.
 func AssertKEOperatorCRReadyStatus(t *testing.T, clients *test.Clients, names test.ResourceNames) {
-	if _, err := WaitForKnativeEventingState(clients.KnativeEventing(), names.KnativeEventing,
+	if _, err := WaitForKnativeEventingState(clients.Operator.KnativeEventings(names.Namespace), names.KnativeEventing,
 		IsKnativeEventingReady); err != nil {
 		t.Fatalf("KnativeService %q failed to get to the READY status: %v", names.KnativeEventing, err)
 	}

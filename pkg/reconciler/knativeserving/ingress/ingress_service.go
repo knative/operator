@@ -23,6 +23,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/operator/pkg/reconciler/common"
 	"sigs.k8s.io/yaml"
 
 	mf "github.com/manifestival/manifestival"
@@ -44,17 +45,18 @@ func IngressServiceTransform(ks *v1beta1.KnativeServing) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		if u.GetAPIVersion() == "v1" && u.GetKind() == "Service" {
 			if u.GetName() == "knative-local-gateway" {
+				installationNamespace := common.InstallationNamespace(ks)
 				// Default to istio-system, then override if config exists
 				u.SetNamespace("istio-system")
 				u.SetOwnerReferences(nil)
 				config := ks.GetSpec().GetConfig()
 				if data, ok := config["istio"]; ok {
-					UpdateNamespace(u, data, ks.GetNamespace())
+					UpdateNamespace(u, data, installationNamespace)
 				}
 
 				// The "config-" prefix is optional
 				if data, ok := config["config-istio"]; ok {
-					UpdateNamespace(u, data, ks.GetNamespace())
+					UpdateNamespace(u, data, installationNamespace)
 				}
 
 				return updateIstioService(ks, u, localGateway)

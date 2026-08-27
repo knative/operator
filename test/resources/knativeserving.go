@@ -91,7 +91,10 @@ func WaitForConfigMap(name string, client kubernetes.Interface, fn func(map[stri
 
 // IsKnativeServingReady will check the status conditions of the KnativeServing and return true if the KnativeServing is ready.
 func IsKnativeServingReady(s *v1beta1.KnativeServing, err error) (bool, error) {
-	return s.Status.IsReady(), err
+	if err != nil {
+		return false, err
+	}
+	return s.Status.IsReady(), nil
 }
 
 // IsDeploymentAvailable will check the status conditions of the deployment and return true if the deployment is available.

@@ -23,12 +23,9 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"sort"
-	"strings"
 	"testing"
 	"time"
 
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -103,8 +100,10 @@ func TestMulticlusterKnativeServingSpokeDeployment(t *testing.T) {
 			t.Fatalf("Spoke deployments still present after deletion in namespace %q: %v",
 				names.Namespace, err)
 		}
-		waitForSpokeManagedServicesGone(ctx, t, spoke, names.Namespace)
-		assertAnchorConfigMapGone(ctx, t, spoke, names)
+		waitForSpokeManagedServicesGone(ctx, t, spoke, names.Namespace,
+			"app.kubernetes.io/name=knative-serving")
+		assertAnchorConfigMapGone(ctx, t, spoke, names.Namespace,
+			"knativeserving-"+names.KnativeServing+"-root-owner")
 	})
 }
 
@@ -212,105 +211,7 @@ func waitForSpokeDeploymentsReady(ctx context.Context, t *testing.T, hub *test.C
 		t.Fatalf("hub KnativeServing %s/%s did not reach %s=True: %v",
 			names.Namespace, names.KnativeServing, base.TargetClusterResolved, resolveErr)
 	}
-
-	t.Logf("Waiting up to %s for all Deployments in spoke namespace %q to become Available",
-		spokeReadyTimeout, names.Namespace)
-
-	var (
-		lastTotal    = -1
-		lastReady    = -1
-		lastObserved []appsv1.Deployment
-	)
-	pollErr := wait.PollUntilContextTimeout(ctx, spokeWaitInterval, spokeReadyTimeout, true,
-		func(ctx context.Context) (bool, error) {
-			dpList, err := spoke.KubeClient.AppsV1().Deployments(names.Namespace).List(ctx, metav1.ListOptions{})
-			if err != nil {
-				return false, err
-			}
-			lastObserved = dpList.Items
-			total := len(dpList.Items)
-			ready := 0
-			for _, d := range dpList.Items {
-				if isDeploymentAvailable(&d) {
-					ready++
-				}
-			}
-			if total != lastTotal || ready != lastReady {
-				t.Logf("spoke ns %q: %d/%d Deployments Available", names.Namespace, ready, total)
-				lastTotal = total
-				lastReady = ready
-			}
-			if total == 0 {
-				return false, nil
-			}
-			return ready == total, nil
-		})
-	if pollErr != nil {
-		t.Logf("Spoke deployments did not become ready in namespace %q. Last observed state:",
-			names.Namespace)
-		dumpDeployments(t, lastObserved)
-		t.Fatalf("Spoke deployments did not become ready in namespace %q: %v",
-			names.Namespace, pollErr)
-	}
-}
-
-func waitForSpokeDeploymentsGone(ctx context.Context, t *testing.T, clients *test.Clients, namespace string) error {
-	t.Helper()
-	t.Logf("Waiting up to %s for all Deployments in spoke namespace %q to disappear",
-		spokeGoneTimeout, namespace)
-
-	lastCount := -1
-	return wait.PollUntilContextTimeout(ctx, spokeWaitInterval, spokeGoneTimeout, true,
-		func(ctx context.Context) (bool, error) {
-			dpList, err := clients.KubeClient.AppsV1().Deployments(namespace).List(ctx, metav1.ListOptions{})
-			if err != nil {
-				if apierrs.IsNotFound(err) {
-					return true, nil
-				}
-				return false, err
-			}
-			if len(dpList.Items) != lastCount {
-				t.Logf("spoke ns %q: %d Deployments remaining", namespace, len(dpList.Items))
-				lastCount = len(dpList.Items)
-			}
-			return len(dpList.Items) == 0, nil
-		})
-}
-
-func isDeploymentAvailable(d *appsv1.Deployment) bool {
-	for _, c := range d.Status.Conditions {
-		if c.Type == appsv1.DeploymentAvailable && c.Status == corev1.ConditionTrue {
-			return true
-		}
-	}
-	return false
-}
-
-func dumpDeployments(t *testing.T, items []appsv1.Deployment) {
-	t.Helper()
-	if len(items) == 0 {
-		t.Logf("  (no deployments observed)")
-		return
-	}
-	names := make([]string, 0, len(items))
-	byName := make(map[string]appsv1.Deployment, len(items))
-	for _, d := range items {
-		names = append(names, d.Name)
-		byName[d.Name] = d
-	}
-	sort.Strings(names)
-	for _, n := range names {
-		d := byName[n]
-		conds := make([]string, 0, len(d.Status.Conditions))
-		for _, c := range d.Status.Conditions {
-			conds = append(conds, fmt.Sprintf("%s=%s(%s)", c.Type, c.Status, c.Reason))
-		}
-		t.Logf("  - %s: replicas=%d/%d ready=%d available=%d updated=%d conditions=[%s]",
-			n,
-			d.Status.ReadyReplicas, d.Status.Replicas,
-			d.Status.ReadyReplicas, d.Status.AvailableReplicas, d.Status.UpdatedReplicas,
-			strings.Join(conds, ","))
-	}
+	waitForSpokeDeploymentsAvailable(ctx, t, spoke, names.Namespace)
 }
 
 func assertTargetClusterResolved(ctx context.Context, t *testing.T, hub *test.Clients, names test.ResourceNames) {
@@ -326,46 +227,5 @@ func assertTargetClusterResolved(ctx context.Context, t *testing.T, hub *test.Cl
 	if cond.Status != corev1.ConditionTrue {
 		t.Fatalf("hub KnativeServing %q %s = %s, want True (reason=%q message=%q)",
 			names.KnativeServing, base.TargetClusterResolved, cond.Status, cond.Reason, cond.Message)
-	}
-}
-
-func waitForSpokeManagedServicesGone(ctx context.Context, t *testing.T, spoke *test.Clients, namespace string) {
-	t.Helper()
-	const managedBySelector = "app.kubernetes.io/name=knative-serving"
-	t.Logf("Waiting up to %s for operator-managed Services (%s) in spoke namespace %q to disappear",
-		spokeGoneTimeout, managedBySelector, namespace)
-
-	lastCount := -1
-	err := wait.PollUntilContextTimeout(ctx, spokeWaitInterval, spokeGoneTimeout, true,
-		func(ctx context.Context) (bool, error) {
-			svcList, err := spoke.KubeClient.CoreV1().Services(namespace).List(ctx, metav1.ListOptions{
-				LabelSelector: managedBySelector,
-			})
-			if err != nil {
-				if apierrs.IsNotFound(err) {
-					return true, nil
-				}
-				return false, err
-			}
-			if len(svcList.Items) != lastCount {
-				t.Logf("spoke ns %q: %d operator-managed Services remaining", namespace, len(svcList.Items))
-				lastCount = len(svcList.Items)
-			}
-			return len(svcList.Items) == 0, nil
-		})
-	if err != nil {
-		t.Fatalf("Spoke namespace %q still has operator-managed Services after cleanup: %v", namespace, err)
-	}
-}
-
-func assertAnchorConfigMapGone(ctx context.Context, t *testing.T, spoke *test.Clients, names test.ResourceNames) {
-	t.Helper()
-	anchorName := "knativeserving-" + names.KnativeServing + "-root-owner"
-	_, err := spoke.KubeClient.CoreV1().ConfigMaps(names.Namespace).Get(ctx, anchorName, metav1.GetOptions{})
-	if err == nil {
-		t.Fatalf("Anchor ConfigMap %q still exists in spoke namespace %q", anchorName, names.Namespace)
-	}
-	if !apierrs.IsNotFound(err) {
-		t.Fatalf("Unexpected error checking anchor ConfigMap %q: %v", anchorName, err)
 	}
 }

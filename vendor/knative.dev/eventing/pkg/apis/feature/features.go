@@ -81,6 +81,7 @@ func newDefaults() Flags {
 	return map[string]Flag{
 		KReferenceGroup:            Disabled,
 		DeliveryRetryAfter:         Disabled,
+		DeliveryBackoffMax:         Disabled,
 		DeliveryTimeout:            Enabled,
 		KReferenceMapping:          Disabled,
 		TransportEncryption:        Disabled,

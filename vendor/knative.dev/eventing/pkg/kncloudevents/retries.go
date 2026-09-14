@@ -19,7 +19,6 @@ package kncloudevents
 import (
 	"context"
 	"fmt"
-	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -58,11 +57,12 @@ type Backoff func(attemptNum int, resp *http.Response) time.Duration
 type RetryConfig struct {
 	// Maximum number of retries
 	RetryMax int
-	// These next two variables are just copied from the original DeliverySpec so
+	// These next three variables are just copied from the original DeliverySpec so
 	// we can detect if anything has changed. We can not do that with the CheckRetry
 	// Backoff (at least not easily).
 	BackoffDelay  *string
 	BackoffPolicy *v1.BackoffPolicyType
+	BackoffMax    *string
 
 	CheckRetry CheckRetry
 	Backoff    Backoff
@@ -92,6 +92,20 @@ func RetryConfigFromDeliverySpec(spec v1.DeliverySpec) (RetryConfig, error) {
 	}
 	retryConfig.BackoffPolicy = spec.BackoffPolicy
 	retryConfig.BackoffDelay = spec.BackoffDelay
+	retryConfig.BackoffMax = spec.BackoffMax
+
+	var backoffMaxDuration *time.Duration
+	if spec.BackoffMax != nil {
+		maxPeriod, err := period.Parse(*spec.BackoffMax)
+		if err != nil {
+			return retryConfig, fmt.Errorf("failed to parse Spec.BackoffMax: %w", err)
+		}
+		if maxPeriod.IsZero() || maxPeriod.IsNegative() {
+			return retryConfig, fmt.Errorf("Spec.BackoffMax must be greater than zero")
+		}
+		maxDelay := saturatingPeriodDuration(maxPeriod)
+		backoffMaxDuration = &maxDelay
+	}
 
 	if spec.BackoffPolicy != nil && spec.BackoffDelay != nil {
 
@@ -100,15 +114,15 @@ func RetryConfigFromDeliverySpec(spec v1.DeliverySpec) (RetryConfig, error) {
 			return retryConfig, fmt.Errorf("failed to parse Spec.BackoffDelay: %w", err)
 		}
 
-		delayDuration, _ := delay.Duration()
+		delayDuration := saturatingPeriodDuration(delay)
 		switch *spec.BackoffPolicy {
 		case v1.BackoffPolicyExponential:
 			retryConfig.Backoff = func(attemptNum int, resp *http.Response) time.Duration {
-				return delayDuration * time.Duration(math.Exp2(float64(attemptNum)))
+				return exponentialBackoff(delayDuration, attemptNum, backoffMaxDuration)
 			}
 		case v1.BackoffPolicyLinear:
 			retryConfig.Backoff = func(attemptNum int, resp *http.Response) time.Duration {
-				return delayDuration * time.Duration(attemptNum)
+				return linearBackoff(delayDuration, attemptNum, backoffMaxDuration)
 			}
 		}
 	}
@@ -131,6 +145,55 @@ func RetryConfigFromDeliverySpec(spec v1.DeliverySpec) (RetryConfig, error) {
 	}
 
 	return retryConfig, nil
+}
+
+const maxBackoffDuration = time.Duration(1<<63 - 1)
+
+func saturatingPeriodDuration(p period.Period) time.Duration {
+	if p.IsPositive() && p.TotalDaysApprox() > int(maxBackoffDuration/(24*time.Hour)) {
+		return maxBackoffDuration
+	}
+
+	d, _ := p.Duration()
+	if p.IsPositive() && d < 0 {
+		return maxBackoffDuration
+	}
+	return d
+}
+
+func linearBackoff(delay time.Duration, attemptNum int, configuredMax *time.Duration) time.Duration {
+	if attemptNum <= 0 || delay <= 0 {
+		return 0
+	}
+	limit := maxBackoffDuration
+	if configuredMax != nil {
+		limit = *configuredMax
+	}
+	if delay >= limit || time.Duration(attemptNum) > limit/delay {
+		return limit
+	}
+	return delay * time.Duration(attemptNum)
+}
+
+func exponentialBackoff(delay time.Duration, attemptNum int, configuredMax *time.Duration) time.Duration {
+	if attemptNum < 0 || delay <= 0 {
+		return 0
+	}
+	limit := maxBackoffDuration
+	if configuredMax != nil {
+		limit = *configuredMax
+	}
+	if delay >= limit {
+		return limit
+	}
+	result := delay
+	for range attemptNum {
+		if result > limit/2 {
+			return limit
+		}
+		result *= 2
+	}
+	return result
 }
 
 // SelectiveRetry is an alternative function to determine whether to retry based on response

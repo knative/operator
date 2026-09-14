@@ -62,6 +62,22 @@ type DeliverySpec struct {
 	// +optional
 	BackoffDelay *string `json:"backoffDelay,omitempty"`
 
+	// BackoffMax is the maximum delay between normal delivery attempts. It caps
+	// the delay calculated from BackoffDelay and BackoffPolicy, but does not cap
+	// delays requested by a Retry-After response header. The value must be
+	// greater than zero.
+	//
+	// Note: This API is EXPERIMENTAL and might be changed at any time. Cluster
+	// operators must enable the delivery-backoff-max feature before users can set
+	// this field.
+	//
+	// More information on Duration format:
+	//  - https://www.iso.org/iso-8601-date-and-time-format.html
+	//  - https://en.wikipedia.org/wiki/ISO_8601
+	//
+	// +optional
+	BackoffMax *string `json:"backoffMax,omitempty"`
+
 	// RetryAfterMax provides an optional upper bound on the duration specified in a "Retry-After" header
 	// when calculating backoff times for retrying 429 and 503 response codes.  Setting the value to
 	// zero ("PT0S") can be used to opt-out of respecting "Retry-After" header values altogether. This
@@ -128,6 +144,17 @@ func (ds *DeliverySpec) Validate(ctx context.Context) *apis.FieldError {
 		_, te := period.Parse(*ds.BackoffDelay)
 		if te != nil {
 			errs = errs.Also(apis.ErrInvalidValue(*ds.BackoffDelay, "backoffDelay"))
+		}
+	}
+
+	if ds.BackoffMax != nil {
+		if feature.FromContext(ctx).IsEnabled(feature.DeliveryBackoffMax) {
+			p, pe := period.Parse(*ds.BackoffMax)
+			if pe != nil || p.IsZero() || p.IsNegative() {
+				errs = errs.Also(apis.ErrInvalidValue(*ds.BackoffMax, "backoffMax"))
+			}
+		} else {
+			errs = errs.Also(apis.ErrDisallowedFields("backoffMax"))
 		}
 	}
 

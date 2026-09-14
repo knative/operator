@@ -16,19 +16,19 @@ require (
 	golang.org/x/mod v0.39.0
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/sync v0.22.0
-	google.golang.org/api v0.264.0
+	google.golang.org/api v0.269.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
 	istio.io/client-go v1.18.7
-	k8s.io/api v0.35.7
-	k8s.io/apimachinery v0.35.7
-	k8s.io/client-go v0.35.7
-	k8s.io/code-generator v0.35.7
-	knative.dev/caching v0.0.0-20260727161800-0edbf88bc267
-	knative.dev/eventing v0.50.1-0.20260820115420-72ec4f420db1
+	k8s.io/api v0.35.8
+	k8s.io/apimachinery v0.35.8
+	k8s.io/client-go v0.35.8
+	k8s.io/code-generator v0.35.8
+	knative.dev/caching v0.0.0-20260821014320-af6341f3ab2b
+	knative.dev/eventing v0.50.1-0.20260907114944-07b1e8ab96e5
 	knative.dev/hack v0.0.0-20260428014158-b2a37f1b6e7b
-	knative.dev/pkg v0.0.0-20260820190123-c9015f8bfdea
-	knative.dev/reconciler-test v0.0.0-20260819124120-853c96f78205
-	knative.dev/serving v0.50.1-0.20260819122420-ffaaaf78b938
+	knative.dev/pkg v0.0.0-20260825072334-d2a153acc00c
+	knative.dev/reconciler-test v0.0.0-20260821021027-c844fc2204aa
+	knative.dev/serving v0.50.1-0.20260825144834-618b0c275af1
 	sigs.k8s.io/cluster-inventory-api v0.1.3
 	sigs.k8s.io/controller-tools v0.20.1
 	sigs.k8s.io/yaml v1.6.0
@@ -64,7 +64,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
-	github.com/cert-manager/cert-manager v1.16.3 // indirect
+	github.com/cert-manager/cert-manager v1.20.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudevents/conformance v0.4.1 // indirect
 	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.16.1 // indirect
@@ -112,12 +112,12 @@ require (
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/google/wire v0.4.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.3.11 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.12 // indirect
 	github.com/googleapis/gax-go/v2 v2.17.0 // indirect
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
 	github.com/hashicorp/hcl/v2 v2.24.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/influxdata/tdigest v0.0.1 // indirect
@@ -127,7 +127,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
 	github.com/magiconair/properties v1.8.10 // indirect
-	github.com/mailru/easyjson v0.9.0 // indirect
+	github.com/mailru/easyjson v0.9.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-ieproxy v0.0.1 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -198,22 +198,22 @@ require (
 	google.golang.org/genproto v0.0.0-20260128011058-8636f8732409 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260803160001-6ac0973c030d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260803160001-6ac0973c030d // indirect
-	google.golang.org/grpc v1.83.0 // indirect
+	google.golang.org/grpc v1.83.1 // indirect
 	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/op/go-logging.v1 v1.0.0-20160211212156-b2cb9fa56473 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.35.7 // indirect
-	k8s.io/apiserver v0.35.7 // indirect
+	k8s.io/apiextensions-apiserver v0.35.8 // indirect
+	k8s.io/apiserver v0.35.8 // indirect
 	k8s.io/gengo/v2 v2.0.0-20250922181213-ec3ebc5fd46b // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260319004828-5883c5ee87b9 // indirect
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2 // indirect
-	knative.dev/networking v0.0.0-20260727162500-c7a7b772cac9 // indirect
+	knative.dev/networking v0.0.0-20260821014922-17b28c62e1cb // indirect
 	sigs.k8s.io/controller-runtime v0.23.3 // indirect
-	sigs.k8s.io/gateway-api v1.1.0 // indirect
+	sigs.k8s.io/gateway-api v1.5.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.2 // indirect

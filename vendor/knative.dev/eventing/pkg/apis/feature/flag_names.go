@@ -19,6 +19,7 @@ package feature
 const (
 	KReferenceGroup            = "kreference-group"
 	DeliveryRetryAfter         = "delivery-retryafter"
+	DeliveryBackoffMax         = "delivery-backoff-max"
 	DeliveryTimeout            = "delivery-timeout"
 	KReferenceMapping          = "kreference-mapping"
 	TransportEncryption        = "transport-encryption"

@@ -48,6 +48,7 @@ knative_operator:
   operator_webhook:
     image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
     tag: {{ tag }}
+    replicas: null
     affinity:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       podAntiAffinity:

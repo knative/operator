@@ -53,6 +53,9 @@ metadata:
 {{ toYaml .Values.knative_operator.operator_webhook.annotations | indent 4 }}
 {{- end }}
 spec:
+{{- if ne .Values.knative_operator.operator_webhook.replicas nil }}
+  replicas: {{ .Values.knative_operator.operator_webhook.replicas }}
+{{- end }}
   selector:
     matchLabels:
       app: operator-webhook

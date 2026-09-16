@@ -40,6 +40,7 @@ import (
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 
 	clusterinventoryv1alpha1 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha1"
+	fakeciclient "sigs.k8s.io/cluster-inventory-api/client/clientset/versioned/fake"
 )
 
 func TestInstallationNamespace(t *testing.T) {
@@ -463,6 +464,75 @@ func TestClusterProvider_ClosedShortCircuit(t *testing.T) {
 	}
 	if reason != base.ReasonClusterProviderClosed {
 		t.Fatalf("Refresh reason = %q, want %q", reason, base.ReasonClusterProviderClosed)
+	}
+}
+
+func TestClusterProvider_Get(t *testing.T) {
+	ctx := t.Context()
+
+	alive := newTestClusterEntry("https://alive.example.com")
+	t.Cleanup(alive.cancel)
+
+	staleCtx, staleCancel := context.WithCancel(context.Background())
+	staleCancel()
+	stale := &clusterEntry{ctx: staleCtx, cancel: staleCancel}
+
+	p := &ClusterProvider{
+		entries: map[string]*clusterEntry{
+			"fleet/alive": alive,
+			"fleet/stale": stale,
+		},
+	}
+
+	entry, reason, err := p.Get(ctx, "fleet/missing")
+	if !errors.Is(err, errClusterNotResolved) {
+		t.Errorf("missing entry err = %v, want errClusterNotResolved", err)
+	}
+	if reason != base.ReasonClusterProfileUnavailable {
+		t.Errorf("missing entry reason = %q, want %q", reason, base.ReasonClusterProfileUnavailable)
+	}
+	if entry != nil {
+		t.Errorf("missing entry = %v, want nil", entry)
+	}
+
+	entry, reason, err = p.Get(ctx, "fleet/stale")
+	if !errors.Is(err, errClusterStale) {
+		t.Errorf("stale entry err = %v, want errClusterStale", err)
+	}
+	if reason != base.ReasonRemoteClusterStale {
+		t.Errorf("stale entry reason = %q, want %q", reason, base.ReasonRemoteClusterStale)
+	}
+	if entry != nil {
+		t.Errorf("stale entry = %v, want nil", entry)
+	}
+
+	entry, reason, err = p.Get(ctx, "fleet/alive")
+	if err != nil {
+		t.Errorf("alive entry err = %v, want nil", err)
+	}
+	if reason != "" {
+		t.Errorf("alive entry reason = %q, want empty", reason)
+	}
+	if entry != alive {
+		t.Errorf("alive entry = %v, want %v", entry, alive)
+	}
+}
+
+func TestDoRefresh_ClusterProfileGetError(t *testing.T) {
+	ctx := t.Context()
+
+	provider := newTestProviderWithStubAccess(&stubAccess{})
+	provider.ciClient.(*fakeciclient.Clientset).PrependReactor("get", "clusterprofiles",
+		func(clienttesting.Action) (bool, runtime.Object, error) {
+			return true, nil, errors.New("api server unreachable")
+		})
+
+	reason, err := provider.Refresh(ctx, "fleet", "worker")
+	if err == nil {
+		t.Fatal("Refresh() err = nil, want an error")
+	}
+	if reason != base.ReasonClusterProfileUnavailable {
+		t.Errorf("Refresh() reason = %q, want %q", reason, base.ReasonClusterProfileUnavailable)
 	}
 }
 

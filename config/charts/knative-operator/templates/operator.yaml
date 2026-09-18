@@ -82,6 +82,10 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
 {{- end }}
+{{- with .Values.knative_operator.operator_webhook.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
 {{- if and .Values.knative_operator.operator_webhook.securityContext }}
       securityContext:
 {{ toYaml .Values.knative_operator.operator_webhook.securityContext | indent 8 }}
@@ -809,6 +813,10 @@ spec:
 {{- end }}
 {{- with .Values.knative_operator.knative_operator.tolerations }}
       tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.knative_operator.knative_operator.nodeSelector }}
+      nodeSelector:
 {{ toYaml . | indent 8 }}
 {{- end }}
       serviceAccountName: knative-operator

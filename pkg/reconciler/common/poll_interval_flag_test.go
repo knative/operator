@@ -45,3 +45,29 @@ func TestRemoteDeploymentsPollIntervalValue(t *testing.T) {
 		})
 	}
 }
+
+func TestRemoteDeploymentsPollIntervalWasClamped(t *testing.T) {
+	cases := []struct {
+		name string
+		flag time.Duration
+		want bool
+	}{
+		{"default", defaultRemoteDeploymentsPollInterval, false},
+		{"valid override", 30 * time.Second, false},
+		{"exactly one second", time.Second, false},
+		{"below threshold", 500 * time.Millisecond, true},
+		{"zero", 0, true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			prev := remoteDeploymentsPollIntervalFlag
+			remoteDeploymentsPollIntervalFlag = tc.flag
+			t.Cleanup(func() { remoteDeploymentsPollIntervalFlag = prev })
+
+			if got := RemoteDeploymentsPollIntervalWasClamped(); got != tc.want {
+				t.Errorf("RemoteDeploymentsPollIntervalWasClamped() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}

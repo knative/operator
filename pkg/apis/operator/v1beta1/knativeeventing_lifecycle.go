@@ -133,7 +133,7 @@ func (es *KnativeEventingStatus) MarkTargetClusterResolved() {
 
 // MarkTargetClusterNotResolved marks the TargetClusterResolved status as false with the given reason and message.
 func (es *KnativeEventingStatus) MarkTargetClusterNotResolved(reason, msg string) {
-	eventingCondSet.Manage(es).MarkFalse(base.TargetClusterResolved, reason, msg)
+	eventingCondSet.Manage(es).MarkFalse(base.TargetClusterResolved, reason, "%s", msg)
 }
 
 // GetVersion gets the currently installed version of the component.

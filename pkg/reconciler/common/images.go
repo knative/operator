@@ -43,12 +43,22 @@ var (
 	delimiter             = "/"
 )
 
+const (
+	configMapDeployment  = "config-deployment"
+	queueSidecarImageKey = "queue-sidecar-image"
+	queueProxyOverride   = "queue-proxy"
+)
+
 // ImageTransform updates image with a new registry and tag
 func ImageTransform(registry *base.Registry, log *zap.SugaredLogger) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
 		// Image resources are handled quite differently, so branch them out early
 		if u.GetKind() == "Image" && u.GetAPIVersion() == "caching.internal.knative.dev/v1alpha1" {
 			return updateCachingImage(registry, u, log)
+		}
+
+		if u.GetKind() == "ConfigMap" && u.GetName() == configMapDeployment {
+			return updateQueueProxyImage(registry, u, log)
 		}
 
 		// Handle all resources that contain a PodSpec.
@@ -180,6 +190,15 @@ func updateCachingImage(registry *base.Registry, u *unstructured.Unstructured, l
 
 	log.Debugw("Finished conversion", "name", u.GetName(), "unstructured", u.Object)
 	return nil
+}
+
+func updateQueueProxyImage(registry *base.Registry, u *unstructured.Unstructured, log *zap.SugaredLogger) error {
+	image, ok := registry.Override[queueProxyOverride]
+	if !ok {
+		return nil
+	}
+	log.Debugw("Updating queue-sidecar-image", "image", image)
+	return unstructured.SetNestedField(u.Object, image, "data", queueSidecarImageKey)
 }
 
 func getImageName(fullImageURL string) string {

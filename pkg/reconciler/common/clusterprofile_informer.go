@@ -27,7 +27,7 @@ import (
 
 	"knative.dev/pkg/logging"
 
-	clusterinventoryv1alpha1 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha1"
+	clusterinventoryv1alpha2 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha2"
 )
 
 const clusterProfileResyncPeriod = 10 * time.Minute
@@ -43,7 +43,7 @@ func (c *ClusterProvider) StartInformer(ctx context.Context) {
 
 	logger := logging.FromContext(ctx)
 
-	_, err := c.ciClient.ApisV1alpha1().ClusterProfiles("").List(ctx, metav1.ListOptions{Limit: 1})
+	_, err := c.ciClient.ApisV1alpha2().ClusterProfiles("").List(ctx, metav1.ListOptions{Limit: 1})
 	if err != nil {
 		logger.Infof("ClusterProfile API not available (%v); multi-cluster informer disabled", err)
 		return
@@ -51,27 +51,27 @@ func (c *ClusterProvider) StartInformer(ctx context.Context) {
 
 	lw := toolscache.ToListWatcherWithWatchListSemantics(&toolscache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ciClient.ApisV1alpha1().ClusterProfiles("").List(c.controllerCtx, opts)
+			return c.ciClient.ApisV1alpha2().ClusterProfiles("").List(c.controllerCtx, opts)
 		},
 		WatchFunc: func(opts metav1.ListOptions) (watch.Interface, error) {
-			return c.ciClient.ApisV1alpha1().ClusterProfiles("").Watch(c.controllerCtx, opts)
+			return c.ciClient.ApisV1alpha2().ClusterProfiles("").Watch(c.controllerCtx, opts)
 		},
 	}, c.ciClient)
 
 	_, informer := toolscache.NewInformerWithOptions(toolscache.InformerOptions{
 		ListerWatcher: lw,
-		ObjectType:    &clusterinventoryv1alpha1.ClusterProfile{},
+		ObjectType:    &clusterinventoryv1alpha2.ClusterProfile{},
 		ResyncPeriod:  clusterProfileResyncPeriod,
 		Handler: toolscache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj any) {
-				cp, ok := obj.(*clusterinventoryv1alpha1.ClusterProfile)
+				cp, ok := obj.(*clusterinventoryv1alpha2.ClusterProfile)
 				if !ok {
 					return
 				}
 				c.notifyListeners(cp.Namespace, cp.Name)
 			},
 			UpdateFunc: func(_, newObj any) {
-				cp, ok := newObj.(*clusterinventoryv1alpha1.ClusterProfile)
+				cp, ok := newObj.(*clusterinventoryv1alpha2.ClusterProfile)
 				if !ok {
 					return
 				}
@@ -93,13 +93,13 @@ func (c *ClusterProvider) StartInformer(ctx context.Context) {
 }
 
 func (c *ClusterProvider) handleDelete(obj any) {
-	cp, ok := obj.(*clusterinventoryv1alpha1.ClusterProfile)
+	cp, ok := obj.(*clusterinventoryv1alpha2.ClusterProfile)
 	if !ok {
 		tombstone, ok := obj.(toolscache.DeletedFinalStateUnknown)
 		if !ok {
 			return
 		}
-		cp, ok = tombstone.Obj.(*clusterinventoryv1alpha1.ClusterProfile)
+		cp, ok = tombstone.Obj.(*clusterinventoryv1alpha2.ClusterProfile)
 		if !ok {
 			return
 		}

@@ -31,7 +31,7 @@ source "$(dirname "$0")/e2e-common.sh"
 : "${SPOKE_CLUSTER_NAME:=spoke}"
 : "${SPOKE_KUBECONFIG:=/tmp/spoke.kubeconfig}"
 : "${SPOKE_HOST_KUBECONFIG:=/tmp/spoke-host.kubeconfig}"
-: "${CLUSTER_INVENTORY_CRD_URL:=https://raw.githubusercontent.com/kubernetes-sigs/cluster-inventory-api/v0.1.3/config/crd/bases/multicluster.x-k8s.io_clusterprofiles.yaml}"
+: "${CLUSTER_INVENTORY_CRD_URL:=https://raw.githubusercontent.com/kubernetes-sigs/cluster-inventory-api/v0.2.0/config/crd/bases/multicluster.x-k8s.io_clusterprofiles.yaml}"
 : "${SPOKE_GATEWAY_API_CRD_URL:=https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/experimental-install.yaml}"
 export SPOKE_CLUSTER_NAME SPOKE_KUBECONFIG SPOKE_HOST_KUBECONFIG
 export CLUSTER_INVENTORY_CRD_URL MC_PROVIDER_CONFIGMAP

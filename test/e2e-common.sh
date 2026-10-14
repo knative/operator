@@ -45,7 +45,7 @@ export TIMEOUT_CI=30m
 : "${MC_PROVIDER_CONFIGMAP:=clusterprofile-provider-file}"
 : "${MC_PROVIDER_MOUNT_PATH:=/etc/cluster-inventory}"
 : "${MC_PROVIDER_PLUGIN_MOUNT_PATH:=/etc/cluster-inventory/plugin}"
-: "${MC_PROVIDER_PLUGIN_IMAGE:=registry.k8s.io/cluster-inventory-api/secretreader:v0.1.3}"
+: "${MC_PROVIDER_PLUGIN_IMAGE:=registry.k8s.io/cluster-inventory-api/secretreader:v0.2.0}"
 : "${MC_PROVIDER_NAME:=secretreader}"
 
 # Boolean used to indicate whether to generate serving YAML based on the latest code in the branch KNATIVE_SERVING_REPO_BRANCH.

@@ -149,7 +149,7 @@ func TestStartInformerHandlers(t *testing.T) {
 
 		p.StartInformer(ctx)
 
-		if _, err := ci.ApisV1alpha1().ClusterProfiles("fleet").Create(ctx,
+		if _, err := ci.ApisV1alpha2().ClusterProfiles("fleet").Create(ctx,
 			readyClusterProfile("fleet", "worker"), metav1.CreateOptions{}); err != nil {
 			t.Fatalf("Create ClusterProfile: %v", err)
 		}
@@ -181,7 +181,7 @@ func TestStartInformerHandlers(t *testing.T) {
 
 		updated := existing.DeepCopy()
 		updated.Labels = map[string]string{"changed": "yes"}
-		if _, err := ci.ApisV1alpha1().ClusterProfiles("fleet").Update(ctx,
+		if _, err := ci.ApisV1alpha2().ClusterProfiles("fleet").Update(ctx,
 			updated, metav1.UpdateOptions{}); err != nil {
 			t.Fatalf("Update ClusterProfile: %v", err)
 		}
@@ -219,7 +219,7 @@ func TestStartInformerHandlers(t *testing.T) {
 		waitForCount(t, &enqueued, 1, "initial Add event not delivered")
 		before := enqueued.Load()
 
-		if err := ci.ApisV1alpha1().ClusterProfiles("fleet").Delete(ctx,
+		if err := ci.ApisV1alpha2().ClusterProfiles("fleet").Delete(ctx,
 			"worker", metav1.DeleteOptions{}); err != nil {
 			t.Fatalf("Delete ClusterProfile: %v", err)
 		}
@@ -321,7 +321,7 @@ func TestStartInformer_ContextCancel(t *testing.T) {
 	<-settleCtx.Done()
 	stableCount := enqueued.Load()
 
-	_, _ = ci.ApisV1alpha1().ClusterProfiles("fleet").Create(context.Background(),
+	_, _ = ci.ApisV1alpha2().ClusterProfiles("fleet").Create(context.Background(),
 		readyClusterProfile("fleet", "second"), metav1.CreateOptions{})
 
 	graceCtx, graceCancel := context.WithTimeout(context.Background(), 300*time.Millisecond)

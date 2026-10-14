@@ -7,7 +7,7 @@ single hub cluster. Platform administrators keep the management CRs on the hub
 and use `spec.clusterProfileRef` to choose the spoke cluster.
 
 The hub needs network access to each spoke API server. Connection details are
-resolved through the Cluster Inventory API `v1alpha1` (`ClusterProfile`), so its
+resolved through the Cluster Inventory API `v1alpha2` (`ClusterProfile`), so its
 schema and access-provider integration may change between releases.
 
 > Note: if direct connectivity is not available, reverse the direction with
@@ -16,7 +16,7 @@ schema and access-provider integration may change between releases.
 ## Prerequisites
 
 - **Kubernetes 1.35+** on the hub cluster (image volumes must be available).
-- The **Cluster Inventory API** CRD (`ClusterProfile`) installed on the hub.
+- The **Cluster Inventory API** CRD (`ClusterProfile`, `v1alpha2`) installed on the hub.
 - Network connectivity from the operator pod to each spoke API server.
 
 ## Usage
@@ -83,10 +83,10 @@ knative_operator:
             provideClusterInfo: true
     plugins:
       - name: secretreader
-        image: registry.k8s.io/cluster-inventory-api/secretreader:v0.1.3
+        image: registry.k8s.io/cluster-inventory-api/secretreader:v0.2.0
         mountPath: /access-plugins/secretreader
       - name: kubeconfig-secretreader
-        image: registry.k8s.io/cluster-inventory-api/kubeconfig-secretreader:v0.1.3
+        image: registry.k8s.io/cluster-inventory-api/kubeconfig-secretreader:v0.2.0
         mountPath: /access-plugins/kubeconfig-secretreader
 ```
 

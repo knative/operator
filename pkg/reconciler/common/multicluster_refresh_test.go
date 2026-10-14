@@ -29,21 +29,23 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 
-	clusterinventoryv1alpha1 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha1"
+	clusterinventoryv1alpha2 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha2"
 	fakeciclient "sigs.k8s.io/cluster-inventory-api/client/clientset/versioned/fake"
+	"sigs.k8s.io/cluster-inventory-api/pkg/access"
 )
 
 type stubAccess struct {
 	mu         sync.Mutex
 	buildCount int
-	buildFn    func(*clusterinventoryv1alpha1.ClusterProfile) (*rest.Config, error)
+	buildFn    func(*clusterinventoryv1alpha2.ClusterProfile) (*rest.Config, error)
 }
 
-func (s *stubAccess) BuildConfigFromCP(cp *clusterinventoryv1alpha1.ClusterProfile) (*rest.Config, error) {
+func (s *stubAccess) BuildConfigFromCP(cp *clusterinventoryv1alpha2.ClusterProfile) (*rest.Config, error) {
 	s.mu.Lock()
 	s.buildCount++
 	s.mu.Unlock()
@@ -59,16 +61,16 @@ func (s *stubAccess) count() int {
 	return s.buildCount
 }
 
-func readyClusterProfile(namespace, name string) *clusterinventoryv1alpha1.ClusterProfile {
-	return &clusterinventoryv1alpha1.ClusterProfile{
+func readyClusterProfile(namespace, name string) *clusterinventoryv1alpha2.ClusterProfile {
+	return &clusterinventoryv1alpha2.ClusterProfile{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
 			Name:      name,
 		},
-		Status: clusterinventoryv1alpha1.ClusterProfileStatus{
+		Status: clusterinventoryv1alpha2.ClusterProfileStatus{
 			Conditions: []metav1.Condition{
 				{
-					Type:               clusterinventoryv1alpha1.ClusterConditionControlPlaneHealthy,
+					Type:               clusterinventoryv1alpha2.ClusterConditionControlPlaneHealthy,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.Now(),
 					Reason:             "Ready",
@@ -79,7 +81,7 @@ func readyClusterProfile(namespace, name string) *clusterinventoryv1alpha1.Clust
 	}
 }
 
-func newTestProviderWithStubAccess(stub *stubAccess, cps ...*clusterinventoryv1alpha1.ClusterProfile) *ClusterProvider {
+func newTestProviderWithStubAccess(stub *stubAccess, cps ...*clusterinventoryv1alpha2.ClusterProfile) *ClusterProvider {
 	objs := make([]runtime.Object, 0, len(cps))
 	for _, cp := range cps {
 		objs = append(objs, cp)
@@ -104,9 +106,70 @@ func newTestClusterEntry(host string) *clusterEntry {
 	}
 }
 
+func TestClusterProvider_Refresh_TransportSettings(t *testing.T) {
+	for _, tt := range []struct {
+		name   string
+		change func(*clusterinventoryv1alpha2.Cluster)
+	}{
+		{"TLS server name", func(c *clusterinventoryv1alpha2.Cluster) { c.TLSServerName = "api.example.com" }},
+		{"TLS verification", func(c *clusterinventoryv1alpha2.Cluster) { c.InsecureSkipTLSVerify = true }},
+		{"compression", func(c *clusterinventoryv1alpha2.Cluster) { c.DisableCompression = true }},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := t.Context()
+			cp := readyClusterProfile("fleet", "worker")
+			cp.Status.AccessProviders = []clusterinventoryv1alpha2.AccessProvider{{
+				Name:    "secretreader",
+				Cluster: clusterinventoryv1alpha2.Cluster{Server: "https://worker.example.com"},
+			}}
+			provider := newTestProviderWithStubAccess(&stubAccess{}, cp)
+			provider.access = access.New([]access.Provider{{
+				Name: "secretreader",
+				ExecConfig: &clientcmdapi.ExecConfig{
+					APIVersion: "client.authentication.k8s.io/v1",
+					Command:    "/bin/secretreader-plugin",
+				},
+			}})
+			provider.clientFactory = &stubClientFactory{}
+			t.Cleanup(provider.CloseAll)
+
+			original, _, err := provider.GetOrRefresh(ctx, cp.Namespace, cp.Name)
+			if err != nil {
+				t.Fatal(err)
+			}
+			tt.change(&cp.Status.AccessProviders[0].Cluster)
+			if _, err := provider.ciClient.ApisV1alpha2().ClusterProfiles(cp.Namespace).UpdateStatus(ctx, cp, metav1.UpdateOptions{}); err != nil {
+				t.Fatal(err)
+			}
+			if reason, err := provider.Refresh(ctx, cp.Namespace, cp.Name); err != nil {
+				t.Fatalf("Refresh() failed: %s: %v", reason, err)
+			}
+			updated, _, err := provider.Get(ctx, cp.Namespace+"/"+cp.Name)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if updated == original || original.(*clusterEntry).IsAlive() {
+				t.Fatal("transport change must replace and close the cached clients")
+			}
+			cluster := cp.Status.AccessProviders[0].Cluster
+			cfg := updated.RestConfig()
+			if cfg.ServerName != cluster.TLSServerName || cfg.Insecure != cluster.InsecureSkipTLSVerify || cfg.DisableCompression != cluster.DisableCompression {
+				t.Fatalf("cached transport settings do not match the ClusterProfile: %+v", cfg)
+			}
+			if reason, err := provider.Refresh(ctx, cp.Namespace, cp.Name); err != nil {
+				t.Fatalf("second Refresh() failed: %s: %v", reason, err)
+			}
+			unchanged, _, err := provider.Get(ctx, cp.Namespace+"/"+cp.Name)
+			if err != nil || unchanged != updated {
+				t.Fatalf("unchanged settings must reuse cached clients: %v", err)
+			}
+		})
+	}
+}
+
 func TestClusterProvider_Refresh_AccessFailure(t *testing.T) {
 	stub := &stubAccess{
-		buildFn: func(*clusterinventoryv1alpha1.ClusterProfile) (*rest.Config, error) {
+		buildFn: func(*clusterinventoryv1alpha2.ClusterProfile) (*rest.Config, error) {
 			return nil, errors.New("simulated exec-plugin failure")
 		},
 	}
@@ -159,7 +222,7 @@ func TestClusterProvider_GetOrRefresh_CacheHit(t *testing.T) {
 
 func TestClusterProvider_GetOrRefresh_CacheMiss_RefreshSucceeds(t *testing.T) {
 	stub := &stubAccess{
-		buildFn: func(*clusterinventoryv1alpha1.ClusterProfile) (*rest.Config, error) {
+		buildFn: func(*clusterinventoryv1alpha2.ClusterProfile) (*rest.Config, error) {
 			return &rest.Config{Host: "https://fresh.example.com"}, nil
 		},
 	}
@@ -190,7 +253,7 @@ func TestClusterProvider_GetOrRefresh_CacheMiss_RefreshSucceeds(t *testing.T) {
 
 func TestClusterProvider_GetOrRefresh_CacheMiss_RefreshFails(t *testing.T) {
 	stub := &stubAccess{
-		buildFn: func(*clusterinventoryv1alpha1.ClusterProfile) (*rest.Config, error) {
+		buildFn: func(*clusterinventoryv1alpha2.ClusterProfile) (*rest.Config, error) {
 			return nil, errors.New("simulated access failure")
 		},
 	}
@@ -317,12 +380,12 @@ func TestResolveTargetCluster_ReasonPropagation(t *testing.T) {
 	})
 
 	t.Run("ProfileNotReady", func(t *testing.T) {
-		notReady := &clusterinventoryv1alpha1.ClusterProfile{
+		notReady := &clusterinventoryv1alpha2.ClusterProfile{
 			ObjectMeta: metav1.ObjectMeta{Namespace: "fleet", Name: "worker"},
-			Status: clusterinventoryv1alpha1.ClusterProfileStatus{
+			Status: clusterinventoryv1alpha2.ClusterProfileStatus{
 				Conditions: []metav1.Condition{
 					{
-						Type:               clusterinventoryv1alpha1.ClusterConditionControlPlaneHealthy,
+						Type:               clusterinventoryv1alpha2.ClusterConditionControlPlaneHealthy,
 						Status:             metav1.ConditionFalse,
 						LastTransitionTime: metav1.Now(),
 						Reason:             "Unhealthy",
@@ -340,7 +403,7 @@ func TestResolveTargetCluster_ReasonPropagation(t *testing.T) {
 
 	t.Run("AccessFailed", func(t *testing.T) {
 		stub := &stubAccess{
-			buildFn: func(*clusterinventoryv1alpha1.ClusterProfile) (*rest.Config, error) {
+			buildFn: func(*clusterinventoryv1alpha2.ClusterProfile) (*rest.Config, error) {
 				return nil, errors.New("simulated exec-plugin failure")
 			},
 		}

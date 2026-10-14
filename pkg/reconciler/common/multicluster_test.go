@@ -39,7 +39,7 @@ import (
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 
-	clusterinventoryv1alpha1 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha1"
+	clusterinventoryv1alpha2 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha2"
 )
 
 func TestInstallationNamespace(t *testing.T) {
@@ -700,7 +700,7 @@ type blockingAccess struct {
 	seen  bool
 }
 
-func (b *blockingAccess) BuildConfigFromCP(*clusterinventoryv1alpha1.ClusterProfile) (*rest.Config, error) {
+func (b *blockingAccess) BuildConfigFromCP(*clusterinventoryv1alpha2.ClusterProfile) (*rest.Config, error) {
 	b.mu.Lock()
 	b.count++
 	first := !b.seen

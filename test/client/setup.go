@@ -31,8 +31,8 @@ import (
 // Setup creates the client objects needed in the e2e tests.
 func Setup(t *testing.T) *test.Clients {
 	clients, err := test.NewClients(
-		pkgTest.Flags.Kubeconfig,
-		pkgTest.Flags.Cluster)
+		pkgTest.Flags.Kubeconfig, //nolint:staticcheck // Flags is deprecated, but migrating to environment.ClientConfig is out of scope here
+		pkgTest.Flags.Cluster)    //nolint:staticcheck // Flags is deprecated, but migrating to environment.ClientConfig is out of scope here
 	if err != nil {
 		t.Fatalf("Couldn't initialize clients: %v", err)
 	}

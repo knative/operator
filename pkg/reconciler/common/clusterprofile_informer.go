@@ -45,7 +45,7 @@ func (c *ClusterProvider) StartInformer(ctx context.Context) {
 
 	_, err := c.ciClient.ApisV1alpha2().ClusterProfiles("").List(ctx, metav1.ListOptions{Limit: 1})
 	if err != nil {
-		logger.Infof("ClusterProfile API not available (%v); multi-cluster informer disabled", err)
+		logger.Infof("ClusterProfile API %s not available (%v); multi-cluster informer disabled", clusterinventoryv1alpha2.GroupVersion.String(), err)
 		return
 	}
 

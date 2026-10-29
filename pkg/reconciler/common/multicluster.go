@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"net/http"
 	"reflect"
 	"strings"
 	"sync"
@@ -43,7 +44,7 @@ import (
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/pkg/logging"
 
-	clusterinventoryv1alpha1 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha1"
+	clusterinventoryv1alpha2 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha2"
 	clusterinventoryclient "sigs.k8s.io/cluster-inventory-api/client/clientset/versioned"
 	"sigs.k8s.io/cluster-inventory-api/pkg/access"
 )
@@ -71,12 +72,13 @@ var (
 
 // ClusterProfileAccess builds a rest.Config from a ClusterProfile.
 type ClusterProfileAccess interface {
-	BuildConfigFromCP(cp *clusterinventoryv1alpha1.ClusterProfile) (*rest.Config, error)
+	BuildConfigFromCP(cp *clusterinventoryv1alpha2.ClusterProfile) (*rest.Config, error)
 }
 
 type NoOpClusterProfileAccess struct{}
 
-func (NoOpClusterProfileAccess) BuildConfigFromCP(*clusterinventoryv1alpha1.ClusterProfile) (*rest.Config, error) {
+// BuildConfigFromCP returns an error because multi-cluster support is disabled.
+func (NoOpClusterProfileAccess) BuildConfigFromCP(*clusterinventoryv1alpha2.ClusterProfile) (*rest.Config, error) {
 	return nil, errMulticlusterDisabled
 }
 
@@ -242,7 +244,7 @@ func (c *ClusterProvider) Refresh(ctx context.Context, namespace, name string) (
 func (c *ClusterProvider) doRefresh(ctx context.Context, key, namespace, name string) (string, error) {
 	logger := logging.FromContext(ctx)
 
-	cp, err := c.ciClient.ApisV1alpha1().ClusterProfiles(namespace).Get(
+	cp, err := c.ciClient.ApisV1alpha2().ClusterProfiles(namespace).Get(
 		ctx, name, metav1.GetOptions{})
 	if err != nil {
 		c.Remove(key)
@@ -395,9 +397,10 @@ func (c *ClusterProvider) GetOrRefresh(ctx context.Context, namespace, name stri
 	return c.Get(ctx, key)
 }
 
-// configEqual reports whether two rest.Configs have equivalent credentials.
+// configEqual reports whether two rest.Configs have equivalent connection settings.
 func configEqual(a, b *rest.Config) bool {
 	return a.Host == b.Host &&
+		a.DisableCompression == b.DisableCompression &&
 		reflect.DeepEqual(a.TLSClientConfig, b.TLSClientConfig) &&
 		reflect.DeepEqual(a.ExecProvider, b.ExecProvider) &&
 		a.BearerToken == b.BearerToken &&
@@ -405,12 +408,28 @@ func configEqual(a, b *rest.Config) bool {
 		a.Username == b.Username &&
 		a.Password == b.Password &&
 		reflect.DeepEqual(a.AuthProvider, b.AuthProvider) &&
-		reflect.DeepEqual(a.Impersonate, b.Impersonate)
+		reflect.DeepEqual(a.Impersonate, b.Impersonate) &&
+		proxyEqual(a, b)
 }
 
-func isClusterProfileReady(cp *clusterinventoryv1alpha1.ClusterProfile) bool {
+// proxyEqual reports whether two rest.Configs resolve the same proxy for a.Host.
+// A nil Proxy uses environment settings; a non-nil Proxy can disable proxying.
+func proxyEqual(a, b *rest.Config) bool {
+	if a.Proxy == nil || b.Proxy == nil {
+		return a.Proxy == nil && b.Proxy == nil
+	}
+	req, err := http.NewRequest(http.MethodGet, a.Host, nil)
+	if err != nil {
+		return false
+	}
+	urlA, errA := a.Proxy(req)
+	urlB, errB := b.Proxy(req)
+	return errA == nil && errB == nil && reflect.DeepEqual(urlA, urlB)
+}
+
+func isClusterProfileReady(cp *clusterinventoryv1alpha2.ClusterProfile) bool {
 	cond := apimeta.FindStatusCondition(cp.Status.Conditions,
-		clusterinventoryv1alpha1.ClusterConditionControlPlaneHealthy)
+		clusterinventoryv1alpha2.ClusterConditionControlPlaneHealthy)
 	if cond == nil {
 		return false
 	}

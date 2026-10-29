@@ -19,6 +19,8 @@ package common
 import (
 	"context"
 	"errors"
+	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -39,7 +41,7 @@ import (
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 
-	clusterinventoryv1alpha1 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha1"
+	clusterinventoryv1alpha2 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha2"
 )
 
 func TestInstallationNamespace(t *testing.T) {
@@ -396,6 +398,36 @@ func TestConfigEqual(t *testing.T) {
 	}
 }
 
+func TestConfigEqualProxy(t *testing.T) {
+	direct := func(*http.Request) (*url.URL, error) { return nil, nil }
+	proxy := func(host string) func(*http.Request) (*url.URL, error) {
+		return http.ProxyURL(&url.URL{Scheme: "http", Host: host})
+	}
+	failed := func(*http.Request) (*url.URL, error) { return nil, errors.New("proxy resolution failed") }
+
+	for _, tt := range []struct {
+		name string
+		a, b func(*http.Request) (*url.URL, error)
+		want bool
+	}{
+		{"both default", nil, nil, true},
+		{"default and direct", nil, direct, false},
+		{"both direct", direct, direct, true},
+		{"same proxy URL", proxy("proxy.example.com:8080"), proxy("proxy.example.com:8080"), true},
+		{"different proxy URLs", proxy("old.example.com:8080"), proxy("new.example.com:8080"), false},
+		{"direct and proxy", direct, proxy("proxy.example.com:8080"), false},
+		{"resolution fails", failed, direct, false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &rest.Config{Host: "https://worker.example.com", Proxy: tt.a}
+			b := &rest.Config{Host: a.Host, Proxy: tt.b}
+			if got := configEqual(a, b); got != tt.want {
+				t.Fatalf("configEqual() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestSameClusterProfile(t *testing.T) {
 	tests := []struct {
 		name string
@@ -700,7 +732,7 @@ type blockingAccess struct {
 	seen  bool
 }
 
-func (b *blockingAccess) BuildConfigFromCP(*clusterinventoryv1alpha1.ClusterProfile) (*rest.Config, error) {
+func (b *blockingAccess) BuildConfigFromCP(*clusterinventoryv1alpha2.ClusterProfile) (*rest.Config, error) {
 	b.mu.Lock()
 	b.count++
 	first := !b.seen

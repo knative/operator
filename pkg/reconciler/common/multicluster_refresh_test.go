@@ -114,6 +114,7 @@ func TestClusterProvider_Refresh_TransportSettings(t *testing.T) {
 		{"TLS server name", func(c *clusterinventoryv1alpha2.Cluster) { c.TLSServerName = "api.example.com" }},
 		{"TLS verification", func(c *clusterinventoryv1alpha2.Cluster) { c.InsecureSkipTLSVerify = true }},
 		{"compression", func(c *clusterinventoryv1alpha2.Cluster) { c.DisableCompression = true }},
+		{"proxy", func(c *clusterinventoryv1alpha2.Cluster) { c.ProxyURL = "http://proxy.example.com:8080" }},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := t.Context()

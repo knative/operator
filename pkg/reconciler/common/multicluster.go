@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"net/http"
 	"reflect"
 	"strings"
 	"sync"
@@ -407,7 +408,23 @@ func configEqual(a, b *rest.Config) bool {
 		a.Username == b.Username &&
 		a.Password == b.Password &&
 		reflect.DeepEqual(a.AuthProvider, b.AuthProvider) &&
-		reflect.DeepEqual(a.Impersonate, b.Impersonate)
+		reflect.DeepEqual(a.Impersonate, b.Impersonate) &&
+		proxyEqual(a, b)
+}
+
+// proxyEqual reports whether two rest.Configs resolve the same proxy for a.Host.
+// A nil Proxy uses environment settings; a non-nil Proxy can disable proxying.
+func proxyEqual(a, b *rest.Config) bool {
+	if a.Proxy == nil || b.Proxy == nil {
+		return a.Proxy == nil && b.Proxy == nil
+	}
+	req, err := http.NewRequest(http.MethodGet, a.Host, nil)
+	if err != nil {
+		return false
+	}
+	urlA, errA := a.Proxy(req)
+	urlB, errB := b.Proxy(req)
+	return errA == nil && errB == nil && reflect.DeepEqual(urlA, urlB)
 }
 
 func isClusterProfileReady(cp *clusterinventoryv1alpha2.ClusterProfile) bool {

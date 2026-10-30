@@ -40,3 +40,9 @@ func RemoteDeploymentsPollIntervalValue() time.Duration {
 	}
 	return remoteDeploymentsPollIntervalFlag
 }
+
+// RemoteDeploymentsPollIntervalWasClamped reports whether the configured
+// remote-deployments-poll-interval value was below 1s and fell back to the default.
+func RemoteDeploymentsPollIntervalWasClamped() bool {
+	return remoteDeploymentsPollIntervalFlag < time.Second
+}

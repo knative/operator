@@ -51,6 +51,46 @@ func (extensionForPatchTest) Finalize(context.Context, base.KComponent) error {
 	return nil
 }
 
+func TestSecurityGuardDeprecationWarning(t *testing.T) {
+	for _, tt := range []struct {
+		name        string
+		security    *v1beta1.SecurityConfigs
+		wantWarning bool
+	}{
+		{name: "enabled", security: &v1beta1.SecurityConfigs{SecurityGuard: base.SecurityGuardConfiguration{Enabled: true}}, wantWarning: true},
+		{name: "disabled", security: &v1beta1.SecurityConfigs{SecurityGuard: base.SecurityGuardConfiguration{Enabled: false}}},
+		{name: "absent"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			instance := &v1beta1.KnativeServing{
+				Spec: v1beta1.KnativeServingSpec{
+					CommonSpec: base.CommonSpec{Version: "1.24.0"},
+					Security:   tt.security,
+				},
+				// Stop at migration validation, before installation, to verify
+				// warning updates even when reconciliation exits early.
+				Status: v1beta1.KnativeServingStatus{Version: "2.0.0"},
+			}
+			if !tt.wantWarning {
+				instance.Status.MarkSecurityGuardDeprecated()
+			}
+			if err := (&Reconciler{}).ReconcileKind(context.Background(), instance); err != nil {
+				t.Fatal(err)
+			}
+			warning := instance.Status.GetCondition(base.SecurityGuardDeprecated)
+			if got := warning != nil && warning.IsTrue(); got != tt.wantWarning {
+				t.Fatalf("deprecation warning present = %v, want %v", got, tt.wantWarning)
+			}
+			if !tt.wantWarning && warning != nil {
+				t.Fatal("stale deprecation warning was not removed")
+			}
+			if !instance.Status.GetCondition(base.VersionMigrationEligible).IsFalse() {
+				t.Fatal("expected migration validation to stop reconciliation")
+			}
+		})
+	}
+}
+
 func TestDeletedExtensionResourceIsPruned(t *testing.T) {
 	common.ClearCache()
 	client := mffake.New()

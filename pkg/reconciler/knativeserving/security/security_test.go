@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	mf "github.com/manifestival/manifestival"
@@ -130,6 +131,25 @@ func TestAppendTargetSecurityGuard(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSecurityGuardForServing124(t *testing.T) {
+	data := filepath.Join("..", "..", "..", "..", "cmd", "operator", "kodata")
+	t.Setenv(common.KoEnvKey, data)
+	common.ClearCache()
+	t.Cleanup(common.ClearCache)
+	instance := &servingv1beta1.KnativeServing{Spec: servingv1beta1.KnativeServingSpec{
+		CommonSpec: base.CommonSpec{Version: "1.24.0"},
+		Security:   &servingv1beta1.SecurityConfigs{SecurityGuard: base.SecurityGuardConfiguration{Enabled: true}},
+	}}
+	manifest, err := mf.ManifestFrom(mf.Slice{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := AppendTargetSecurity(context.Background(), &manifest, instance); err != nil {
+		t.Fatal(err)
+	}
+	util.AssertEqual(t, util.DeepMatchWithPath(manifest, filepath.Join(data, "security-guard", "0.6")), true)
 }
 
 // TODO: This test verifies the number of transformers. It should be rewritten by better test.

@@ -39,6 +39,9 @@ const (
 	VersionMigrationEligible apis.ConditionType = "VersionMigrationEligible"
 	// TargetClusterResolved is a Condition indicating whether the target cluster has been resolved.
 	TargetClusterResolved apis.ConditionType = "TargetClusterResolved"
+	// SecurityGuardDeprecated warns that Security Guard support will be removed
+	// in Operator v1.25. It does not affect readiness.
+	SecurityGuardDeprecated apis.ConditionType = "SecurityGuardDeprecated"
 )
 
 // KComponent is a common interface for accessing meta, spec and status of all known types.

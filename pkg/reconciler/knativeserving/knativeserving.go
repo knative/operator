@@ -107,6 +107,11 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 	logger := logging.FromContext(ctx)
 	ks.Status.InitializeConditions()
 	ks.Status.ObservedGeneration = ks.Generation
+	if ks.Spec.Security != nil && ks.Spec.Security.SecurityGuard.Enabled {
+		ks.Status.MarkSecurityGuardDeprecated()
+	} else {
+		ks.Status.ClearSecurityGuardDeprecated()
+	}
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 

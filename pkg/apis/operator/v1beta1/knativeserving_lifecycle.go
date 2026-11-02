@@ -138,15 +138,15 @@ func (is *KnativeServingStatus) MarkTargetClusterNotResolved(reason, msg string)
 	servingCondSet.Manage(is).MarkFalse(base.TargetClusterResolved, reason, "%s", msg)
 }
 
-// MarkSecurityGuardDeprecated warns about the next Operator version without
-// changing the current installation behavior or readiness.
+// MarkSecurityGuardDeprecated warns that Security Guard is no longer supported
+// without changing readiness.
 func (is *KnativeServingStatus) MarkSecurityGuardDeprecated() {
 	servingCondSet.Manage(is).SetCondition(apis.Condition{
 		Type:     base.SecurityGuardDeprecated,
 		Status:   corev1.ConditionTrue,
 		Severity: apis.ConditionSeverityWarning,
 		Reason:   "RemovalScheduled",
-		Message:  "Security Guard is deprecated and will no longer be supported in Knative Operator v1.25. spec.security.securityGuard.enabled will have no effect after upgrading the Operator.",
+		Message:  "Security Guard is no longer supported. spec.security.securityGuard.enabled has no effect.",
 	})
 }
 

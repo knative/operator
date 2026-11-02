@@ -28,7 +28,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 
 	ghclient "github.com/google/go-github/v33/github"
 	"golang.org/x/oauth2"
@@ -36,7 +35,6 @@ import (
 	"knative.dev/operator/pkg/github"
 	"knative.dev/operator/pkg/packages"
 	"knative.dev/operator/pkg/reconciler/common"
-	"knative.dev/operator/pkg/reconciler/knativeserving/security"
 )
 
 var (
@@ -67,7 +65,7 @@ func main() {
 	client := getClient(ctx)
 	ghClient := ghclient.NewClient(client)
 
-	// Clear the destination so that no existing files remain
+	// Clear the destination so that no existing files remain.
 	if err := os.RemoveAll(*outDir); err != nil && !os.IsNotExist(err) {
 		log.Printf("Unable to remove directory %s: %v", *outDir, err)
 		os.Exit(3)
@@ -79,14 +77,6 @@ func main() {
 
 	repos := make(map[string][]packages.Release, len(cfg))
 	for _, v := range cfg {
-		versionCurrentPackage := latestVersion
-		if strings.EqualFold(v.Name, "security-guard") {
-			sgVersion, ok := security.SecurityGuardVersion[versionCurrentPackage]
-			if ok {
-				versionCurrentPackage = common.SanitizeSemver(sgVersion)
-			}
-		}
-
 		if err := ensureRepo(ctx, repos, ghClient, v.Primary); err != nil {
 			log.Printf("Unable to fetch %s: %v", v.Primary, err)
 			os.Exit(2)
@@ -99,7 +89,7 @@ func main() {
 			}
 		}
 
-		for _, release := range packages.LastN(versionCurrentPackage, *maxVersions, repos[v.Primary.String()]) {
+		for _, release := range packages.LastN(latestVersion, *maxVersions, repos[v.Primary.String()]) {
 			if err := packages.HandleRelease(*outDir, http.DefaultClient, *v, release, repos); err != nil {
 				log.Printf("Unable to fetch %s: %v", release, err)
 			}

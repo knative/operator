@@ -167,8 +167,8 @@ func TestSecurityGuardDeprecationWarning(t *testing.T) {
 	if warning == nil || !warning.IsTrue() || warning.Severity != apis.ConditionSeverityWarning || warning.Reason != "RemovalScheduled" {
 		t.Fatalf("unexpected warning: %#v", warning)
 	}
-	if !strings.Contains(warning.Message, "Knative Operator v1.25") || !strings.Contains(warning.Message, "will have no effect") {
-		t.Fatalf("warning must describe the upcoming removal: %q", warning.Message)
+	if !strings.Contains(warning.Message, "no longer supported") || !strings.Contains(warning.Message, "has no effect") {
+		t.Fatalf("warning must describe the removed integration: %q", warning.Message)
 	}
 	if got := status.GetCondition(apis.ConditionReady); !reflect.DeepEqual(*got, ready) {
 		t.Fatal("warning changed pending readiness")

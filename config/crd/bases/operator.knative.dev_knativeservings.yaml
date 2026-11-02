@@ -2403,6 +2403,10 @@ spec:
                       the security guard component.
                     properties:
                       enabled:
+                        description: |-
+                          Enabled controls whether Security Guard is installed.
+                          Deprecated: Security Guard will no longer be supported in Knative Operator v1.25.
+                          This field still enables Security Guard in v1.24, but will have no effect after upgrading the Operator to v1.25.
                         type: boolean
                     required:
                     - enabled

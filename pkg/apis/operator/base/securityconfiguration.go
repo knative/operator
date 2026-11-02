@@ -18,5 +18,8 @@ package base
 
 // SecurityGuardConfiguration specifies options for the security guard component.
 type SecurityGuardConfiguration struct {
+	// Enabled is retained for backward compatibility and has no effect.
+	// Deprecated: Security Guard is no longer supported as of Knative Operator version 1.25.
+	// This field has no effect regardless of the target Knative Serving version.
 	Enabled bool `json:"enabled"`
 }

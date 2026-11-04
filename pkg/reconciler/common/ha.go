@@ -34,9 +34,9 @@ func haUnSupported(name string) bool {
 // controllers when HA control plane is specified.
 func HighAvailabilityTransform(obj base.KComponent) mf.Transformer {
 	return func(u *unstructured.Unstructured) error {
-		// Use spec.deployments.replicas for the deployment instead of spec.high-availability.
+		// Use spec.deployments.replicas for the deployment and its HPA instead of spec.high-availability.
 		for _, override := range obj.GetSpec().GetWorkloadOverrides() {
-			if override.Replicas != nil && override.Name == u.GetName() {
+			if override.Replicas != nil && (override.Name == u.GetName() || getHPAName(override.Name) == u.GetName()) {
 				return nil
 			}
 		}

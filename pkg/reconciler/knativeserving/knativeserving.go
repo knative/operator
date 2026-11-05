@@ -36,7 +36,6 @@ import (
 	"knative.dev/operator/pkg/reconciler/common"
 	ksc "knative.dev/operator/pkg/reconciler/knativeserving/common"
 	"knative.dev/operator/pkg/reconciler/knativeserving/ingress"
-	"knative.dev/operator/pkg/reconciler/knativeserving/security"
 	"knative.dev/operator/pkg/reconciler/manifests"
 )
 
@@ -107,6 +106,11 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 	logger := logging.FromContext(ctx)
 	ks.Status.InitializeConditions()
 	ks.Status.ObservedGeneration = ks.Generation
+	if ks.Spec.Security != nil && ks.Spec.Security.SecurityGuard.Enabled {
+		ks.Status.MarkSecurityGuardDeprecated()
+	} else {
+		ks.Status.ClearSecurityGuardDeprecated()
+	}
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 
@@ -127,7 +131,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		common.ResolveTargetCluster(r.clusterProvider, &state),
 		common.AppendTarget,
 		ingress.AppendTargetIngress,
-		security.AppendTargetSecurity,
 		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
 		func(ctx context.Context, manifest *mf.Manifest, comp base.KComponent) error {
@@ -169,7 +172,6 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 	extra = append(extra, r.extension.Transformers(instance)...)
 	extra = append(extra, ingress.Transformers(ctx, instance)...)
 	extra = append(extra, ingress.IngressServiceTransform(instance))
-	extra = append(extra, security.Transformers(ctx, instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
 }
 

@@ -216,19 +216,6 @@ rules:
   - deletecollection
   - patch
 
-# for security-guard
-- apiGroups:
-  - guard.security.knative.dev
-  resources:
-  - guardians
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
 - apiGroups:
   - ""
   resources:

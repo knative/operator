@@ -17,12 +17,15 @@ limitations under the License.
 package v1beta1
 
 import (
+	"reflect"
+	"strings"
 	"testing"
 
 	"knative.dev/operator/pkg/apis/operator"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/operator/pkg/apis/operator/base"
+	"knative.dev/pkg/apis"
 	apistest "knative.dev/pkg/apis/testing"
 )
 
@@ -152,6 +155,47 @@ func TestKnativeServingVersionMigrationNotEligible(t *testing.T) {
 
 	ks.MarkVersionMigrationNotEligible("Version migration not eligible.")
 	apistest.CheckConditionFailed(ks, base.VersionMigrationEligible, t)
+}
+
+func TestSecurityGuardDeprecationWarning(t *testing.T) {
+	status := &KnativeServingStatus{}
+	status.InitializeConditions()
+	ready := *status.GetCondition(apis.ConditionReady)
+
+	status.MarkSecurityGuardDeprecated()
+	warning := status.GetCondition(base.SecurityGuardDeprecated)
+	if warning == nil || !warning.IsTrue() || warning.Severity != apis.ConditionSeverityWarning || warning.Reason != "RemovalScheduled" {
+		t.Fatalf("unexpected warning: %#v", warning)
+	}
+	if !strings.Contains(warning.Message, "no longer supported") || !strings.Contains(warning.Message, "has no effect") {
+		t.Fatalf("warning must describe the removed integration: %q", warning.Message)
+	}
+	if got := status.GetCondition(apis.ConditionReady); !reflect.DeepEqual(*got, ready) {
+		t.Fatal("warning changed pending readiness")
+	}
+	warned := status.DeepCopy()
+	status.MarkSecurityGuardDeprecated()
+	if !reflect.DeepEqual(status, warned) {
+		t.Fatal("repeated warning changed status or transition timestamps")
+	}
+
+	status.MarkVersionMigrationEligible()
+	status.MarkDependenciesInstalled()
+	status.MarkInstallSucceeded()
+	status.MarkDeploymentsAvailable()
+	status.MarkTargetClusterResolved()
+	if !status.IsReady() {
+		t.Fatal("deprecation warning must not prevent readiness")
+	}
+	status.ClearSecurityGuardDeprecated()
+	if status.GetCondition(base.SecurityGuardDeprecated) != nil || !status.IsReady() {
+		t.Fatal("clearing the warning must preserve readiness")
+	}
+	cleared := status.DeepCopy()
+	status.ClearSecurityGuardDeprecated()
+	if !reflect.DeepEqual(status, cleared) {
+		t.Fatal("clearing an absent warning changed status")
+	}
 }
 
 func TestKnativeServingTargetClusterTransitions(t *testing.T) {

@@ -19,6 +19,8 @@ package v1beta1
 import (
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
+
 	"knative.dev/operator/pkg/apis/operator"
 	"knative.dev/operator/pkg/apis/operator/base"
 
@@ -134,6 +136,23 @@ func (is *KnativeServingStatus) MarkTargetClusterResolved() {
 // MarkTargetClusterNotResolved marks the TargetClusterResolved status as false with the given reason and message.
 func (is *KnativeServingStatus) MarkTargetClusterNotResolved(reason, msg string) {
 	servingCondSet.Manage(is).MarkFalse(base.TargetClusterResolved, reason, "%s", msg)
+}
+
+// MarkSecurityGuardDeprecated warns that Security Guard is no longer supported
+// without changing readiness.
+func (is *KnativeServingStatus) MarkSecurityGuardDeprecated() {
+	servingCondSet.Manage(is).SetCondition(apis.Condition{
+		Type:     base.SecurityGuardDeprecated,
+		Status:   corev1.ConditionTrue,
+		Severity: apis.ConditionSeverityWarning,
+		Reason:   "RemovalScheduled",
+		Message:  "Security Guard is no longer supported. spec.security.securityGuard.enabled has no effect.",
+	})
+}
+
+// ClearSecurityGuardDeprecated removes the warning when Security Guard is no longer enabled.
+func (is *KnativeServingStatus) ClearSecurityGuardDeprecated() {
+	_ = servingCondSet.Manage(is).ClearCondition(base.SecurityGuardDeprecated)
 }
 
 // GetVersion gets the currently installed version of the component.

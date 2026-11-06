@@ -21,6 +21,7 @@ import (
 
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 	caching "knative.dev/caching/pkg/apis/caching/v1alpha1"
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -358,6 +359,53 @@ func TestImageTransform(t *testing.T) {
 			err := scheme.Scheme.Convert(&unstructuredImage, image, nil)
 			util.AssertEqual(t, err, nil)
 			util.AssertDeepEqual(t, image.Spec, tt.expected)
+		})
+	}
+}
+
+func TestQueueProxyImageTransform(t *testing.T) {
+	for _, tt := range []struct {
+		name     string
+		registry base.Registry
+		expected string
+	}{{
+		name: "OverridesQueueSidecarImage",
+		registry: base.Registry{
+			Override: map[string]string{
+				"queue-proxy": "registry.my-org.com/knative-serving-queue:1.22.0",
+			},
+		},
+		expected: "registry.my-org.com/knative-serving-queue:1.22.0",
+	}, {
+		name:     "NoOverrideKeepsOriginal",
+		registry: base.Registry{},
+		expected: "gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:abcdef",
+	}, {
+		name: "OtherOverridesDoNotAffectQueueSidecar",
+		registry: base.Registry{
+			Override: map[string]string{
+				"activator": "registry.my-org.com/activator:1.22.0",
+			},
+		},
+		expected: "gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:abcdef",
+	}} {
+		t.Run(tt.name, func(t *testing.T) {
+			cm := &unstructured.Unstructured{}
+			cm.SetUnstructuredContent(map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "ConfigMap",
+				"metadata": map[string]interface{}{
+					"name": "config-deployment",
+				},
+				"data": map[string]interface{}{
+					"queue-sidecar-image": "gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:abcdef",
+				},
+			})
+			transform := ImageTransform(&tt.registry, log)
+			err := transform(cm)
+			util.AssertEqual(t, err, nil)
+			val, _, _ := unstructured.NestedString(cm.Object, "data", "queue-sidecar-image")
+			util.AssertEqual(t, val, tt.expected)
 		})
 	}
 }

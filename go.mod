@@ -26,9 +26,9 @@ require (
 	knative.dev/caching v0.0.0-20261106011804-51e0e9511e1e
 	knative.dev/eventing v0.51.1-0.20261106033240-495a0f9afe89
 	knative.dev/hack v0.0.0-20261106011541-9aee2b079953
-	knative.dev/pkg v0.0.0-20261106011441-a8ce7f3f6f84
+	knative.dev/pkg v0.0.0-20261110182720-ae1437a8b141
 	knative.dev/reconciler-test v0.0.0-20261106011656-329aad7c53d9
-	knative.dev/serving v0.51.1-0.20261110122020-ac8f13e9ff3a
+	knative.dev/serving v0.51.1-0.20261110154820-64a49fa2741e
 	sigs.k8s.io/cluster-inventory-api v0.2.0
 	sigs.k8s.io/controller-tools v0.20.1
 	sigs.k8s.io/yaml v1.6.0
@@ -152,7 +152,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529 // indirect
 	github.com/spf13/cobra v1.10.2 // indirect
-	github.com/spf13/pflag v1.0.10 // indirect
+	github.com/spf13/pflag v1.1.0 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.7.0 // indirect
 	github.com/stretchr/testify v1.12.1 // indirect
 	github.com/tsenart/vegeta/v12 v12.13.0 // indirect

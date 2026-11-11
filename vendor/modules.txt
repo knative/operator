@@ -637,7 +637,7 @@ github.com/rs/dnscache
 # github.com/spf13/cobra v1.10.2
 ## explicit; go 1.15
 github.com/spf13/cobra
-# github.com/spf13/pflag v1.0.10
+# github.com/spf13/pflag v1.1.0
 ## explicit; go 1.12
 github.com/spf13/pflag
 # github.com/spiffe/go-spiffe/v2 v2.7.0
@@ -1983,7 +1983,7 @@ knative.dev/networking/pkg/client/clientset/versioned/typed/networking/v1alpha1
 knative.dev/networking/pkg/config
 knative.dev/networking/pkg/http/header
 knative.dev/networking/pkg/ingress
-# knative.dev/pkg v0.0.0-20261106011441-a8ce7f3f6f84
+# knative.dev/pkg v0.0.0-20261110182720-ae1437a8b141
 ## explicit; go 1.26.0
 knative.dev/pkg/apiextensions/storageversion
 knative.dev/pkg/apiextensions/storageversion/cmd/migrate
@@ -2104,7 +2104,7 @@ knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/resources/serviceaccount
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/certificate
-# knative.dev/serving v0.51.1-0.20261110122020-ac8f13e9ff3a
+# knative.dev/serving v0.51.1-0.20261110154820-64a49fa2741e
 ## explicit; go 1.26.0
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

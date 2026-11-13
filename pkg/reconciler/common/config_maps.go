@@ -17,6 +17,8 @@ limitations under the License.
 package common
 
 import (
+	"strings"
+
 	mf "github.com/manifestival/manifestival"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -31,9 +33,12 @@ func ConfigMapTransform(config base.ConfigMapData, log *zap.SugaredLogger) mf.Tr
 			if data, ok := config[u.GetName()]; ok {
 				return UpdateConfigMap(u, data, log)
 			}
-			// The "config-" prefix is optional
-			if data, ok := config[u.GetName()[len(`config-`):]]; ok {
-				return UpdateConfigMap(u, data, log)
+			// The "config-" prefix is optional, so only drop it when it is
+			// really there. Names shorter than the prefix must be left alone.
+			if trimmed, found := strings.CutPrefix(u.GetName(), `config-`); found {
+				if data, ok := config[trimmed]; ok {
+					return UpdateConfigMap(u, data, log)
+				}
 			}
 		}
 		return nil

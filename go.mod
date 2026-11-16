@@ -26,7 +26,7 @@ require (
 	knative.dev/caching v0.0.0-20261111011221-9c0ec89a1876
 	knative.dev/eventing v0.51.1-0.20261112023221-94f98d6a976c
 	knative.dev/hack v0.0.0-20261106011541-9aee2b079953
-	knative.dev/pkg v0.0.0-20261110182720-ae1437a8b141
+	knative.dev/pkg v0.0.0-20261115052151-37b44616bc66
 	knative.dev/reconciler-test v0.0.0-20261112013622-c4ed98059e05
 	knative.dev/serving v0.51.1-0.20261112230022-bd5953c7d730
 	sigs.k8s.io/cluster-inventory-api v0.2.0

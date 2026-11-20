@@ -179,12 +179,12 @@ go test -v -tags 'e2e multicluster' -count=1 \
 
 Environment variables read by the suite:
 
-| Variable | Purpose | Default |
-|----------|---------|---------|
-| `SPOKE_CLUSTER_NAME` | `ClusterProfile.metadata.name` used by the tests | `spoke` |
-| `SPOKE_CLUSTER_NAMESPACE` | `ClusterProfile.metadata.namespace` | `default` |
-| `KUBECONFIG` | Hub kubeconfig (standard Go client discovery) | current context |
-| `SPOKE_HOST_KUBECONFIG` | Spoke kubeconfig from the host's perspective | (required) |
+| Variable                  | Purpose                                          | Default         |
+| ------------------------- | ------------------------------------------------ | --------------- |
+| `SPOKE_CLUSTER_NAME`      | `ClusterProfile.metadata.name` used by the tests | `spoke`         |
+| `SPOKE_CLUSTER_NAMESPACE` | `ClusterProfile.metadata.namespace`              | `default`       |
+| `KUBECONFIG`              | Hub kubeconfig (standard Go client discovery)    | current context |
+| `SPOKE_HOST_KUBECONFIG`   | Spoke kubeconfig from the host's perspective     | (required)      |
 
 If you want the end-to-end bootstrap in a single step, use the wrapper script,
 which reuses the same helpers this guide calls manually:

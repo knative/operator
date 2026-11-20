@@ -19,6 +19,7 @@ at the [release page](https://github.com/knative/operator/releases).
 ### Prerequisites
 
 - Install Kustomize via the command:
+
 ```aidl
 curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
 cp kustomize /usr/local/bin/kustomize
@@ -30,11 +31,13 @@ cp kustomize /usr/local/bin/kustomize
 
 Set the version variable in the script "hack/generate-bundle.sh" to the version number to be release in the format
 of major.minor.patch. For example, set the version to 1.3.0 with the following line:
+
 ```aidl
 VERSION=1.3.0
 ```
 
 Open a terminal, go to the home directory of the Knative Operator repository. Run the script:
+
 ```shell
 ./hack/generate-bundle.sh
 ```
@@ -46,6 +49,7 @@ to the operatorhub.io.
 ### Create a PR for k8s-operatorhub/community-operators
 
 The process to publish a version on [OperatorHub](https://operatorhub.io/operator/knative-operator) is as below:
+
 - Download the source code of `k8s-operatorhub/community-operators`.
 - Locate the directory of Knative Operator at `community-operators/operators/knative-operator`.
 - Create a directory named the new version, like 1.3.0, under `community-operators/operators/knative-operator`.
@@ -61,6 +65,7 @@ Once the PR is reviewed and merged, Knative Operator of the new version is publi
 Open the file `hack/generate-helm.sh`, set the variable `VERSION` to the version of the Knative Operator, e.g. `VERSION=1.10.1`.
 
 Open a terminal, go to the home directory of the Knative Operator repository. Run the script:
+
 ```shell
 ./hack/generate-helm.sh
 ```
@@ -114,6 +119,7 @@ which leads to the error of `executing "knative-operator/templates/operator.yaml
 for the command `helm install` to install the charts.
 
 To package the charts into a .tgz artifact. Go to the directory `charts` in a terminal, and run the `helm package` command:
+
 ```shell
 cd charts
 helm package knative-operator
@@ -123,6 +129,7 @@ You will generate a file named `knative-operator-{version}.tgz`, under the direc
 of Knative Operator.
 
 You can install the charts by running the command:
+
 ```shell
 helm install knative-operator ./knative-operator-{version}.tgz
 ```

@@ -39,10 +39,10 @@ spec:
 Remote placement is fixed by component kind. The management CR namespace does
 not select the spoke installation namespace:
 
-| Management CR on the hub | `ClusterProfile` on the hub | Installation namespace on the spoke |
-|--------------------------|-----------------------------|-------------------------------------|
-| `fleet-workloads/serving-spoke-tokyo` (`KnativeServing`) | `fleet-system/spoke-tokyo` | `knative-serving` |
-| `fleet-workloads/eventing-spoke-tokyo` (`KnativeEventing`) | `fleet-system/spoke-tokyo` | `knative-eventing` |
+| Management CR on the hub                                   | `ClusterProfile` on the hub | Installation namespace on the spoke |
+| ---------------------------------------------------------- | --------------------------- | ----------------------------------- |
+| `fleet-workloads/serving-spoke-tokyo` (`KnativeServing`)   | `fleet-system/spoke-tokyo`  | `knative-serving`                   |
+| `fleet-workloads/eventing-spoke-tokyo` (`KnativeEventing`) | `fleet-system/spoke-tokyo`  | `knative-eventing`                  |
 
 The operator does not create a `KnativeServing` or `KnativeEventing` CR on the
 spoke. It renders and applies the release manifests from the hub CR directly.
@@ -125,10 +125,10 @@ Larger values reduce reconcile traffic on hubs managing many spokes, at the
 cost of slower observability of readiness transitions:
 
 | Spoke count | Recommended interval |
-|-------------|----------------------|
-| < 10 | `10s` (default) |
-| 10-100 | `30s` |
-| > 100 | `60s` |
+| ----------- | -------------------- |
+| < 10        | `10s` (default)      |
+| 10-100      | `30s`                |
+| > 100       | `60s`                |
 
 ### Setting the interval
 

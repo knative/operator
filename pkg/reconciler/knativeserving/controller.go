@@ -62,6 +62,9 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 		kubeClient := kubeclient.Get(ctx)
 		logger := logging.FromContext(ctx)
 		logger.Infof("Remote deployments poll interval: %s", common.RemoteDeploymentsPollIntervalValue())
+		if common.RemoteDeploymentsPollIntervalWasClamped() {
+			logger.Warnf("remote-deployments-poll-interval below 1s, falling back to default")
+		}
 
 		restConfig := injection.GetConfig(ctx)
 		mfclient, err := mfc.NewClient(restConfig)

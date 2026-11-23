@@ -13,20 +13,20 @@ require (
 	github.com/mikefarah/yq/v4 v4.52.5
 	go.uber.org/zap v1.28.0
 	gocloud.dev v0.22.0
-	golang.org/x/mod v0.42.0
+	golang.org/x/mod v0.43.0
 	golang.org/x/oauth2 v0.37.0
-	golang.org/x/sync v0.24.0
+	golang.org/x/sync v0.25.0
 	google.golang.org/api v0.269.0
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57
 	istio.io/client-go v1.18.7
-	k8s.io/api v0.36.5
-	k8s.io/apimachinery v0.36.5
-	k8s.io/client-go v0.36.5
-	k8s.io/code-generator v0.36.5
+	k8s.io/api v0.36.6
+	k8s.io/apimachinery v0.36.6
+	k8s.io/client-go v0.36.6
+	k8s.io/code-generator v0.36.6
 	knative.dev/caching v0.0.0-20261118131158-6068fb3de6f8
-	knative.dev/eventing v0.51.1-0.20261120091558-51e4a52410b6
-	knative.dev/hack v0.0.0-20261118025754-120c8f556283
-	knative.dev/pkg v0.0.0-20261118131257-b2f62414bc1e
+	knative.dev/eventing v0.51.1-0.20261120140700-f819a05983e8
+	knative.dev/hack v0.0.0-20261120142159-5e9b644b541f
+	knative.dev/pkg v0.0.0-20261121171059-68159463c832
 	knative.dev/reconciler-test v0.0.0-20261120091700-ef81114dd4e1
 	knative.dev/serving v0.51.1-0.20261120122059-0fb9d027cdf0
 	sigs.k8s.io/cluster-inventory-api v0.2.0
@@ -185,15 +185,16 @@ require (
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
-	go.yaml.in/yaml/v3 v3.0.5 // indirect
+	go.yaml.in/yaml/v3 v3.0.6 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.3 // indirect
-	golang.org/x/crypto v0.58.0 // indirect
-	golang.org/x/net v0.61.0 // indirect
-	golang.org/x/sys v0.49.0 // indirect
-	golang.org/x/term v0.47.0 // indirect
-	golang.org/x/text v0.43.0 // indirect
+	golang.org/x/crypto v0.59.0 // indirect
+	golang.org/x/crypto/openpgp v0.1.0-deprecated // indirect
+	golang.org/x/net v0.63.0 // indirect
+	golang.org/x/sys v0.50.0 // indirect
+	golang.org/x/term v0.48.0 // indirect
+	golang.org/x/text v0.44.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	golang.org/x/tools v0.52.0 // indirect
+	golang.org/x/tools v0.53.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20260128011058-8636f8732409 // indirect
@@ -206,8 +207,8 @@ require (
 	gopkg.in/op/go-logging.v1 v1.0.0-20160211212156-b2cb9fa56473 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.36.5 // indirect
-	k8s.io/apiserver v0.36.5 // indirect
+	k8s.io/apiextensions-apiserver v0.36.6 // indirect
+	k8s.io/apiserver v0.36.6 // indirect
 	k8s.io/gengo/v2 v2.0.0-20250922181213-ec3ebc5fd46b // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260319004828-5883c5ee87b9 // indirect

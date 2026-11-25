@@ -2106,7 +2106,7 @@ knative.dev/reconciler-test/pkg/resources/service
 knative.dev/reconciler-test/pkg/resources/serviceaccount
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/certificate
-# knative.dev/serving v0.51.1-0.20261124123014-812786513e9b
+# knative.dev/serving v0.51.1-0.20261124223304-2e6bfd16e2f4
 ## explicit; go 1.26.0
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1

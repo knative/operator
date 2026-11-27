@@ -16,27 +16,27 @@ resources; this makes a renamed or removed target visible during an upgrade.
 ```yaml
 spec:
   patches:
-  - target:
-      apiVersion: autoscaling/v2
-      kind: HorizontalPodAutoscaler
-      name: webhook
-    patch:
-      type: strategic
-      content: |
-        spec:
-          minReplicas: 2
-          maxReplicas: 10
+    - target:
+        apiVersion: autoscaling/v2
+        kind: HorizontalPodAutoscaler
+        name: webhook
+      patch:
+        type: strategic
+        content: |
+          spec:
+            minReplicas: 2
+            maxReplicas: 10
 ```
 
 Patches apply to all resources assembled for the component, including Serving
 or Eventing core resources, enabled Ingress or Source resources, extension
 resources, and `additionalManifests`.
 
-| Patch type | Use it for | Content format |
-| --- | --- | --- |
+| Patch type  | Use it for                                                           | Content format                        |
+| ----------- | -------------------------------------------------------------------- | ------------------------------------- |
 | `strategic` | Kubernetes resources with named lists, such as Deployment containers | Strategic Merge Patch in YAML or JSON |
-| `merge` | Maps and scalar fields, including custom resources | RFC 7386 Merge Patch in YAML or JSON |
-| `json` | Exact add, replace, or remove operations | RFC 6902 JSON Patch in YAML or JSON |
+| `merge`     | Maps and scalar fields, including custom resources                   | RFC 7386 Merge Patch in YAML or JSON  |
+| `json`      | Exact add, replace, or remove operations                             | RFC 6902 JSON Patch in YAML or JSON   |
 
 Strategic Merge Patch requires a Kubernetes type registered in the Operator's
 scheme. Use `merge` or `json` for an unregistered custom resource. A patch may
@@ -67,25 +67,25 @@ affinity flag; the generated `_example` entry is removed.
 ```yaml
 spec:
   patches:
-  - target:
-      apiVersion: v1
-      kind: ConfigMap
-      name: config-features
-    patch:
-      type: strategic
-      content: |
-        data:
-          $patch: replace
-          kubernetes.podspec-affinity: "enabled"
+    - target:
+        apiVersion: v1
+        kind: ConfigMap
+        name: config-features
+      patch:
+        type: strategic
+        content: |
+          data:
+            $patch: replace
+            kubernetes.podspec-affinity: "enabled"
 ```
 
 Place the directive at the level that should be replaced:
 
-| Placement | Result |
-| --- | --- |
-| Inside a map, such as `data` | Removes the map's existing keys and keeps only the keys beside `$patch: replace` |
+| Placement                                        | Result                                                                            |
+| ------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Inside a map, such as `data`                     | Removes the map's existing keys and keeps only the keys beside `$patch: replace`  |
 | As an item in a named list, such as `containers` | Removes every existing list item and keeps only the other items in the patch list |
-| At the root of `content` | Replaces the entire resource except its API version, kind, name, and namespace |
+| At the root of `content`                         | Replaces the entire resource except its API version, kind, name, and namespace    |
 
 For example, a list replacement puts the directive and the desired items in
 the same list:
@@ -95,9 +95,9 @@ spec:
   template:
     spec:
       containers:
-      - name: replacement
-        image: example.com/replacement
-      - $patch: replace
+        - name: replacement
+          image: example.com/replacement
+        - $patch: replace
 ```
 
 A root replacement for the same `config-features` target does not need to
@@ -122,14 +122,14 @@ Knative 1.23 includes the following HorizontalPodAutoscalers. An ingress or
 broker HPA is present only when its corresponding optional component is
 enabled.
 
-| Custom resource | Workload | HPA name |
-| --- | --- | --- |
-| `KnativeServing` | `activator` | `activator` |
-| `KnativeServing` | `webhook` | `webhook` |
-| `KnativeServing` with Kourier | `3scale-kourier-gateway` | `3scale-kourier-gateway` |
-| `KnativeEventing` | `eventing-webhook` | `eventing-webhook` |
-| `KnativeEventing` with MTChannelBasedBroker | `mt-broker-ingress` | `broker-ingress-hpa` |
-| `KnativeEventing` with MTChannelBasedBroker | `mt-broker-filter` | `broker-filter-hpa` |
+| Custom resource                             | Workload                 | HPA name                 |
+| ------------------------------------------- | ------------------------ | ------------------------ |
+| `KnativeServing`                            | `activator`              | `activator`              |
+| `KnativeServing`                            | `webhook`                | `webhook`                |
+| `KnativeServing` with Kourier               | `3scale-kourier-gateway` | `3scale-kourier-gateway` |
+| `KnativeEventing`                           | `eventing-webhook`       | `eventing-webhook`       |
+| `KnativeEventing` with MTChannelBasedBroker | `mt-broker-ingress`      | `broker-ingress-hpa`     |
+| `KnativeEventing` with MTChannelBasedBroker | `mt-broker-filter`       | `broker-filter-hpa`      |
 
 Run `kubectl get hpa -n knative-serving` or `kubectl get hpa -n knative-eventing`
 to confirm which HPAs are present in the cluster.
@@ -145,23 +145,23 @@ metadata:
   namespace: knative-serving
 spec:
   patches:
-  - target:
-      apiVersion: autoscaling/v2
-      kind: HorizontalPodAutoscaler
-      name: activator
-    patch:
-      type: strategic
-      content: |
-        $patch: delete
-  - target:
-      apiVersion: apps/v1
-      kind: Deployment
-      name: activator
-    patch:
-      type: strategic
-      content: |
-        spec:
-          replicas: null
+    - target:
+        apiVersion: autoscaling/v2
+        kind: HorizontalPodAutoscaler
+        name: activator
+      patch:
+        type: strategic
+        content: |
+          $patch: delete
+    - target:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: activator
+      patch:
+        type: strategic
+        content: |
+          spec:
+            replicas: null
 ```
 
 Resource removal is available only with `type: strategic`. The directive keeps

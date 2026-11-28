@@ -26,17 +26,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
+	"knative.dev/pkg/ptr"
 
 	util "knative.dev/operator/pkg/reconciler/common/testing"
 )
 
 func TestHighAvailabilityTransform(t *testing.T) {
 	cases := []struct {
-		name     string
-		config   *base.HighAvailability
-		in       *unstructured.Unstructured
-		expected *unstructured.Unstructured
-		err      error
+		name      string
+		config    *base.HighAvailability
+		workloads []base.WorkloadOverride
+		in        *unstructured.Unstructured
+		expected  *unstructured.Unstructured
+		err       error
 	}{{
 		name:     "HA; controller",
 		config:   makeHa(2),
@@ -94,6 +96,18 @@ func TestHighAvailabilityTransform(t *testing.T) {
 		config:   nil,
 		in:       makeUnstructuredHPA(t, "activator", 2, 2),
 		expected: makeUnstructuredHPA(t, "activator", 2, 2),
+	}, {
+		name:      "HA; workload override replicas take precedence over hpa",
+		config:    makeHa(3),
+		workloads: []base.WorkloadOverride{{Name: "activator", Replicas: ptr.Int32(2)}},
+		in:        makeUnstructuredHPA(t, "activator", 1, 10),
+		expected:  makeUnstructuredHPA(t, "activator", 1, 10),
+	}, {
+		name:      "HA; workload override replicas take precedence over differently named hpa",
+		config:    makeHa(3),
+		workloads: []base.WorkloadOverride{{Name: "mt-broker-ingress", Replicas: ptr.Int32(2)}},
+		in:        makeUnstructuredHPA(t, "broker-ingress-hpa", 1, 10),
+		expected:  makeUnstructuredHPA(t, "broker-ingress-hpa", 1, 10),
 	}}
 
 	for _, tc := range cases {
@@ -103,6 +117,7 @@ func TestHighAvailabilityTransform(t *testing.T) {
 				Spec: v1beta1.KnativeServingSpec{
 					CommonSpec: base.CommonSpec{
 						HighAvailability: tc.config,
+						Workloads:        tc.workloads,
 					},
 				},
 			}

@@ -76,6 +76,34 @@ func createConfigMapTests(t *testing.T) []updateConfigMapTest {
 			}),
 		},
 		{
+			// A ConfigMap name shorter than len("config-") must not be sliced.
+			name: "short-name-without-config-prefix",
+			config: makeconfigMapData("logging", map[string]string{
+				"loglevel.controller": "debug",
+			}),
+			configMap: createConfigMap("kafka", map[string]string{
+				"bootstrap.servers": "my-cluster:9092",
+			}),
+			expected: createConfigMap("kafka", map[string]string{
+				"bootstrap.servers": "my-cluster:9092",
+			}),
+		},
+		{
+			// Only a real "config-" prefix may be dropped. "kourier-bootstrap"
+			// starts with "kourier", so the first seven bytes are not a prefix
+			// and the remainder is not a ConfigMap key.
+			name: "unprefixed-name-keeps-all-of-its-bytes",
+			config: makeconfigMapData("-bootstrap", map[string]string{
+				"injected": "yes",
+			}),
+			configMap: createConfigMap("kourier-bootstrap", map[string]string{
+				"orig": "keep",
+			}),
+			expected: createConfigMap("kourier-bootstrap", map[string]string{
+				"orig": "keep",
+			}),
+		},
+		{
 			name: "change-using-real-configmap-name",
 			config: makeconfigMapData("config-logging", map[string]string{
 				"loglevel.controller": "debug",
